@@ -4,9 +4,9 @@
 Analysis of data series and trajectories using fortran backend.
 
 ## Installation
-'''bash
+```bash
 cp CampaRi/tests/testthat/test-mst.R .
-'''
+```
 In the working directory (.. of CampaRi) please open test-mst.R using RStudio or similarly.
 
 ## Tests
