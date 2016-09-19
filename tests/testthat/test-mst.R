@@ -2,13 +2,13 @@
 cur_dir <- getwd()
 setwd(cur_dir)
 setwd("..")
-package_dir <- "campackage/"
+package_dir <- "CampaRi/"
 install.packages(package_dir, repos = NULL, type="source")
-library(campackage)
+library(CampaRi)
 
 
 # REPIXING: computing sapphire plots from PROGIDX output
-tree <- adjl_from_pi(fil = "campackage/data/PROGIDX_000000000001.dat")
+tree <- adjl_from_pi(fil = "CampaRi/data/PROGIDX_000000000001.dat")
 
 # contrac <- contract_mst(adjl = tree,n_fold = 0) to check
 
@@ -24,7 +24,7 @@ plot(sapphire_out[,1],-log(sapphire_out[,4]/nrow(sapphire_out)), type="l",
 # SECOND TEST - butane chain
 
 # Load trajectory [Full 100000 snaps]
-trj2<-load_trj_dcd("campackage/data/NBU.dcd")
+trj2<-load_trj_dcd("CampaRi/data/NBU.dcd")
 
 # SUBSAMPLING. dim_reduction is the variable indicating the factor of it
 # the computational complexity is O(rmsd)~O(d) having d = dimension of a snap
@@ -40,8 +40,8 @@ dim(trj)
 
 
 #ANALYSIS
-install.packages("campackage/", repos = NULL, type="source")
-library(campackage)
+install.packages("CampaRi/", repos = NULL, type="source")
+library(CampaRi)
 
 
 adjl<-adjl_from_trj(trj = trj, mode = "fortran")
