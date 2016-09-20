@@ -39,16 +39,16 @@ adjl_from_trj<-function(trj, clu_radius=NULL, clu_hardcut=NULL, cores=NULL, mode
     trj <- as.matrix(trj)
   }
   #memory handling
-  data_management <- getOption("campackage.data_management")
+  data_management <- getOption("CampaRi.data_management")
   if(data_management == "R") cat("Normal memory handling selected. Without hdf5 backend file management it will be difficult for R to handle big data-sets.\n")
   else if(data_management == "h5pfc") cat("Selected data support: hdf5 with mpi support\n")
   else if(data_management == "h5fc") cat("Selected data support: hdf5 without mpi support\n")
   else stop("Invalid data management keyword inserted. Check the available methods on the guide.\n")
   
-  cat("To set new data_management method: options(list(campackage.data_management = 'R'))\n")
+  cat("To set new data_management method: options(list(CampaRi.data_management = 'R'))\n")
 
   if(data_management != "R"){
-    warning(paste0('The dumping filename will be ',getOption("campackage.data_filename"),'. If already existent it will be overwritten'))
+    warning(paste0('The dumping filename will be ',getOption("CampaRi.data_filename"),'. If already existent it will be overwritten'))
     cat("Checking for hdf5 support...")
     command_loc <- system(paste0("which ",data_management))
     if(command_loc=="") stop("No support for hdf5. Please check installation and correct linkage of the command to your enviroment.")
@@ -114,7 +114,7 @@ adjl_from_trj<-function(trj, clu_radius=NULL, clu_hardcut=NULL, cores=NULL, mode
       attr(trj,"Csingle") <- TRUE
       attr(adj_dis,"Csingle") <- TRUE
       #main fortran talker
-      output<-.Fortran("generate_neighbour_list", PACKAGE="campackage",
+      output<-.Fortran("generate_neighbour_list", PACKAGE="CampaRi",
                       trj_data=trj,
                       n_xyz_in=as.integer(c1),
                       n_snaps_in=as.integer(r1),
@@ -159,7 +159,7 @@ adjl_from_trj<-function(trj, clu_radius=NULL, clu_hardcut=NULL, cores=NULL, mode
 #' @return tree: degree list, connectivity matrix and weights
 #'
 #' @export adjl_from_pi
-#' @useDynLib campackage
+#' @useDynLib CampaRi
 
 adjl_from_pi<-function(fil){
   # extract the SST or MST from the output of the analysis already made with campari.
@@ -206,7 +206,7 @@ adjl_from_pi<-function(fil){
 #' @return tree: degree list, connectivity matrix and weights
 #'
 #' @export adjl_from_adjmat
-#' @useDynLib campackage
+#' @useDynLib CampaRi
 
 adjl_from_adjmat<-function(adj_m){
   # extract the SST or MST from the output of the analysis already made with campari.
