@@ -13,7 +13,7 @@
 #' @return adjl modified
 #'
 #' @export contract_mst
-#' @useDynLib campackage
+#' @useDynLib CampaRi
 
 # because the function is built in this way we need also treennb. Then we will keep the 3 output from
 # adjl_from_piOut in the adjl variable
@@ -29,7 +29,7 @@ contract_mst <- function(adjl,n_fold=0){
     dyn.load("src/rerun_PIX.so")
   }
 
-  ret_data <- .Fortran("contract_mst", PACKAGE="campackage",
+  ret_data <- .Fortran("contract_mst", PACKAGE="CampaRi",
                        n_snaps=as.integer(nsnaps),
                        mnb=as.integer(maxnb),
                        alnbs=as.integer(adjl[[1]]), #why should I need this thing
@@ -64,10 +64,10 @@ contract_mst <- function(adjl,n_fold=0){
 #' @return ret_data
 #'
 #' @export gen_progindex
-#' @useDynLib campackage
+#' @useDynLib CampaRi
 
 gen_progindex<-function(adjl, snap_start = 0){
-  warning("if you use an input different in format to the output of the other campackage functions there is an high probability of crashing")
+  warning("if you use an input different in format to the output of the other CampaRi functions there is an high probability of crashing")
   nsnaps <- length(adjl[[1]]) # Working only if the graph it is complete -crash with not connected components
   maxnb <- max(as.numeric(adjl[[1]]))
   
@@ -117,10 +117,10 @@ gen_progindex<-function(adjl, snap_start = 0){
 #' @return ret_data
 #'
 #' @export gen_annotation
-#' @useDynLib campackage
+#' @useDynLib CampaRi
 
 gen_annotation<-function(ret_data, local_cut_width=NULL, snap_start = NULL){
-  warning("if you use an input different in format to the output of the other campackage functions there is an high probability of crashing")
+  warning("if you use an input different in format to the output of the other CampaRi functions there is an high probability of crashing")
   # local_cut_widtg is a (potentially) new setting for the width for the local cut
   n_breaks <- 0 #not a clue ?
   brklst <- array(as.integer(0),c(1))
