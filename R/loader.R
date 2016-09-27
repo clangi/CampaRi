@@ -26,14 +26,14 @@ load_trj_dcd<-function(t_file){
 #' Default: \code{0}
 #'
 #' @examples
-#' tree <- adjl_from_trj(fil = "data/PROGIDX_000000000001.dat")
+#' none
 #'
 #' @return tree: degree list, connectivity matrix and weights
 #'
 #' @export adjl_from_trj
-#' @import parallel bio3d
+#' @import parallel
 
-adjl_from_trj<-function(trj, clu_radius=NULL, clu_hardcut=NULL, cores=NULL, mode=NULL, min_span_tree=TRUE){ # to add functional of distance
+adjl_from_trj<-function(trj, distance_method=5, clu_radius=NULL, clu_hardcut=NULL, cores=NULL, mode=NULL, min_span_tree=TRUE){ # to add functional of distance
   if(!is.matrix(trj)){
     if(!is.data.frame(trj)) stop('trj input must be a matrix or a data.frame')
     trj <- as.matrix(trj)
@@ -89,7 +89,7 @@ adjl_from_trj<-function(trj, clu_radius=NULL, clu_hardcut=NULL, cores=NULL, mode
   }else if(is.character(mode)&&(mode=="fortran")){
     #Fortran mode
     #default vars
-    distance_method <- 5
+
     if(is.null(clu_radius)){
       clu_radius <- 50
       warning(paste("clu_radius variable (a priori fixed clustering radius) has not been selected. 

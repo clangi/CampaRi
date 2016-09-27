@@ -30,6 +30,7 @@ module m_gen_nbls
       real(KIND=4) tmp_d ! temporary variable for radiuses and distances
       integer i, ii, k, kk, j, l, ll, mi, mj, u
       integer testcnt, testcnt2
+      real vecti(n_xyz),vectj(n_xyz)
       ! write(*,*) "DEBUGGING"
       ! write(*,*) "trj_input",trj(1:10,1:10)
       ! write(*,*) "scluster 1", scluster(2)%snaps
@@ -45,7 +46,17 @@ module m_gen_nbls
           k = scluster(i)%snaps(kk)
           do ll=kk+1,scluster(i)%nmbrs ! for each l != k snapshot
             l = scluster(i)%snaps(ll)
-            call distance(tmp_d,trj(k,1:n_xyz),trj(l,1:n_xyz))
+            if(dis_method.eq.5) then
+              vecti = trj(k,1:n_xyz)
+              vectj = trj(l,1:n_xyz)
+            else if(dis_method.eq.11) then
+              ! veci(1:n_xyz) = 1
+              if(k.eq.1) k = 2 !to avoid error I can double the first value
+              if(l.eq.1) l = 2 !to avoid error I can double the first value
+              vecti = trj(k,n_xyz) - trj(k-1,n_xyz)
+              vectj = trj(l,n_xyz) - trj(l-1,n_xyz)
+            end if
+            call distance(tmp_d,vecti,vectj)
             ! compute the distance between all cluster-internal snapshots
             testcnt = testcnt + 1
             if (tmp_d.lt.hardcut) then ! hardcut ext-var CCUTOFF
@@ -74,15 +85,27 @@ module m_gen_nbls
           end if
           do kk=1,scluster(mi)%nmbrs
             k = scluster(mi)%snaps(kk)
-            call snap_to_cluster_d(tmp_d,scluster(mj),trj(k,1:n_xyz))
+            if(dis_method.eq.5) then
+              vecti = trj(k,1:n_xyz)
+            else if(dis_method.eq.11) then
+              if(k.eq.1) k = 2 !to avoid error I can double the first value
+              vecti = trj(k,n_xyz) - trj(k-1,n_xyz)
+            end if
+            call snap_to_cluster_d(tmp_d,scluster(mj),vecti)
             !all the minorcluster snaps vs the mjcluster center
             do ll=1,scluster(mj)%nmbrs
               l = scluster(mj)%snaps(ll)
+              if(dis_method.eq.5) then
+                vectj = trj(l,1:n_xyz)
+              else if(dis_method.eq.11) then
+                if(l.eq.1) l = 2 !to avoid error I can double the first value
+                vectj = trj(l,n_xyz) - trj(l-1,n_xyz)
+              end if
               if (scluster(mj)%nmbrs.eq.1) then
                 call cluster_to_cluster_d(tmp_d,scluster(mi),scluster(mj))
                 testcnt = testcnt + 1
               else
-                call distance(tmp_d,trj(k,1:n_xyz),trj(l,1:n_xyz))
+                call distance(tmp_d,vecti,vectj)
                 !then you do a complete graph doing euristic nothing
                 testcnt = testcnt + 1
               end if

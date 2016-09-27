@@ -4,8 +4,8 @@
 \alias{adjl_from_trj}
 \title{Build the network from the trajectory file}
 \usage{
-adjl_from_trj(trj, clu_radius = NULL, clu_hardcut = NULL, cores = NULL,
-  mode = NULL, min_span_tree = TRUE)
+adjl_from_trj(trj, distance_method = 5, clu_radius = NULL,
+  clu_hardcut = NULL, cores = NULL, mode = NULL, min_span_tree = TRUE)
 }
 \arguments{
 \item{fl}{file location}
@@ -20,7 +20,7 @@ tree: degree list, connectivity matrix and weights
 This is a wonderful description(X)
 }
 \examples{
-tree <- adjl_from_trj(fil = "data/PROGIDX_000000000001.dat")
+none
 
 }
 

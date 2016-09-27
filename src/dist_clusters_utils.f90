@@ -52,8 +52,7 @@ subroutine snap_to_cluster_d(val, it, sn2) !i={1:n_snaps}
     val = 0
   else
 
-    if (dis_method.eq.2) then
-    else !let's consider dis_method = 5
+    if (dis_method.eq.5.or.dis_method.eq.11) then
       vec1 = it%sums(1:n_xyz)/(1.0 * it%nmbrs) ! cluster center
     end if
     call distance(val,vec1,sn2) ! val=tmp_d, vec1=centroid, sn=snapshot
@@ -72,9 +71,7 @@ subroutine cluster_to_cluster_d(val, it1, it2)
   integer k
   real, INTENT(OUT) :: val
 
-  if (dis_method.eq.2) then
-    !
-  else
+  if (dis_method.eq.5.or.dis_method.eq.11) then
     vec1 = it1%sums(:)/(1.0 * it1%nmbrs) ! center it1
     vec2 = it2%sums(:)/(1.0 * it2%nmbrs) ! center it2
   end if
@@ -95,35 +92,29 @@ subroutine distance(val, veci, vecj)
   implicit none
 
   real, INTENT(IN) :: veci(n_xyz), vecj(n_xyz)
-  real vec1(n_xyz), vec2(n_xyz), hlp
+  real vec_ref(n_xyz)
+  real  hlp, hlp2
   real, INTENT(OUT) :: val
 
+  vec_ref = 1
   val = 0.0
   hlp = 0.0
+  hlp2 = 0.0
 
-  if (dis_method.eq.1) then
-    !
-  else if ((dis_method.eq.5).OR.(dis_method.eq.6)) then
-    ! if (align_for_clustering.EQV..true.) then
-    ! ! THE ALIGNMENT was considered for specific cases in which a part of the
-    ! ! mol had a rigid  part and therefore there was no need of considering
-    ! ! this part. n_xyz is related
-    !   catnrs = (n_xyz(4)-n_xyz(3)+1)/3
-    !   vec1(:) = vecj(:)
-    !   vec2(:) = veci(:)
-    !   call align_3D(catnrs,vec1(n_xyz(3):n_xyz(4)),vec2(n_xyz(3):n_xyz(4)),tvec,qrot,cto,ctn)
-    !   do k=1,n_xyz/3
-    !     call quat_conjugatei(qrot,vec1(3*k-2:3*k),vectmp,cto)
-    !     vec3(3*k-2:3*k) = vectmp(:)
-    !     vec3(3*k-2:3*k) = vec3(3*k-2:3*k) + tvec(:)
-    !   end do
-    !   hlp = sum((vec2(n_xyz(1):n_xyz(2)) - vec3(n_xyz(1):n_xyz(2)))**2)
-    !   val = sqrt(3.0*hlp/(1.0*(n_xyz(2)-n_xyz(1)+1)))
-    ! else
-      hlp = sum((veci(1:n_xyz) - vecj(1:n_xyz))**2)
-      val = sqrt((3.0 * hlp)/(1.0 * (n_xyz))) ! why *3?????
+  if (dis_method.eq.5) then
+    hlp = sum((veci(1:n_xyz) - vecj(1:n_xyz))**2)
+    val = sqrt((3.0 * hlp)/(1.0 * (n_xyz))) ! why *3?????
+  else if (dis_method.eq.11) then
+    hlp = ACOS(dot_product(vec_ref,veci)/&
+    (dot_product(vec_ref,vec_ref) + &
+    dot_product(veci,veci)))
+    hlp2 = ACOS(dot_product(vec_ref,vecj)/&
+    (dot_product(vec_ref,vec_ref) + &
+    dot_product(vecj,vecj)))
+    val = hlp2 - hlp
   end if
 end
+
 !
 !-------------------------------------------------------------------------------
 !
@@ -194,9 +185,10 @@ subroutine cluster_addsnap(it,sn1,i)
 
   it%snaps(it%nmbrs) = i !add the snap
 
-  if((dis_method.eq.5).OR.(dis_method.eq.6)) then
+  if((dis_method.eq.5.or.dis_method.eq.11)) then
     it%sums(1:n_xyz) = it%sums(1:n_xyz) + sn1 !
     it%sqsum = it%sqsum + dot_product(sn1,sn1)
+
   end if
 end
 !
