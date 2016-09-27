@@ -1,7 +1,7 @@
 #THIS FILE SHOULD BE COPIED IN THE WORKING DIRECTORY. Take care about directories specifics
-cur_dir <- getwd()
+cur_dir <- "projects2016/release1/"
 setwd(cur_dir)
-setwd("..")
+# setwd("..")
 package_dir <- "CampaRi/"
 install.packages(package_dir, repos = NULL, type="source")
 library(CampaRi)
@@ -43,7 +43,7 @@ dim(trj)
 install.packages("CampaRi/", repos = NULL, type="source")
 library(CampaRi)
 
-
+trj<-load_trj_dcd("NBU_250fs.dcd")
 adjl<-adjl_from_trj(trj = trj, mode = "fortran")
 # adjl<-adjl_from_adjmat(adj_m) #deprecated
 ret<-gen_progindex(adjl,snap_start = 10)

@@ -91,12 +91,12 @@ adjl_from_trj<-function(trj, distance_method=5, clu_radius=NULL, clu_hardcut=NUL
     #default vars
 
     if(is.null(clu_radius)){
-      clu_radius <- 50
+      clu_radius <- 100000
       warning(paste("clu_radius variable (a priori fixed clustering radius) has not been selected. 
               A standard value of",clu_radius,"will be used."))
     }
     if(is.null(clu_hardcut)){
-      clu_hardcut <- 150
+      clu_hardcut <- 100000
       warning(paste("clu_hardcut variable (a priori fixed distance threshold between different cluster members) has not been selected. 
               A standard value of",clu_hardcut,"will be used."))
     }
