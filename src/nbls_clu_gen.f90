@@ -134,7 +134,7 @@ subroutine generate_neighbour_list( &
   write(*,*) 'Now computing cutoff-assisted neighbor list...'
   write(*,*)
 
-  call gen_nb( trj_data)
+  call gen_nb(trj_data)
 
   write(*,*)
   write(*,*) 'Neighbor list generated.'

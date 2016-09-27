@@ -101,7 +101,8 @@ module m_clustering
 
       real(KIND=4), intent(in) :: trj(n_snaps,n_xyz)
       real(KIND=4) tmp_d ! temporary variable for radiuses and distances
-      integer i, j, ii, u
+      integer i, i2, j, ii, u
+      real vecti(n_xyz)
 
       nclu = 0 !cluster index
       do i=1,n_snaps
@@ -113,10 +114,18 @@ module m_clustering
           ! added). The number of clusters that can be considered in order to put i
           ! (snapshot) in one of those is 500. Once exceeded this upper bound
           ! it starts to shift on that limit forwards.
-          call snap_to_cluster_d(tmp_d,scluster(j),trj(i,1:n_xyz))
+          if(dis_method.eq.5) then
+            vecti = trj(i,1:n_xyz)
+          else if(dis_method.eq.11) then
+            ! veci(1:n_xyz) = 1
+            i2 = i
+            if(i.eq.1) i2 = 2 !to avoid error I can double the first value
+            vecti = trj(i2,n_xyz) - trj(i2-1,n_xyz)
+          end if
+          call snap_to_cluster_d(tmp_d,scluster(j),vecti)
           if(superver .and. (i.lt.10)) write(*,*) "The distance is : ",tmp_d
           if (tmp_d.lt.radius) then
-            call cluster_addsnap(scluster(j),trj(i,1:n_xyz),i)
+            call cluster_addsnap(scluster(j),vecti,i)
             ! add snapshot i in the cluster j
             ii = j
             exit
@@ -143,7 +152,7 @@ module m_clustering
             ! deallocate(tmpcls)
           end if
 
-          call cluster_addsnap(scluster(nclu),trj(i,1:n_xyz),i) ! nclu new cluster
+          call cluster_addsnap(scluster(nclu),vecti,i) ! nclu new cluster
           ! if(superver) write(*,*) 'Cluster number ',nclu, ' created for snap ', i
         end if
       end do

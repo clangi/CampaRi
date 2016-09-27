@@ -6,7 +6,7 @@ program trial
  integer :: d5 = 5
  integer :: dim1 = 100
  integer :: dim2 = 42
- integer :: d_meth_i = 1
+ integer :: d_meth_i = 11
  real outp(100,100)
  real r1,r2
  logical mst_in
