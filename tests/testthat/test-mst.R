@@ -1,5 +1,6 @@
 #THIS FILE SHOULD BE COPIED IN THE WORKING DIRECTORY. Take care about directories specifics
-cur_dir <- "projects2016/release1/"
+# cur_dir <- "~/projects2016/release1/"
+cur_dir <- "~/Projects/2016/CampaR/"
 setwd(cur_dir)
 # setwd("..")
 package_dir <- "CampaRi/"
