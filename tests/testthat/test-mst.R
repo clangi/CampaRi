@@ -1,6 +1,6 @@
 #THIS FILE SHOULD BE COPIED IN THE WORKING DIRECTORY. Take care about directories specifics
-# cur_dir <- "~/projects2016/release1/"
-cur_dir <- "~/Projects/2016/CampaR/"
+cur_dir <- "~/projects2016/release1/"
+# cur_dir <- "~/Projects/2016/CampaR/"
 setwd(cur_dir)
 # setwd("..")
 package_dir <- "CampaRi/"
@@ -44,14 +44,12 @@ dim(trj)
 install.packages("CampaRi/", repos = NULL, type="source")
 library(CampaRi)
 
-trj<-load_trj_dcd("NBU_250fs.dcd")
+trj2<-load_trj_dcd("NBU_250fs.dcd")
+trj<-trj2[1:28000,]
 adjl<-adjl_from_trj(trj = trj, mode = "fortran")
 # adjl<-adjl_from_adjmat(adj_m) #deprecated
 ret<-gen_progindex(adjl,snap_start = 10)
 ret2<-gen_annotation(ret,snap_start = 10,local_cut_width = 50)
-sapphire_out<-read.table(file = 'REPIX_000000000010.dat')
-plot(sapphire_out[,1],-log(sapphire_out[,4]/nrow(sapphire_out)), type="l", 
-     ylab = "annotation function", 
-     xlab = "snapshots",
-     main = paste0("Sapphire of nbu\n snaps = ",dim(trj)[1]," : #atoms = ",dim(trj)[2]/3))
-
+sap_file <- 'REPIX_000000000010.dat'
+sap_file <- "CampaRi/data/PROGIDX_000000000001.dat"
+zap_ggplot(sap_file = sap_file,timeline = T,ann_trace = 5)
