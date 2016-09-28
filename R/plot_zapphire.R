@@ -1,6 +1,18 @@
-# ---------------------------------------------------------------------------------------
-# cells moving plotting
-
+#' @title samsahara
+#' @description
+#'      plotting from file(X)
+#'
+#' @param fl file location
+#' @param n_fold Number of links contractions (folds)
+#' Default: \code{0}
+#'
+#' @examples
+#' none
+#'
+#' @return tree: degree list, connectivity matrix and weights
+#'
+#' @export 
+#' @import ggplot2
 zap_ggplot<-function(sap_file, write=F, folderPlot = "plots/", 
                        timeline=T, basin_call=F, 
                        ann_trace = NULL, ann_trace_ret = F,
