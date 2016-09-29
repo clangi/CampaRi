@@ -6,8 +6,6 @@
 #' @param n_fold Number of links contractions (folds)
 #' Default: \code{0}
 #'
-#' @examples
-#' tree <- adjl_from_pi(fil = "data/PROGIDX_000000000001.dat")
 #'
 #' @return tree: degree list, connectivity matrix and weights
 #'
@@ -25,8 +23,6 @@ load_trj_dcd<-function(t_file){
 #' @param n_fold Number of links contractions (folds)
 #' Default: \code{0}
 #'
-#' @examples
-#' none
 #'
 #' @return tree: degree list, connectivity matrix and weights
 #'
@@ -153,8 +149,6 @@ adjl_from_trj<-function(trj, distance_method=5, clu_radius=NULL, clu_hardcut=NUL
 #' @param n_fold Number of links contractions (folds)
 #' Default: \code{0}
 #'
-#' @examples
-#' tree <- adjl_from_pi(fil = "data/PROGIDX_000000000001.dat")
 #'
 #' @return tree: degree list, connectivity matrix and weights
 #'
@@ -200,8 +194,6 @@ adjl_from_pi<-function(fil){
 #' @param n_fold Number of links contractions (folds)
 #' Default: \code{0}
 #'
-#' @examples
-#' tree <- adjl_from_adjmat(adj_m)
 #'
 #' @return tree: degree list, connectivity matrix and weights
 #'

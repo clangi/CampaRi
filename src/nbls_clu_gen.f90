@@ -76,6 +76,7 @@ subroutine generate_neighbour_list( &
   integer i,j,ii,kk,ll,k,l,mi,mj,u,u2
   integer nzeros ! nzeros = number of not connected components (dis .le. 0)
   logical exist, mst_print !file dumping for mst tree for debugging
+  character(len=1024) :: format_var !format for above mentioned dumping
 
   integer, intent(inout) :: max_degr !maximum degree of the adjlist
   integer, intent(inout) :: adjl_deg(n_snaps_in)

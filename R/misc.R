@@ -3,7 +3,7 @@
 # @keywords internal
 .onAttach<- function (libname, pkgname){
   # if (!interactive()|| stats::runif(1) > 0.1) return()
-  message(paste0(
+  cat(paste0(
     " ==============================================================\n",
     "    \n",
     "                            CAMPARI                           \n",
@@ -24,8 +24,8 @@
   )
   toset <- !(names(op.CampaRi) %in% names(op))
   if(any(toset)) options(op.CampaRi[toset])
-  cat("All output will be written to the current working directory: ", getwd(),"\n")
-  invisible()
+  # cat("All output will be written to the current working directory: ", getwd(),"\n")
+  invisible() #??
 }
 # .onLoad <- function() {
 #   

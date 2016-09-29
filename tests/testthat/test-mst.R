@@ -1,6 +1,6 @@
 #THIS FILE SHOULD BE COPIED IN THE WORKING DIRECTORY. Take care about directories specifics
-wd <- "/home/dgarolini/projects2016/release1/"
-# cur_dir <- "~/Projects/2016/CampaR/"
+# wd <- "/home/dgarolini/projects2016/release1/"
+cur_dir <- "~/Projects/2016/CampaR/"
 setwd(wd)
 package_dir <- "CampaRi/"
 install.packages(package_dir, repos = NULL, type="source")
@@ -8,15 +8,15 @@ library(CampaRi)
 
 
 # REPIXING: computing sapphire plots from PROGIDX output
-tree <- adjl_from_pi(fil = "CampaRi/data/PROGIDX_000000000001.dat")
+tree <- adjl_from_pi(fil = "CampaRi/inst/extdata/output_examples/PROGIDX_000000000001.dat")
 
 # contrac <- contract_mst(adjl = tree,n_fold = 0) to check
 
 r1<-gen_progindex(tree,snap_start = 7521)
 r2<-gen_annotation(r1, snap_start = 7521)
 sapphire_out<-read.table(file = 'REPIX_000000007521.dat')
-plot(sapphire_out[,1],-log(sapphire_out[,4]/nrow(sapphire_out)), type="l", 
-     ylab = "annotation function", 
+plot(sapphire_out[,1],-log(sapphire_out[,4]/nrow(sapphire_out)), type="l",
+     ylab = "annotation function",
      xlab = "snapshots",
      main = paste0("Sapphire of nbu; snaps = ",nrow(sapphire_out)))
 
@@ -24,7 +24,7 @@ plot(sapphire_out[,1],-log(sapphire_out[,4]/nrow(sapphire_out)), type="l",
 # SECOND TEST - butane chain
 
 # Load trajectory [Full 1000000 snaps]
-trj2<-load_trj_dcd("CampaRi/data/NBU.dcd")
+trj2<-load_trj_dcd("CampaRi/inst/extdata/NBU.dcd")
 
 # SUBSAMPLING. dim_reduction is the variable indicating the factor of it
 # the computational complexity is O(rmsd)~O(d) having d = dimension of a snap
@@ -34,7 +34,7 @@ dim(trj2)
 dim_reduction<-10
 trj<-matrix(trj2[seq(1,nrow(trj2),dim_reduction),],nrow = dim(trj2)[1]/dim_reduction, ncol = dim(trj2)[2])
 dim(trj)[1]^2
-dim(trj)[1]^2*dim(trj)[2] 
+dim(trj)[1]^2*dim(trj)[2]
 object.size(trj)/1000 #Kb
 dim(trj)
 

@@ -18,8 +18,4 @@ tree: degree list, connectivity matrix and weights
 \description{
 This is a wonderful description(X)
 }
-\examples{
-tree <- adjl_from_adjmat(adj_m)
-
-}
 

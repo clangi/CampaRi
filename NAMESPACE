@@ -3,6 +3,7 @@
 export(adjl_from_adjmat)
 export(adjl_from_pi)
 export(adjl_from_trj)
+export(campari)
 export(contract_mst)
 export(gen_annotation)
 export(gen_progindex)

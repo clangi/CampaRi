@@ -18,9 +18,4 @@ adjl modified
 \description{
 This is a wonderful description(X)
 }
-\examples{
-tree <- adjl_from_pi(fil = "data/PROGIDX_000000000001.dat")
-
-ret_dt <- contract_mst(adjl = tree,n_fold = 0)
-}
 

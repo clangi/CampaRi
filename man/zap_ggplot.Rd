@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_zapphire.R
 \name{zap_ggplot}
 \alias{zap_ggplot}
-\title{samsahara}
+\title{plotting}
 \usage{
 zap_ggplot(sap_file, write = F, folderPlot = "plots/", timeline = T,
   basin_call = F, ann_trace = NULL, ann_trace_ret = F,
@@ -19,9 +19,5 @@ tree: degree list, connectivity matrix and weights
 }
 \description{
 plotting from file(X)
-}
-\examples{
-none
-
 }
 

@@ -6,8 +6,6 @@
 #' @param n_fold Number of links contractions (folds)
 #' Default: \code{0}
 #'
-#' @examples
-#' none
 #'
 #' @return tree: degree list, connectivity matrix and weights
 #'

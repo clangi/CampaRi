@@ -6,10 +6,7 @@
 #' @param n_fold Number of links contractions (folds)
 #' Default: \code{0}
 #'
-#' @examples
-#' tree <- adjl_from_pi(fil = "data/PROGIDX_000000000001.dat")
 #'
-#' ret_dt <- contract_mst(adjl = tree,n_fold = 0)
 #' @return adjl modified
 #'
 #' @export contract_mst
@@ -57,10 +54,7 @@ contract_mst <- function(adjl,n_fold=0){
 #' @param snap_start Starting snapshot
 #' Default: \code{0}
 #'
-#' @examples
-#' tree <- adjl_from_pi(fil = "data/PROGIDX_000000000001.dat")
 #'
-#' ret_dt <- contract_mst(adjl = tree,n_fold = 0)
 #' @return ret_data
 #'
 #' @export gen_progindex
@@ -110,10 +104,6 @@ gen_progindex<-function(adjl, snap_start = 0){
 #' @param snap_start Starting snapshot
 #' Default: \code{0}
 #'
-#' @examples
-#' tree <- adjl_from_pi(fil = "data/PROGIDX_000000000001.dat")
-#'
-#' ret_dt <- contract_mst(adjl = tree,n_fold = 0)
 #' @return ret_data
 #'
 #' @export gen_annotation

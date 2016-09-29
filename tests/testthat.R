@@ -1,4 +1,4 @@
 library(testthat)
-library(campackage)
+library(CampaRi)
 
-test_check("campackage")
+test_check("CampaRi")
