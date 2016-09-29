@@ -1,4 +1,4 @@
-#' @title samsahara
+#' @title plotting
 #' @description
 #'      plotting from file(X)
 #'
@@ -26,15 +26,15 @@ zap_ggplot<-function(sap_file, write=F, folderPlot = "plots/",
     cat(paste0(folderPlot," created in order to contain my plots."))
   }
   # loading data
-  pin <- read.table(sap_file, skip=0)
+  pin <- read.table(sap_file)
   dp <- dim(pin)
   ann_tr <- array("NA",dim = dp[1])
   
   if(is.null(ann_trace)){
     message("Annotation trace not selected. It will be considered bepartite along the timeline.")
     cat("Half random mode selected for the trace annotation.")
-    ann_tr[pin[,3]>=dp[1]/2 & ann_tr == "NA"]<-"olivedrab3"
-    ann_tr[pin[,3] < dp[1]/2 & ann_tr == "NA"] <- "royalblue3"
+    ann_tr[pin[,3]>=dp[1]/2 & ann_tr == "NA"]<-"gray75"
+    ann_tr[pin[,3] < dp[1]/2 & ann_tr == "NA"] <- "gray30"
   }else if(is.numeric(ann_trace)&&length(ann_trace)==1){ 
     message("Only 5 shades of grey are possible for the 'number' option of ann_trace.
             If you inserted more than 6 it will be truncated. Please consider manual color insertion.")
@@ -56,8 +56,6 @@ zap_ggplot<-function(sap_file, write=F, folderPlot = "plots/",
   ymax = -log(pin[,4]/Nsnap)
   ymax = ymax[!is.infinite(ymax)&!is.na(ymax)]
   ymax = max(ymax)
-  yr = range(c(ymin, ymax))
-  xr = range(c(1, Nsnap))
   
   # initial creation of the plot
   gg <- ggplot(data = pin, mapping = aes(x = xx, y = -log((pin[,4]/Nsnap)))) +
@@ -68,8 +66,8 @@ zap_ggplot<-function(sap_file, write=F, folderPlot = "plots/",
                               xend = xx, yend = rep(ymax*3/4+ymax/8, length(xx))), 
                           col = ann_tr)
   if(timeline)gg <- gg + geom_point(aes(xx,y=(pin[,3]*1.0*ymax*1/5)/dp[1]-1/10),col=ann_tr,size=0.01)
-  gg <- gg + geom_line(color="black") +
-    geom_point(mapping = aes(x=xx,y=2.5 - (1./3.)*log((pin[,10] + pin[,12]) / Nsnap)), color="red", size=0.01)
+  gg <- gg + geom_line(color="darkblue",size=0.2) +
+    geom_point(mapping = aes(x=xx,y=2.5 - (1./3.)*log((pin[,10] + pin[,12]) / Nsnap)), color="red3", size=0.1)
   if(basin_call) gg <- gg + 
     geom_text(data = data.frame(), aes(Nsnap/4, ymax-1*ymax/14, label = "Basin 1")) +
     geom_text(data = data.frame(), aes(Nsnap*3/4, ymax-1*ymax/14, label = "Basin 2"))

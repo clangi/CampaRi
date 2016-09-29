@@ -1,8 +1,7 @@
 #THIS FILE SHOULD BE COPIED IN THE WORKING DIRECTORY. Take care about directories specifics
-cur_dir <- "~/projects2016/release1/"
+wd <- "/home/dgarolini/projects2016/release1/"
 # cur_dir <- "~/Projects/2016/CampaR/"
-setwd(cur_dir)
-# setwd("..")
+setwd(wd)
 package_dir <- "CampaRi/"
 install.packages(package_dir, repos = NULL, type="source")
 library(CampaRi)
@@ -24,7 +23,7 @@ plot(sapphire_out[,1],-log(sapphire_out[,4]/nrow(sapphire_out)), type="l",
 
 # SECOND TEST - butane chain
 
-# Load trajectory [Full 100000 snaps]
+# Load trajectory [Full 1000000 snaps]
 trj2<-load_trj_dcd("CampaRi/data/NBU.dcd")
 
 # SUBSAMPLING. dim_reduction is the variable indicating the factor of it
@@ -40,16 +39,45 @@ object.size(trj)/1000 #Kb
 dim(trj)
 
 
-#ANALYSIS
+#ANALYSIS of the subsampled data-set (10 fold reduction)
 install.packages("CampaRi/", repos = NULL, type="source")
 library(CampaRi)
 
-trj2<-load_trj_dcd("NBU_250fs.dcd")
-trj<-trj2[1:28000,]
 adjl<-adjl_from_trj(trj = trj, mode = "fortran")
-# adjl<-adjl_from_adjmat(adj_m) #deprecated
 ret<-gen_progindex(adjl,snap_start = 10)
 ret2<-gen_annotation(ret,snap_start = 10,local_cut_width = 50)
 sap_file <- 'REPIX_000000000010.dat'
-sap_file <- "CampaRi/data/PROGIDX_000000000001.dat"
-zap_ggplot(sap_file = sap_file,timeline = T,ann_trace = 5)
+sap_table <- read.table(sap_file)
+zap_ggplot(sap_file = sap_file)
+
+# DIRECT COMPARISON OF THE SAME DATA-SET [original campari needed]
+# less_original run
+data_file <- "NBU_1250fs.dcd"
+trj<-load_trj_dcd(data_file)
+adjl<-adjl_from_trj(trj = trj, mode = "fortran")
+ret<-gen_progindex(adjl,snap_start = 10)
+ret2<-gen_annotation(ret,snap_start = 10,local_cut_width = 50)
+sap_file <- 'REPIX_000000000010.dat'
+sap_table <- read.table(sap_file)
+zap_ggplot(sap_file = sap_file)
+
+# original run on the same input file
+camp_home <- "/software/campari/"
+campari(wd, data_file, base_name="nbu",camp_home)
+sap_file2 <- "PROGIDX_000000000010.dat"
+sap_table2 <- read.table(sap_file2)
+zap_ggplot(sap_file2)
+
+# checking the checkable on the output tables of the two softwares
+sum(sap_table[,3]==0);sum(sap_table2[,3]==0);sum(sap_table[,4]==0);sum(sap_table2[,4]==0)
+sum(sap_table[,6]==0);sum(sap_table2[,6]==0);mean(sap_table[,5]);mean(sap_table2[,5])
+mean(sap_table[,5])==mean(sap_table2[,5]);mean(sap_table[,4]);mean(sap_table2[,4])
+sum(sap_table2[,3]!=sap_table[,3]);sum(sap_table2[,6]!=sap_table[,6])
+sum(sap_table2[,4]!=sap_table[,4]);sum(sap_table2[,5]!=sap_table[,5])
+sum(sap_table[,10]==0);sum(sap_table2[,10]==0);sum(sap_table[,12]==0);sum(sap_table2[,12]==0)
+mean(sap_table[,10]);mean(sap_table2[,10]);mean(sap_table[,12]);mean(sap_table2[,12])
+
+# checking the mst output to spot the above differencies *the flag mst_print must be on INSIDE clustering.f90 (campari source)
+# adjl_dis_or <- read.table("mst_original.txt",sep = "", fill=T,stringsAsFactors= F)
+adjl_dis_or <- read.fwf("mst_original.txt", widths = c(15,15,15,15,15,15), fill=T) #supposing 6 column(from mst - max_degree)
+adjl_dis_or[is.na(adjl_dis_or)] <- 0

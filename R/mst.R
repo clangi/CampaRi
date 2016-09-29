@@ -125,9 +125,9 @@ gen_annotation<-function(ret_data, local_cut_width=NULL, snap_start = NULL){
   n_breaks <- 0 #not a clue ?
   brklst <- array(as.integer(0),c(1))
   nsnaps <- ret_data$n_snaps
-  if((!is.numeric(local_cut_width)||is.null(local_cut_width))||
+  if((is.null(local_cut_width))||
      (is.numeric(local_cut_width)&&(local_cut_width>nsnaps||local_cut_width<1))) {
-    local_cut_width <- as.integer((nsnaps-1)/2)
+    local_cut_width <- as.integer(floor(nsnaps-1)/2)
     warning(paste0(
       "Local cut width has not been assigned or it has been wrogly assigned.
        It will be set at: ",local_cut_width))

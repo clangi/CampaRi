@@ -33,7 +33,7 @@ load_trj_dcd<-function(t_file){
 #' @export adjl_from_trj
 #' @import parallel
 
-adjl_from_trj<-function(trj, distance_method=5, clu_radius=NULL, clu_hardcut=NULL, cores=NULL, mode=NULL, min_span_tree=TRUE){ # to add functional of distance
+adjl_from_trj<-function(trj, distance_method=5, clu_radius=NULL, clu_hardcut=NULL, cores=NULL, mode=NULL, min_span_tree=TRUE){
   if(!is.matrix(trj)){
     if(!is.data.frame(trj)) stop('trj input must be a matrix or a data.frame')
     trj <- as.matrix(trj)

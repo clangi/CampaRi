@@ -75,6 +75,7 @@ subroutine generate_neighbour_list( &
 
   integer i,j,ii,kk,ll,k,l,mi,mj,u,u2
   integer nzeros ! nzeros = number of not connected components (dis .le. 0)
+  logical exist, mst_print !file dumping for mst tree for debugging
 
   integer, intent(inout) :: max_degr !maximum degree of the adjlist
   integer, intent(inout) :: adjl_deg(n_snaps_in)
@@ -88,7 +89,8 @@ subroutine generate_neighbour_list( &
   n_xyz = n_xyz_in
   n_snaps = n_snaps_in
   ver = verbose_in
-  superver = .true. ! dev flag for superverbose output
+  superver = .false.  !dev flag for superverbose output
+  mst_print = .false. !dev flag for adjlist (mst) checking
   radius = clu_radius_in
   hardcut = clu_hardcut_in
   dis_method = dis_method_in
@@ -155,11 +157,6 @@ subroutine generate_neighbour_list( &
     &algorithm to misbehave.'
   end if
   write(*,*)
-  if(superver.and.(data_meth_in.eq.1)) then
-    write(*,*) "r1,c1",r1,c1
-    write(*,*)
-    ! write(*,*) "output example: ", adj_mat(1:r1,1:c1)
-  end if
 
   do i=1,nclalcsz
     if (allocated(scluster(i)%snaps).EQV..true.) deallocate(scluster(i)%snaps)
@@ -169,14 +166,6 @@ subroutine generate_neighbour_list( &
 
   if(mst_log) then
     call gen_MST_from_nbl(adjl_deg,adjl_ix,adjl_dis,max_degr)
-    ! adjl_deg = approxmst%deg
-    ! adjl_ix = approxmst%adj
-    ! adjl_dis = approxmst%dist
-    ! do i=1,nclu !in this way I dont have to allocate the approxmst
-    !   if (allocated(approxmst(i)%snaps).EQV..true.) deallocate(scluster(i)%snaps)
-    !   if (allocated(scluster(i)%sums).EQV..true.) deallocate(scluster(i)%sums)
-    ! end do
-    ! deallocate(approxmst)
   else
     do i=1,n_snaps
       adjl_deg(i) = cnblst(i)%nbs
@@ -187,6 +176,24 @@ subroutine generate_neighbour_list( &
       if (allocated(cnblst(i)%idx).EQV..true.) deallocate(cnblst(i)%idx)
     end do
     deallocate(cnblst)
+  end if
+
+  ! Eventual file-dumping for mst (debugging)
+  if(mst_print) then
+    inquire(file="mst_original.txt", exist=exist)
+    if (exist) then
+      write(*,*) 'mst_original.txt already exists. It will be overwritten'
+      open(378, file="mst_original.txt", status="replace", action="write")
+    else
+      open(378, file="mst_original.txt", status="new", action="write")
+    end if
+    write(*,*) 'the problem is not here'
+    do i=1,n_snaps
+      write (format_var, "(A1,I1,A7)") "(", adjl_deg(i), "f15.10)"
+      write(378, format_var)  adjl_dis(i,:)
+    end do
+    close(378)
+    write(*,*) '...file-mst dumping done.'
   end if
 
 
