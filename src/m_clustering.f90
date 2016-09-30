@@ -104,6 +104,8 @@ module m_clustering
       integer i, i2, j, ii, u
       real vecti(n_xyz)
 
+      tmp_dis_method = dis_method(1) !This is hard. Can be eventually taylored
+
       nclu = 0 !cluster index
       do i=1,n_snaps
         ii = -1
@@ -114,9 +116,9 @@ module m_clustering
           ! added). The number of clusters that can be considered in order to put i
           ! (snapshot) in one of those is 500. Once exceeded this upper bound
           ! it starts to shift on that limit forwards.
-          if(dis_method.eq.5) then
+          if(tmp_dis_method.eq.5) then
             vecti = trj(i,1:n_xyz)
-          else if(dis_method.eq.11) then
+          else if(tmp_dis_method.eq.11) then
             ! veci(1:n_xyz) = 1
             i2 = i
             if(i.eq.1) i2 = 2 !to avoid error I can double the first value

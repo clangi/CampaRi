@@ -60,7 +60,7 @@ campari<-function(wd,data_file,base_name,camp_home){
   FMCSC_CPROGINDSTART <- 10 #nothing is changing c(-1,seq(1,1801,200))
   FMCSC_CPROGINDWIDTH <-  15000 # 540
   
-  FMCSC_CPROGMSTFOLD <- 1 # 2
+  FMCSC_CPROGMSTFOLD <- 0 # 2
   FMCSC_PCAMODE      <-1   #no PCA is performed
   FMCSC_CREDUCEDIM   <-2 #ONLY PCA
   # this keyword allows the user to elect to run the clustering algorithm (→ CMODE) on a dataset of r

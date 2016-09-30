@@ -9,6 +9,9 @@ module m_gen_nbls
       real(KIND=4), ALLOCATABLE:: dis(:) ! list of distances
       integer, ALLOCATABLE:: idx(:) ! and associated indices
     end type t_cnblst
+    type t_tmp_cnblst_dis
+      real(KIND=4), ALLOCATABLE:: dis(:) ! list of distances
+    end type t_tmp_cnblst_dis
     ! type t_adjlist
     !   integer deg ! degree of vertex
     !   integer alsz ! allocation size
@@ -17,6 +20,7 @@ module m_gen_nbls
     ! end type t_adjlist
 
     type(t_cnblst), ALLOCATABLE :: cnblst(:)
+    type(t_tmp_cnblst_dis), ALLOCATABLE :: cnblst_dis(:)
     ! type(t_adjlist), ALLOCATABLE:: approxmst(:)
 
   contains
@@ -28,91 +32,48 @@ module m_gen_nbls
       real(KIND=4), intent(in) :: trj(n_snaps,n_xyz)
       ! integer oldsz
       real(KIND=4) tmp_d ! temporary variable for radiuses and distances
-      integer i, ii, k, kk, j, l, ll, mi, mj, u
+      integer i, ii, k, kk, j, l, ll, mi, mj, u, h1
       integer testcnt, testcnt2
       real vecti(n_xyz),vectj(n_xyz)
+      real maxx(n_dis_method) !for dist_methods balancing (maximum values)
       ! write(*,*) "DEBUGGING"
       ! write(*,*) "trj_input",trj(1:10,1:10)
       ! write(*,*) "scluster 1", scluster(2)%snaps
       write(*,*)
       write(*,*)
-
+      maxx = 0
       ii = 0
       testcnt = 0
       testcnt2 = 0
-      do i=1,nclu ! for each cluster
-        ii = ii + 1
-        do kk=1,scluster(i)%nmbrs ! for each snapshot in a cluster
-          k = scluster(i)%snaps(kk)
-          do ll=kk+1,scluster(i)%nmbrs ! for each l != k snapshot
-            l = scluster(i)%snaps(ll)
-            if(dis_method.eq.5) then
-              vecti = trj(k,1:n_xyz)
-              vectj = trj(l,1:n_xyz)
-            else if(dis_method.eq.11) then
-              ! veci(1:n_xyz) = 1
-              if(k.eq.1) k = 2 !to avoid error I can double the first value
-              if(l.eq.1) l = 2 !to avoid error I can double the first value
-              vecti = trj(k,n_xyz) - trj(k-1,n_xyz)
-              vectj = trj(l,n_xyz) - trj(l-1,n_xyz)
-            end if
-            call distance(tmp_d,vecti,vectj)
-            ! compute the distance between all cluster-internal snapshots
-            testcnt = testcnt + 1
-            if (tmp_d.lt.hardcut) then ! hardcut ext-var CCUTOFF
-              testcnt2 = testcnt2 + 1
-              ! a_mat(l,k) = tmp_d
-              ! a_mat(k,l) = tmp_d
-              cnblst(k)%nbs = cnblst(k)%nbs + 1
-              if (cnblst(k)%nbs.gt.cnblst(k)%alsz) call cnbl_resz(cnblst(k))
-              ! if (cnblst(k)%alsz.gt.maxalcsz) maxalcsz = cnblst(k)%alsz
-              cnblst(k)%idx(cnblst(k)%nbs) = l !indexes
-              cnblst(k)%dis(cnblst(k)%nbs) = tmp_d !distance val
-              cnblst(l)%nbs = cnblst(l)%nbs + 1
-              if (cnblst(l)%nbs.gt.cnblst(l)%alsz) call cnbl_resz(cnblst(l))
-              cnblst(l)%idx(cnblst(l)%nbs) = k
-              cnblst(l)%dis(cnblst(l)%nbs) = tmp_d
-            end if
-          end do
-        end do
-        do j=i+1,nclu
-          if (scluster(i)%nmbrs.le.scluster(j)%nmbrs) then
-            mj = j !mj is major
-            mi = i !mi is minor
-          else
-            mj = i
-            mi = j
-          end if
-          do kk=1,scluster(mi)%nmbrs
-            k = scluster(mi)%snaps(kk)
-            if(dis_method.eq.5) then
-              vecti = trj(k,1:n_xyz)
-            else if(dis_method.eq.11) then
-              if(k.eq.1) k = 2 !to avoid error I can double the first value
-              vecti = trj(k,n_xyz) - trj(k-1,n_xyz)
-            end if
-            call snap_to_cluster_d(tmp_d,scluster(mj),vecti)
-            !all the minorcluster snaps vs the mjcluster center
-            do ll=1,scluster(mj)%nmbrs
-              l = scluster(mj)%snaps(ll)
-              if(dis_method.eq.5) then
+      do h1=1,n_dis_method !looping in the distance values
+        tmp_dis_method = dis_method(h1)
+        do i=1,nclu ! for each cluster (intra cluster distances)
+          ii = ii + 1
+          do kk=1,scluster(i)%nmbrs ! for each snapshot in a cluster
+            k = scluster(i)%snaps(kk)
+            do ll=kk+1,scluster(i)%nmbrs ! for each l != k snapshot
+              l = scluster(i)%snaps(ll)
+              if(tmp_dis_method.eq.5) then
+                vecti = trj(k,1:n_xyz)
                 vectj = trj(l,1:n_xyz)
-              else if(dis_method.eq.11) then
+              else if(tmp_dis_method.eq.11) then
+                ! veci(1:n_xyz) = 1
+                if(k.eq.1) k = 2 !to avoid error I can double the first value
                 if(l.eq.1) l = 2 !to avoid error I can double the first value
+                vecti = trj(k,n_xyz) - trj(k-1,n_xyz)
                 vectj = trj(l,n_xyz) - trj(l-1,n_xyz)
               end if
-              if (scluster(mj)%nmbrs.eq.1) then
-                call cluster_to_cluster_d(tmp_d,scluster(mi),scluster(mj))
-                testcnt = testcnt + 1
-              else
-                call distance(tmp_d,vecti,vectj)
-                !then you do a complete graph doing euristic nothing
-                testcnt = testcnt + 1
-              end if
-              if (tmp_d.le.hardcut) then
+              call distance(tmp_d,vecti,vectj)
+              if(abs(tmp_d).gt.maxx(h1)) maxx(h1) = abs(tmp_d)
+              ! compute the distance between all cluster-internal snapshots
+              testcnt = testcnt + 1
+              if (tmp_d.lt.hardcut) then ! hardcut ext-var CCUTOFF
                 testcnt2 = testcnt2 + 1
+                ! a_mat(l,k) = tmp_d
+                ! a_mat(k,l) = tmp_d
                 cnblst(k)%nbs = cnblst(k)%nbs + 1
                 if (cnblst(k)%nbs.gt.cnblst(k)%alsz) call cnbl_resz(cnblst(k))
+                ! if (cnblst(k)%alsz.gt.maxalcsz) maxalcsz = cnblst(k)%alsz
                 cnblst(k)%idx(cnblst(k)%nbs) = l !indexes
                 cnblst(k)%dis(cnblst(k)%nbs) = tmp_d !distance val
                 cnblst(l)%nbs = cnblst(l)%nbs + 1
@@ -122,8 +83,71 @@ module m_gen_nbls
               end if
             end do
           end do
+          do j=i+1,nclu
+            if (scluster(i)%nmbrs.le.scluster(j)%nmbrs) then
+              mj = j !mj is major
+              mi = i !mi is minor
+            else
+              mj = i
+              mi = j
+            end if
+            do kk=1,scluster(mi)%nmbrs
+              k = scluster(mi)%snaps(kk)
+              if(tmp_dis_method.eq.5) then
+                vecti = trj(k,1:n_xyz)
+              else if(tmp_dis_method.eq.11) then
+                if(k.eq.1) k = 2 !to avoid error I can double the first value
+                vecti = trj(k,n_xyz) - trj(k-1,n_xyz)
+              end if
+              call snap_to_cluster_d(tmp_d,scluster(mj),vecti)
+              !all the minorcluster snaps vs the mjcluster center
+              do ll=1,scluster(mj)%nmbrs
+                l = scluster(mj)%snaps(ll)
+                if(tmp_dis_method.eq.5) then
+                  vectj = trj(l,1:n_xyz)
+                else if(tmp_dis_method.eq.11) then
+                  if(l.eq.1) l = 2 !to avoid error I can double the first value
+                  vectj = trj(l,n_xyz) - trj(l-1,n_xyz)
+                end if
+                if (scluster(mj)%nmbrs.eq.1) then
+                  call cluster_to_cluster_d(tmp_d,scluster(mi),scluster(mj))
+                  testcnt = testcnt + 1
+                else
+                  call distance(tmp_d,vecti,vectj)
+                  if(abs(tmp_d).gt.maxx(h1)) maxx(h1) = abs(tmp_d)
+                  !then you do a complete graph doing euristic nothing
+                  testcnt = testcnt + 1
+                end if
+                if (tmp_d.le.hardcut) then
+                  testcnt2 = testcnt2 + 1
+                  cnblst(k)%nbs = cnblst(k)%nbs + 1
+                  if (cnblst(k)%nbs.gt.cnblst(k)%alsz) call cnbl_resz(cnblst(k))
+                  cnblst(k)%idx(cnblst(k)%nbs) = l !indexes
+                  cnblst(k)%dis(cnblst(k)%nbs) = tmp_d !distance val
+                  cnblst(l)%nbs = cnblst(l)%nbs + 1
+                  if (cnblst(l)%nbs.gt.cnblst(l)%alsz) call cnbl_resz(cnblst(l))
+                  cnblst(l)%idx(cnblst(l)%nbs) = k
+                  cnblst(l)%dis(cnblst(l)%nbs) = tmp_d
+                end if
+              end do
+            end do
+          end do
         end do
+        write(*,*) "MAXXXX",maxx(h1)
+        ! This will work to update the distance with balanced input from the others
+        ! I should check if I can use it for everytime
+        if(n_dis_method.gt.1) then
+          write(*,*) "MAXXXX",maxx(h1)
+          ! This will work to update the distance with balanced input from the others
+          ! I should check if I can use it for everytime
+          ! do i=1,n_snaps
+          !   cnblst(i)%dis = cnblst(i)%dis/maxx
+          !   ! if(i.le.1) write(*,*) cnblst(i)%dis
+          ! end do
+        end if
+        ! cnblst_dis(:)
       end do
+
       write(*,*) '... done after computing ',(100.0*testcnt)/(0.5*n_snaps*(n_snaps-1)),'% of &
       &possible terms with ',(100.0*testcnt2)/(1.0*testcnt),'% successful.'
     end subroutine gen_nb

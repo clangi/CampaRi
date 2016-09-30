@@ -52,7 +52,7 @@ subroutine snap_to_cluster_d(val, it, sn2) !i={1:n_snaps}
     val = 0
   else
 
-    if (dis_method.eq.5.or.dis_method.eq.11) then
+    if (tmp_dis_method.eq.5.or.tmp_dis_method.eq.11) then
       vec1 = it%sums(1:n_xyz)/(1.0 * it%nmbrs) ! cluster center
     end if
     call distance(val,vec1,sn2) ! val=tmp_d, vec1=centroid, sn=snapshot
@@ -71,7 +71,7 @@ subroutine cluster_to_cluster_d(val, it1, it2)
   integer k
   real, INTENT(OUT) :: val
 
-  if (dis_method.eq.5.or.dis_method.eq.11) then
+  if (tmp_dis_method.eq.5.or.tmp_dis_method.eq.11) then
     vec1 = it1%sums(:)/(1.0 * it1%nmbrs) ! center it1
     vec2 = it2%sums(:)/(1.0 * it2%nmbrs) ! center it2
   end if
@@ -101,10 +101,10 @@ subroutine distance(val, veci, vecj)
   hlp = 0.0
   hlp2 = 0.0
 
-  if (dis_method.eq.5) then
+  if (tmp_dis_method.eq.5) then
     hlp = sum((veci(1:n_xyz) - vecj(1:n_xyz))**2)
     val = sqrt((3.0 * hlp)/(1.0 * (n_xyz))) ! why *3?????
-  else if (dis_method.eq.11) then
+  else if (tmp_dis_method.eq.11) then
     hlp = ACOS(dot_product(vec_ref,veci)/&
     (dot_product(vec_ref,vec_ref) + &
     dot_product(veci,veci)))
@@ -185,7 +185,7 @@ subroutine cluster_addsnap(it,sn1,i)
 
   it%snaps(it%nmbrs) = i !add the snap
 
-  if((dis_method.eq.5.or.dis_method.eq.11)) then
+  if((tmp_dis_method.eq.5.or.tmp_dis_method.eq.11)) then
     it%sums(1:n_xyz) = it%sums(1:n_xyz) + sn1 !
     it%sqsum = it%sqsum + dot_product(sn1,sn1)
 
@@ -227,7 +227,7 @@ subroutine join_clusters(itl,its)
 
   type (t_scluster) its, itl
 !
-  if ((dis_method.eq.5).OR.(dis_method.eq.6)) then
+  if ((tmp_dis_method.eq.5).OR.(tmp_dis_method.eq.6)) then
     itl%sums(1:n_xyz) = itl%sums(1:n_xyz) + its%sums(1:n_xyz)
     itl%sqsum = itl%sqsum + its%sqsum
   end if

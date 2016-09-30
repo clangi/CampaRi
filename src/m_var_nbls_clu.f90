@@ -1,5 +1,7 @@
 module m_var_nbls_clu
-  integer dis_method
+  integer dis_method(11)
+  integer tmp_dis_method
+  integer n_dis_method ! number of distances to be averaged
   integer n_xyz ! allocation sizes of length of a snapshot array (xyz*3 in 3D)
   integer n_snaps ! global number of snapshots. It is necessary as alsz roof
   logical ver !global verbose var

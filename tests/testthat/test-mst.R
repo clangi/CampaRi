@@ -1,6 +1,6 @@
 #THIS FILE SHOULD BE COPIED IN THE WORKING DIRECTORY. Take care about directories specifics
 # wd <- "/home/dgarolini/projects2016/release1/"
-cur_dir <- "~/Projects/2016/CampaR/"
+wd <- "~/Projects/2016/CampaR/"
 setwd(wd)
 package_dir <- "CampaRi/"
 install.packages(package_dir, repos = NULL, type="source")
@@ -14,15 +14,13 @@ tree <- adjl_from_pi(fil = "CampaRi/inst/extdata/output_examples/PROGIDX_0000000
 
 r1<-gen_progindex(tree,snap_start = 7521)
 r2<-gen_annotation(r1, snap_start = 7521)
-sapphire_out<-read.table(file = 'REPIX_000000007521.dat')
-plot(sapphire_out[,1],-log(sapphire_out[,4]/nrow(sapphire_out)), type="l",
-     ylab = "annotation function",
-     xlab = "snapshots",
-     main = paste0("Sapphire of nbu; snaps = ",nrow(sapphire_out)))
+sap_file <- 'REPIX_000000007521.dat'
+zap_ggplot(sap_file = sap_file,
+           title = paste0("Sapphire of nbu. Snapshots = ", 100000),
+           timeline = F, ann_trace = F)
 
 
-# SECOND TEST - butane chain
-
+# SECOND TEST - butane chain2
 # Load trajectory [Full 1000000 snaps]
 trj2<-load_trj_dcd("CampaRi/inst/extdata/NBU.dcd")
 
@@ -48,11 +46,13 @@ ret<-gen_progindex(adjl,snap_start = 10)
 ret2<-gen_annotation(ret,snap_start = 10,local_cut_width = 50)
 sap_file <- 'REPIX_000000000010.dat'
 sap_table <- read.table(sap_file)
-zap_ggplot(sap_file = sap_file)
+zap_ggplot(sap_file = sap_file, 
+           title = paste0("Sapphire of nbu. Snapshots = ", nrow(sap_table)),
+           timeline = F, ann_trace = F)
 
 # DIRECT COMPARISON OF THE SAME DATA-SET [original campari needed]
 # less_original run
-data_file <- "NBU_1250fs.dcd"
+data_file <- "CampaRi/inst/extdata/NBU_1250fs.dcd"
 trj<-load_trj_dcd(data_file)
 adjl<-adjl_from_trj(trj = trj, mode = "fortran")
 ret<-gen_progindex(adjl,snap_start = 10)

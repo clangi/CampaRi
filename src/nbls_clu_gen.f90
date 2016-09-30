@@ -60,7 +60,7 @@ subroutine generate_neighbour_list( &
   integer, INTENT(IN) :: n_xyz_in !numbers of xyz (atoms*3)
   integer, INTENT(IN) :: n_snaps_in !number of snapshots in input
   real(KIND=4), INTENT(IN) :: trj_data(n_snaps_in, n_xyz_in) !trajectory input
-  integer, intent(in) :: dis_method_in !distance method
+  integer, intent(in) :: dis_method_in(11) !distance method
   real(KIND=4), intent(in) :: clu_radius_in !defines the max cluster sizes
   real(KIND=4), intent(in) :: clu_hardcut_in !threshold between cluster snaps
   logical, intent(in) :: verbose_in !verbose terminal output
@@ -73,7 +73,7 @@ subroutine generate_neighbour_list( &
   ! clu_hardcut is used for distances between different clusters snapshos as
   ! a threshold.
 
-  integer i,j,ii,kk,ll,k,l,mi,mj,u,u2
+  integer i,j,ii,kk,ll,k,l,mi,mj,u,u2 ! helper variables
   integer nzeros ! nzeros = number of not connected components (dis .le. 0)
   logical exist, mst_print !file dumping for mst tree for debugging
   character(len=1024) :: format_var !format for above mentioned dumping
@@ -84,7 +84,8 @@ subroutine generate_neighbour_list( &
   real(KIND=4), intent(inout) :: adjl_dis(n_snaps_in,n_snaps_in)
   ! real(KIND=4), intent(inout) :: adj_mat(:,:) !adjac matrix
   !to have an inout intent the thing cant be allocatable...
-  integer c1, r1 ! column and row of the outprinting superverbose/dev output
+
+
 
   ! Intents are not allocatable
   n_xyz = n_xyz_in
@@ -97,11 +98,20 @@ subroutine generate_neighbour_list( &
   dis_method = dis_method_in
   mst_log = mst_log_in
 
+
+  n_dis_method = 0
+  do i=1,11
+    if(dis_method(i).ne.0) n_dis_method = n_dis_method + 1
+  end do
+  if(n_dis_method.gt.1) write(*,*) 'Multiple distance functions selected. They will be &
+  & balanced using clustering valuse, then summed toghether in a old fashion way.\n&
+  &Remember that the leader clustering algorithm will consider only the first value &
+  &of the distances'
+
+
   ! if(data_meth_in.eq.1) then
   !   allocate(adj_mat(n_snaps,n_snaps))
   ! end if
-  c1 = n_snaps/10.0
-  r1 = n_snaps/10.0
 
   allocate(cnblst(n_snaps))
   cnblst(:)%nbs = 0 ! number of snapshots that are connected to one snap
@@ -113,7 +123,6 @@ subroutine generate_neighbour_list( &
   end do
 
   write(*,*) "Input dimensions:", n_snaps, " row and ", n_xyz," col"
-  ! write(*,*) "Expected output dimensions:", n_snaps, " x ", n_snaps
   write(*,*)
   if(superver) write(*,*) "clu_radius_in", clu_radius_in
   if(superver) write(*,*) "clu_hardcut_in", clu_hardcut_in
