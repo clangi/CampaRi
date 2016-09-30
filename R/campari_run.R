@@ -10,7 +10,7 @@
 #' @return tree: degree list, connectivity matrix and weights
 #'
 #' @export campari
-campari<-function(wd,data_file,base_name,camp_home){
+campari<-function(wd, data_file, base_name, camp_home){
   # dirs/file definitions
   kfile <- paste0(base_name,".key")
   klog <-paste0(base_name,".log")
@@ -61,6 +61,7 @@ campari<-function(wd,data_file,base_name,camp_home){
   FMCSC_CPROGINDWIDTH <-  15000 # 540
   
   FMCSC_CPROGMSTFOLD <- 0 # 2
+  print(FMCSC_CPROGMSTFOLD)
   FMCSC_PCAMODE      <-1   #no PCA is performed
   FMCSC_CREDUCEDIM   <-2 #ONLY PCA
   # this keyword allows the user to elect to run the clustering algorithm (→ CMODE) on a dataset of r

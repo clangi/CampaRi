@@ -1,6 +1,6 @@
 #THIS FILE SHOULD BE COPIED IN THE WORKING DIRECTORY. Take care about directories specifics
-# wd <- "/home/dgarolini/projects2016/release1/"
-wd <- "~/Projects/2016/CampaR/"
+wd <- "/home/dgarolini/projects2016/release1/"
+# wd <- "~/Projects/2016/CampaR/"
 setwd(wd)
 package_dir <- "CampaRi/"
 install.packages(package_dir, repos = NULL, type="source")
@@ -59,7 +59,9 @@ ret<-gen_progindex(adjl,snap_start = 10)
 ret2<-gen_annotation(ret,snap_start = 10,local_cut_width = 50)
 sap_file <- 'REPIX_000000000010.dat'
 sap_table <- read.table(sap_file)
+# sap_table[,4] <- sap_table[,4] + mean(sap_table2[,4])-mean(sap_table[,4])
 zap_ggplot(sap_file = sap_file)
+# zap_ggplot(sap_table = sap_table)
 
 # original run on the same input file
 camp_home <- "/software/campari/"
@@ -70,6 +72,7 @@ zap_ggplot(sap_file2)
 
 # checking the checkable on the output tables of the two softwares
 sum(sap_table[,3]==0);sum(sap_table2[,3]==0);sum(sap_table[,4]==0);sum(sap_table2[,4]==0)
+mean(sap_table2[,4])-mean(sap_table[,4])
 sum(sap_table[,6]==0);sum(sap_table2[,6]==0);mean(sap_table[,5]);mean(sap_table2[,5])
 mean(sap_table[,5])==mean(sap_table2[,5]);mean(sap_table[,4]);mean(sap_table2[,4])
 sum(sap_table2[,3]!=sap_table[,3]);sum(sap_table2[,6]!=sap_table[,6])
@@ -81,3 +84,4 @@ mean(sap_table[,10]);mean(sap_table2[,10]);mean(sap_table[,12]);mean(sap_table2[
 # adjl_dis_or <- read.table("mst_original.txt",sep = "", fill=T,stringsAsFactors= F)
 adjl_dis_or <- read.fwf("mst_original.txt", widths = c(15,15,15,15,15,15), fill=T) #supposing 6 column(from mst - max_degree)
 adjl_dis_or[is.na(adjl_dis_or)] <- 0
+adjl[[3]][,1]==adjl_dis_or[,1]

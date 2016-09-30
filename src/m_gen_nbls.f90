@@ -32,7 +32,7 @@ module m_gen_nbls
       real(KIND=4), intent(in) :: trj(n_snaps,n_xyz)
       ! integer oldsz
       real(KIND=4) tmp_d ! temporary variable for radiuses and distances
-      integer i, ii, k, kk, j, l, ll, mi, mj, u, h1
+      integer i, ii, k, kk, j, l, ll, mi, mj, u, h1, h2
       integer testcnt, testcnt2
       real vecti(n_xyz),vectj(n_xyz)
       real maxx(n_dis_method) !for dist_methods balancing (maximum values)
@@ -133,19 +133,20 @@ module m_gen_nbls
             end do
           end do
         end do
+
         write(*,*) "MAXXXX",maxx(h1)
         ! This will work to update the distance with balanced input from the others
         ! I should check if I can use it for everytime
         if(n_dis_method.gt.1) then
-          write(*,*) "MAXXXX",maxx(h1)
           ! This will work to update the distance with balanced input from the others
           ! I should check if I can use it for everytime
-          ! do i=1,n_snaps
-          !   cnblst(i)%dis = cnblst(i)%dis/maxx
-          !   ! if(i.le.1) write(*,*) cnblst(i)%dis
-          ! end do
+
         end if
-        ! cnblst_dis(:)
+        do h2=1,n_snaps
+          cnblst(h2)%dis = cnblst(h2)%dis/maxx(h1)
+          ! if(i.le.1) write(*,*) cnblst(i)%dis
+        end do
+        write(*,*) "ads"        ! cnblst_dis(:)
       end do
 
       write(*,*) '... done after computing ',(100.0*testcnt)/(0.5*n_snaps*(n_snaps-1)),'% of &

@@ -85,7 +85,9 @@ adjl_from_trj<-function(trj, distance_method=5, clu_radius=NULL, clu_hardcut=NUL
   }else if(is.character(mode)&&(mode=="fortran")){
     #Fortran mode
     #default vars
-
+    tmp_dis <- distance_method
+    distance_method <- rep(0,11)
+    distance_method[1:length(tmp_dis)] <- tmp_dis 
     if(is.null(clu_radius)){
       clu_radius <- 2147483647
       warning(paste("clu_radius variable (a priori fixed clustering radius) has not been selected. 

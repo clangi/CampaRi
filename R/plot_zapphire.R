@@ -11,7 +11,7 @@
 #'
 #' @export 
 #' @import ggplot2
-zap_ggplot<-function(sap_file, write=F, folderPlot = "plots/", 
+zap_ggplot<-function(sap_file=NULL, sap_table=NULL,write=F, folderPlot = "plots/", 
                        timeline=T, basin_call=F, 
                        ann_trace = NULL, ann_trace_ret = F,
                        title = "no title"){
@@ -24,7 +24,9 @@ zap_ggplot<-function(sap_file, write=F, folderPlot = "plots/",
     cat(paste0(folderPlot," created in order to contain my plots."))
   }
   # loading data
-  pin <- read.table(sap_file)
+  if(is.null(sap_table)&&!is.null(sap_file)) pin <- read.table(sap_file)
+  else if(is.null(sap_file)&&!is.null(sap_table)) pin <- sap_table
+  else stop("Sapphire table needed in input. Check the documentation")
   dp <- dim(pin)
   ann_tr <- array("NA",dim = dp[1])
   
@@ -35,24 +37,17 @@ zap_ggplot<-function(sap_file, write=F, folderPlot = "plots/",
     ann_tr[pin[,3] < dp[1]/2 & ann_tr == "NA"] <- "gray30"
   }else if(is.numeric(ann_trace)&&length(ann_trace)==1){ 
     message("Only 5 shades of grey are possible for the 'number' option of ann_trace.
-            If you inserted more than 6 please consider manual color insertion.")
-    if(ann_trace>5) warning("Annotatin_trace is >5. there could be problems differentiating the grey scale.")
-    if(ann_trace<1 || ann_trace>50){
-      warning("The annotation trace was too big or too little. It has been forced to 5.")
-      ann_trace <- 5
-    }
+            If you inserted more than 6 it will be truncated. Please consider manual color insertion.")
+    if(ann_trace>5) ann_trace = 5
     ann_tr[pin[,3]<dp[1]/ann_trace] <- "gray1"
     for(i in 1:(ann_trace-1)) ann_tr[pin[,3]<dp[1]*(i+1)/ann_trace 
                                  & pin[,3]>=dp[1]*(i)/ann_trace 
                                  & ann_tr == "NA"] <- paste0("gray",floor(100/ann_trace)*i)
   }else if(is.character(ann_trace)&&length(ann_trace)==dp[1]){
-    ann_tr <- array(ann_trace)
-  }else if(!ann_trace){
-    message("No annotation selected. It will not be plotted")
-    ann_tr<-NULL
+      ann_tr <- array(ann_trace)
   }else{
-    stop("check the input of ann_trace or read the documentation. It is neither a number nor a color array")
-  }
+      stop("check the input of ann_trace or read the documentation. It is neither a number nor a color array")
+    }
   
   # Set range of x and y values for the plot:
   Nsnap<-dp[1]
@@ -67,10 +62,10 @@ zap_ggplot<-function(sap_file, write=F, folderPlot = "plots/",
     xlab("Progress Index") + ylab("Annotation") + ggtitle(title)
   
   # plotting the trace and the timeline
-  if(!is.null(ann_tr))gg <- gg + geom_segment(aes(xx, y = rep(ymax*3/4,length(xx)),
+  gg <- gg + geom_segment(aes(xx, y = rep(ymax*3/4,length(xx)),
                               xend = xx, yend = rep(ymax*3/4+ymax/8, length(xx))), 
                           col = ann_tr)
-  if(timeline && !is.null(ann_tr))gg <- gg + geom_point(aes(xx,y=(pin[,3]*1.0*ymax*1/5)/dp[1]-1/10),col=ann_tr,size=0.01)
+  if(timeline)gg <- gg + geom_point(aes(xx,y=(pin[,3]*1.0*ymax*1/5)/dp[1]-1/10),col=ann_tr,size=0.01)
   gg <- gg + geom_line(color="darkblue",size=0.2) +
     geom_point(mapping = aes(x=xx,y=2.5 - (1./3.)*log((pin[,10] + pin[,12]) / Nsnap)), color="red3", size=0.1)
   if(basin_call) gg <- gg + 
