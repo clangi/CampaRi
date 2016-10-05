@@ -101,7 +101,7 @@ module m_clustering
 
       real(KIND=4), intent(in) :: trj(n_snaps,n_xyz)
       real(KIND=4) tmp_d ! temporary variable for radiuses and distances
-      integer i, i2, j, ii, u
+      integer i, j, ii, u
       real vecti(n_xyz)
 
       tmp_dis_method = dis_method(1) !This is hard. Can be eventually taylored
@@ -119,10 +119,11 @@ module m_clustering
           if(tmp_dis_method.eq.5) then
             vecti = trj(i,1:n_xyz)
           else if(tmp_dis_method.eq.11) then
-            ! veci(1:n_xyz) = 1
-            i2 = i
-            if(i.eq.1) i2 = 2 !to avoid error I can double the first value
-            vecti = trj(i2,n_xyz) - trj(i2-1,n_xyz)
+            if(i.eq.1) then !to avoid error I can double the first value
+               vecti = trj(i+1,n_xyz) - trj(i,n_xyz)
+            else
+              vecti = trj(i,n_xyz) - trj(i-1,n_xyz)
+            end if
           end if
           call snap_to_cluster_d(tmp_d,scluster(j),vecti)
           if(superver .and. (i.lt.10)) write(*,*) "The distance is : ",tmp_d

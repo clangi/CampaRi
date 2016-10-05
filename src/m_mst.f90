@@ -188,10 +188,8 @@ module m_mst
         if (allocated(it(i)%sums).EQV..true.) deallocate(it(i)%sums)
       end do
       deallocate(it)
-    !
       call gen_MST(adjl_deg2,adjl_ix2,adjl_dis2,&
       &alllnks(:,1:(n_snaps-1)),alldiss(1:(n_snaps-1)),max_degree)
-    !
       deallocate(alldiss)
       deallocate(alllnks)
 
@@ -226,7 +224,7 @@ module m_mst
           adjl_deg3(mstedges(v,e)) = adjl_deg3(mstedges(v,e)) + 1
           adjl_ix3(mstedges(v,e),adjl_deg3(mstedges(v,e))) = mstedges(3-v,e)
           adjl_dis3(mstedges(v,e),adjl_deg3(mstedges(v,e))) = lmstedges(e)
-          if(e.eq.1) then
+          if(e.eq.1.and.v.eq.1) then
             maxdeg = adjl_deg3(mstedges(v,e))
           else if(maxdeg.lt.adjl_deg3(mstedges(v,e))) then
             maxdeg = adjl_deg3(mstedges(v,e))
@@ -234,25 +232,6 @@ module m_mst
         end do
       end do
 
-        !transform edgelist of MST (mstedges) to adjacencylist (using t_adjlist):
-      ! do e=1,n_snaps
-      !   allocate(mst(e)%adj(1))
-      !   allocate(mst(e)%dist(1))
-      ! end do
-      ! do e=1,n_snaps-1
-      !   do v=1,2 !for each vertex(v) belonging to each edges (e)
-      !     if (mst(mstedges(v,e))%deg.gt.0) call extend_adjlst_byone(mst((v,e)))
-      !     mst(mstedges(v,e))%deg = mst(mstedges(v,e))%deg + 1
-      !     mst(mstedges(v,e))%adj(mst(mstedges(v,e))%deg) = mstedges(3-v,e)
-      !     mst(mstedges(v,e))%dist(mst(mstedges(v,e))%deg) = lmstedges(e)
-      !     if(e.eq.1) then
-      !       maxdeg = mst(mstedges(v,e))%deg
-      !     else if(maxdeg.lt.mst(mstedges(v,e))%deg) then
-      !       maxdeg = mst(mstedges(v,e))%deg
-      !     end if
-      !   end do
-      ! end do
-    !
   end subroutine gen_MST
     !------------------------------------------------------------------------------------------------------
     !

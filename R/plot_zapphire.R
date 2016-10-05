@@ -12,7 +12,7 @@
 #' @export 
 #' @import ggplot2
 zap_ggplot<-function(sap_file=NULL, sap_table=NULL,write=F, folderPlot = "plots/", 
-                       timeline=T, basin_call=F, 
+                       timeline=T, basin_call=F, local_cut=T,
                        ann_trace = NULL, ann_trace_ret = F,
                        title = "no title"){
   # check on title
@@ -45,6 +45,8 @@ zap_ggplot<-function(sap_file=NULL, sap_table=NULL,write=F, folderPlot = "plots/
                                  & ann_tr == "NA"] <- paste0("gray",floor(100/ann_trace)*i)
   }else if(is.character(ann_trace)&&length(ann_trace)==dp[1]){
       ann_tr <- array(ann_trace)
+  }else if(!ann_trace){
+    warning("ann_trace = F silence the annotation trace.")
   }else{
       stop("check the input of ann_trace or read the documentation. It is neither a number nor a color array")
     }
@@ -62,12 +64,12 @@ zap_ggplot<-function(sap_file=NULL, sap_table=NULL,write=F, folderPlot = "plots/
     xlab("Progress Index") + ylab("Annotation") + ggtitle(title)
   
   # plotting the trace and the timeline
-  gg <- gg + geom_segment(aes(xx, y = rep(ymax*3/4,length(xx)),
+  if(!is.logical(ann_trace))gg <- gg + geom_segment(aes(xx, y = rep(ymax*3/4,length(xx)),
                               xend = xx, yend = rep(ymax*3/4+ymax/8, length(xx))), 
                           col = ann_tr)
-  if(timeline)gg <- gg + geom_point(aes(xx,y=(pin[,3]*1.0*ymax*1/5)/dp[1]-1/10),col=ann_tr,size=0.01)
-  gg <- gg + geom_line(color="darkblue",size=0.2) +
-    geom_point(mapping = aes(x=xx,y=2.5 - (1./3.)*log((pin[,10] + pin[,12]) / Nsnap)), color="red3", size=0.1)
+  if(timeline&&!is.logical(ann_trace))gg <- gg + geom_point(aes(xx,y=(pin[,3]*1.0*ymax*1/5)/dp[1]-1/10),col=ann_tr,size=0.01)
+  gg <- gg + geom_line(color="darkblue",size=0.2)
+  if(local_cut) gg <- gg + geom_point(mapping = aes(x=xx,y=2.5 - (1./3.)*log((pin[,10] + pin[,12]) / Nsnap)), color="red3", size=0.1)
   if(basin_call) gg <- gg + 
     geom_text(data = data.frame(), aes(Nsnap/4, ymax-1*ymax/14, label = "Basin 1")) +
     geom_text(data = data.frame(), aes(Nsnap*3/4, ymax-1*ymax/14, label = "Basin 2"))

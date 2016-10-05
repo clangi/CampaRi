@@ -29,7 +29,8 @@ load_trj_dcd<-function(t_file){
 #' @export adjl_from_trj
 #' @import parallel
 
-adjl_from_trj<-function(trj, distance_method=5, clu_radius=NULL, clu_hardcut=NULL, cores=NULL, mode=NULL, min_span_tree=TRUE){
+adjl_from_trj<-function(trj, distance_method=5,distance_weights=NULL, normalize_d = TRUE,
+                        clu_radius=NULL, clu_hardcut=NULL, cores=NULL, mode=NULL, min_span_tree=TRUE){
   if(!is.matrix(trj)){
     if(!is.data.frame(trj)) stop('trj input must be a matrix or a data.frame')
     trj <- as.matrix(trj)
@@ -85,9 +86,19 @@ adjl_from_trj<-function(trj, distance_method=5, clu_radius=NULL, clu_hardcut=NUL
   }else if(is.character(mode)&&(mode=="fortran")){
     #Fortran mode
     #default vars
+    #distance value
     tmp_dis <- distance_method
     distance_method <- rep(0,11)
     distance_method[1:length(tmp_dis)] <- tmp_dis 
+    
+    #distance weights
+    tmp_dis_w <- distance_weights
+    distance_weights <- rep(1,11)
+    if(!is.numeric(tmp_dis_w))
+      warning("Distances are not num. The option will be turned off")
+    else distance_weights[1:length(tmp_dis_w)] <- tmp_dis_w
+    
+    #thresholds
     if(is.null(clu_radius)){
       clu_radius <- 2147483647
       warning(paste("clu_radius variable (a priori fixed clustering radius) has not been selected. 
@@ -99,7 +110,6 @@ adjl_from_trj<-function(trj, distance_method=5, clu_radius=NULL, clu_hardcut=NUL
               A standard value of",clu_hardcut,"will be used."))
     }
     if(!is.numeric(clu_radius)||!is.numeric(clu_hardcut)) stop("clu_radius and clu_hardcut must be numeric")
-    
     if(data_management == "R"){
       #input-output initialization
       output_fin <- list()
@@ -111,6 +121,7 @@ adjl_from_trj<-function(trj, distance_method=5, clu_radius=NULL, clu_hardcut=NUL
       #double Cstyle deginitions
       attr(trj,"Csingle") <- TRUE
       attr(adj_dis,"Csingle") <- TRUE
+      attr(distance_weights,"Csingle") <- TRUE
       #main fortran talker
       output<-.Fortran("generate_neighbour_list", PACKAGE="CampaRi",
                       trj_data=trj,
@@ -123,8 +134,10 @@ adjl_from_trj<-function(trj, distance_method=5, clu_radius=NULL, clu_hardcut=NUL
                       adjl_dis=adj_dis, 
                       max_degr=as.integer(max_d),
                       dis_method_in=as.integer(distance_method),
+                      dis_weight_in=distance_weights,
                       mst_log_in=as.logical(min_span_tree),
                       data_meth_in=as.integer(1),
+                      normalize_dis_in=as.logical(normalize_d),
                       verbose_in=as.logical(TRUE))
       #output adjustment
       output_fin[[1]] <- output$adjl_deg

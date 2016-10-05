@@ -80,7 +80,7 @@ end
 !
 !------------------------------------------------------------------------------------------
 !
-subroutine distance(val, veci, vecj)
+subroutine distance(val2, veci, vecj)
   use m_var_nbls_clu
 ! CALLED from:
 ! vec1 = it%sums(1:n_xyz,1)/(1.0*it%nmbrs)
@@ -94,16 +94,16 @@ subroutine distance(val, veci, vecj)
   real, INTENT(IN) :: veci(n_xyz), vecj(n_xyz)
   real vec_ref(n_xyz)
   real  hlp, hlp2
-  real, INTENT(OUT) :: val
+  real, INTENT(OUT) :: val2
 
   vec_ref = 1
-  val = 0.0
+  val2 = 0.0
   hlp = 0.0
   hlp2 = 0.0
 
   if (tmp_dis_method.eq.5) then
     hlp = sum((veci(1:n_xyz) - vecj(1:n_xyz))**2)
-    val = sqrt((3.0 * hlp)/(1.0 * (n_xyz))) ! why *3?????
+    val2 = sqrt((3.0 * hlp)/(1.0 * (n_xyz))) ! why *3?????
   else if (tmp_dis_method.eq.11) then
     hlp = ACOS(dot_product(vec_ref,veci)/&
     (dot_product(vec_ref,vec_ref) + &
@@ -111,7 +111,8 @@ subroutine distance(val, veci, vecj)
     hlp2 = ACOS(dot_product(vec_ref,vecj)/&
     (dot_product(vec_ref,vec_ref) + &
     dot_product(vecj,vecj)))
-    val = hlp2 - hlp
+    val2 = hlp2 - hlp
+    if(val2.gt.20.or.val2.lt.(-20)) write(*,*) "why", val2
   end if
 end
 

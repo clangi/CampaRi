@@ -49,7 +49,7 @@
 subroutine generate_neighbour_list( &
   trj_data, n_xyz_in, n_snaps_in, clu_radius_in, clu_hardcut_in, & !input
   adjl_deg, adjl_ix, adjl_dis, max_degr, & !output
-  dis_method_in, mst_log_in, data_meth_in, verbose_in) !modes
+  dis_method_in, dis_weight_in, mst_log_in, data_meth_in, normalize_dis_in, verbose_in) !modes
 
   use m_var_nbls_clu
   use m_clustering
@@ -61,11 +61,13 @@ subroutine generate_neighbour_list( &
   integer, INTENT(IN) :: n_snaps_in !number of snapshots in input
   real(KIND=4), INTENT(IN) :: trj_data(n_snaps_in, n_xyz_in) !trajectory input
   integer, intent(in) :: dis_method_in(11) !distance method
+  real(KIND=4), intent(in) :: dis_weight_in(11) !distance weight when averaged
   real(KIND=4), intent(in) :: clu_radius_in !defines the max cluster sizes
   real(KIND=4), intent(in) :: clu_hardcut_in !threshold between cluster snaps
   logical, intent(in) :: verbose_in !verbose terminal output
-  integer, intent(in) :: data_meth_in !data managing method
+  integer, intent(in) :: data_meth_in !data managing method TODO netcdf
   logical, intent(in) :: mst_log_in !make already the ordered mst(true) or not?
+  logical, intent(in) :: normalize_dis_in !flag for normalize the distance matrix
   !if the intent is in this cannot be an ALLOCATABLE variable
 
 
@@ -96,30 +98,37 @@ subroutine generate_neighbour_list( &
   radius = clu_radius_in
   hardcut = clu_hardcut_in
   dis_method = dis_method_in
+  dis_weight = 1
   mst_log = mst_log_in
+  normalize_dis = normalize_dis_in
 
 
   n_dis_method = 0
   do i=1,11
-    if(dis_method(i).ne.0) n_dis_method = n_dis_method + 1
+    if(dis_method(i).ge.1.and.dis_method(i).le.11) n_dis_method = n_dis_method + 1
+    if(dis_weight_in(i).ge.0.and.dis_weight_in(i).le.1) dis_weight(i) = dis_weight_in(i)
   end do
+  write(*,*)
   if(n_dis_method.gt.1) write(*,*) 'Multiple distance functions selected. They will be &
   & balanced using clustering valuse, then summed toghether in a old fashion way.\n&
   &Remember that the leader clustering algorithm will consider only the first value &
   &of the distances'
-
-
-  ! if(data_meth_in.eq.1) then
-  !   allocate(adj_mat(n_snaps,n_snaps))
-  ! end if
+  write(*,*)
+  write(*,*) "Selected distances: ", dis_method(1:n_dis_method)
+  write(*,*) "Distance weights:", dis_weight(1:n_dis_method)
+  write(*,*)
 
   allocate(cnblst(n_snaps))
+  if(n_dis_method.gt.1) allocate(cnblst_dis(n_snaps))
+
+
   cnblst(:)%nbs = 0 ! number of snapshots that are connected to one snap
   cnblst(:)%alsz = 4 ! allocation size
   ! maxalcsz = 4 ! default variable for the total max allocation size
   do i=1,n_snaps
     allocate(cnblst(i)%idx(cnblst(i)%alsz))
     allocate(cnblst(i)%dis(cnblst(i)%alsz))
+    if(n_dis_method.gt.1) allocate(cnblst_dis(i)%dis(cnblst(i)%nbs))
   end do
 
   write(*,*) "Input dimensions:", n_snaps, " row and ", n_xyz," col"
