@@ -79,7 +79,6 @@ subroutine generate_neighbour_list( &
   integer i,j,ii,kk,ll,k,l,mi,mj,u,u2 ! helper variables
   integer nzeros ! nzeros = number of not connected components (dis .le. 0)
   logical exist, mst_print, log_print !file dumping for mst tree for debugging
-  integer ilog !code reference to logging file
   character(len=1024) :: format_var !format for above mentioned dumping
 
   integer, intent(inout) :: max_degr !maximum degree of the adjlist
@@ -111,7 +110,6 @@ subroutine generate_neighbour_list( &
   ! Logging function
   if(log_print) then
     inquire(file="campari.log", exist=exist)
-    ilog = 378
     if (exist) then
       open(ilog, file="campari.log", status="replace", action="write")
       write(ilog,*) 'campari.log already exists. It has been overwritten'
@@ -174,7 +172,7 @@ subroutine generate_neighbour_list( &
   if(.not.birch) then
     call leader_clustering(trj_data)
   else
-    call birch_clustering(modei,nnodes)
+    ! call birch_clustering(modei,nnodes)
   end if
 
   ! now compare all blocks to each other (the slowest part) taking advantage

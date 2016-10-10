@@ -9,4 +9,5 @@ module m_variables_gen
   integer n_snaps ! global number of snapshots. It is necessary as alsz roof
   logical ver !global verbose var
   logical superver ! dev flag for superverbose output
+  integer :: ilog = 378 !code reference to logging file
 end module m_variables_gen
