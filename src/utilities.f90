@@ -90,7 +90,7 @@ end subroutine MergeSort
 !    call MergeSort(A,ix,N,T,Tix)
 !
 !
-!    write(*,*)'Sorted array :',A
-!    write(*,'(A,/,10I3)')'Sorted indexes :', ix
+!    write(ilog,*)'Sorted array :',A
+!    write(ilog,'(A,/,10I3)')'Sorted indexes :', ix
 !
 ! end program TestMergeSort

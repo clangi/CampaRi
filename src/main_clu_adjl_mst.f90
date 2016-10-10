@@ -49,9 +49,9 @@
 subroutine generate_neighbour_list( &
   trj_data, n_xyz_in, n_snaps_in, clu_radius_in, clu_hardcut_in, & !input
   adjl_deg, adjl_ix, adjl_dis, max_degr, & !output
-  dis_method_in, dis_weight_in, mst_log_in, data_meth_in, normalize_dis_in, verbose_in) !modes
+  dis_method_in, birch_in, dis_weight_in, mst_log_in, data_meth_in, normalize_dis_in, verbose_in) !modes
 
-  use m_var_nbls_clu
+  use m_variables_gen
   use m_clustering
   use m_gen_nbls
   use m_mst
@@ -68,6 +68,7 @@ subroutine generate_neighbour_list( &
   integer, intent(in) :: data_meth_in !data managing method TODO netcdf
   logical, intent(in) :: mst_log_in !make already the ordered mst(true) or not?
   logical, intent(in) :: normalize_dis_in !flag for normalize the distance matrix
+  logical, intent(in) :: birch_in !flag for birch clustering
   !if the intent is in this cannot be an ALLOCATABLE variable
 
 
@@ -77,7 +78,8 @@ subroutine generate_neighbour_list( &
 
   integer i,j,ii,kk,ll,k,l,mi,mj,u,u2 ! helper variables
   integer nzeros ! nzeros = number of not connected components (dis .le. 0)
-  logical exist, mst_print !file dumping for mst tree for debugging
+  logical exist, mst_print, log_print !file dumping for mst tree for debugging
+  integer ilog !code reference to logging file
   character(len=1024) :: format_var !format for above mentioned dumping
 
   integer, intent(inout) :: max_degr !maximum degree of the adjlist
@@ -95,28 +97,51 @@ subroutine generate_neighbour_list( &
   ver = verbose_in
   superver = .false.  !dev flag for superverbose output
   mst_print = .false. !dev flag for adjlist (mst) checking
+  log_print = .true.
   radius = clu_radius_in
   hardcut = clu_hardcut_in
   dis_method = dis_method_in
+  birch = birch_in
   dis_weight = 1
+  n_dis_method = 0
   mst_log = mst_log_in
   normalize_dis = normalize_dis_in
 
 
-  n_dis_method = 0
+  ! Logging function
+  if(log_print) then
+    inquire(file="campari.log", exist=exist)
+    ilog = 378
+    if (exist) then
+      open(ilog, file="campari.log", status="replace", action="write")
+      write(ilog,*) 'campari.log already exists. It has been overwritten'
+    else
+      open(ilog, file="campari.log", status="new", action="write")
+    end if
+    write(ilog,*) ''
+    write(ilog,*) ''
+    write(ilog,*) '-----------------------------------'
+    write(ilog,*) 'WELCOME TO CAMPARI ANALYSIS TOOL'
+    write(ilog,*) '-----------------------------------'
+    write(ilog,*) ''
+    write(ilog,*) ''
+
+  end if
+
+
   do i=1,11
     if(dis_method(i).ge.1.and.dis_method(i).le.11) n_dis_method = n_dis_method + 1
     if(dis_weight_in(i).ge.0.and.dis_weight_in(i).le.1) dis_weight(i) = dis_weight_in(i)
   end do
-  write(*,*)
-  if(n_dis_method.gt.1) write(*,*) 'Multiple distance functions selected. They will be &
+  write(ilog,*)
+  if(n_dis_method.gt.1) write(ilog,*) 'Multiple distance functions selected. They will be &
   & balanced using clustering valuse, then summed toghether in a old fashion way.\n&
   &Remember that the leader clustering algorithm will consider only the first value &
   &of the distances'
-  write(*,*)
-  write(*,*) "Selected distances: ", dis_method(1:n_dis_method)
-  write(*,*) "Distance weights:", dis_weight(1:n_dis_method)
-  write(*,*)
+  write(ilog,*)
+  write(ilog,*) "Selected distances: ", dis_method(1:n_dis_method)
+  write(ilog,*) "Distance weights:", dis_weight(1:n_dis_method)
+  write(ilog,*)
 
   allocate(cnblst(n_snaps))
   if(n_dis_method.gt.1) allocate(cnblst_dis(n_snaps))
@@ -131,51 +156,54 @@ subroutine generate_neighbour_list( &
     if(n_dis_method.gt.1) allocate(cnblst_dis(i)%dis(cnblst(i)%nbs))
   end do
 
-  write(*,*) "Input dimensions:", n_snaps, " row and ", n_xyz," col"
-  write(*,*)
-  if(superver) write(*,*) "clu_radius_in", clu_radius_in
-  if(superver) write(*,*) "clu_hardcut_in", clu_hardcut_in
-  write(*,*)
-  if(superver) write(*,*) "Input example", trj_data(1:10,1:10)
-  write(*,*)
-  write(*,*)
-  write(*,*) 'Now using truncated leader algorithm for pre-clustering&
+  write(ilog,*) "Input dimensions:", n_snaps, " row and ", n_xyz," col"
+  write(ilog,*)
+  if(superver) write(ilog,*) "clu_radius_in", clu_radius_in
+  if(superver) write(ilog,*) "clu_hardcut_in", clu_hardcut_in
+  write(ilog,*)
+  if(superver) write(ilog,*) "Input example", trj_data(1:10,1:10)
+  write(ilog,*)
+  write(ilog,*)
+  write(ilog,*) 'Now using truncated leader algorithm for pre-clustering&
    &in neighbor list generation ...'
 
   nclalcsz = 2 ! a priori cluster numbers
   allocate(scluster(nclalcsz))
   scluster(:)%nmbrs = 0 ! number of elements in each cluster
   scluster(:)%alsz = 0 ! allocation size of each cluster
-
-  call leader_clustering(trj_data)
+  if(.not.birch) then
+    call leader_clustering(trj_data)
+  else
+    call birch_clustering(modei,nnodes)
+  end if
 
   ! now compare all blocks to each other (the slowest part) taking advantage
   ! of information generated previously (otherwise intractable)
-  write(*,*)
-  write(*,*) 'Now computing cutoff-assisted neighbor list...'
-  write(*,*)
+  write(ilog,*)
+  write(ilog,*) 'Now computing cutoff-assisted neighbor list...'
+  write(ilog,*)
 
   call gen_nb(trj_data)
 
-  write(*,*)
-  write(*,*) 'Neighbor list generated.'
-  write(*,*)
+  write(ilog,*)
+  write(ilog,*) 'Neighbor list generated.'
+  write(ilog,*)
 
   nzeros = 0
   do i=1,n_snaps
     if (cnblst(i)%nbs.le.0) then
       nzeros = nzeros + 1
-     write(*,*) 'Warning. Snapshot # ',i,' is without a neighbor (similar) &
+     write(ilog,*) 'Warning. Snapshot # ',i,' is without a neighbor (similar) &
      &structure. This may cause the clustering algorithm to crash or &
      &misbehave otherwise.'
    end if
   end do
   if (nzeros.gt.0) then
-    write(*,*) 'Warning. ',nzeros,' snapshots are without a neighbor &
+    write(ilog,*) 'Warning. ',nzeros,' snapshots are without a neighbor &
     &(similar) structure. This may in some cases cause the clustering &
     &algorithm to misbehave.'
   end if
-  write(*,*)
+  write(ilog,*)
 
   do i=1,nclalcsz
     if (allocated(scluster(i)%snaps).EQV..true.) deallocate(scluster(i)%snaps)
@@ -201,19 +229,19 @@ subroutine generate_neighbour_list( &
   if(mst_print) then
     inquire(file="mst_original.txt", exist=exist)
     if (exist) then
-      write(*,*) 'mst_original.txt already exists. It will be overwritten'
+      write(ilog,*) 'mst_original.txt already exists. It will be overwritten'
       open(378, file="mst_original.txt", status="replace", action="write")
     else
       open(378, file="mst_original.txt", status="new", action="write")
     end if
-    write(*,*) 'the problem is not here'
+    write(ilog,*) 'the problem is not here'
     do i=1,n_snaps
       write (format_var, "(A1,I1,A7)") "(", adjl_deg(i), "f15.10)"
       write(378, format_var)  adjl_dis(i,:)
     end do
     close(378)
-    write(*,*) '...file-mst dumping done.'
+    write(ilog,*) '...file-mst dumping done.'
   end if
-
+  if(log_print) close(ilog)
 
 end

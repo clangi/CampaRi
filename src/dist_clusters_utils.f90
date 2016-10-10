@@ -41,7 +41,7 @@
 !
 subroutine snap_to_cluster_d(val, it, sn2) !i={1:n_snaps}
   use m_clustering
-  use m_var_nbls_clu
+  use m_variables_gen
   implicit none
 
   real , INTENT(IN) :: sn2(n_xyz) ! Array of coo of a single snap (i)
@@ -62,7 +62,7 @@ end
 !------------------------------------------------------------------------------------
 !
 subroutine cluster_to_cluster_d(val, it1, it2)
-  use m_var_nbls_clu
+  use m_variables_gen
   use m_clustering
   implicit none
 
@@ -81,7 +81,7 @@ end
 !------------------------------------------------------------------------------------------
 !
 subroutine distance(val2, veci, vecj)
-  use m_var_nbls_clu
+  use m_variables_gen
 ! CALLED from:
 ! vec1 = it%sums(1:n_xyz,1)/(1.0*it%nmbrs)
 ! call distance(val,vec1,trj_data(1:n_xyz,i)) !val=tmp_d,it=scluster(j),i=i
@@ -112,7 +112,7 @@ subroutine distance(val2, veci, vecj)
     (dot_product(vec_ref,vec_ref) + &
     dot_product(vecj,vecj)))
     val2 = hlp2 - hlp
-    if(val2.gt.20.or.val2.lt.(-20)) write(*,*) "why", val2
+    if(val2.gt.20.or.val2.lt.(-20)) write(ilog,*) "why", val2
   end if
 end
 
@@ -121,7 +121,7 @@ end
 !
 subroutine cluster_addsnap_ix(it,i)
   use m_clustering
-  use m_var_nbls_clu
+  use m_variables_gen
   implicit none
 
   type (t_scluster), INTENT(INOUT) :: it !cluster it is modified by adding i
@@ -154,7 +154,7 @@ end subroutine cluster_addsnap_ix
 !-------------------------------------------------------------------------------
 subroutine cluster_addsnap(it,sn1,i)
   use m_clustering
-  use m_var_nbls_clu
+  use m_variables_gen
   implicit none
 
   type (t_scluster), INTENT(INOUT) :: it !cluster it is modified by adding i
@@ -197,7 +197,7 @@ end
 !
 subroutine cluster_resize(it)
   use m_clustering
-  use m_var_nbls_clu
+  use m_variables_gen
   implicit none
 
   type(t_scluster) it
@@ -221,7 +221,7 @@ end
 subroutine join_clusters(itl,its)
 
   use m_clustering
-  use m_var_nbls_clu
+  use m_variables_gen
 !
   implicit none
 !

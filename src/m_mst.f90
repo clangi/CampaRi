@@ -14,7 +14,7 @@ module m_mst
     !
       use m_clustering
       use m_gen_nbls
-      use m_var_nbls_clu
+      use m_variables_gen
       ! cstored = n_snaps
       ! cnblst
       implicit none
@@ -45,8 +45,8 @@ module m_mst
       type(t_scluster), ALLOCATABLE :: it(:)
       logical notdone
     !
-      write(*,*)
-      write(*,*) 'Now creating global sorted list of neighbor pairs ...'
+      write(ilog,*)
+      write(ilog,*) 'Now creating global sorted list of neighbor pairs ...'
     !
       notdone = .true. !
       allnbs = sum(cnblst(1:n_snaps)%nbs)/2 ! Total number of unique connections
@@ -105,16 +105,16 @@ module m_mst
       allocate(alllnks(2,allnbs))!
       do i=1,allnbs
         alllnks(:,i) = tmp_all_lnks(ix(i),:) !using the new order iv3 to order it
-    !    write(*,*) alllnks(1:2,i),alldiss(i)
+    !    write(ilog,*) alllnks(1:2,i),alldiss(i)
       end do
       deallocate(tmp_all_lnks)
       deallocate(ix)
       deallocate(Tix)
       deallocate(Talldiss)
-      write(*,*) '... done.'
-      write(*,*)
+      write(ilog,*) '... done.'
+      write(ilog,*)
     !
-      write(*,*) 'Now generating MST by considering shortest remaining link and merging ...'
+      write(ilog,*) 'Now generating MST by considering shortest remaining link and merging ...'
       allocate(iv1(n_snaps))
       ! variables initialization
       iv1(:) = 0 !empty index vector
@@ -178,7 +178,7 @@ module m_mst
       end do
     !
       if (nlnks.ne.(n_snaps-1)) then
-        write(*,*) 'Fatal. Neighbor list is insufficient to create minimum spanning tree. &
+        write(ilog,*) 'Fatal. Neighbor list is insufficient to create minimum spanning tree. &
      &Increase relevant thresholds.'
       end if
     !
@@ -193,8 +193,8 @@ module m_mst
       deallocate(alldiss)
       deallocate(alllnks)
 
-      write(*,*) '... done.'
-      write(*,*)
+      write(ilog,*) '... done.'
+      write(ilog,*)
     !
   end subroutine gen_MST_from_nbl
     !--------------------------------------------------------------------------------
@@ -205,7 +205,7 @@ module m_mst
     subroutine gen_MST(adjl_deg3,adjl_ix3,adjl_dis3,mstedges,lmstedges, maxdeg)
     !
       use m_gen_nbls
-      use m_var_nbls_clu
+      use m_variables_gen
     !
       implicit none
     !
@@ -259,7 +259,7 @@ module m_mst
     !   ! size = mstnode%deg*2
     !   ! if(size .gt. n_snaps-1) then
     !   !   size = n_snaps-1
-    !   !   if(verbose) write(*,*) "Size limit reached in deg"
+    !   !   if(verbose) write(ilog,*) "Size limit reached in deg"
     !   ! end if
     !   allocate(mstnode%adj(size))
     !   allocate(mstnode%dist(size))

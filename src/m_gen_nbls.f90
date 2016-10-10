@@ -26,7 +26,7 @@ module m_gen_nbls
   contains
     subroutine gen_nb(trj)
       use m_clustering
-      use m_var_nbls_clu
+      use m_variables_gen
       implicit none
 
       real(KIND=4), intent(in) :: trj(n_snaps,n_xyz)
@@ -36,9 +36,9 @@ module m_gen_nbls
       integer testcnt, testcnt2, overbounds
       real vecti(n_xyz),vectj(n_xyz)
       real maxx(n_dis_method) !for dist_methods balancing (maximum values)
-      ! write(*,*) "DEBUGGING"
-      ! write(*,*) "trj_input",trj(1:10,1:10)
-      ! write(*,*) "scluster 1", scluster(2)%snaps
+      ! write(ilog,*) "DEBUGGING"
+      ! write(ilog,*) "trj_input",trj(1:10,1:10)
+      ! write(ilog,*) "scluster 1", scluster(2)%snaps
 
       maxx = 0
       ii = 0
@@ -48,9 +48,9 @@ module m_gen_nbls
         overbounds = 0
         tmp_dis_method = dis_method(h1)
         if(tmp_dis_method.lt.1.or.tmp_dis_method.gt.11) cycle
-        write(*,*)
-        write(*,*) "Distance method: ", tmp_dis_method
-        write(*,*)
+        write(ilog,*)
+        write(ilog,*) "Distance method: ", tmp_dis_method
+        write(ilog,*)
         do i=1,nclu ! for each cluster (intra cluster distances)
           ii = ii + 1
           do kk=1,scluster(i)%nmbrs ! for each snapshot in a cluster
@@ -74,7 +74,7 @@ module m_gen_nbls
               end if
               call distance(tmp_d,vecti,vectj)
               if(abs(tmp_d).gt.maxx(h1)) maxx(h1) = abs(tmp_d)
-              ! if(cnblst(k)%nbs.ge.1499) write(*,*) tmp_d,l,k
+              ! if(cnblst(k)%nbs.ge.1499) write(ilog,*) tmp_d,l,k
               ! compute the distance between all cluster-internal snapshots
               testcnt = testcnt + 1
               if (tmp_d.lt.hardcut) then ! hardcut ext-var CCUTOFF
@@ -152,8 +152,8 @@ module m_gen_nbls
         end do
 
         if(normalize_dis) then
-          write(*,*) "Normalization mode active. Max value:",maxx(h1)
-          write(*,*)
+          write(ilog,*) "Normalization mode active. Max value:",maxx(h1)
+          write(ilog,*)
           ! Normalizing
           do i=1,n_snaps
             do u=1,n_snaps
@@ -171,7 +171,7 @@ module m_gen_nbls
             cnblst(i)%dis = cnblst(i)%dis/maxx(h1)
           end do
         end if
-        if(overbounds.gt.0) write(*,*) 'Out of bounds variables:', overbounds
+        if(overbounds.gt.0) write(ilog,*) 'Out of bounds variables:', overbounds
         ! Adding previous distance if more than one is selected
         if(n_dis_method.gt.1) then
           do i=1,n_snaps
@@ -191,7 +191,7 @@ module m_gen_nbls
         end do
       deallocate(cnblst_dis)
       end if
-      write(*,*) '... done after computing ',(100.0*testcnt)/(0.5*n_snaps*n_dis_method*(n_snaps-1)),'% of &
+      write(ilog,*) '... done after computing ',(100.0*testcnt)/(0.5*n_snaps*n_dis_method*(n_snaps-1)),'% of &
       &possible terms with ',(100.0*testcnt2)/(1.0*testcnt),'% successful.'
     end subroutine gen_nb
 end module m_gen_nbls

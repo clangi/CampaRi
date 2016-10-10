@@ -21,7 +21,7 @@ subroutine gen_progind_from_adjlst(n_snaps, starter, mnb, alnbs, alst, &
   logical, ALLOCATABLE:: added(:), inprogind(:)
   integer, ALLOCATABLE:: heap(:),hsource(:) !dynamic dimensions
   real(KIND=4), ALLOCATABLE:: key(:)
-  write(*,*) "Generating progress index..."
+  write(ilog,*) "Generating progress index..."
   allocate(inprogind(n_snaps)) !the maximum length of these are the number of snapshot
   allocate(added(n_snaps))
   allocate(key(n_snaps))
@@ -87,7 +87,7 @@ subroutine gen_progind_from_adjlst(n_snaps, starter, mnb, alnbs, alst, &
   deallocate(inprogind)
   deallocate(heap)
   deallocate(hsource)
-  write(*,*) "DONE"
+  write(ilog,*) "DONE"
 !
 end
 !---------------------------------------------------------------------------------------
@@ -184,7 +184,7 @@ function hparent(i)
   integer hparent,i
 !
   if (i.eq.1) then
-!    write(*,*) 'NICO: Bug! Parent of root of heap requested.'
+!    write(ilog,*) 'NICO: Bug! Parent of root of heap requested.'
 !    call fexit()
   end if
   hparent = i/2
@@ -301,7 +301,7 @@ subroutine int2str(ii,string,strsz)
   if ((mx(10).gt.0).OR.(mx(11).gt.0).OR.(mx(12).gt.0).OR.&
  &    (mx(13).gt.0).OR.&
  &    (mx(14).gt.0).OR.(mx(15).gt.0).OR.(mx(16).gt.0)) then
-    write(*,*) 'Warning. Possibly bad result from int2str(...) (inte&
+    write(ilog,*) 'Warning. Possibly bad result from int2str(...) (inte&
  &ger overflow).'
   end if
 !
@@ -320,7 +320,7 @@ subroutine int2str(ii,string,strsz)
   strsz = max(strsz,minsz)
 !
   if (strsz.gt.17) then
-    write(*,*) 'Warning. Possibly bad result from int2str(...) (digi&
+    write(ilog,*) 'Warning. Possibly bad result from int2str(...) (digi&
  &t overflow).'
   end if
 !
@@ -397,7 +397,7 @@ subroutine contract_mst(n_snaps,mnb,alnbs,alst,aldis,nrnds,istats)
       istats(2) = istats(2) + 1
     end if
   end do
-  write(*,*) nrnds,n_snaps,istats(2)
+  write(ilog,*) nrnds,n_snaps,istats(2)
 !
   istats(1) = 0
   do kk=1,nrnds
@@ -464,7 +464,7 @@ subroutine gen_manycuts(n_snaps,start,ntbrks2,pwidth,setis,distv,invvec,ivec2,tr
   character(250) fn
   logical exists
 
-  write(*,*) "Generating annotations..."
+  write(ilog,*) "Generating annotations..."
 
   tl2 = 12
   call int2str(start,nod2,tl2)
@@ -876,7 +876,7 @@ subroutine gen_manycuts(n_snaps,start,ntbrks2,pwidth,setis,distv,invvec,ivec2,tr
   deallocate(ibrkx)
 !
   close(unit=iu)
-  write(*,*) "DONE"
+  write(ilog,*) "DONE"
 !
 end
 !
