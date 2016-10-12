@@ -135,7 +135,8 @@ adjl_from_trj<-function(trj, distance_method=5,distance_weights=NULL, normalize_
                       max_degr=as.integer(max_d),
                       dis_method_in=as.integer(distance_method),
                       dis_weight_in=distance_weights,
-                      mst_log_in=as.logical(min_span_tree),
+                      birch_in=as.logical(FALSE),
+                      mst_in=as.logical(min_span_tree),
                       data_meth_in=as.integer(1),
                       normalize_dis_in=as.logical(normalize_d),
                       verbose_in=as.logical(TRUE))

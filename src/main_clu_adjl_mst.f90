@@ -49,7 +49,8 @@
 subroutine generate_neighbour_list( &
   trj_data, n_xyz_in, n_snaps_in, clu_radius_in, clu_hardcut_in, & !input
   adjl_deg, adjl_ix, adjl_dis, max_degr, & !output
-  dis_method_in, birch_in, dis_weight_in, mst_log_in, data_meth_in, normalize_dis_in, verbose_in) !modes
+  dis_method_in, dis_weight_in, birch_in, mst_in, & !algorithm details
+  data_meth_in, normalize_dis_in, verbose_in) !modes
 
   use m_variables_gen
   use m_clustering
@@ -66,7 +67,7 @@ subroutine generate_neighbour_list( &
   real(KIND=4), intent(in) :: clu_hardcut_in !threshold between cluster snaps
   logical, intent(in) :: verbose_in !verbose terminal output
   integer, intent(in) :: data_meth_in !data managing method TODO netcdf
-  logical, intent(in) :: mst_log_in !make already the ordered mst(true) or not?
+  logical, intent(in) :: mst_in !make already the ordered mst(true) or not?
   logical, intent(in) :: normalize_dis_in !flag for normalize the distance matrix
   logical, intent(in) :: birch_in !flag for birch clustering
   !if the intent is in this cannot be an ALLOCATABLE variable
@@ -103,9 +104,8 @@ subroutine generate_neighbour_list( &
   birch = birch_in
   dis_weight = 1
   n_dis_method = 0
-  mst_log = mst_log_in
+  mst = mst_in
   normalize_dis = normalize_dis_in
-
 
   ! Logging function
   if(log_print) then
@@ -125,8 +125,6 @@ subroutine generate_neighbour_list( &
     write(ilog,*) ''
 
   end if
-
-
   do i=1,11
     if(dis_method(i).ge.1.and.dis_method(i).le.11) n_dis_method = n_dis_method + 1
     if(dis_weight_in(i).ge.0.and.dis_weight_in(i).le.1) dis_weight(i) = dis_weight_in(i)
@@ -209,7 +207,7 @@ subroutine generate_neighbour_list( &
   end do
   deallocate(scluster)
 
-  if(mst_log) then
+  if(mst) then
     call gen_MST_from_nbl(adjl_deg,adjl_ix,adjl_dis,max_degr)
   else
     do i=1,n_snaps

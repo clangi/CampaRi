@@ -32,7 +32,7 @@ zap_ggplot<-function(sap_file=NULL, sap_table=NULL,write=F, folderPlot = "plots/
   
   if(is.null(ann_trace)){
     message("Annotation trace not selected. It will be considered bepartite along the timeline.")
-    cat("Half random mode selected for the trace annotation.")
+    cat("Half random mode selected for the trace annotation. First half will be light grey")
     ann_tr[pin[,3]>=dp[1]/2 & ann_tr == "NA"]<-"gray75"
     ann_tr[pin[,3] < dp[1]/2 & ann_tr == "NA"] <- "gray30"
   }else if(is.numeric(ann_trace)&&length(ann_trace)==1){ 

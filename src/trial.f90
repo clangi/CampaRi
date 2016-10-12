@@ -12,7 +12,8 @@ program trial
 
   real outp(dim1,dim1)
   real r1,r2
-  logical mst_in
+  logical mst_iin
+  logical bir_in
   integer max_deg
   integer i
 
@@ -36,7 +37,8 @@ program trial
   ! dis_wei_in(2) = 0.001
   r1 = 1000
   r2 = 1050
-  mst_in = .true.
+  mst_iin = .true.
+  bir_in = .false.
 
   call RANDOM_NUMBER(inp)
   a_deg = 0
@@ -55,7 +57,8 @@ program trial
   call generate_neighbour_list( &
   inp, dim2, dim1, r1, r2, & !input
   a_deg, a_ix, a_dis, max_deg, & !output
-  distances,dis_wei_in, mst_in, d_meth_i,.true.,.true.) !modes
+  distances, dis_wei_in, bir_in,mst_iin, & !algorithm details
+  d_meth_i,.true.,.true.) !modes
   print *, ""
   print *, "a_deg(1:50)",a_deg(1:50)
   print *, ""

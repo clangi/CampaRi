@@ -1,0 +1,46 @@
+ campari.log already exists. It has been overwritten
+ 
+ 
+ -----------------------------------
+ WELCOME TO CAMPARI ANALYSIS TOOL
+ -----------------------------------
+ 
+ 
+
+ Multiple distance functions selected. They will be  balanced using clustering valuse, then summed toghether in a old fashion way.\nRemember that the leader clustering algorithm will consider only the first value of the distances
+
+ Selected distances:            5          11
+ Distance weights:   0.00000000       0.00000000    
+
+ Input dimensions:        1000  row and           42  col
+
+
+
+
+ Now using truncated leader algorithm for pre-clusteringin neighbor list generation ...
+ ... done with initial cluster generation for distances list with a total number of            1  clusters
+
+ Now computing cutoff-assisted neighbor list...
+
+
+ Distance method:            5
+
+ Normalization mode active. Max value:  0.971426666    
+
+
+ Distance method:           11
+
+ Normalization mode active. Max value:   1.04453480    
+
+ ... done after computing    100.000000     % of possible terms with    100.000000     % successful.
+
+ Neighbor list generated.
+
+
+
+ Now creating global sorted list of neighbor pairs ...
+ ... done.
+
+ Now generating MST by considering shortest remaining link and merging ...
+ ... done.
+

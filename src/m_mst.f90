@@ -1,5 +1,5 @@
 module m_mst
-  logical mst_log
+  logical mst
 
 
   contains
