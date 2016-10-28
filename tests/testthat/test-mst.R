@@ -1,5 +1,5 @@
 #THIS FILE SHOULD BE COPIED IN THE WORKING DIRECTORY. Take care about directories specifics
-wd <- "/home/dgarolini/projects2016/release1/"
+# wd <- "/home/dgarolini/projects2016/release1/"
 wd <- "~/Projects/2016/CampaR/"
 setwd(wd)
 package_dir <- "CampaRi/"
@@ -17,7 +17,7 @@ r2<-gen_annotation(r1, snap_start = 7521)
 sap_file <- 'REPIX_000000007521.dat'
 zap_ggplot(sap_file = sap_file,
            title = paste0("Sapphire of nbu. Snapshots = ", 100000),
-           timeline = F,ann_trace =  F)
+           timeline = F)
 
 
 # SECOND TEST - butane chain2
@@ -42,14 +42,14 @@ install.packages("CampaRi/", repos = NULL, type="source")
 # remove.packages("CampaRi", lib="~/Library/R/3.3/library")
 library(CampaRi)
 
-adjl<-adjl_from_trj(trj = trj, mode = "fortran",normalize_d = FALSE)
-ret<-gen_progindex(adjl,snap_start = 10)
+adjl<-adjl_from_trj(trj = trj, mode = "fortran", normalize_d = FALSE)
+ret<-gen_progindex(adjl, snap_start = 10)
 ret2<-gen_annotation(ret,snap_start = 10,local_cut_width = 50)
 sap_file <- 'REPIX_000000000010.dat'
 sap_table <- read.table(sap_file)
 zap_ggplot(sap_file = sap_file, 
            title = paste0("Sapphire of nbu. Snapshots = ", nrow(sap_table)),
-           timeline = F, ann_trace = F)
+           timeline = F,ann_trace = F)
 
 # DIRECT COMPARISON OF THE SAME DATA-SET [original campari needed]
 # less_original run
