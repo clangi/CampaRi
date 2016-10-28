@@ -14,6 +14,7 @@ program trial
   real r1,r2
   logical mst_iin
   logical bir_in
+  logical logging
   integer max_deg
   integer i
 
@@ -35,10 +36,11 @@ program trial
   forall(i = 1:11) dis_wei_in(i) = 0
   ! dis_wei_in(1) = 1
   ! dis_wei_in(2) = 0.001
-  r1 = 1000
-  r2 = 1050
+  r1 = HUGE(r1)
+  r2 = HUGE(r1)
   mst_iin = .true.
-  bir_in = .false.
+  bir_in = .true.
+  logging = .false.
 
   call RANDOM_NUMBER(inp)
   a_deg = 0
@@ -58,17 +60,17 @@ program trial
   inp, dim2, dim1, r1, r2, & !input
   a_deg, a_ix, a_dis, max_deg, & !output
   distances, dis_wei_in, bir_in,mst_iin, & !algorithm details
-  d_meth_i,.true.,.true.) !modes
-  print *, ""
-  print *, "a_deg(1:50)",a_deg(1:50)
-  print *, ""
-  print *, "a_ix(1,1:100)",a_ix(1,1:100)
-  print *, ""
-  print *, "a_dis(1,1:100)",a_dis(1,1:100)
-  print *, ""
-  print *, "max_deg", max_deg
-  print *, ""
-  print *, ""
+  d_meth_i,.true.,logging,.true.) !modes
+  ! print *, ""
+  ! print *, "a_deg(1:50)",a_deg(1:50)
+  ! print *, ""
+  ! print *, "a_ix(1,1:100)",a_ix(1,1:100)
+  ! print *, ""
+  ! print *, "a_dis(1,1:100)",a_dis(1,1:100)
+  ! print *, ""
+  ! print *, "max_deg", max_deg
+  ! print *, ""
+  ! print *, ""
 
   ! call gen_progind_from_adjlst(dim1, 10, &
   ! max_deg, a_deg, a_ix, &
@@ -82,4 +84,6 @@ program trial
   ! call gen_manycuts(dim1,10,0,50,&
   ! o_progind,o_distv,o_invec,o_iv2,trbrkslst2)
   !
+  ! print *,o_invec(1:10)
+
 end program trial

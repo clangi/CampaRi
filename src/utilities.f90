@@ -35,11 +35,11 @@ end subroutine merge
 
 recursive subroutine MergeSort(A,ix,N,T,Tix)
 
-   integer, intent(in) :: N
-   real, dimension(N), intent(in out) :: A
-   integer, dimension(N), intent(in out) :: ix
-   real, dimension((N+1)/2), intent (out) :: T
-   integer, dimension((N+1)/2), intent (out) :: Tix
+   integer, intent(in) :: N !number of elements to sort
+   real, dimension(N), intent(in out) :: A !vector to sort
+   integer, dimension(N), intent(in out) :: ix !indexes of the vector to sort
+   real, dimension((N+1)/2), intent (out) :: T !helper for recursion
+   integer, dimension((N+1)/2), intent (out) :: Tix !helper for indexes recursion
 
    integer :: NA,NB,V2
    real :: V
@@ -94,3 +94,30 @@ end subroutine MergeSort
 !    write(ilog,'(A,/,10I3)')'Sorted indexes :', ix
 !
 ! end program TestMergeSort
+
+
+!-----------------------------------------------------------------------
+! a function which provides an empty file handle
+! it just loops up until it finds an open one (tests explicitly)
+!
+function freeunit()
+!
+  implicit none
+!
+  integer freeunit
+  logical inuse
+!
+! try each logical unit until an unopened one is found
+!
+  freeunit = 0
+  inuse = .true.
+  do while (inuse)
+    freeunit = freeunit + 1
+    if ((freeunit.ne.5).AND.(freeunit.ne.6)) then
+      inquire (unit=freeunit,opened=inuse)
+    end if
+  end do
+!
+end
+!
+!-----------------------------------------------------------------------

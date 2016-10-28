@@ -55,6 +55,11 @@ module m_mst
       allocate(Talldiss((allnbs+1)/2))
       allocate(ix(allnbs))!
       allocate(Tix((allnbs+1)/2))!
+        ! allocate(iv2(allnbs,2)) tmp_all_lnks
+        ! allocate(alldiss(allnbs)) same
+        ! allocate(tmpv(allnbs)) Talldiss
+        ! allocate(iv1(allnbs)) ix
+        ! allocate(iv3(allnbs)) Tix
 
       j = 0
       do i=1,n_snaps ! n_snaps
@@ -102,7 +107,24 @@ module m_mst
 
       call MergeSort(alldiss,ix,allnbs,Talldiss,Tix)
 
-      allocate(alllnks(2,allnbs))!
+  !     call merge_sort(ldim=allnbs,up=atrue,list=tmpv(1:allnbs),olist=alldiss(1:allnbs),&
+  !  &                ilo=aone,ihi=allnbs,idxmap=iv1(1:allnbs),olist2=iv3(1:allnbs))
+  ! allocate(iv2(allnbs,2)) tmp_all_lnks
+  ! allocate(alldiss(allnbs)) same
+  ! allocate(tmpv(allnbs)) Talldiss
+  ! allocate(iv1(allnbs)) ix
+  ! allocate(iv3(allnbs)) Tix
+      ! 1->allnbs (3)
+      ! 3->Talldiss (4)
+      ! 4->alldiss (1)
+      ! 6->allnbs (3)
+      ! 7->ix (2)
+      ! 8->Tix (5)
+      ! allocate(alldiss(allnbs)) ! NOT
+      ! allocate(Talldiss((allnbs+1)/2))
+      ! allocate(ix(allnbs))!
+      ! allocate(Tix((allnbs+1)/2))!
+      ! allocate(alllnks(2,allnbs))!
       do i=1,allnbs
         alllnks(:,i) = tmp_all_lnks(ix(i),:) !using the new order iv3 to order it
     !    write(ilog,*) alllnks(1:2,i),alldiss(i)

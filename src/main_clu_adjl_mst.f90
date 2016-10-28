@@ -50,7 +50,7 @@ subroutine generate_neighbour_list( &
   trj_data, n_xyz_in, n_snaps_in, clu_radius_in, clu_hardcut_in, & !input
   adjl_deg, adjl_ix, adjl_dis, max_degr, & !output
   dis_method_in, dis_weight_in, birch_in, mst_in, & !algorithm details
-  data_meth_in, normalize_dis_in, verbose_in) !modes
+  data_meth_in, normalize_dis_in, log_print_in, verbose_in) !modes
 
   use m_variables_gen
   use m_clustering
@@ -70,6 +70,7 @@ subroutine generate_neighbour_list( &
   logical, intent(in) :: mst_in !make already the ordered mst(true) or not?
   logical, intent(in) :: normalize_dis_in !flag for normalize the distance matrix
   logical, intent(in) :: birch_in !flag for birch clustering
+  logical, intent(in) :: log_print_in !flag for printing log file or on terminal
   !if the intent is in this cannot be an ALLOCATABLE variable
 
 
@@ -79,6 +80,7 @@ subroutine generate_neighbour_list( &
 
   integer i,j,ii,kk,ll,k,l,mi,mj,u,u2 ! helper variables
   integer nzeros ! nzeros = number of not connected components (dis .le. 0)
+  integer mst_file_unit, freeunit ! must have for using the same-name-function
   logical exist, mst_print, log_print !file dumping for mst tree for debugging
   character(len=1024) :: format_var !format for above mentioned dumping
 
@@ -97,9 +99,11 @@ subroutine generate_neighbour_list( &
   ver = verbose_in
   superver = .false.  !dev flag for superverbose output
   mst_print = .false. !dev flag for adjlist (mst) checking
-  log_print = .true.
+  log_print = log_print_in !logging flag
+  cmaxrad = 1000 !root level size threshold
+  c_nhier = 7
   radius = clu_radius_in
-  hardcut = clu_hardcut_in
+  if (hardcut.lt.radius) hardcut = 2.0*radius
   dis_method = dis_method_in
   birch = birch_in
   dis_weight = 1
@@ -107,24 +111,32 @@ subroutine generate_neighbour_list( &
   mst = mst_in
   normalize_dis = normalize_dis_in
 
+
+! defining the logging id. 0 is sterror, 5 stinput, 6 stoutput
+  if(log_print) then
+    ilog = freeunit()
+  else
+    ilog = 6
+  end if
+
+
   ! Logging function
   if(log_print) then
     inquire(file="campari.log", exist=exist)
     if (exist) then
       open(ilog, file="campari.log", status="replace", action="write")
-      write(ilog,*) 'campari.log already exists. It has been overwritten'
+      write(ilog,*) 'NB: campari.log already exists. It has been overwritten'
     else
       open(ilog, file="campari.log", status="new", action="write")
     end if
-    write(ilog,*) ''
-    write(ilog,*) ''
-    write(ilog,*) '-----------------------------------'
-    write(ilog,*) 'WELCOME TO CAMPARI ANALYSIS TOOL'
-    write(ilog,*) '-----------------------------------'
-    write(ilog,*) ''
-    write(ilog,*) ''
-
   end if
+
+  write(ilog,*)
+  write(ilog,*) '-----------------------------------'
+  write(ilog,*) 'WELCOME TO CAMPARI ANALYSIS TOOL'
+  write(ilog,*) '-----------------------------------'
+  write(ilog,*)
+
   do i=1,11
     if(dis_method(i).ge.1.and.dis_method(i).le.11) n_dis_method = n_dis_method + 1
     if(dis_weight_in(i).ge.0.and.dis_weight_in(i).le.1) dis_weight(i) = dis_weight_in(i)
@@ -154,28 +166,28 @@ subroutine generate_neighbour_list( &
 
   write(ilog,*) "Input dimensions:", n_snaps, " row and ", n_xyz," col"
   write(ilog,*)
-  if(superver) write(ilog,*) "clu_radius_in", clu_radius_in
-  if(superver) write(ilog,*) "clu_hardcut_in", clu_hardcut_in
-  write(ilog,*)
-  if(superver) write(ilog,*) "Input example", trj_data(1:10,1:10)
-  write(ilog,*)
-  write(ilog,*)
-  write(ilog,*) 'Now using truncated leader algorithm for pre-clustering&
-   &in neighbor list generation ...'
+  if(superver) then
+     write(ilog,*) "clu_radius_in", clu_radius_in
+     write(ilog,*) "clu_hardcut_in", clu_hardcut_in
+     write(ilog,*)
+     write(ilog,*) "Input example", trj_data(1:10,1:10)
+     write(ilog,*)
+   end if
 
-  nclalcsz = 2 ! a priori cluster numbers
-  allocate(scluster(nclalcsz))
-  scluster(:)%nmbrs = 0 ! number of elements in each cluster
-  scluster(:)%alsz = 0 ! allocation size of each cluster
+  write(ilog,*)
+
+
   if(.not.birch) then
     call leader_clustering(trj_data)
   else
-    ! call birch_clustering(modei,nnodes)
+    call birch_clustering(trj_data)
+    write(ilog,*) 'BIRCH DONE'
+    call exit()
   end if
 
   ! now compare all blocks to each other (the slowest part) taking advantage
   ! of information generated previously (otherwise intractable)
-  write(ilog,*)
+  write(ilog,*) '-----------------------------------'
   write(ilog,*) 'Now computing cutoff-assisted neighbor list...'
   write(ilog,*)
 
@@ -189,9 +201,9 @@ subroutine generate_neighbour_list( &
   do i=1,n_snaps
     if (cnblst(i)%nbs.le.0) then
       nzeros = nzeros + 1
-     write(ilog,*) 'Warning. Snapshot # ',i,' is without a neighbor (similar) &
-     &structure. This may cause the clustering algorithm to crash or &
-     &misbehave otherwise.'
+     if(superver) write(ilog,*) 'Warning. Snapshot # ',i,' is without a &
+     &neighbor (similar) structure. This may cause the clustering algorithm &
+     &to crash or misbehave otherwise.'
    end if
   end do
   if (nzeros.gt.0) then
@@ -223,21 +235,27 @@ subroutine generate_neighbour_list( &
 
   ! Eventual file-dumping for mst (debugging)
   if(mst_print) then
-    inquire(file="mst_original.txt", exist=exist)
+    write(ilog,*) '-----------------------------------'
+    write(ilog,*) 'DUMPING OF THE MST FOR DEBUGGING REASONS'
+    inquire(file="mst_new.txt", exist=exist)
     if (exist) then
-      write(ilog,*) 'mst_original.txt already exists. It will be overwritten'
-      open(378, file="mst_original.txt", status="replace", action="write")
+      mst_file_unit = freeunit()
+      write(ilog,*) 'mst_new.txt already exists. It will be overwritten'
+      open(mst_file_unit, file="mst_new.txt", status="replace", action="write")
     else
-      open(378, file="mst_original.txt", status="new", action="write")
+      open(mst_file_unit, file="mst_new.txt", status="new", action="write")
     end if
-    write(ilog,*) 'the problem is not here'
     do i=1,n_snaps
-      write (format_var, "(A1,I1,A7)") "(", adjl_deg(i), "f15.10)"
-      write(378, format_var)  adjl_dis(i,:)
+      write(format_var,*) adjl_deg(i)
+      if(adjl_deg(i).gt.max_degr) write(ilog,*) 'During dumping the degree exceeded maximum possible for element',i
+      write (format_var, "(A1,I"//adjustl(trim(format_var))//",A7)") "(", adjl_deg(i), "f15.22)"
+      write(mst_file_unit,format_var)  adjl_dis(i,:)
     end do
-    close(378)
+
+    close(mst_file_unit)
     write(ilog,*) '...file-mst dumping done.'
   end if
+
   if(log_print) close(ilog)
 
 end
