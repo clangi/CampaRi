@@ -12,7 +12,7 @@
 #' @export 
 #' @import ggplot2
 zap_ggplot<-function(sap_file=NULL, sap_table=NULL,write=F, folderPlot = "plots/", 
-                     timeline=T, basin_call=F, local_cut=T,
+                     timeline=T, subtitle = NULL, basin_call=F, local_cut=T,
                      ann_trace = F, ann_trace_ret = F, background_height = NULL, 
                      ann_names_L = NULL,ann_names_R = NULL,
                      title = "no title"){
@@ -92,7 +92,9 @@ zap_ggplot<-function(sap_file=NULL, sap_table=NULL,write=F, folderPlot = "plots/
   
   # initial creation of the plot
   gg <- ggplot(data = pin, mapping = aes(x = xx, y = -log((pin[,4]/Nsnap)))) +
-    xlab("Progress Index") + ylab("Annotation") + ggtitle(title)
+    xlab("Progress Index") + ylab("Annotation") 
+    # theme_bw() +
+    # theme(panel.grid.minor = element_line(colour="gray80"))
   
   #Trace height from the top. This is the 0-16 parts out of ymax
   if(!is.null(background_height)&&is.numeric(background_height)&&length(background_height)==1){
@@ -162,6 +164,10 @@ zap_ggplot<-function(sap_file=NULL, sap_table=NULL,write=F, folderPlot = "plots/
     geom_text(data = data.frame(), aes(Nsnap*3/4, ymax-1*ymax/14, label = "Basin 2"))
   # p + annotate("rect", xmin = 3, xmax = 4.2, ymin = 12, ymax = 21,
   #              alpha = .2)
+  if(!is.null(subtitle)&&is.character(subtitle))
+    gg <- gg + ggtitle(bquote(atop(.(title), atop(italic(.(subtitle)), "")))) 
+  else
+    gg <- gg + ggtitle(title)
   plot(gg)
   if(ann_trace_ret) return(ann_tr)
 }
