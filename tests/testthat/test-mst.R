@@ -66,6 +66,7 @@ zap_ggplot(sap_file = sap_file)
 # zap_ggplot(sap_table = sap_table)
 
 # original run on the same input file
+system(paste0('cp -f ',package_dir,'inst/extdata/nbu.* .'))
 camp_home <- "/software/campari/"
 campari(wd, data_file, base_name="nbu",camp_home)
 sap_file2 <- "PROGIDX_000000000010.dat"
