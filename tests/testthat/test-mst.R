@@ -1,10 +1,12 @@
 #THIS FILE SHOULD BE COPIED IN THE WORKING DIRECTORY. Take care about directories specifics
 # wd <- "/home/dgarolini/projects2016/release1/"
+library(devtools)
 wd <- "~/Projects/2016/CampaR/"
 setwd(wd)
+install_github("Melkiades/CampaRi")
 package_dir <- "CampaRi/"
 system(paste0("bash ",package_dir,"src/cleaner.sh"))
-install.packages(package_dir, repos = NULL, type="source")
+# install.packages(package_dir, repos = NULL, type="source")
 library(CampaRi)
 
 
@@ -39,10 +41,6 @@ dim(trj)
 
 
 #ANALYSIS of the subsampled data-set (10 fold reduction)
-install.packages("CampaRi/", repos = NULL, type="source")
-# remove.packages("CampaRi", lib="~/Library/R/3.3/library")
-library(CampaRi)
-
 adjl<-adjl_from_trj(trj = trj, mode = "fortran", normalize_d = FALSE, logging = F)
 ret<-gen_progindex(adjl, snap_start = 10)
 ret2<-gen_annotation(ret,snap_start = 10, local_cut_width = floor(10000/27))
@@ -72,19 +70,3 @@ campari(wd, data_file, base_name="nbu",camp_home)
 sap_file2 <- "PROGIDX_000000000010.dat"
 sap_table2 <- read.table(sap_file2)
 zap_ggplot(sap_file2)
-
-# checking the checkable on the output tables of the two softwares
-sum(sap_table[,3]==0);sum(sap_table2[,3]==0);sum(sap_table[,4]==0);sum(sap_table2[,4]==0)
-mean(sap_table2[,4])-mean(sap_table[,4])
-sum(sap_table[,6]==0);sum(sap_table2[,6]==0);mean(sap_table[,5]);mean(sap_table2[,5])
-mean(sap_table[,5])==mean(sap_table2[,5]);mean(sap_table[,4]);mean(sap_table2[,4])
-sum(sap_table2[,3]!=sap_table[,3]);sum(sap_table2[,6]!=sap_table[,6])
-sum(sap_table2[,4]!=sap_table[,4]);sum(sap_table2[,5]!=sap_table[,5])
-sum(sap_table[,10]==0);sum(sap_table2[,10]==0);sum(sap_table[,12]==0);sum(sap_table2[,12]==0)
-mean(sap_table[,10]);mean(sap_table2[,10]);mean(sap_table[,12]);mean(sap_table2[,12])
-
-# checking the mst output to spot the above differencies *the flag mst_print must be on INSIDE clustering.f90 (campari source)
-# adjl_dis_or <- read.table("mst_original.txt",sep = "", fill=T,stringsAsFactors= F)
-adjl_dis_or <- read.fwf("mst_original.txt", widths = c(15,15,15,15,15,15), fill=T) #supposing 6 column(from mst - max_degree)
-adjl_dis_or[is.na(adjl_dis_or)] <- 0
-adjl[[3]][,1]==adjl_dis_or[,1]
