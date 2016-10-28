@@ -124,21 +124,26 @@ adjl_from_trj<-function(trj, distance_method=5, distance_weights=NULL, normalize
       attr(distance_weights,"Csingle") <- TRUE
       #main fortran talker
       output<-.Fortran("generate_neighbour_list", PACKAGE="CampaRi",
+                      #input
                       trj_data=trj,
                       n_xyz_in=as.integer(c1),
                       n_snaps_in=as.integer(r1),
                       clu_radius_in=as.single(clu_radius),
                       clu_hardcut_in=as.single(clu_hardcut), 
+                      #output
                       adjl_deg=adj_deg, 
                       adjl_ix=adj_ix, 
                       adjl_dis=adj_dis, 
                       max_degr=as.integer(max_d),
+                      #algorithm details
                       dis_method_in=as.integer(distance_method),
                       dis_weight_in=distance_weights,
                       birch_in=as.logical(FALSE),
                       mst_in=as.logical(min_span_tree),
+                      #modes
                       data_meth_in=as.integer(1),
                       normalize_dis_in=as.logical(normalize_d),
+                      log_print_in=as.logical(logging),
                       verbose_in=as.logical(TRUE))
       #output adjustment
       output_fin[[1]] <- output$adjl_deg

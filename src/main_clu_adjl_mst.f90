@@ -180,9 +180,9 @@ subroutine generate_neighbour_list( &
   if(.not.birch) then
     call leader_clustering(trj_data)
   else
-    call birch_clustering(trj_data)
-    write(ilog,*) 'BIRCH DONE'
-    call exit()
+    ! call birch_clustering(trj_data)
+    ! write(ilog,*) 'BIRCH DONE'
+    ! call exit()
   end if
 
   ! now compare all blocks to each other (the slowest part) taking advantage

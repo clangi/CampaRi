@@ -3,6 +3,7 @@
 wd <- "~/Projects/2016/CampaR/"
 setwd(wd)
 package_dir <- "CampaRi/"
+system(paste0("bash ",package_dir,"src/cleaner.sh"))
 install.packages(package_dir, repos = NULL, type="source")
 library(CampaRi)
 
@@ -17,7 +18,7 @@ r2<-gen_annotation(r1, snap_start = 7521)
 sap_file <- 'REPIX_000000007521.dat'
 zap_ggplot(sap_file = sap_file,
            title = paste0("Sapphire of nbu. Snapshots = ", 100000),
-           timeline = F)
+           timeline = F,ann_trace = F)
 
 
 # SECOND TEST - butane chain2
@@ -42,14 +43,14 @@ install.packages("CampaRi/", repos = NULL, type="source")
 # remove.packages("CampaRi", lib="~/Library/R/3.3/library")
 library(CampaRi)
 
-adjl<-adjl_from_trj(trj = trj, mode = "fortran", normalize_d = FALSE)
+adjl<-adjl_from_trj(trj = trj, mode = "fortran", normalize_d = FALSE, logging = F)
 ret<-gen_progindex(adjl, snap_start = 10)
-ret2<-gen_annotation(ret,snap_start = 10,local_cut_width = 50)
+ret2<-gen_annotation(ret,snap_start = 10, local_cut_width = floor(10000/27))
 sap_file <- 'REPIX_000000000010.dat'
 sap_table <- read.table(sap_file)
 zap_ggplot(sap_file = sap_file, 
            title = paste0("Sapphire of nbu. Snapshots = ", nrow(sap_table)),
-           timeline = F,ann_trace = F)
+           timeline = F, ann_trace = F)
 
 # DIRECT COMPARISON OF THE SAME DATA-SET [original campari needed]
 # less_original run
@@ -57,7 +58,7 @@ data_file <- "CampaRi/inst/extdata/NBU_1250fs.dcd"
 trj<-load_trj_dcd(data_file)
 adjl<-adjl_from_trj(trj = trj, mode = "fortran",normalize_d = FALSE)
 ret<-gen_progindex(adjl,snap_start = 10)
-ret2<-gen_annotation(ret,snap_start = 10,local_cut_width = 50)
+ret2<-gen_annotation(ret,snap_start = 10,local_cut_width = 6000/27)
 sap_file <- 'REPIX_000000000010.dat'
 sap_table <- read.table(sap_file)
 # sap_table[,4] <- sap_table[,4] + mean(sap_table2[,4])-mean(sap_table[,4])

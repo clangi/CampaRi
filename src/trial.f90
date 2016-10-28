@@ -31,7 +31,7 @@ program trial
 
   forall(i = 1:11) distances(i) = 0
   distances(1) = 5
-  distances(2) = 11
+  ! distances(2) = 11
   ! distances(1) = 11
   forall(i = 1:11) dis_wei_in(i) = 0
   ! dis_wei_in(1) = 1
@@ -39,7 +39,7 @@ program trial
   r1 = HUGE(r1)
   r2 = HUGE(r1)
   mst_iin = .true.
-  bir_in = .true.
+  bir_in = .false.
   logging = .false.
 
   call RANDOM_NUMBER(inp)
@@ -59,18 +59,18 @@ program trial
   call generate_neighbour_list( &
   inp, dim2, dim1, r1, r2, & !input
   a_deg, a_ix, a_dis, max_deg, & !output
-  distances, dis_wei_in, bir_in,mst_iin, & !algorithm details
+  distances, dis_wei_in, bir_in, mst_iin, & !algorithm details
   d_meth_i,.true.,logging,.true.) !modes
-  ! print *, ""
-  ! print *, "a_deg(1:50)",a_deg(1:50)
-  ! print *, ""
-  ! print *, "a_ix(1,1:100)",a_ix(1,1:100)
-  ! print *, ""
-  ! print *, "a_dis(1,1:100)",a_dis(1,1:100)
-  ! print *, ""
-  ! print *, "max_deg", max_deg
-  ! print *, ""
-  ! print *, ""
+  print *, ""
+  print *, "a_deg(1:50)",a_deg(1:50)
+  print *, ""
+  print *, "a_ix(1,1:100)",a_ix(1,1:100)
+  print *, ""
+  print *, "a_dis(1,1:100)",a_dis(1,1:100)
+  print *, ""
+  print *, "max_deg", max_deg
+  print *, ""
+  print *, ""
 
   ! call gen_progind_from_adjlst(dim1, 10, &
   ! max_deg, a_deg, a_ix, &

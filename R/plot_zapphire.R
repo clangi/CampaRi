@@ -13,7 +13,7 @@
 #' @import ggplot2
 zap_ggplot<-function(sap_file=NULL, sap_table=NULL,write=F, folderPlot = "plots/", 
                      timeline=T, basin_call=F, local_cut=T,
-                     ann_trace = NULL, ann_trace_ret = F, background_height = NULL, 
+                     ann_trace = F, ann_trace_ret = F, background_height = NULL, 
                      ann_names_L = NULL,ann_names_R = NULL,
                      title = "no title"){
   # check on title
@@ -30,20 +30,27 @@ zap_ggplot<-function(sap_file=NULL, sap_table=NULL,write=F, folderPlot = "plots/
   else stop("Sapphire table needed in input. Check the documentation")
   dp <- dim(pin)
   ann_tr <- array("NA",dim = dp[1])
-  nrow_an_tr <- nrow(ann_trace)
+  if(!is.logical(ann_trace)&&is.numeric(ann_trace)&&length(ann_trace)!=1)
+    nrow_an_tr <- nrow(ann_trace)
+  else if(length(ann_trace)!=dp[1])
+    nrow_an_tr <- 1
+  else
+    nrow_an_tr <- NULL
   
   #checking the trace input
   if(is.null(nrow_an_tr)&&length(ann_trace)!=dp[1]&&length(ann_trace)!=1&&!is.null(ann_trace)&&!is.logical(ann_trace)) 
     stop("The annotation trace must be eighter a number vector (or matrix) with length = input trj eighter
          a single value (1-10,T/F). ") 
-  if(length(ann_trace)==dp[1]) nrow_an_tr <- 1
+
   if(!is.null(ann_trace)&&!is.logical(ann_trace)&&(any(!sapply(ann_trace,is.numeric)) ||
      max(ann_trace)>10)) stop("For manual insertion of the trace use numbers 1-10 for each value (also more than one row)")
   if(!is.null(nrow_an_tr)) max_an_tr <- max(ann_trace)
   
   
 #Main ann_trace constructor
-  if(is.null(ann_trace)||(is.logical(ann_trace)&&ann_trace)){
+  if(is.null(ann_trace)||
+     (is.logical(ann_trace)&&ann_trace)||
+     (is.numeric(ann_trace)&&length(ann_trace)==1&&ann_trace==2)){
     message("Annotation trace not selected. It will be considered bepartite along the timeline.")
     cat("Half random mode selected for the trace annotation. First half will be light grey")
     ann_tr[pin[,3]>=dp[1]/2 & ann_tr == "NA"]<-"gray75"
@@ -73,7 +80,7 @@ zap_ggplot<-function(sap_file=NULL, sap_table=NULL,write=F, folderPlot = "plots/
     warning("ann_trace = F silenced the annotation trace.")
   }else{
       stop("check the input of ann_trace or read the documentation. It is neither a number nor a color array")
-    }
+  }
 
   # Set range of x and y values for the plot:
   Nsnap<-dp[1]

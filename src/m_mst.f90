@@ -55,6 +55,7 @@ module m_mst
       allocate(Talldiss((allnbs+1)/2))
       allocate(ix(allnbs))!
       allocate(Tix((allnbs+1)/2))!
+      allocate(alllnks(2,allnbs))!
         ! allocate(iv2(allnbs,2)) tmp_all_lnks
         ! allocate(alldiss(allnbs)) same
         ! allocate(tmpv(allnbs)) Talldiss
