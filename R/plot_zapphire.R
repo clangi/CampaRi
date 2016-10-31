@@ -19,7 +19,7 @@ zap_ggplot<-function(sap_file=NULL, sap_table=NULL,write=F, folderPlot = "plots/
   # check on title
   if(!is.character(title)) stop("title var must be a string")
   # check on output folder
-  if(file.exists(folderPlot)&write) print(paste0(folderPlot," already exixts. Posting plots there."))
+  if(file.exists(folderPlot)&&write) print(paste0(folderPlot," already exixts. Posting plots there."))
   else if(write){
     dir.create(folderPlot)
     cat(paste0(folderPlot," created in order to contain my plots."))
@@ -51,7 +51,7 @@ zap_ggplot<-function(sap_file=NULL, sap_table=NULL,write=F, folderPlot = "plots/
   if(is.null(ann_trace)||
      (is.logical(ann_trace)&&ann_trace)||
      (is.numeric(ann_trace)&&length(ann_trace)==1&&ann_trace==2)){
-    message("Annotation trace not selected. It will be considered bepartite along the timeline.")
+    message("Annotation trace not selected (or 2). It will be considered bepartite along the timeline.")
     cat("Half random mode selected for the trace annotation. First half will be light grey")
     ann_tr[pin[,3]>=dp[1]/2 & ann_tr == "NA"]<-"gray75"
     ann_tr[pin[,3] < dp[1]/2 & ann_tr == "NA"] <- "gray30"
@@ -164,10 +164,27 @@ zap_ggplot<-function(sap_file=NULL, sap_table=NULL,write=F, folderPlot = "plots/
     geom_text(data = data.frame(), aes(Nsnap*3/4, ymax-1*ymax/14, label = "Basin 2"))
   # p + annotate("rect", xmin = 3, xmax = 4.2, ymin = 12, ymax = 21,
   #              alpha = .2)
-  if(!is.null(subtitle)&&is.character(subtitle))
-    gg <- gg + ggtitle(bquote(atop(.(title), atop(italic(.(subtitle)), "")))) 
-  else
-    gg <- gg + ggtitle(title)
-  plot(gg)
+  # if(!is.null(subtitle)&&is.character(subtitle))
+  #   gg <- gg + ggtitle(bquote(atop(.(title), atop(italic(.(subtitle)), "")))) 
+  # else
+  gg <- gg + ggtitle(title)
+  if(!write) {
+    plot(gg)
+  }else{
+    jpeg_file <- 'rplot.jpg'
+    jpeg_file_tm <- 0
+    while(T){
+      if(file.exists(paste0(folderPlot,"/",jpeg_file))){
+        jpeg_file_tm <- jpeg_file_tm + 1
+        jpeg_file <- paste0('rplot',jpeg_file_tm,".jpg")
+      }else
+        break
+    }
+    jpeg(paste0(folderPlot,"/",jpeg_file),width = 1200, height = 900)
+    plot(gg)
+    dev.off()
+  }
+  
+  
   if(ann_trace_ret) return(ann_tr)
 }
