@@ -29,12 +29,13 @@
 !--------------------------------------------------------------------------!
 
 ! CHANGES IN VARIABLES
-! dis_method = cdis_crit
+! tmp_dis_method = cdis_crit
 ! n_xyz = cdofsbnds !principally the length and starting point of the coordinate
 ! n_snaps = cstored
-! trj_data = cludata
+! trj_data(n_snaps,n_xyz) = cludata(n_xyz,n_snaps)
 ! tmp_d = rmsdtmp
-!
+! n_xyz = calcsz
+! childr_alsz = chalsz
 ! I eliminated maxrads and the |clust(1|2)| = 1 distance for redundancy
 !
 ! OLDERIES
@@ -50,6 +51,7 @@ subroutine generate_neighbour_list( &
   trj_data, n_xyz_in, n_snaps_in, clu_radius_in, clu_hardcut_in, & !input
   adjl_deg, adjl_ix, adjl_dis, max_degr, & !output
   dis_method_in, dis_weight_in, birch_in, mst_in, & !algorithm details
+  rootmax_rad_in, tree_height_in, n_search_attempts_in,& !sst details
   data_meth_in, normalize_dis_in, log_print_in, verbose_in) !modes
 
   use m_variables_gen
@@ -60,13 +62,16 @@ subroutine generate_neighbour_list( &
 
   integer, INTENT(IN) :: n_xyz_in !numbers of xyz (atoms*3)
   integer, INTENT(IN) :: n_snaps_in !number of snapshots in input
-  real(KIND=4), INTENT(IN) :: trj_data(n_snaps_in, n_xyz_in) !trajectory input
   integer, intent(in) :: dis_method_in(11) !distance method
+  integer, intent(in) :: data_meth_in !data managing method TODO netcdf
+  integer, intent(in) :: tree_height_in !number of levels in the tree
+  integer, intent(in) :: n_search_attempts_in !number of search attempts in sst
+  real(KIND=4), INTENT(IN) :: trj_data(n_snaps_in, n_xyz_in) !trajectory input
   real(KIND=4), intent(in) :: dis_weight_in(11) !distance weight when averaged
   real(KIND=4), intent(in) :: clu_radius_in !defines the max cluster sizes
   real(KIND=4), intent(in) :: clu_hardcut_in !threshold between cluster snaps
+  real(KIND=4), intent(in) :: rootmax_rad_in !first level (non-root) rad-thresh
   logical, intent(in) :: verbose_in !verbose terminal output
-  integer, intent(in) :: data_meth_in !data managing method TODO netcdf
   logical, intent(in) :: mst_in !make already the ordered mst(true) or not?
   logical, intent(in) :: normalize_dis_in !flag for normalize the distance matrix
   logical, intent(in) :: birch_in !flag for birch clustering
@@ -83,6 +88,7 @@ subroutine generate_neighbour_list( &
   integer mst_file_unit, freeunit ! must have for using the same-name-function
   logical exist, mst_print, log_print !file dumping for mst tree for debugging
   character(len=1024) :: format_var !format for above mentioned dumping
+  real t2,t1 !timing variables
 
   integer, intent(inout) :: max_degr !maximum degree of the adjlist
   integer, intent(inout) :: adjl_deg(n_snaps_in)
@@ -97,19 +103,33 @@ subroutine generate_neighbour_list( &
   n_xyz = n_xyz_in
   n_snaps = n_snaps_in
   ver = verbose_in
-  superver = .false.  !dev flag for superverbose output
-  mst_print = .false. !dev flag for adjlist (mst) checking
   log_print = log_print_in !logging flag
-  cmaxrad = 1000 !root level size threshold
-  c_nhier = 7
   radius = clu_radius_in
-  if (hardcut.lt.radius) hardcut = 2.0*radius
   dis_method = dis_method_in
   birch = birch_in
-  dis_weight = 1
-  n_dis_method = 0
   mst = mst_in
   normalize_dis = normalize_dis_in
+
+  !defaults
+  dis_weight = 1
+  n_dis_method = 0
+  if (hardcut.lt.radius) hardcut = 2.0*radius
+
+  !debugging flag
+  superver = .false.  !dev flag for superverbose output
+  mst_print = .false. !dev flag for adjlist (mst) checking
+  rand_seed_cnt = 1 !it is used to have fixed seed (different for each call)
+  !if it is 0 it uses the standard random_seed
+
+  !SST
+  cmaxrad = rootmax_rad_in !root level size threshold
+  c_nhier = tree_height_in
+  ! default vars that should be set from main function
+  ! cprogindrmax = max(floor((n_snaps*7.0)/100),min(n_snaps,5)) !def 7/100
+  cprogindrmax = n_search_attempts_in
+  cprogbatchsz = 1  !  batch size for random stretches aka dim of random branches def = 1 TODO
+  cprogrdepth = 0   !  auxiliary search depth def = 0 TODO
+  if(cprogrdepth.gt.c_nhier) cprogrdepth = c_nhier
 
 
 ! defining the logging id. 0 is sterror, 5 stinput, 6 stoutput
@@ -178,60 +198,71 @@ subroutine generate_neighbour_list( &
 
 
   if(.not.birch) then
+    call CPU_time(t1)
     call leader_clustering(trj_data)
+
+    ! now compare all blocks to each other (the slowest part) taking advantage
+    ! of information generated previously (otherwise intractable)
+    write(ilog,*) '-----------------------------------'
+    write(ilog,*) 'Now computing cutoff-assisted neighbor list...'
+    write(ilog,*)
+
+    call gen_nb(trj_data)
+    call CPU_time(t2)
+    write(ilog,*) 'TIME elapsed for neighbor list creation/reading: ',t2-t1, ' [s]'
+
+    write(ilog,*)
+    write(ilog,*) 'Neighbor list generated.'
+    write(ilog,*)
+
+      nzeros = 0
+      do i=1,n_snaps
+        if (cnblst(i)%nbs.le.0) then
+          nzeros = nzeros + 1
+         if(superver) write(ilog,*) 'Warning. Snapshot # ',i,' is without a &
+         &neighbor (similar) structure. This may cause the clustering algorithm &
+         &to crash or misbehave otherwise.'
+       end if
+      end do
+      if (nzeros.gt.0) then
+        write(ilog,*) 'Warning. ',nzeros,' snapshots are without a neighbor &
+        &(similar) structure. This may in some cases cause the clustering &
+        &algorithm to misbehave.'
+      end if
+      write(ilog,*)
+
+      do i=1,n_clu_alc_sz_gen
+        if (allocated(scluster(i)%snaps).EQV..true.) deallocate(scluster(i)%snaps)
+        if (allocated(scluster(i)%sums).EQV..true.) deallocate(scluster(i)%sums)
+      end do
+      deallocate(scluster)
+
+      if(mst) then
+        call gen_MST_from_nbl(adjl_deg,adjl_ix,adjl_dis,max_degr)
+        call CPU_time(t2)
+        write(ilog,*) 'TIME elapsed for MST: ',t2-t1, ' [s]'
+      else
+        do i=1,n_snaps
+          adjl_deg(i) = cnblst(i)%nbs
+          adjl_ix(i,:) = cnblst(i)%idx
+          adjl_dis(i,:) = cnblst(i)%dis
+          if(i .eq. 1 .OR. max_degr .lt. cnblst(i)%nbs) max_degr = cnblst(i)%nbs
+          if (allocated(cnblst(i)%dis).EQV..true.) deallocate(cnblst(i)%dis)
+          if (allocated(cnblst(i)%idx).EQV..true.) deallocate(cnblst(i)%idx)
+        end do
+        deallocate(cnblst)
+      end if
   else
-    ! call birch_clustering(trj_data)
-    ! write(ilog,*) 'BIRCH DONE'
-    ! call exit()
+    call CPU_time(t1)
+    call birch_clustering(trj_data)
+    call CPU_time(t2)
+    write(ilog,*) '>>TIME<< elapsed for birch_clustering: ',t2-t1, ' [s]'
+    write(ilog,*) 'BIRCH DONE'
+    call gen_MST_from_treeclustering(adjl_deg,adjl_ix,adjl_dis,max_degr,trj_data)
+    call CPU_time(t2)
+    write(ilog,*) '>>TIME<< elapsed for SST building: ',t2-t1, ' [s]'
   end if
 
-  ! now compare all blocks to each other (the slowest part) taking advantage
-  ! of information generated previously (otherwise intractable)
-  write(ilog,*) '-----------------------------------'
-  write(ilog,*) 'Now computing cutoff-assisted neighbor list...'
-  write(ilog,*)
-
-  call gen_nb(trj_data)
-
-  write(ilog,*)
-  write(ilog,*) 'Neighbor list generated.'
-  write(ilog,*)
-
-  nzeros = 0
-  do i=1,n_snaps
-    if (cnblst(i)%nbs.le.0) then
-      nzeros = nzeros + 1
-     if(superver) write(ilog,*) 'Warning. Snapshot # ',i,' is without a &
-     &neighbor (similar) structure. This may cause the clustering algorithm &
-     &to crash or misbehave otherwise.'
-   end if
-  end do
-  if (nzeros.gt.0) then
-    write(ilog,*) 'Warning. ',nzeros,' snapshots are without a neighbor &
-    &(similar) structure. This may in some cases cause the clustering &
-    &algorithm to misbehave.'
-  end if
-  write(ilog,*)
-
-  do i=1,nclalcsz
-    if (allocated(scluster(i)%snaps).EQV..true.) deallocate(scluster(i)%snaps)
-    if (allocated(scluster(i)%sums).EQV..true.) deallocate(scluster(i)%sums)
-  end do
-  deallocate(scluster)
-
-  if(mst) then
-    call gen_MST_from_nbl(adjl_deg,adjl_ix,adjl_dis,max_degr)
-  else
-    do i=1,n_snaps
-      adjl_deg(i) = cnblst(i)%nbs
-      adjl_ix(i,:) = cnblst(i)%idx
-      adjl_dis(i,:) = cnblst(i)%dis
-      if(i .eq. 1 .OR. max_degr .lt. cnblst(i)%nbs) max_degr = cnblst(i)%nbs
-      if (allocated(cnblst(i)%dis).EQV..true.) deallocate(cnblst(i)%dis)
-      if (allocated(cnblst(i)%idx).EQV..true.) deallocate(cnblst(i)%idx)
-    end do
-    deallocate(cnblst)
-  end if
 
   ! Eventual file-dumping for mst (debugging)
   if(mst_print) then

@@ -10,7 +10,10 @@
 #' @return tree: degree list, connectivity matrix and weights
 #'
 #' @export campari
-campari<-function(wd, data_file, base_name, camp_home){
+campari<-function(nsnaps, wd, data_file, base_name, camp_home, 
+                  cprogindstart = 1, pdb_format = 4, distance_met = 5,
+                  birch_height = 5, cmaxrad = 2147483647, cradius = 2147483647,
+                  cprogindwidth = 1){
   # dirs/file definitions
   kfile <- paste0(base_name,".key")
   klog <-paste0(base_name,".log")
@@ -23,7 +26,7 @@ campari<-function(wd, data_file, base_name, camp_home){
   FMCSC_BBSEGFILE <- paste0(camp_home,"data/bbseg2.dat")    # lookup table for secondary structure measures
   FMCSC_SEQFILE  <- paste0(wd,seq_in)                      # input file that defines the sequence of the molecule(s)
   
-  FMCSC_PDB_FORMAT <- 4   
+  FMCSC_PDB_FORMAT <- pdb_format 
   if(FMCSC_PDB_FORMAT==1) 
     FMCSC_PDBFILE <- paste0(wd,data_file)
   if(FMCSC_PDB_FORMAT==3) 
@@ -47,21 +50,20 @@ campari<-function(wd, data_file, base_name, camp_home){
   #2. GROMOS
   #3. CHARMM
   #4. AMBER
-  FMCSC_NRSTEPS <- 30000
-  FMCSC_CDISTANCE<- 5 # seq(0,10,1) #1-5 crashed because torsional
+  FMCSC_NRSTEPS <- nsnaps
+  FMCSC_CDISTANCE <- distance_met # seq(0,10,1) #1-5 crashed because torsional
   
-  FMCSC_BIRCHHEIGHT<- 7 #12 #nothing is changing 1,51,2
-  FMCSC_CMAXRAD<- 2147483647  #nothing is changing 0,5,0.5
-  FMCSC_CRADIUS<-2147483647 #nothing is changing seq(0.1,5.1,0.2)
-  FMCSC_CCUTOFF<- 2147483647  #nothing seq(0,10)
+  FMCSC_BIRCHHEIGHT <- birch_height #12 #nothing is changing 1,51,2
+  FMCSC_CMAXRAD <- cmaxrad  #nothing is changing 0,5,0.5
+  FMCSC_CRADIUS <- cradius #nothing is changing seq(0.1,5.1,0.2)
+  FMCSC_CCUTOFF <- 2147483647  #nothing seq(0,10)
   
   FMCSC_CPROGINDMODE <-1 #exact MST = 1
   FMCSC_CPROGINDRMAX <-1000 #ONLY SST
-  FMCSC_CPROGINDSTART <- 10 #nothing is changing c(-1,seq(1,1801,200))
-  FMCSC_CPROGINDWIDTH <-  15000 # 540
+  FMCSC_CPROGINDSTART <- cprogindstart #nothing is changing c(-1,seq(1,1801,200))
+  FMCSC_CPROGINDWIDTH <-  cprogindwidth # 540
   
-  FMCSC_CPROGMSTFOLD <- 0 # 2
-  print(FMCSC_CPROGMSTFOLD)
+  FMCSC_CPROGMSTFOLD <- 0 # tree contraction
   FMCSC_PCAMODE      <-1   #no PCA is performed
   FMCSC_CREDUCEDIM   <-2 #ONLY PCA
   # this keyword allows the user to elect to run the clustering algorithm (→ CMODE) on a dataset of r
@@ -79,11 +81,18 @@ campari<-function(wd, data_file, base_name, camp_home){
   kchar<-sub(pattern = "FMCSC_BBSEGFILE\\s[A-Za-z0-9_/.~]+", replacement = paste0("FMCSC_BBSEGFILE ", FMCSC_BBSEGFILE), x = kchar)
   kchar<-sub(pattern = "FMCSC_SEQFILE\\s[A-Za-z0-9_/.~]+", replacement = paste0("FMCSC_SEQFILE ", FMCSC_SEQFILE), x = kchar)
   if(FMCSC_PDB_FORMAT==1) 
+    #if there is bla bla if not bla bla
     kchar<-sub(pattern = "FMCSC_PDBFILE\\s[A-Za-z0-9_/.~]+", replacement = paste0("FMCSC_PDBFILE ", FMCSC_PDBFILE), x = kchar)
+  else
+    kchar<-sub(pattern = "FMCSC_PDBFILE\\s[A-Za-z0-9_/.~]+", replacement = "", x = kchar)
   if(FMCSC_PDB_FORMAT==3) 
     kchar<-sub(pattern = "FMCSC_XTCFILE\\s[A-Za-z0-9_/.~]+", replacement = paste0("FMCSC_XTCFILE ", FMCSC_XTCFILE), x = kchar)
+  else
+    kchar<-sub(pattern = "FMCSC_XTCFILE\\s[A-Za-z0-9_/.~]+", replacement = "", x = kchar)
   if(FMCSC_PDB_FORMAT==4) 
     kchar<-sub(pattern = "FMCSC_DCDFILE\\s[A-Za-z0-9_/.~]+", replacement = paste0("FMCSC_DCDFILE ", FMCSC_DCDFILE), x = kchar)
+  else
+    kchar<-sub(pattern = "FMCSC_DCDFILE\\s[A-Za-z0-9_/.~]+", replacement = "", x = kchar)
   kchar<-sub(pattern = "FMCSC_PDB_FORMAT\\s[0-9]+", replacement = paste0("FMCSC_PDB_FORMAT ", FMCSC_PDB_FORMAT), x = kchar)
   kchar<-sub(pattern = "FMCSC_PDB_R_CONV\\s[0-9]+", replacement = paste0("FMCSC_PDB_R_CONV ", FMCSC_PDB_R_CONV), x = kchar)
   kchar<-sub(pattern = "FMCSC_NRSTEPS\\s[0-9]+", replacement = paste0("FMCSC_NRSTEPS ", FMCSC_NRSTEPS), x = kchar)
@@ -104,6 +113,6 @@ campari<-function(wd, data_file, base_name, camp_home){
   writeLines(kchar, fileConn)
   close(fileConn)
   
-  system(paste0(camp_home,"bin/x86_64/campari -k ",kfile,paste0(">& ",klog)))
+  system(paste0(camp_home,"bin/x86_64/campari -k ",kfile, paste0(">& ",klog)))
   system(paste0("tail ",klog))
 }

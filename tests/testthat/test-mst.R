@@ -1,12 +1,13 @@
 #THIS FILE SHOULD BE COPIED IN THE WORKING DIRECTORY. Take care about directories specifics
-# wd <- "/home/dgarolini/projects2016/release1/"
-library(devtools)
-wd <- "~/Projects/2016/CampaR/"
+wd <- "/home/dgarolini/projects/CampaR/"
+# library(devtools)
+# wd <- "~/Projects/2016/CampaR/"
 setwd(wd)
-install_github("Melkiades/CampaRi")
+# install_github("Melkiades/CampaRi")
 package_dir <- "CampaRi/"
 system(paste0("bash ",package_dir,"src/cleaner.sh"))
-# install.packages(package_dir, repos = NULL, type="source")
+remove.packages("CampaRi", lib="~/R/x86_64-pc-linux-gnu-library/3.1")
+install.packages(package_dir, repos = NULL, type="source")
 library(CampaRi)
 
 
@@ -52,11 +53,11 @@ zap_ggplot(sap_file = sap_file,
 
 # DIRECT COMPARISON OF THE SAME DATA-SET [original campari needed]
 # less_original run
-data_file <- "CampaRi/inst/extdata/NBU_1250fs.dcd"
-trj<-load_trj_dcd(data_file)
-adjl<-adjl_from_trj(trj = trj, mode = "fortran",normalize_d = FALSE)
-ret<-gen_progindex(adjl,snap_start = 10)
-ret2<-gen_annotation(ret,snap_start = 10,local_cut_width = 6000/27)
+data_file <- "inst/extdata/NBU_1250fs.dcd"
+trj<-load_trj_dcd(paste0(package_dir,data_file))
+adjl<-adjl_from_trj(trj = trj, mode = "fortran", normalize_d = FALSE)
+ret<-gen_progindex(adjl, snap_start = 10)
+ret2<-gen_annotation(ret, snap_start = 10, local_cut_width = floor(6000/27))
 sap_file <- 'REPIX_000000000010.dat'
 sap_table <- read.table(sap_file)
 # sap_table[,4] <- sap_table[,4] + mean(sap_table2[,4])-mean(sap_table[,4])
@@ -64,9 +65,11 @@ zap_ggplot(sap_file = sap_file)
 # zap_ggplot(sap_table = sap_table)
 
 # original run on the same input file
-system(paste0('cp -f ',package_dir,'inst/extdata/nbu.* .'))
+system(paste0('cp ',package_dir,'inst/extdata/NBU* .'))
+system(paste0('cp ',package_dir,'inst/extdata/nbu.* .'))
 camp_home <- "/software/campari/"
-campari(wd, data_file, base_name="nbu",camp_home)
+campari(nsnaps = nrow(trj), wd, "NBU_1250fs.dcd", base_name="nbu",camp_home,
+        cprogindstart = 10,pdb_format = 4,distance_met = 5,cprogindwidth=floor(6000/27))
 sap_file2 <- "PROGIDX_000000000010.dat"
 sap_table2 <- read.table(sap_file2)
 zap_ggplot(sap_file2)

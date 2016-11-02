@@ -29,8 +29,10 @@ load_trj_dcd<-function(t_file){
 #' @export adjl_from_trj
 #' @import parallel
 
-adjl_from_trj<-function(trj, distance_method=5, distance_weights=NULL, normalize_d = TRUE, logging = FALSE,
-                        clu_radius=NULL, clu_hardcut=NULL, cores=NULL, mode=NULL, min_span_tree=TRUE){
+adjl_from_trj<-function(trj, distance_method = 5, distance_weights = NULL,  clu_radius = NULL, clu_hardcut = NULL, #inputs
+                        normalize_d = TRUE, birch_clu = FALSE, min_span_tree = TRUE, mode = "fortran", #algo modes
+                        rootmax_rad = NULL, tree_height = NULL, n_search_attempts = NULL, #sst default
+                        cores = NULL, logging = FALSE){ #misc
   if(!is.matrix(trj)){
     if(!is.data.frame(trj)) stop('trj input must be a matrix or a data.frame')
     trj <- as.matrix(trj)
@@ -52,11 +54,11 @@ adjl_from_trj<-function(trj, distance_method=5, distance_weights=NULL, normalize
   }
   
   #Input setting
-  r1 <- nrow(trj)
-  c1 <- ncol(trj)
+  n_snaps <- nrow(trj)
+  n_xyz <- ncol(trj)
   
   #normal -LONG- mode (parallel)
-  if(is.null(mode)){
+  if(is.character(mode)&&mode == "R"){
     n_cores <- detectCores() - 1
     if(!is.null(cores)&&(cores%%1==0)) n_cores=cores
     else warning("No or wrong entry for number of cores: using all of them -1")
@@ -80,7 +82,17 @@ adjl_from_trj<-function(trj, distance_method=5, distance_weights=NULL, normalize
     }
   
     stopCluster(cl)
-    rm(trj)
+    warning('No MST made. Please use igraph package and in particular "mst" function in order to continue the analysis')
+    # library(igraph)
+#     g  <- graph.adjacency(as.matrix(dis), weighted=TRUE)
+#     g_mst <- mst(g)
+#     And the resulting tree looks like this (plot(g_mst, vertex.color=NA, vertex.size=10, edge.arrow.size=0.5)):
+#       
+#       enter image description here
+#     
+#     Once you have your igraph tree, you already know that you can transform it into an adjacency matrix with function as_adjacency_matrix:
+#       
+#       A <- as_adjacency_matrix(mst)
     
     
   }else if(is.character(mode)&&(mode=="fortran")){
@@ -89,35 +101,73 @@ adjl_from_trj<-function(trj, distance_method=5, distance_weights=NULL, normalize
     #distance value
     tmp_dis <- distance_method
     distance_method <- rep(0,11)
+    if(!is.numeric(tmp_dis)||(any(tmp_dis!=5&&tmp_dis!=11))||length(tmp_dis)>11)
+      stop("The distance values that have been inserted are not supported")
     distance_method[1:length(tmp_dis)] <- tmp_dis 
     
     #distance weights
     tmp_dis_w <- distance_weights
     distance_weights <- rep(1,11)
-    if(!is.numeric(tmp_dis_w))
-      warning("Distances are not num. The option will be turned off")
-    else distance_weights[1:length(tmp_dis_w)] <- tmp_dis_w
-    
-    #thresholds
-    if(is.null(clu_radius)){
+    if(!is.null(distance_weights)){
+      if(!is.numeric(tmp_dis_w)||length(tmp_dis)>11)
+        warning("Distances are not num. The option will be turned off")
+      else distance_weights[1:length(tmp_dis_w)] <- tmp_dis_w
+    }
+
+    #thresholds for radius and inter radius values. This is MST leader clustering
+    if(is.null(clu_radius)||clu_radius<=0){
       clu_radius <- 2147483647
       warning(paste("clu_radius variable (a priori fixed clustering radius) has not been selected. 
               A standard value of",clu_radius,"will be used."))
     }
-    if(is.null(clu_hardcut)){
+    if(is.null(clu_hardcut)||clu_hardcut<=0){
       clu_hardcut <- 2147483647
       warning(paste("clu_hardcut variable (a priori fixed distance threshold between different cluster members) has not been selected. 
               A standard value of",clu_hardcut,"will be used."))
     }
-    if(!is.numeric(clu_radius)||!is.numeric(clu_hardcut)) stop("clu_radius and clu_hardcut must be numeric")
+    if(!is.numeric(clu_radius)||length(clu_radius)!=1||!is.numeric(clu_hardcut)||length(clu_hardcut)!=1) 
+      stop("clu_radius and clu_hardcut must be a real number.")
+    
+    #logical inputs check
+    if(!is.logical(normalize_d))
+      stop("Normalization mode must be activated using T/F inputs.")
+    if(!is.logical(min_span_tree))
+      stop("MST must be enabled using T/F inputs. Using the SST (birch_clu) it is not needed.")
+    if(!is.logical(birch_clu))
+      stop("SST(birch_clu) mode must be enabled using T/F inputs.")
+    if(!is.logical(logging))
+      stop("logging mode must be a T/F input.")
+    if(birch_clu&&min_span_tree)
+      message("MST option is automatically used when birch_clu is activated.")
+    
+    #sst checks
+    if(birch_clu){
+      if(is.null(rootmax_rad))
+        rootmax_rad <- mean(trj)*(10.0/4.0)
+      else if(!is.numeric(rootmax_rad)||length(rootmax_rad)!=1)
+        stop('rootmax_rad must be a numeric of length 1.')
+      if(is.null(tree_height))
+        tree_height <- 5
+      else if(!is.numeric(tree_height)||length(tree_height)!=1)
+        stop('tree_heigth must be a numeric of length 1.')
+      if(is.null(n_search_attempts))
+         n_search_attempts <- rootmax_rad/tree_height
+       else if(!is.numeric(n_search_attempts)||length(n_search_attempts)!=1)
+         stop('n_search_attempts must be a numeric of length 1.')
+    }else{
+      rootmax_rad <- 0
+      tree_height <- 0
+      n_search_attempts <- 0
+    }
+    
     if(data_management == "R"){
       #input-output initialization
       output_fin <- list()
       max_d <- 0
-      adj_deg <- as.integer(rep(0,r1))
-      adj_ix <- matrix(as.integer(rep(0,r1*r1)),r1,r1)
-      adj_dis <- matrix(as.single(rep(0.0,r1*r1)),r1,r1)
-      trj <- matrix(as.single(trj),ncol = c1,nrow = r1)
+      adj_deg <- as.integer(rep(0,n_snaps))
+      adj_ix <- matrix(as.integer(rep(0,n_snaps*n_snaps)),n_snaps,n_snaps)
+      adj_dis <- matrix(as.single(rep(0.0,n_snaps*n_snaps)),n_snaps,n_snaps)
+      trj <- matrix(as.single(trj),ncol = n_xyz,nrow = n_snaps)
       #double Cstyle deginitions
       attr(trj,"Csingle") <- TRUE
       attr(adj_dis,"Csingle") <- TRUE
@@ -126,8 +176,8 @@ adjl_from_trj<-function(trj, distance_method=5, distance_weights=NULL, normalize
       output<-.Fortran("generate_neighbour_list", PACKAGE="CampaRi",
                       #input
                       trj_data=trj,
-                      n_xyz_in=as.integer(c1),
-                      n_snaps_in=as.integer(r1),
+                      n_xyz_in=as.integer(n_xyz),
+                      n_snaps_in=as.integer(n_snaps),
                       clu_radius_in=as.single(clu_radius),
                       clu_hardcut_in=as.single(clu_hardcut), 
                       #output
@@ -138,8 +188,12 @@ adjl_from_trj<-function(trj, distance_method=5, distance_weights=NULL, normalize
                       #algorithm details
                       dis_method_in=as.integer(distance_method),
                       dis_weight_in=distance_weights,
-                      birch_in=as.logical(FALSE),
+                      birch_in=as.logical(birch_clu),
                       mst_in=as.logical(min_span_tree),
+                      #sst details
+                      rootmax_rad_in=as.single(rootmax_rad), 
+                      tree_height_in=as.integer(tree_height),
+                      n_search_attempts_in=as.integer(n_search_attempts),
                       #modes
                       data_meth_in=as.integer(1),
                       normalize_dis_in=as.logical(normalize_d),
@@ -221,7 +275,7 @@ adjl_from_pi<-function(fil){
 #' @export adjl_from_adjmat
 #' @useDynLib CampaRi
 
-adjl_from_adjmat<-function(adj_m){
+adjl_from_adjmat<-function(adj_m){ #deprecated
   # extract the SST or MST from the output of the analysis already made with campari.
   # Here we will reconstruct a bit of the tree in order to be able to find again the MST/SST
   adjl_nmbrs<-c()

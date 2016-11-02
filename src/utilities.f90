@@ -120,4 +120,72 @@ function freeunit()
 !
 end
 !
+!-------------------------------------------------------------------
+!
+! binary search for a target interval confinement in a sorted array of integers
+! equivalence is allowed with left interval bound and match for series of identical values is rightmost
+!
+subroutine ibinary_search(arsz,arvec,keyv,ifound)
+!
+  implicit none
+!
+  integer arsz,ifound,k,ivsz
+  integer keyv,arvec(*)
+  logical notdone
+!
+  notdone = .true.
+  if (keyv.lt.arvec(1)) then
+    ifound = 0
+    return
+  else if (keyv.ge.arvec(arsz)) then
+    ifound = arsz+1
+    return
+  end if
+!
+  k = 1
+  ivsz = max(1,nint(dble(arsz)/2.0))
+  do while (k.lt.arsz)
+    if (arvec(min(arsz,k+ivsz)).gt.keyv) then
+!     stay in lower half
+    else
+      k = min(arsz,k+ivsz)
+    end if
+    if (ivsz.eq.1) exit
+    ivsz = max(1,nint(dble(ivsz)/2.0))
+  end do
+!
+  ifound = k
+!
+end
+!
 !-----------------------------------------------------------------------
+!
+! the PRNG from the references below (ideally, multiple options
+! to be offered here)
+!
+! literature references:
+!
+! P. L'Ecuyer, Communications of the ACM, 31, 742-774 (1988)
+!
+! W. H. Press, S. A. Teukolsky, W. T. Vetterling and B. P.
+! Flannery, Numerical Recipes (Fortran), 2nd Ed., Cambridge
+! University Press, 1992, Section 7-1
+!
+!
+function random(seed)
+  implicit none
+  integer, intent(in) :: seed
+  integer,allocatable :: seed_a(:)
+  integer n
+  real(kind=4) random
+
+  if(seed.gt.0) then
+    call random_seed(size = n)
+    allocate(seed_a(n))
+    seed_a(:) = seed
+    call random_seed(put = seed_a)
+  end if
+
+  call random_number(random)
+!
+end

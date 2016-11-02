@@ -80,32 +80,33 @@
 module m_clustering
 
   type t_scluster
-    integer nmbrs, alsz
+    integer nmbrs, alsz !alsz is the allocation size of the snaps principally
     real(KIND=4) sqsum
     real(KIND=4), ALLOCATABLE :: sums(:)
     integer, ALLOCATABLE :: snaps(:) ! snapshot lists
-    ! integer, ALLOCATABLE :: children(:) !for tree-based clustering
-    ! ! for tree-based clustering
-    ! integer nchildren
-    ! integer nbalsz
-    ! integer childr_alsz
-    ! integer parent
-    ! !for quality
-    ! integer diam
-    ! integer radius
-    ! integer quality
-    ! integer center
+    integer, ALLOCATABLE :: children(:) !for tree-based clustering
+    ! for tree-based clustering
+    integer nchildren
+    integer childr_alsz
+    integer parent
+    !for quality
+    integer diam
+    integer radius
+    integer quality
+    integer center
+    !for SST
+    integer, ALLOCATABLE :: tmpsnaps(:)
   end type t_scluster
 
   type t_ctree
     type(t_scluster), ALLOCATABLE:: cls(:) ! nothing but an array of clusters
-    integer ncls, nclsalsz ! real and allocation sizes
+    integer ncls, n_clu_alsz_tree ! real and allocation sizes
   end type t_ctree
 
   type(t_scluster), ALLOCATABLE :: scluster(:)
   type(t_ctree), ALLOCATABLE:: birchtree(:)
   real(KIND=4) radius !radius for clusters belonging limit
-  integer nclalcsz ! number of clusters allocatable
+  integer n_clu_alc_sz_gen ! number of clusters allocatable in total
   integer nclu ! number of clusters allocated
   integer c_nhier !height of the tree
   real cmaxrad
@@ -131,10 +132,11 @@ module m_clustering
 
       tmp_dis_method = dis_method(1) !This is hard. Can be eventually taylored
 
-      nclalcsz = 2 ! a priori initial cluster numbers
-      allocate(scluster(nclalcsz))
+      n_clu_alc_sz_gen = 2 ! a priori initial cluster numbers
+      allocate(scluster(n_clu_alc_sz_gen))
       scluster(:)%nmbrs = 0 ! number of elements in each cluster
       scluster(:)%alsz = 0 ! allocation size of each cluster
+
 
       write(ilog,*)
       write(ilog,*) '-----------------------------------'
@@ -168,7 +170,7 @@ module m_clustering
           end if
           nclu = nclu + 1
           ! enlarge the size of the clusters array by the double
-          if (nclu.gt.nclalcsz) then
+          if (nclu.gt.n_clu_alc_sz_gen) then
             call cluster_lst_resize(scluster)
           end if
 
@@ -195,15 +197,15 @@ module m_clustering
       type(t_scluster), ALLOCATABLE :: tmpcls(:)
       type(t_scluster), ALLOCATABLE :: clu(:)
       integer oldsz
-      allocate(tmpcls(nclalcsz))
-      oldsz = nclalcsz
+      allocate(tmpcls(n_clu_alc_sz_gen))
+      oldsz = n_clu_alc_sz_gen
       tmpcls = clu
       deallocate(clu)
-      nclalcsz = nclalcsz * 2
-      allocate(clu(nclalcsz))
+      n_clu_alc_sz_gen = n_clu_alc_sz_gen * 2
+      allocate(clu(n_clu_alc_sz_gen))
       clu(1:oldsz) = tmpcls(1:oldsz)
-      clu(oldsz+1:nclalcsz)%nmbrs = 0
-      clu(oldsz+1:nclalcsz)%alsz = 0
+      clu(oldsz+1:n_clu_alc_sz_gen)%nmbrs = 0
+      clu(oldsz+1:n_clu_alc_sz_gen)%alsz = 0
       deallocate(tmpcls)
     end subroutine cluster_lst_resize
     !--------------------------------------------------------------------
@@ -224,454 +226,453 @@ module m_clustering
     !scrcts(2) = cmaxrads
     !scrcts(c_nhier+1) = cradius
     !scrcts(i) = cmaxrad - ((i-2.0)/(c_nhier-1.0))*(cmaxrad - cradius)
-    ! subroutine birch_clustering(trj)
-    ! !
-    !   use m_variables_gen
-    ! !
-    !   implicit none
-    ! !
-    !   integer i,j,k,jj,kk,ll,mm
-    !   integer tree_lev !level of the tree
-    !   integer atwo,fail,kkf,thekk,nlst1,nlst2
-    !   integer snapstart,snapend,snapinc !sequence of clustering(in,en,step)
-    !   real(KIND=4), intent(in) :: trj(n_snaps,n_xyz)
-    !   real vecti(n_xyz)
-    !   integer :: ordering = 1
-    !   integer nnodes ! number of nodes ? it is assigned here and used here only
-    !   ! integer modei ! not used here
-    !   integer, ALLOCATABLE :: kklst(:,:),kkhistory(:)
-    !   integer(KIND=8) cnt1,cnt2 !counter variables
-    !   real, ALLOCATABLE:: scrcts(:) !threshold array
-    !   real tmp_d !temporary variable for the distance
-    !   real min_d,helper,maxd(2),normer(4),qualmet(4)
-    !   logical atrue,notdone
+    subroutine birch_clustering(trj)
     !
-    !   tmp_dis_method = dis_method(1) !This is hard. Can be eventually taylored
-    ! !
-    !  33 format('ERROR B: ',i6,' could be part of ',i5,' at ',g14.7,' (last d',g14.6,')')
-    !  34 format('NEXT HIGHER: ',i6,' could have been part of ',i5,' at ',g14.7,'.')
-    !  35 format('ERROR C: ',i6,' is meant to a child of ',i5,' at level ',i5,' but has distance ',g14.7,'.')
-    ! !
-    !   atrue = .true.
-    !   atwo = 2
-    ! !
-    !   if (ordering.le.2) then ! cleadermode = processing direction flags
-    !     snapstart = 1
-    !     snapend = n_snaps
-    !     snapinc = 1
-    !   else
-    !     snapstart = n_snaps
-    !     snapend = 1
-    !     snapinc = -1
-    !   end if
-    !   ! Variables initialization
-    !   allocate(kklst(n_snaps,2)) !This is two layers of snapshots (integer)
-    !   allocate(kkhistory(c_nhier+1))
-    !   allocate(birchtree(c_nhier+1))
-    !   do tree_lev=1,c_nhier+1
-    !     allocate(birchtree(tree_lev)%cls(10))
-    !     birchtree(tree_lev)%ncls = 0
-    !     birchtree(tree_lev)%nclsalsz = 10
-    !   end do
-    !   allocate(scrcts(c_nhier+1))
-    !   birchtree(1)%ncls = 1 !number of clusters
-    !   scrcts(c_nhier+1) = radius !
-    !   if (c_nhier.gt.1) then
-    !     scrcts(2) = cmaxrad
-    !     do i=3,c_nhier
-    !       scrcts(i) = cmaxrad - ((i-2.0)/(c_nhier-1.0))*(cmaxrad - radius) ! linear so far
-    !     end do
-    !   end if
+      use m_variables_gen
     !
-    !   do i=1,c_nhier+1
-    !     birchtree(i)%cls(:)%nmbrs = 0
-    !     ! birchtree(i)%cls(:)%nb = 0
-    !     birchtree(i)%cls(:)%nchildren = 0
-    !     birchtree(i)%cls(:)%alsz = 0
-    !     birchtree(i)%cls(:)%nbalsz = 0
-    !     birchtree(i)%cls(:)%childr_alsz = 0
-    !     birchtree(i)%cls(:)%parent = 0
-    !   end do
+      implicit none
     !
-    !   allocate(birchtree(1)%cls(1)%snaps(2))
-    !   birchtree(1)%cls(1)%alsz = 2
-    !   allocate(birchtree(1)%cls(1)%children(2))
-    !   birchtree(1)%cls(1)%childr_alsz = 2
-    ! !
-    !   write(ilog,*)
-    !   write(ilog,*) '-----------------------------------'
-    !   write(ilog,*) 'Now performing tree-based clustering ...'
-    !   write(ilog,*)
+      integer i,j,k,jj,kk,ll,mm
+      integer tree_lev !level of the tree
+      integer fail,kkf,thekk,nlst1,nlst2
+      integer snapstart,snapend,snapinc !sequence of clustering(in,en,step)
+      real(KIND=4), intent(in) :: trj(n_snaps,n_xyz)
+      real vecti(n_xyz)
+      integer :: ordering = 1 !TODO
+      ! integer nnodes ! number of nodes ? it is assigned here and used here only
+      ! integer modei ! not used here
+      integer, ALLOCATABLE :: kklst(:,:),kkhistory(:)
+      integer(KIND=8) cnt1,cnt2 !counter variables
+      real, ALLOCATABLE:: scrcts(:) !threshold array
+      real tmp_d !temporary variable for the distance
+      real min_d,helper,maxd(2),normer(4),qualmet(4)
+      logical notdone
+
+      tmp_dis_method = dis_method(1) !This is hard. Can be eventually taylored
     !
-    !   cnt1 = 0 !number of calculated distances
-    !   cnt2 = 0
-    !   do i=snapstart,snapend,snapinc
-    !     write(ilog,*) i
-    !     write(ilog,*) '-'
-    !     kk = 1
-    !     notdone = .true.
-    !     fail = -1
-    !     nlst1 = 1
-    !     kklst(1,1) = kk
-    ! !    cnt1 = 0
-    !     do tree_lev=2,c_nhier !for each level (from 2)
-    !       write(ilog,*) tree_lev
-    !       write(ilog,*) '--'
-    !       jj = -1
-    !       min_d = HUGE(min_d) !the biggest number available for that (real) type
-    !       nlst2 = 0
-    !       do mm=1,nlst1
-    !         write(ilog,*) nlst1, mm
-    !         kk = kklst(mm,1)
-    !         write(ilog,*) kk
-    !         write(ilog,*) '---'
-    !         do j=1,birchtree(tree_lev-1)%cls(kk)%nchildren !for each children (nothing done if no children)
-    !           write(ilog,*) j
-    !           write(ilog,*) '----'
-    !           ll = birchtree(tree_lev-1)%cls(kk)%children(j)
-    !           cnt1 = cnt1 + 1 !number of calculated distances
-    !           if ((birchtree(tree_lev)%cls(ll)%center.le.0).OR.(birchtree(tree_lev)%cls(ll)%center.gt.n_snaps)) call exit()
-    !           !distance between the one element i with all the children clusters ll
-    !           call preprocess_snapshot(trj, i, vecti)
-    !           call snap_to_cluster_d(tmp_d,birchtree(tree_lev)%cls(ll),vecti)
-    !           if (tmp_d.lt.min_d) then !I care only about the minimum distance for storing
-    !             min_d = tmp_d !minimum distance is in the j-th child
-    !             jj = j !the children cluster (ll) number
-    !             thekk = kk
-    !           end if
-    !           if (tmp_d.lt.scrcts(tree_lev)) then ! snap i belong to the cluster
-    !             nlst2 = nlst2 + 1 !number of adds
-    !             kklst(nlst2,2) = ll !cluster that has it added
-    !           end if
-    !         end do
+     33 format('ERROR B: ',i6,' could be part of ',i5,' at ',g14.7,' (last d',g14.6,')')
+     34 format('NEXT HIGHER: ',i6,' could have been part of ',i5,' at ',g14.7,'.')
+     35 format('ERROR C: ',i6,' is meant to a child of ',i5,' at level ',i5,' but has distance ',g14.7,'.')
+    !
+      if (ordering.le.2) then ! cleadermode = processing direction flags
+        snapstart = 1
+        snapend = n_snaps
+        snapinc = 1
+      else
+        snapstart = n_snaps
+        snapend = 1
+        snapinc = -1
+      end if
+      ! Variables initialization
+      allocate(kklst(n_snaps,2)) !This is two layers of snapshots (integer)
+      allocate(kkhistory(c_nhier+1))
+      allocate(birchtree(c_nhier+1))
+      do tree_lev=1,c_nhier+1
+        allocate(birchtree(tree_lev)%cls(10))
+        birchtree(tree_lev)%ncls = 0
+        birchtree(tree_lev)%n_clu_alsz_tree = 10
+      end do
+      allocate(scrcts(c_nhier+1))
+      birchtree(1)%ncls = 1 !number of clusters
+      scrcts(c_nhier+1) = radius !
+      if (c_nhier.gt.1) then
+        scrcts(2) = cmaxrad
+        do i=3,c_nhier
+          scrcts(i) = cmaxrad - ((i-2.0)/(c_nhier-1.0))*(cmaxrad - radius) ! linear so far
+        end do
+      end if
+
+      do i=1,c_nhier+1
+        birchtree(i)%cls(:)%nmbrs = 0
+        ! birchtree(i)%cls(:)%nb = 0
+        birchtree(i)%cls(:)%nchildren = 0
+        birchtree(i)%cls(:)%alsz = 0
+        birchtree(i)%cls(:)%childr_alsz = 0
+        birchtree(i)%cls(:)%parent = 0
+      end do
+
+      allocate(birchtree(1)%cls(1)%snaps(2))
+      birchtree(1)%cls(1)%alsz = 2
+      allocate(birchtree(1)%cls(1)%children(2))
+      birchtree(1)%cls(1)%childr_alsz = 2
+    !
+      write(ilog,*)
+      write(ilog,*) '-----------------------------------'
+      write(ilog,*) 'Now performing tree-based clustering ...'
+      write(ilog,*)
+
+      cnt1 = 0 !number of calculated distances
+      cnt2 = 0
+      do i=snapstart,snapend,snapinc
+        kk = 1
+        notdone = .true.
+        fail = -1
+        nlst1 = 1
+        kklst(1,1) = kk
+    !    cnt1 = 0
+        do tree_lev=2,c_nhier !for each level (from 2)
+          jj = -1
+          min_d = HUGE(min_d) !the biggest number available for that (real) type
+          nlst2 = 0
+          do mm=1,nlst1
+            kk = kklst(mm,1)
+            do j=1,birchtree(tree_lev-1)%cls(kk)%nchildren !for each children (nothing done if no children)
+              ll = birchtree(tree_lev-1)%cls(kk)%children(j)
+              cnt1 = cnt1 + 1 !number of calculated distances
+              if ((birchtree(tree_lev)%cls(ll)%center.le.0).OR.(birchtree(tree_lev)%cls(ll)%center.gt.n_snaps)) call exit()
+              !distance between the one element i with all the children clusters ll
+              call preprocess_snapshot(trj, i, vecti)
+              call snap_to_cluster_d(tmp_d,birchtree(tree_lev)%cls(ll),vecti)
+              if (tmp_d.lt.min_d) then !I care only about the minimum distance for storing
+                min_d = tmp_d !minimum distance is in the j-th child
+                jj = j !the children cluster (ll) number
+                thekk = kk
+              end if
+              if (tmp_d.lt.scrcts(tree_lev)) then ! snap i belong to the cluster
+                nlst2 = nlst2 + 1 !number of adds
+                kklst(nlst2,2) = ll !cluster that has it added
+              end if
+            end do
+          end do
+    !     store the path
+          if (jj.eq.-1) then
+            kkhistory(tree_lev-1) = 1 !e.g. no children
+          else
+            kkhistory(tree_lev-1) = thekk !the minimum!
+          end if
+          !STANDARD ADD - there is a nearest cluster and it is not a leaf
+          if ((tree_lev.le.(c_nhier-1)).AND.(jj.gt.0)) then !jj gt 0 it means only if it i is a minimum of some cluster ll
+            if (nlst2.le.0) then ! absolutely nothing nearby (using the scrcts threshold)
+              nlst1 = 1
+              kklst(1:nlst1,1) = birchtree(tree_lev-1)%cls(thekk)%children(jj) !it stores the nearest cluster that is NOT near enough
+              if (fail.eq.-1) then
+    !            write(ilog,*) i,' failed at ',tree_lev,' w/ ',min_d
+                fail = tree_lev
+                kkf = thekk
+              end if
+            else !  if NOT (nlst2.le.0) (it is not alone)
+              if (fail.gt.0) then
+                do j=fail,tree_lev-1 !from the point it found a value alone far away from the others until the last level
+                  birchtree(j)%ncls = birchtree(j)%ncls + 1 !generate a new cluster
+                  if (birchtree(j)%ncls.gt.birchtree(j)%n_clu_alsz_tree) &
+                    call scluster_resizelst(birchtree(j)%n_clu_alsz_tree,birchtree(j)%cls)
+                  kkhistory(j) = birchtree(j)%ncls
+                  if (j.gt.fail) then
+                    call cluster_addchild(birchtree(j-1)%cls(birchtree(j-1)%ncls),birchtree(j-1)%ncls,&
+     &                                    birchtree(j)%cls(birchtree(j)%ncls),birchtree(j)%ncls)
+                    cnt2 = cnt2 + 1
+                  end if
+                end do
+                call cluster_addchild(birchtree(fail-1)%cls(kkf),kkf,birchtree(fail)%cls(birchtree(fail)%ncls),birchtree(fail)%ncls)
+                call cluster_addchild(birchtree(tree_lev-1)%cls(birchtree(tree_lev-1)%ncls),&
+     &                                birchtree(tree_lev)%cls(jj)%parent,birchtree(tree_lev)%cls(jj),jj)
+                fail = -1
+              end if
+              nlst1 = 1
+              kklst(1:nlst1,1) = birchtree(tree_lev-1)%cls(thekk)%children(jj)
+            end if
+            cycle
+          ! LEAF ADD - to access this you must have found min_d (a minimum distance INSIDE a cluster (<scrcts(lev)))
+          else if ((tree_lev.eq.c_nhier).AND.(min_d.lt.scrcts(tree_lev))) then
+            kk = birchtree(tree_lev-1)%cls(thekk)%children(jj)
+            call preprocess_snapshot(trj, i, vecti)
+            call cluster_addsnap(birchtree(tree_lev)%cls(kk),vecti,i)
+            do j=2,c_nhier
+              call cluster_addsnap(birchtree(j-1)%cls(kkhistory(j-1)),vecti,i)
+            end do
+            notdone = .false.
+          ! NEW CLUSTER
+          else  !case in which you must add one cluster
+            if (fail.eq.-1) then !e.g. first add
+              fail = tree_lev
+              kkf = kk !kk = kklst(mm,1) mm=1,nlst1 (kk=1 first add)
+            end if
+            kk = kkf
+            do j=fail,c_nhier !create a new cluster and addsnap all the way to the leaf
+              birchtree(j)%ncls = birchtree(j)%ncls + 1 !for each level add 1 cluster
+              if (birchtree(j)%ncls.gt.birchtree(j)%n_clu_alsz_tree) &
+                call scluster_resizelst(birchtree(j)%n_clu_alsz_tree,birchtree(j)%cls)
+              call preprocess_snapshot(trj, i, vecti) !working
+              call cluster_addsnap(birchtree(j)%cls(birchtree(j)%ncls),vecti,i) !working
+              if (j.gt.fail) then
+                call cluster_addchild(birchtree(j-1)%cls(birchtree(j-1)%ncls),birchtree(j-1)%ncls,&
+     &                                birchtree(j)%cls(birchtree(j)%ncls),birchtree(j)%ncls)
+                cnt2 = cnt2 + 1
+              end if
+            end do
+            call cluster_addchild(birchtree(fail-1)%cls(kk),kk,birchtree(fail)%cls(birchtree(fail)%ncls),birchtree(fail)%ncls)!last level up
+            cnt2 = cnt2 + 1
+            do j=2,fail
+              call preprocess_snapshot(trj, i, vecti)
+              call cluster_addsnap(birchtree(j-1)%cls(kkhistory(j-1)),vecti,i)
+            end do
+            call snap_to_cluster_d(maxd(1),birchtree(fail-1)%cls(kk),i)
+            notdone = .false.
+          end if
+          if (notdone.EQV..false.) exit
+        end do
+      end do
+      !!SECOND ROUND! this is not in the first loop
+      do i=snapstart,snapend,snapinc
+        kk = 1
+        notdone = .true.
+        fail = -1
+        nlst1 = 1
+        kklst(1,1) = kk
+        do tree_lev=2,c_nhier+1
+          jj = -1
+          min_d = HUGE(min_d) !the biggest value available
+          nlst2 = 0
+          do mm=1,nlst1
+            kk = kklst(mm,1)
+            do j=1,birchtree(tree_lev-1)%cls(kk)%nchildren
+              ll = birchtree(tree_lev-1)%cls(kk)%children(j)
+              cnt1 = cnt1 + 1
+              if ((birchtree(tree_lev)%cls(ll)%center.le.0).OR.(birchtree(tree_lev)%cls(ll)%center.gt.n_snaps)) call exit()
+              call snap_to_cluster_d(tmp_d,birchtree(tree_lev)%cls(ll),i)
+              if (tmp_d.lt.min_d) then
+                min_d = tmp_d
+                jj = j
+                thekk = kk
+              end if
+              if (tmp_d.lt.scrcts(tree_lev)) then
+                nlst2 = nlst2 + 1
+                kklst(nlst2,2) = ll
+              end if
+            end do
+          end do
+    !     store the path
+          if (jj.eq.-1) then
+            kkhistory(tree_lev-1) = 1
+          else
+            kkhistory(tree_lev-1) = thekk
+          end if
+          if ((tree_lev.le.c_nhier).AND.(jj.gt.0)) then
+            if (nlst2.le.0) then ! absolutely nothing nearby
+              nlst1 = 1
+              kklst(1:nlst1,1) = birchtree(tree_lev-1)%cls(thekk)%children(jj)
+              if (fail.eq.-1) then
+    !            write(ilog,*) i,' failed at ',tree_lev,' w/ ',min_d
+                fail = tree_lev
+                kkf = thekk
+              end if
+            else
+              nlst1 = 1
+              kklst(1:nlst1,1) = birchtree(tree_lev-1)%cls(thekk)%children(jj)
+            end if
+            cycle
+    !     leaf
+          else if ((tree_lev.eq.(c_nhier+1)).AND.(min_d.lt.scrcts(tree_lev))) then
+            kk = birchtree(tree_lev-1)%cls(thekk)%children(jj)
+            call preprocess_snapshot(trj, i, vecti)
+            call cluster_addsnap(birchtree(tree_lev)%cls(kk),vecti,i)
+            notdone = .false.
+          else if (fail.gt.0) then
+            kk = kkf
+            do j=fail,c_nhier+1
+              birchtree(j)%ncls = birchtree(j)%ncls + 1
+              if (birchtree(j)%ncls.gt.birchtree(j)%n_clu_alsz_tree) &
+                call scluster_resizelst(birchtree(j)%n_clu_alsz_tree,birchtree(j)%cls)
+              call preprocess_snapshot(trj, i, vecti)
+              call cluster_addsnap(birchtree(j)%cls(birchtree(j)%ncls),vecti,i)
+              if (j.gt.fail) then
+                call cluster_addchild(birchtree(j-1)%cls(birchtree(j-1)%ncls),birchtree(j-1)%ncls,&
+     &                                birchtree(j)%cls(birchtree(j)%ncls),birchtree(j)%ncls)
+                         cnt2 = cnt2 + 1
+              end if
+            end do
+            call cluster_addchild(birchtree(fail-1)%cls(kk),kk,birchtree(fail)%cls(birchtree(fail)%ncls),birchtree(fail)%ncls)
+            cnt2 = cnt2 + 1
+            notdone = .false.
+          else
+            fail = tree_lev
+            j = c_nhier+1
+            birchtree(j)%ncls = birchtree(j)%ncls + 1
+            if (birchtree(j)%ncls.gt.birchtree(j)%n_clu_alsz_tree) &
+              call scluster_resizelst(birchtree(j)%n_clu_alsz_tree,birchtree(j)%cls)
+            call preprocess_snapshot(trj, i, vecti)
+            call cluster_addsnap(birchtree(j)%cls(birchtree(j)%ncls),vecti,i)
+            call cluster_addchild(birchtree(fail-1)%cls(kk),kk,birchtree(fail)%cls(birchtree(fail)%ncls),birchtree(fail)%ncls)
+            notdone = .false.
+          end if
+          if (notdone.EQV..false.) exit
+        end do
+      end do
+      !end of the second round of do
+
+
+      !PRINTING RESULTS
+     66 format('Level    # Clusters     Threshold     Total Snaps    Total Children')
+     67 format(i9,i10,1x,g14.4,4x,i12,4x,i12)
+     68 format(i9,i10,5x,a7,7x,i12,4x,i12)
+      write(ilog,66)
+      write(ilog,68) c_nhier+1,birchtree(1)%ncls,'MAXIMAL',sum(birchtree(1)%cls(1:birchtree(1)%ncls)%nmbrs),&
+     &               sum(birchtree(1)%cls(1:birchtree(1)%ncls)%nchildren)
+      do i=2,c_nhier+1
+        write(ilog,67) c_nhier+2-i,birchtree(i)%ncls,scrcts(i),sum(birchtree(i)%cls(1:birchtree(i)%ncls)%nmbrs),&
+     &               sum(birchtree(i)%cls(1:birchtree(i)%ncls)%nchildren)
+      end do
+      write(ilog,*) '---------------------------------------------------------------------'
+      write(ilog,*)
+      write(ilog,*) '... done after a total of ',cnt1,' distance evaluations.'
+      write(ilog,*)
+
+    !
+      ! do j=1,birchtree(c_nhier+1)%ncls
+      !   call cluster_calc_params(birchtree(c_nhier+1)%cls(j),scrcts(c_nhier+1))
+      ! end do
+    !
+    !   if (refine_clustering.EQV..true.) then !this is the refinement !TODO
+    !     call quality_of_clustering(birchtree(c_nhier+1)%ncls,birchtree(c_nhier+1)%cls(1:c_nhier+1),scrcts(c_nhier+1),qualmet)
+    !     write(ilog,*) 'Now merging clusters that yield joint reduced average intracluster distance ...'
+    !  77 format('Would join ',i5,' (',i6,') and ',i5,'(',i6,') from: ',/,'Diam: ',g10.4,' / ',g10.4,'; Rad.: ',&
+    !  &g10.4,' / ',g10.4,' to ',g10.4,' / ',g10.4,'.')
+    !     cnt1 = 0
+    !     cnt2 = 0
+    !     do i=1,birchtree(c_nhier)%ncls
+    !       nlst1 = 0
+    !       do kkf=1,birchtree(c_nhier)%ncls
+    !         if (i.eq.kkf) cycle
+    !         call cluster_to_cluster_d(tmp_d,birchtree(c_nhier)%cls(i),birchtree(c_nhier)%cls(kkf))
+    !         cnt1 = cnt1 + 1
+    !         if (tmp_d.lt.scrcts(c_nhier)) then
+    !           nlst1 = nlst1 + 1
+    !           kklst(nlst1,1) = kkf
+    !         end if
     !       end do
-    ! !     store the path
-    !       if (jj.eq.-1) then
-    !         kkhistory(tree_lev-1) = 1 !e.g. no children
-    !       else
-    !         kkhistory(tree_lev-1) = thekk !the minimum!
-    !       end if
-    !       !STANDARD ADD - there is a nearest cluster and it is not a leaf
-    !       if ((tree_lev.le.(c_nhier-1)).AND.(jj.gt.0)) then !jj gt 0 it means only if it i is a minimum of some cluster ll
-    !         if (nlst2.le.0) then ! absolutely nothing nearby (using the scrcts threshold)
-    !           nlst1 = 1
-    !           kklst(1:nlst1,1) = birchtree(tree_lev-1)%cls(thekk)%children(jj) !it stores the nearest cluster that is NOT near enough
-    !           if (fail.eq.-1) then
-    ! !            write(ilog,*) i,' failed at ',tree_lev,' w/ ',min_d
-    !             fail = tree_lev
-    !             kkf = thekk
-    !           end if
-    !         else !  if NOT (nlst2.le.0) (it is not alone)
-    !           if (fail.gt.0) then
-    !             do j=fail,tree_lev-1 !from the point it found a value alone far away from the others until the last level
-    !               birchtree(j)%ncls = birchtree(j)%ncls + 1 !generate a new cluster
-    !               if (birchtree(j)%ncls.gt.birchtree(j)%nclsalsz) call scluster_resizelst(birchtree(j)%nclsalsz,birchtree(j)%cls)
-    !               kkhistory(j) = birchtree(j)%ncls
-    !               if (j.gt.fail) then
-    !                 call cluster_addchild(birchtree(j-1)%cls(birchtree(j-1)%ncls),birchtree(j-1)%ncls,&
-    !  &                                    birchtree(j)%cls(birchtree(j)%ncls),birchtree(j)%ncls)
+    !       do j=1,birchtree(c_nhier)%cls(i)%nchildren
+    !         jj = birchtree(c_nhier)%cls(i)%children(j)
+    !         if (birchtree(c_nhier+1)%cls(jj)%nmbrs.le.0) cycle
+    !         do kkf=1,nlst1
+    !           do k=1,birchtree(c_nhier)%cls(kklst(kkf,1))%nchildren
+    !             kk = birchtree(c_nhier)%cls(kklst(kkf,1))%children(k)
+    !             if (birchtree(c_nhier+1)%cls(kk)%nmbrs.le.0) cycle
+    !             if (jj.eq.kk) cycle
+    !             call clusters_joint_diam(birchtree(c_nhier+1)%cls(jj),birchtree(c_nhier+1)%cls(kk),tmp_d,helper)
+    !             cnt1 = cnt1 + 1
+    !             normer(1) = 0.5*birchtree(c_nhier+1)%cls(jj)%nmbrs*(birchtree(c_nhier+1)%cls(jj)%nmbrs-1.0)
+    !             normer(2) = 0.5*birchtree(c_nhier+1)%cls(kk)%nmbrs*(birchtree(c_nhier+1)%cls(kk)%nmbrs-1.0)
+    !             normer(3) = 1.0/(1.0*(birchtree(c_nhier+1)%cls(jj)%nmbrs + birchtree(c_nhier+1)%cls(kk)%nmbrs))
+    !             normer(4) = 0.0
+    !             if (sum(normer(1:2)).gt.0) normer(4) = 1.0/sum(normer(1:2))
+    !             maxd(1) =  normer(4)*(normer(1)*birchtree(c_nhier+1)%cls(jj)%diam + &
+    !               &                   normer(2)*birchtree(c_nhier+1)%cls(kk)%diam)
+    !             maxd(2) =  normer(3)*(birchtree(c_nhier+1)%cls(jj)%nmbrs*birchtree(c_nhier+1)%cls(jj)%radius + &
+    !    &                              birchtree(c_nhier+1)%cls(kk)%nmbrs*birchtree(c_nhier+1)%cls(kk)%radius)
+    !             if ((helper.le.maxd(2)).OR.(tmp_d.le.maxd(1))) then
+    !               if (birchtree(c_nhier+1)%cls(jj)%nmbrs.gt.birchtree(c_nhier+1)%cls(kk)%nmbrs) then
+    !                 call join_clusters(birchtree(c_nhier+1)%cls(jj),birchtree(c_nhier+1)%cls(kk))
+    !                 birchtree(c_nhier+1)%cls(jj)%diam = tmp_d
+    !                 birchtree(c_nhier+1)%cls(jj)%radius = helper
     !                 cnt2 = cnt2 + 1
+    !               else
+    !                 call join_clusters(birchtree(c_nhier+1)%cls(kk),birchtree(c_nhier+1)%cls(jj))
+    !                 birchtree(c_nhier+1)%cls(kk)%diam = tmp_d
+    !                 birchtree(c_nhier+1)%cls(kk)%radius = helper
+    !                 cnt2 = cnt2 + 1
+    !                 exit
     !               end if
-    !             end do
-    !             call cluster_addchild(birchtree(fail-1)%cls(kkf),kkf,birchtree(fail)%cls(birchtree(fail)%ncls),birchtree(fail)%ncls)
-    !             call cluster_addchild(birchtree(tree_lev-1)%cls(birchtree(tree_lev-1)%ncls),&
-    !  &                                birchtree(tree_lev)%cls(jj)%parent,birchtree(tree_lev)%cls(jj),jj)
-    !             fail = -1
-    !           end if
-    !           nlst1 = 1
-    !           kklst(1:nlst1,1) = birchtree(tree_lev-1)%cls(thekk)%children(jj)
-    !         end if
-    !         cycle
-    !       ! LEAF ADD - to access this you must have found min_d (a minimum distance INSIDE a cluster (<scrcts(lev)))
-    !       else if ((tree_lev.eq.c_nhier).AND.(min_d.lt.scrcts(tree_lev))) then
-    !         kk = birchtree(tree_lev-1)%cls(thekk)%children(jj)
-    !         call preprocess_snapshot(trj, i, vecti)
-    !         call cluster_addsnap(birchtree(tree_lev)%cls(kk),vecti,i)
-    !         do j=2,c_nhier
-    !           call cluster_addsnap(birchtree(j-1)%cls(kkhistory(j-1)),vecti,i)
-    !         end do
-    !         notdone = .false.
-    !       ! NEW CLUSTER
-    !       else  !case in which you must add one cluster
-    !         if (fail.eq.-1) then !e.g. first add
-    !           fail = tree_lev
-    !           kkf = kk !kk = kklst(mm,1) mm=1,nlst1 (kk=1 first add)
-    !         end if
-    !         kk = kkf
-    !         do j=fail,c_nhier !create a new cluster and addsnap all the way to the leaf
-    !           birchtree(j)%ncls = birchtree(j)%ncls + 1 !for each level add 1 cluster
-    !           if (birchtree(j)%ncls.gt.birchtree(j)%nclsalsz) call scluster_resizelst(birchtree(j)%nclsalsz,birchtree(j)%cls)
-    !           call preprocess_snapshot(trj, i, vecti)
-    !           call cluster_addsnap(birchtree(j)%cls(birchtree(j)%ncls),vecti,i)
-    !           if (j.gt.fail) then
-    !             call cluster_addchild(birchtree(j-1)%cls(birchtree(j-1)%ncls),birchtree(j-1)%ncls,&
-    !  &                                birchtree(j)%cls(birchtree(j)%ncls),birchtree(j)%ncls)
-    !             cnt2 = cnt2 + 1
-    !           end if
-    !         end do
-    !         call cluster_addchild(birchtree(fail-1)%cls(kk),kk,birchtree(fail)%cls(birchtree(fail)%ncls),birchtree(fail)%ncls)
-    !         cnt2 = cnt2 + 1
-    !         do j=2,fail
-    !           call preprocess_snapshot(trj, i, vecti)
-    !           call cluster_addsnap(birchtree(j-1)%cls(kkhistory(j-1)),vecti,i)
-    !         end do
-    !         call snap_to_cluster_d(maxd(1),birchtree(fail-1)%cls(kk),i)
-    !         notdone = .false.
-    !       end if
-    !       if (notdone.EQV..false.) exit
-    !     end do
-    !   end do
-    !   write(ilog,*) "Second round"
-    !   !!SECOND ROUND! this is not in the first loop
-    !   do i=snapstart,snapend,snapinc
-    !     kk = 1
-    !     notdone = .true.
-    !     fail = -1
-    !     nlst1 = 1
-    !     kklst(1,1) = kk
-    !     do tree_lev=2,c_nhier+1
-    !       jj = -1
-    !       min_d = HUGE(min_d) !the biggest value available
-    !       nlst2 = 0
-    !       do mm=1,nlst1
-    !         kk = kklst(mm,1)
-    !         do j=1,birchtree(tree_lev-1)%cls(kk)%nchildren
-    !           ll = birchtree(tree_lev-1)%cls(kk)%children(j)
-    !           cnt1 = cnt1 + 1
-    !           if ((birchtree(tree_lev)%cls(ll)%center.le.0).OR.(birchtree(tree_lev)%cls(ll)%center.gt.n_snaps)) call exit()
-    !           call snap_to_cluster_d(tmp_d,birchtree(tree_lev)%cls(ll),i)
-    !           if (tmp_d.lt.min_d) then
-    !             min_d = tmp_d
-    !             jj = j
-    !             thekk = kk
-    !           end if
-    !           if (tmp_d.lt.scrcts(tree_lev)) then
-    !             nlst2 = nlst2 + 1
-    !             kklst(nlst2,2) = ll
-    !           end if
+    !             end if
+    !           end do
+    !           if (birchtree(c_nhier+1)%cls(jj)%nmbrs.eq.0) exit
     !         end do
     !       end do
-    ! !     store the path
-    !       if (jj.eq.-1) then
-    !         kkhistory(tree_lev-1) = 1
-    !       else
-    !         kkhistory(tree_lev-1) = thekk
-    !       end if
-    !       if ((tree_lev.le.c_nhier).AND.(jj.gt.0)) then
-    !         if (nlst2.le.0) then ! absolutely nothing nearby
-    !           nlst1 = 1
-    !           kklst(1:nlst1,1) = birchtree(tree_lev-1)%cls(thekk)%children(jj)
-    !           if (fail.eq.-1) then
-    ! !            write(ilog,*) i,' failed at ',tree_lev,' w/ ',min_d
-    !             fail = tree_lev
-    !             kkf = thekk
-    !           end if
-    !         else
-    !           nlst1 = 1
-    !           kklst(1:nlst1,1) = birchtree(tree_lev-1)%cls(thekk)%children(jj)
-    !         end if
-    !         cycle
-    ! !     leaf
-    !       else if ((tree_lev.eq.(c_nhier+1)).AND.(min_d.lt.scrcts(tree_lev))) then
-    !         kk = birchtree(tree_lev-1)%cls(thekk)%children(jj)
-    !         call preprocess_snapshot(trj, i, vecti)
-    !         call cluster_addsnap(birchtree(tree_lev)%cls(kk),vecti,i)
-    !         notdone = .false.
-    !       else if (fail.gt.0) then
-    !         kk = kkf
-    !         do j=fail,c_nhier+1
-    !           birchtree(j)%ncls = birchtree(j)%ncls + 1
-    !           if (birchtree(j)%ncls.gt.birchtree(j)%nclsalsz) call scluster_resizelst(birchtree(j)%nclsalsz,birchtree(j)%cls)
-    !           call preprocess_snapshot(trj, i, vecti)
-    !           call cluster_addsnap(birchtree(j)%cls(birchtree(j)%ncls),vecti,i)
-    !           if (j.gt.fail) then
-    !             call cluster_addchild(birchtree(j-1)%cls(birchtree(j-1)%ncls),birchtree(j-1)%ncls,&
-    !  &                                birchtree(j)%cls(birchtree(j)%ncls),birchtree(j)%ncls)
-    !                      cnt2 = cnt2 + 1
-    !           end if
-    !         end do
-    !         call cluster_addchild(birchtree(fail-1)%cls(kk),kk,birchtree(fail)%cls(birchtree(fail)%ncls),birchtree(fail)%ncls)
-    !         cnt2 = cnt2 + 1
-    !         notdone = .false.
-    !       else
-    !         fail = tree_lev
-    !         j = c_nhier+1
-    !         birchtree(j)%ncls = birchtree(j)%ncls + 1
-    !         if (birchtree(j)%ncls.gt.birchtree(j)%nclsalsz) call scluster_resizelst(birchtree(j)%nclsalsz,birchtree(j)%cls)
-    !         call preprocess_snapshot(trj, i, vecti)
-    !         call cluster_addsnap(birchtree(j)%cls(birchtree(j)%ncls),vecti,i)
-    !         call cluster_addchild(birchtree(fail-1)%cls(kk),kk,birchtree(fail)%cls(birchtree(fail)%ncls),birchtree(fail)%ncls)
-    !         notdone = .false.
-    !       end if
-    !       if (notdone.EQV..false.) exit
     !     end do
-    !   end do
-    !   !end of the second round of do
+    !     write(ilog,*) '... done after a total of ',cnt2,' merges requiring ',cnt1,' additional &
+    !  &distance or joint size evaluations.'
+    !     write(ilog,*)
+    !   end if
     !
+      ! do j=1,birchtree(c_nhier+1)%ncls
+      !   call cluster_calc_params(birchtree(c_nhier+1)%cls(j),scrcts(c_nhier+1))
+      ! end do
+
+    ! now shorten list and resorti
+      call clusters_shorten(birchtree(c_nhier+1)%cls, birchtree(c_nhier+1)%ncls)
+      call clusters_sort(birchtree(c_nhier+1)%cls, birchtree(c_nhier+1)%ncls)
+      do i=1,birchtree(c_nhier+1)%ncls
+        call cluster_getcenter(birchtree(c_nhier+1)%cls(i),trj)
+      end do
+    ! lastly, copy into global cluster array
+      allocate(scluster(birchtree(c_nhier+1)%ncls))
+      !initializing the vars
+      scluster(:)%diam = 0
+      scluster(:)%radius = 0
+      scluster(:)%quality = 0
+      do i=1,birchtree(c_nhier+1)%ncls
+        call copy_cluster(birchtree(c_nhier+1)%cls(i),scluster(i))
+      end do
+      ! nnodes = birchtree(c_nhier+1)%ncls
+      do k=2,c_nhier+1
+        do i=1,birchtree(k)%ncls
+          call cluster_calc_params(birchtree(k)%cls(i),scrcts(k))
+        end do
+      end do
+
+
+      63 format(i7,1x,i7,1x,i8,1000(1x,g12.5))
+      64 format(1000(g12.5,1x))
+      69 format('---------[first 20] CLUSTER SUMMARY (THRESHOLD OF ',g12.5,')')
+      do k=c_nhier+1,max(c_nhier-1,1),-1
+        write(ilog,69) scrcts(k)
+        write(ilog,*) ' #       No.     "Center"  Diameter     Radius      '
+  !    do i=1,birchtree(c_nhier+1)%ncls
+  !      write(ilog,63) i,scluster(i)%nmbrs,scluster(i)%center,scluster(i)%diam,scluster(i)%radius
+  !    end do
+        ! do i=1,birchtree(k)%ncls
+        do i=1,min(20,birchtree(k)%ncls)
+          write(ilog,63) i,birchtree(k)%cls(i)%nmbrs,birchtree(k)%cls(i)%center,birchtree(k)%cls(i)%diam,birchtree(k)%cls(i)%radius
+        end do
+        write(ilog,*) '----------------------------------------------------'
+        write(ilog,*)
+        call quality_of_clustering(birchtree(k)%ncls,birchtree(k)%cls(1:birchtree(k)%ncls),scrcts(k),qualmet)
+      end do
+      ! call gen_graph_from_clusters(scluster,nnodes,atrue)
+      ! call graphml_helper_for_clustering(scluster,nnodes)
+      ! call vmd_helper_for_clustering(scluster,nnodes)
     !
-    !   !PRINTING RESULTS
-    !  66 format('Level    # Clusters     Threshold     Total Snaps    Total Children')
-    !  67 format(i9,i10,1x,g14.4,4x,i12,4x,i12)
-    !  68 format(i9,i10,5x,a7,7x,i12,4x,i12)
-    !   write(ilog,66)
-    !   write(ilog,68) c_nhier+1,birchtree(1)%ncls,'MAXIMAL',sum(birchtree(1)%cls(1:birchtree(1)%ncls)%nmbrs),&
-    !  &               sum(birchtree(1)%cls(1:birchtree(1)%ncls)%nchildren)
-    !   do i=2,c_nhier+1
-    !     write(ilog,67) c_nhier+2-i,birchtree(i)%ncls,scrcts(i),sum(birchtree(i)%cls(1:birchtree(i)%ncls)%nmbrs),&
-    !  &               sum(birchtree(i)%cls(1:birchtree(i)%ncls)%nchildren)
-    !   end do
-    !   write(ilog,*) '---------------------------------------------------------------------'
-    !   write(ilog,*)
-    !   write(ilog,*) '... done after a total of ',cnt1,' distance evaluations.'
-    !   write(ilog,*)
-    ! !
-    !   ! do j=1,birchtree(c_nhier+1)%ncls
-    !   !   call cluster_calc_params(birchtree(c_nhier+1)%cls(j),scrcts(c_nhier+1))
-    !   ! end do
-    ! !
-    ! !   if (refine_clustering.EQV..true.) then !this is the refinement !TODO
-    ! !     call quality_of_clustering(birchtree(c_nhier+1)%ncls,birchtree(c_nhier+1)%cls(1:c_nhier+1),scrcts(c_nhier+1),qualmet)
-    ! !     write(ilog,*) 'Now merging clusters that yield joint reduced average intracluster distance ...'
-    ! !  77 format('Would join ',i5,' (',i6,') and ',i5,'(',i6,') from: ',/,'Diam: ',g10.4,' / ',g10.4,'; Rad.: ',&
-    ! !  &g10.4,' / ',g10.4,' to ',g10.4,' / ',g10.4,'.')
-    ! !     cnt1 = 0
-    ! !     cnt2 = 0
-    ! !     do i=1,birchtree(c_nhier)%ncls
-    ! !       nlst1 = 0
-    ! !       do kkf=1,birchtree(c_nhier)%ncls
-    ! !         if (i.eq.kkf) cycle
-    ! !         call cluster_to_cluster_d(tmp_d,birchtree(c_nhier)%cls(i),birchtree(c_nhier)%cls(kkf))
-    ! !         cnt1 = cnt1 + 1
-    ! !         if (tmp_d.lt.scrcts(c_nhier)) then
-    ! !           nlst1 = nlst1 + 1
-    ! !           kklst(nlst1,1) = kkf
-    ! !         end if
-    ! !       end do
-    ! !       do j=1,birchtree(c_nhier)%cls(i)%nchildren
-    ! !         jj = birchtree(c_nhier)%cls(i)%children(j)
-    ! !         if (birchtree(c_nhier+1)%cls(jj)%nmbrs.le.0) cycle
-    ! !         do kkf=1,nlst1
-    ! !           do k=1,birchtree(c_nhier)%cls(kklst(kkf,1))%nchildren
-    ! !             kk = birchtree(c_nhier)%cls(kklst(kkf,1))%children(k)
-    ! !             if (birchtree(c_nhier+1)%cls(kk)%nmbrs.le.0) cycle
-    ! !             if (jj.eq.kk) cycle
-    ! !             call clusters_joint_diam(birchtree(c_nhier+1)%cls(jj),birchtree(c_nhier+1)%cls(kk),tmp_d,helper)
-    ! !             cnt1 = cnt1 + 1
-    ! !             normer(1) = 0.5*birchtree(c_nhier+1)%cls(jj)%nmbrs*(birchtree(c_nhier+1)%cls(jj)%nmbrs-1.0)
-    ! !             normer(2) = 0.5*birchtree(c_nhier+1)%cls(kk)%nmbrs*(birchtree(c_nhier+1)%cls(kk)%nmbrs-1.0)
-    ! !             normer(3) = 1.0/(1.0*(birchtree(c_nhier+1)%cls(jj)%nmbrs + birchtree(c_nhier+1)%cls(kk)%nmbrs))
-    ! !             normer(4) = 0.0
-    ! !             if (sum(normer(1:2)).gt.0) normer(4) = 1.0/sum(normer(1:2))
-    ! !             maxd(1) =  normer(4)*(normer(1)*birchtree(c_nhier+1)%cls(jj)%diam + &
-    ! !               &                   normer(2)*birchtree(c_nhier+1)%cls(kk)%diam)
-    ! !             maxd(2) =  normer(3)*(birchtree(c_nhier+1)%cls(jj)%nmbrs*birchtree(c_nhier+1)%cls(jj)%radius + &
-    ! !    &                              birchtree(c_nhier+1)%cls(kk)%nmbrs*birchtree(c_nhier+1)%cls(kk)%radius)
-    ! !             if ((helper.le.maxd(2)).OR.(tmp_d.le.maxd(1))) then
-    ! !               if (birchtree(c_nhier+1)%cls(jj)%nmbrs.gt.birchtree(c_nhier+1)%cls(kk)%nmbrs) then
-    ! !                 call join_clusters(birchtree(c_nhier+1)%cls(jj),birchtree(c_nhier+1)%cls(kk))
-    ! !                 birchtree(c_nhier+1)%cls(jj)%diam = tmp_d
-    ! !                 birchtree(c_nhier+1)%cls(jj)%radius = helper
-    ! !                 cnt2 = cnt2 + 1
-    ! !               else
-    ! !                 call join_clusters(birchtree(c_nhier+1)%cls(kk),birchtree(c_nhier+1)%cls(jj))
-    ! !                 birchtree(c_nhier+1)%cls(kk)%diam = tmp_d
-    ! !                 birchtree(c_nhier+1)%cls(kk)%radius = helper
-    ! !                 cnt2 = cnt2 + 1
-    ! !                 exit
-    ! !               end if
-    ! !             end if
-    ! !           end do
-    ! !           if (birchtree(c_nhier+1)%cls(jj)%nmbrs.eq.0) exit
-    ! !         end do
-    ! !       end do
-    ! !     end do
-    ! !     write(ilog,*) '... done after a total of ',cnt2,' merges requiring ',cnt1,' additional &
-    ! !  &distance or joint size evaluations.'
-    ! !     write(ilog,*)
-    ! !   end if
-    ! !
-    !   ! do j=1,birchtree(c_nhier+1)%ncls
-    !   !   call cluster_calc_params(birchtree(c_nhier+1)%cls(j),scrcts(c_nhier+1))
-    !   ! end do
+      deallocate(kklst)
+      deallocate(kkhistory)
+      deallocate(scrcts)
     !
-    ! ! now shorten list and resorti
-    !   call clusters_shorten(birchtree(c_nhier+1)%cls, birchtree(c_nhier+1)%ncls)
-    !   call clusters_sort(birchtree(c_nhier+1)%cls, birchtree(c_nhier+1)%ncls)
-    !   do i=1,birchtree(c_nhier+1)%ncls
-    !     call cluster_getcenter(birchtree(c_nhier+1)%cls(i),trj)
-    !   end do
-    ! ! lastly, copy into global cluster array
-    !   allocate(scluster(birchtree(c_nhier+1)%ncls))
-    !   do i=1,birchtree(c_nhier+1)%ncls
-    !     call copy_cluster(birchtree(c_nhier+1)%cls(i),scluster(i))
-    !   end do
-    !   nnodes = birchtree(c_nhier+1)%ncls
-    !   do k=2,c_nhier+1
-    !     do i=1,birchtree(k)%ncls
-    !       call cluster_calc_params(birchtree(k)%cls(i),scrcts(k))
-    !     end do
-    !   end do
-    ! !
-    !  63 format(i7,1x,i7,1x,i8,1000(1x,g12.5))
-    !  64 format(1000(g12.5,1x))
-    ! !
-    !   write(ilog,*) '------------- CLUSTER SUMMARY ------------------'
-    !   write(ilog,*) ' #       No.     "Center"  Diameter     Radius      '
-    !   do i=1,birchtree(c_nhier+1)%ncls
-    !     write(ilog,63) i,scluster(i)%nmbrs,scluster(i)%center,scluster(i)%diam,scluster(i)%radius
-    !   end do
-    !   write(ilog,*) '------------------------------------------------'
-    !   write(ilog,*)
-    ! !
-    !   atrue = .true.
-    !   ! call quality_of_clustering(nnodes,scluster,scrcts(c_nhier+1),qualmet)
-    !   ! call gen_graph_from_clusters(scluster,nnodes,atrue)
-    !   ! call graphml_helper_for_clustering(scluster,nnodes)
-    !   ! call vmd_helper_for_clustering(scluster,nnodes)
-    ! !
-    !   deallocate(kklst)
-    !   deallocate(kkhistory)
-    !   deallocate(scrcts)
-    ! !
-    ! end
-    ! !
-    ! !-------------------------------------------------------------------------------
-    ! !HELPER FUNCTION FOR BIRCH
-    ! subroutine scluster_resizelst(currentalsz,it)
-    ! !
-    !   implicit none
-    ! !
-    !   integer i,oldsz,currentalsz
-    !   type(t_scluster), ALLOCATABLE, INTENT(IN OUT):: it(:)
-    !   type(t_scluster), ALLOCATABLE:: tmpcls(:)
-    ! !
-    !   oldsz = currentalsz
-    !   allocate(tmpcls(oldsz))
-    !   do i=1,oldsz
-    !     call copy_cluster(it(i),tmpcls(i))
-    !   end do
-    ! !
-    !   deallocate(it)
-    ! !
-    !   currentalsz = currentalsz*2
-    !   allocate(it(currentalsz))
-    ! !
-    !   do i=1,oldsz
-    !     call copy_cluster(tmpcls(i),it(i))
-    !   end do
-    !   it(oldsz+1:currentalsz)%nmbrs = 0
-    !   it(oldsz+1:currentalsz)%nchildren = 0
-    !   it(oldsz+1:currentalsz)%alsz = 0
-    !   it(oldsz+1:currentalsz)%nbalsz = 0
-    !   it(oldsz+1:currentalsz)%childr_alsz = 0
-    !   it(oldsz+1:currentalsz)%parent = 0
-    ! !
-    !   deallocate(tmpcls)
-    ! !
-    ! end
-    ! !
-    ! !-------------------------------------------------------------------------------
-    ! !
+    end
     !
+    !-------------------------------------------------------------------------------
+    !HELPER FUNCTION FOR BIRCH
+    subroutine scluster_resizelst(currentalsz,it)
+    !
+      implicit none
+    !
+      integer i,oldsz,currentalsz
+      type(t_scluster), ALLOCATABLE, INTENT(IN OUT):: it(:)
+      type(t_scluster), ALLOCATABLE:: tmpcls(:)
+    !
+      oldsz = currentalsz
+      allocate(tmpcls(oldsz))
+      do i=1,oldsz
+        call copy_cluster(it(i),tmpcls(i))
+      end do
+    !
+      deallocate(it)
+    !
+      currentalsz = currentalsz*2
+      allocate(it(currentalsz))
+    !
+      do i=1,oldsz
+        call copy_cluster(tmpcls(i),it(i))
+      end do
+      it(oldsz+1:currentalsz)%nmbrs = 0
+      it(oldsz+1:currentalsz)%nchildren = 0
+      it(oldsz+1:currentalsz)%alsz = 0
+      it(oldsz+1:currentalsz)%childr_alsz = 0
+      it(oldsz+1:currentalsz)%parent = 0
+    !
+      deallocate(tmpcls)
+    !
+    end
+    !
+    !-------------------------------------------------------------------------------
+    !
+
 
 end module
