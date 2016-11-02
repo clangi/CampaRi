@@ -521,12 +521,17 @@ subroutine cluster_calc_params(it,targetsz)
     it%radius = sqrt(helper/(1.0*it%nmbrs*it%nmbrs))
     it%diam = sqrt(2.0*helper/(1.0*it%nmbrs*(it%nmbrs-1.0)))
     it%quality = 1.0 - it%radius/targetsz
+    ! write(ilog, *) "-----"
+    ! write(ilog,*) helper,it%nmbrs
+    ! write(ilog, * ) it%sqsum,it%sums(1)
+    ! write(ilog,*)it%radius,it%diam
   else if (it%nmbrs.eq.1) then
     it%diam = 0.0
     it%quality = 1.0
     it%radius = 0.0
 ! because of FPE/vectorization, this number can occasionally be small and negative if the real variance is zero
   else if (abs(helper)/radius.le.1.0e-8) then
+    write(ilog,*) "this happened"
     it%diam = 0.0
     it%quality = 1.0
     it%radius = 0.0

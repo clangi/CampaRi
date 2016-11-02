@@ -42,7 +42,7 @@ dim(trj)
 
 
 #ANALYSIS of the subsampled data-set (10 fold reduction)
-adjl<-adjl_from_trj(trj = trj, mode = "fortran", normalize_d = FALSE, logging = F)
+adjl<-adjl_from_trj(trj = trj, mode = "fortran", normalize_d = FALSE, logging = T)
 ret<-gen_progindex(adjl, snap_start = 10)
 ret2<-gen_annotation(ret,snap_start = 10, local_cut_width = floor(10000/27))
 sap_file <- 'REPIX_000000000010.dat'
@@ -55,7 +55,7 @@ zap_ggplot(sap_file = sap_file,
 # less_original run
 data_file <- "inst/extdata/NBU_1250fs.dcd"
 trj<-load_trj_dcd(paste0(package_dir,data_file))
-adjl<-adjl_from_trj(trj = trj, mode = "fortran", normalize_d = FALSE)
+adjl<-adjl_from_trj(trj = trj, mode = "fortran", normalize_d = FALSE,birch_clu = T,logging = T,tree_height = 3)
 ret<-gen_progindex(adjl, snap_start = 10)
 ret2<-gen_annotation(ret, snap_start = 10, local_cut_width = floor(6000/27))
 sap_file <- 'REPIX_000000000010.dat'

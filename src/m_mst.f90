@@ -594,7 +594,14 @@ module m_mst
                   k = birchtree(l)%cls(mycl)%snaps(kix)
                   if (csnap2tree(i).eq.csnap2tree(k)) then
                     csnap2tree_ik_eq_cnt = csnap2tree_ik_eq_cnt + 1
-                    cycle
+                    !TODO
+                    if(csnap2tree_ik_eq_cnt.gt.100) then
+                      write(ilog,*) "Something went wrong. &
+                      &csnap2tree has similar i-k. &
+                      &Please consider changing tree height"
+                      cycle
+                      ! call exit()
+                    end if
                   else
                     ! write(ilog,*) csnap2tree(i),csnap2tree(k)
                   end if

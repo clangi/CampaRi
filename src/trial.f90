@@ -46,14 +46,14 @@ program trial
 
   inter_rad = HUGE(inter_rad)
   mst_iin = .true.
-  bir_in = .false.
+  bir_in = .true.
   logging = .false.
   normalize_it = .true.
   make_it_verbose = .true.
 
   call RANDOM_NUMBER(INPUT_trj)
   rootmax_rad_in1 = (sum(INPUT_trj)/(n_snapshots*xyz_3coo))*(10.0/4.0)
-  tree_height_in1 = 5
+  tree_height_in1 = 3
   n_search_attempts_in1 = floor(size(INPUT_trj)/10.0)
   rad = rootmax_rad_in1/tree_height_in1
   if(.not.bir_in) rad = huge(rad)
@@ -69,7 +69,7 @@ program trial
   o_progind = 0
   o_distv = 0
   ! print *, INPUT_trj
-  print *,"INITIALIZATION BEFORE====max:::::::::::::::::::::::::::::::",maxval(INPUT_trj)
+  print *,"INITIALIZATION BEFORE====maxmin:::",maxval(INPUT_trj),minval(INPUT_trj)
   call generate_neighbour_list( &
   INPUT_trj, xyz_3coo, n_snapshots, rad, inter_rad, & !input
   a_deg, a_ix, a_dis, max_deg, & !output

@@ -90,9 +90,9 @@ module m_clustering
     integer childr_alsz
     integer parent
     !for quality
-    integer diam
-    integer radius
-    integer quality
+    real diam
+    real radius
+    real quality
     integer center
     !for SST
     integer, ALLOCATABLE :: tmpsnaps(:)
@@ -247,6 +247,7 @@ module m_clustering
       real tmp_d !temporary variable for the distance
       real min_d,helper,maxd(2),normer(4),qualmet(4)
       logical notdone
+      integer cl_one_elem !count of clusters with one single element
 
       tmp_dis_method = dis_method(1) !This is hard. Can be eventually taylored
     !
@@ -506,10 +507,10 @@ module m_clustering
      67 format(i9,i10,1x,g14.4,4x,i12,4x,i12)
      68 format(i9,i10,5x,a7,7x,i12,4x,i12)
       write(ilog,66)
-      write(ilog,68) c_nhier+1,birchtree(1)%ncls,'MAXIMAL',sum(birchtree(1)%cls(1:birchtree(1)%ncls)%nmbrs),&
+      write(ilog,68) 1,birchtree(1)%ncls,'MAXIMAL',sum(birchtree(1)%cls(1:birchtree(1)%ncls)%nmbrs),&
      &               sum(birchtree(1)%cls(1:birchtree(1)%ncls)%nchildren)
       do i=2,c_nhier+1
-        write(ilog,67) c_nhier+2-i,birchtree(i)%ncls,scrcts(i),sum(birchtree(i)%cls(1:birchtree(i)%ncls)%nmbrs),&
+        write(ilog,67) i,birchtree(i)%ncls,scrcts(i),sum(birchtree(i)%cls(1:birchtree(i)%ncls)%nmbrs),&
      &               sum(birchtree(i)%cls(1:birchtree(i)%ncls)%nchildren)
       end do
       write(ilog,*) '---------------------------------------------------------------------'
@@ -610,22 +611,42 @@ module m_clustering
       end do
 
 
-      63 format(i7,1x,i7,1x,i8,1000(1x,g12.5))
+      63 format(i6,1x,g12.5,1x,i7,1x,i7,1x,i8,1000(1x,g12.5))
       64 format(1000(g12.5,1x))
-      69 format('---------[first 20] CLUSTER SUMMARY (THRESHOLD OF ',g12.5,')')
-      do k=c_nhier+1,max(c_nhier-1,1),-1
-        write(ilog,69) scrcts(k)
-        write(ilog,*) ' #       No.     "Center"  Diameter     Radius      '
+      69 format(' --------- CLUSTERS SUMMARY --------')
+      70 format(' -> level ',i3,' has ',i7,' clusters with one element')
+      write(ilog,69)
+      write(ilog,*) 'level  threshold     #   No.     "Center"  Diameter     Radius      '
+      do k=1,c_nhier+1
+        cl_one_elem = 0
+
   !    do i=1,birchtree(c_nhier+1)%ncls
   !      write(ilog,63) i,scluster(i)%nmbrs,scluster(i)%center,scluster(i)%diam,scluster(i)%radius
   !    end do
         ! do i=1,birchtree(k)%ncls
-        do i=1,min(20,birchtree(k)%ncls)
-          write(ilog,63) i,birchtree(k)%cls(i)%nmbrs,birchtree(k)%cls(i)%center,birchtree(k)%cls(i)%diam,birchtree(k)%cls(i)%radius
+        do i=1,birchtree(k)%ncls
+          if(birchtree(k)%cls(i)%nmbrs.ne.1) then
+            if(k.eq.1) then
+              write(ilog,63) k,huge(scrcts(k)),i,birchtree(k)%cls(i)%nmbrs,birchtree(k)%cls(i)%center,&
+                birchtree(k)%cls(i)%diam,birchtree(k)%cls(i)%radius
+            else
+              write(ilog,63) k,scrcts(k),i,birchtree(k)%cls(i)%nmbrs,birchtree(k)%cls(i)%center,&
+                birchtree(k)%cls(i)%diam,birchtree(k)%cls(i)%radius
+            end if
+          else
+            cl_one_elem = cl_one_elem + 1
+          end if
         end do
-        write(ilog,*) '----------------------------------------------------'
-        write(ilog,*)
-        call quality_of_clustering(birchtree(k)%ncls,birchtree(k)%cls(1:birchtree(k)%ncls),scrcts(k),qualmet)
+        if(cl_one_elem.gt.0) write(ilog,70) k,cl_one_elem
+
+      end do
+      write(ilog,*)
+      write(ilog,*)
+      do k=2,c_nhier+1
+        if(birchtree(k)%ncls.ne.n_snaps) then
+          call quality_of_clustering(birchtree(k)%ncls,&
+            birchtree(k)%cls(1:birchtree(k)%ncls),scrcts(k),qualmet)
+        end if
       end do
       ! call gen_graph_from_clusters(scluster,nnodes,atrue)
       ! call graphml_helper_for_clustering(scluster,nnodes)

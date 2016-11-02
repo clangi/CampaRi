@@ -256,11 +256,11 @@ subroutine generate_neighbour_list( &
     call CPU_time(t1)
     call birch_clustering(trj_data)
     call CPU_time(t2)
-    write(ilog,*) '>>TIME<< elapsed for birch_clustering: ',t2-t1, ' [s]'
+    write(ilog,*) 'TIME elapsed for birch_clustering: ',t2-t1, ' [s]'
     write(ilog,*) 'BIRCH DONE'
     call gen_MST_from_treeclustering(adjl_deg,adjl_ix,adjl_dis,max_degr,trj_data)
     call CPU_time(t2)
-    write(ilog,*) '>>TIME<< elapsed for SST building: ',t2-t1, ' [s]'
+    write(ilog,*) 'TIME elapsed for SST building: ',t2-t1, ' [s]'
   end if
 
 

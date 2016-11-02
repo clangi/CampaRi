@@ -143,17 +143,19 @@ adjl_from_trj<-function(trj, distance_method = 5, distance_weights = NULL,  clu_
     #sst checks
     if(birch_clu){
       if(is.null(rootmax_rad))
-        rootmax_rad <- mean(trj)*(10.0/4.0)
+        rootmax_rad <- max(trj)*(8.0/10.0)
       else if(!is.numeric(rootmax_rad)||length(rootmax_rad)!=1)
         stop('rootmax_rad must be a numeric of length 1.')
-      if(is.null(tree_height))
-        tree_height <- 5
+      if(is.null(tree_height)||(is.numeric(tree_height)&&length(tree_height)==1&&tree_height<2))
+        tree_height <- 3
       else if(!is.numeric(tree_height)||length(tree_height)!=1)
         stop('tree_heigth must be a numeric of length 1.')
       if(is.null(n_search_attempts))
-         n_search_attempts <- rootmax_rad/tree_height
-       else if(!is.numeric(n_search_attempts)||length(n_search_attempts)!=1)
-         stop('n_search_attempts must be a numeric of length 1.')
+        n_search_attempts <- rootmax_rad/tree_height
+      else if(!is.numeric(n_search_attempts)||length(n_search_attempts)!=1)
+        stop('n_search_attempts must be a numeric of length 1.')
+      if(is.null(clu_radius)||clu_radius==2147483647)
+        clu_radius <- rootmax_rad/tree_height
     }else{
       rootmax_rad <- 0
       tree_height <- 0
