@@ -27,7 +27,7 @@ zap_ggplot(sap_file = sap_file,
 # SECOND TEST - butane chain2
 # Load trajectory [Full 1000000 snaps]
 trj2<-load_trj_dcd("CampaRi/inst/extdata/NBU.dcd")
-
+trj2 <- load_trj_dcd("CampaRi/inst/extdata/NBU_250fs.dcd")
 # SUBSAMPLING. dim_reduction is the variable indicating the factor of it
 # the computational complexity is O(rmsd)~O(d) having d = dimension of a snap
 # *O(number of distances calculated) = O(bin(n,2)) = O(n^2) ---> O(dn^2)
@@ -39,10 +39,10 @@ dim(trj)[1]^2
 dim(trj)[1]^2*dim(trj)[2]
 object.size(trj)/1000 #Kb
 dim(trj)
-
+trj <- trj2[1:15000,]
 
 #ANALYSIS of the subsampled data-set (10 fold reduction)
-adjl<-adjl_from_trj(trj = trj, mode = "fortran", normalize_d = FALSE, logging = T)
+adjl<-adjl_from_trj(trj = trj, mode = "fortran", normalize_d = FALSE, logging = F)
 ret<-gen_progindex(adjl, snap_start = 10)
 ret2<-gen_annotation(ret,snap_start = 10, local_cut_width = floor(10000/27))
 sap_file <- 'REPIX_000000000010.dat'
