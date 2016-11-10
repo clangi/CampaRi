@@ -4,7 +4,9 @@
 \alias{campari}
 \title{plotting}
 \usage{
-campari(wd, data_file, base_name, camp_home)
+campari(nsnaps, wd, data_file, base_name, camp_home, cprogindstart = 1,
+  pdb_format = 4, distance_met = 5, birch_height = 5,
+  cmaxrad = 2147483647, cradius = 2147483647, cprogindwidth = 1)
 }
 \arguments{
 \item{fl}{file location}

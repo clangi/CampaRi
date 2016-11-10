@@ -44,7 +44,6 @@ program trial
   ! dis_wei_in(2) = 0.001
   ! rad = HUGE(rad)
 
-  inter_rad = HUGE(inter_rad)
   mst_iin = .true.
   bir_in = .true.
   logging = .false.
@@ -52,16 +51,20 @@ program trial
   make_it_verbose = .true.
 
   call RANDOM_NUMBER(INPUT_trj)
-  rootmax_rad_in1 = (sum(INPUT_trj)/(n_snapshots*xyz_3coo))*(10.0/4.0)
-  tree_height_in1 = 3
-  n_search_attempts_in1 = floor(size(INPUT_trj)/10.0)
+  INPUT_trj(500:1000,:) = INPUT_trj(500:1000,:) + 5
+  rootmax_rad_in1 = (sum(INPUT_trj)/(n_snapshots*xyz_3coo))*(4.0/4.0)
+  ! rootmax_rad_in1 = 7.5
+  tree_height_in1 = 5
+  n_search_attempts_in1 = floor(size(INPUT_trj(:,1))/1.0)
   rad = rootmax_rad_in1/tree_height_in1
   if(.not.bir_in) rad = huge(rad)
+  inter_rad = HUGE(inter_rad)
   a_deg = 0
-  a_ix = 0
-  a_dis = 0.0
+  a_ix(:,:) = 0
+  a_dis(:,:) = 0.0
   max_deg = 0
 
+print *, n_search_attempts_in1, "ADSAJFKSFLSDGJDG"
   trbrkslst2 = 0
   o_invec = 0
   o_iv2 = 0
@@ -86,7 +89,7 @@ program trial
   print *, "max_deg", max_deg
   print *, ""
   print *, ""
-
+  !
   ! call gen_progind_from_adjlst(n_snapshots, 10, &
   ! max_deg, a_deg, a_ix, &
   ! a_dis, o_progind, o_distv, o_invec, o_iv2)

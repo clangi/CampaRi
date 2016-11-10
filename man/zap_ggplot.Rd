@@ -4,8 +4,10 @@
 \alias{zap_ggplot}
 \title{plotting}
 \usage{
-zap_ggplot(sap_file, write = F, folderPlot = "plots/", timeline = T,
-  basin_call = F, ann_trace = NULL, ann_trace_ret = F,
+zap_ggplot(sap_file = NULL, sap_table = NULL, write = F,
+  folderPlot = "plots/", timeline = T, subtitle = NULL, basin_call = F,
+  local_cut = T, ann_trace = F, ann_trace_ret = F,
+  background_height = NULL, ann_names_L = NULL, ann_names_R = NULL,
   title = "no title")
 }
 \arguments{

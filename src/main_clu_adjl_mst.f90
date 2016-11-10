@@ -83,7 +83,7 @@ subroutine generate_neighbour_list( &
   ! clu_hardcut is used for distances between different clusters snapshos as
   ! a threshold.
 
-  integer i,j,ii,kk,ll,k,l,mi,mj,u,u2 ! helper variables
+  integer i ! helper variables
   integer nzeros ! nzeros = number of not connected components (dis .le. 0)
   integer mst_file_unit, freeunit ! must have for using the same-name-function
   logical exist, mst_print, log_print !file dumping for mst tree for debugging
@@ -130,6 +130,10 @@ subroutine generate_neighbour_list( &
   cprogbatchsz = 1  !  batch size for random stretches aka dim of random branches def = 1 TODO
   cprogrdepth = 0   !  auxiliary search depth def = 0 TODO
   if(cprogrdepth.gt.c_nhier) cprogrdepth = c_nhier
+  if(cmaxrad.le.radius) cmaxrad = 2.0*radius
+  c_multires = 0 !inital value of FMCSC_BIRCHMULTI
+  ordering = 1
+  precise_clu_descr = .true.
 
 
 ! defining the logging id. 0 is sterror, 5 stinput, 6 stoutput
@@ -152,9 +156,9 @@ subroutine generate_neighbour_list( &
   end if
 
   write(ilog,*)
-  write(ilog,*) '-----------------------------------'
-  write(ilog,*) 'WELCOME TO CAMPARI ANALYSIS TOOL'
-  write(ilog,*) '-----------------------------------'
+  write(ilog,*) '---------------------------------------------------------------------'
+  write(ilog,*) '                 WELCOME TO CAMPARI ANALYSIS TOOL'
+  write(ilog,*) '---------------------------------------------------------------------'
   write(ilog,*)
 
   do i=1,11
@@ -203,7 +207,7 @@ subroutine generate_neighbour_list( &
 
     ! now compare all blocks to each other (the slowest part) taking advantage
     ! of information generated previously (otherwise intractable)
-    write(ilog,*) '-----------------------------------'
+    write(ilog,*) '---------------------------------------------------------------------'
     write(ilog,*) 'Now computing cutoff-assisted neighbor list...'
     write(ilog,*)
 
@@ -256,17 +260,21 @@ subroutine generate_neighbour_list( &
     call CPU_time(t1)
     call birch_clustering(trj_data)
     call CPU_time(t2)
-    write(ilog,*) 'TIME elapsed for birch_clustering: ',t2-t1, ' [s]'
-    write(ilog,*) 'BIRCH DONE'
+    write(ilog,*) 'Time elapsed for birch_clustering: ',t2-t1, ' [s]'
+    write(ilog,*) 'Birch clustering completed.'
+    write(ilog,*) '---------------------------------------------------------------------'
     call gen_MST_from_treeclustering(adjl_deg,adjl_ix,adjl_dis,max_degr,trj_data)
     call CPU_time(t2)
-    write(ilog,*) 'TIME elapsed for SST building: ',t2-t1, ' [s]'
+    write(ilog,*) 'Time elapsed for SST building: ',t2-t1, ' [s]'
+    write(ilog,*) 'SST generated from tree-based clustering successfully.'
+    write(ilog,*) '---------------------------------------------------------------------'
+    write(ilog,*)
   end if
 
 
   ! Eventual file-dumping for mst (debugging)
   if(mst_print) then
-    write(ilog,*) '-----------------------------------'
+    write(ilog,*) '---------------------------------------------------------------------'
     write(ilog,*) 'DUMPING OF THE MST FOR DEBUGGING REASONS'
     inquire(file="mst_new.txt", exist=exist)
     if (exist) then

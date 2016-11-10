@@ -186,5 +186,5 @@ zap_ggplot<-function(sap_file=NULL, sap_table=NULL,write=F, folderPlot = "plots/
   }
   
   
-  if(ann_trace_ret) return(ann_tr)
+  if(ann_trace_ret) invisible(ann_tr)
 }

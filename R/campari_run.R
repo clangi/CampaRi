@@ -13,7 +13,7 @@
 campari<-function(nsnaps, wd, data_file, base_name, camp_home, 
                   cprogindstart = 1, pdb_format = 4, distance_met = 5,
                   birch_height = 5, cmaxrad = 2147483647, cradius = 2147483647,
-                  cprogindwidth = 1){
+                  cprogindwidth = 1,search_attempts = NULL, methodst = 1){
   # dirs/file definitions
   kfile <- paste0(base_name,".key")
   klog <-paste0(base_name,".log")
@@ -45,6 +45,9 @@ campari<-function(nsnaps, wd, data_file, base_name, camp_home,
   #trajectory files obtained with other software, CAMPARI offers the user to provide a pdb template
   #which contains the order of atoms in the binary file in annotated form (see PDB_TEMPLATE).
   
+  if(is.null(search_attempts)&&methodst==2) search_attempts <- nsnaps/10
+  else search_attempts <- nsnaps / 10
+  
   FMCSC_PDB_R_CONV <- 1 # different conventions for the formatting of PDB files.
   #1. CAMPARI
   #2. GROMOS
@@ -56,10 +59,10 @@ campari<-function(nsnaps, wd, data_file, base_name, camp_home,
   FMCSC_BIRCHHEIGHT <- birch_height #12 #nothing is changing 1,51,2
   FMCSC_CMAXRAD <- cmaxrad  #nothing is changing 0,5,0.5
   FMCSC_CRADIUS <- cradius #nothing is changing seq(0.1,5.1,0.2)
-  FMCSC_CCUTOFF <- 2147483647  #nothing seq(0,10)
+  FMCSC_CCUTOFF <- 2147483647  #nothing seq(0,10) chardcut is different from cmaxrad which is used only in the case of sst (root lev)
   
-  FMCSC_CPROGINDMODE <-1 #exact MST = 1
-  FMCSC_CPROGINDRMAX <-1000 #ONLY SST
+  FMCSC_CPROGINDMODE <- methodst #exact MST = 1
+  FMCSC_CPROGINDRMAX <- search_attempts #ONLY SST
   FMCSC_CPROGINDSTART <- cprogindstart #nothing is changing c(-1,seq(1,1801,200))
   FMCSC_CPROGINDWIDTH <-  cprogindwidth # 540
   

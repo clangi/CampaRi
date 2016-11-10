@@ -4,8 +4,11 @@
 \alias{adjl_from_trj}
 \title{Build the network from the trajectory file}
 \usage{
-adjl_from_trj(trj, distance_method = 5, clu_radius = NULL,
-  clu_hardcut = NULL, cores = NULL, mode = NULL, min_span_tree = TRUE)
+adjl_from_trj(trj, distance_method = 5, distance_weights = NULL,
+  clu_radius = NULL, clu_hardcut = NULL, normalize_d = TRUE,
+  birch_clu = FALSE, min_span_tree = TRUE, mode = "fortran",
+  rootmax_rad = NULL, tree_height = NULL, n_search_attempts = NULL,
+  cores = NULL, logging = FALSE)
 }
 \arguments{
 \item{fl}{file location}

@@ -46,8 +46,8 @@ subroutine snap_to_cluster_d(val, it, sn2) !i={1:n_snaps}
 
   real , INTENT(IN) :: sn2(n_xyz) ! Array of coo of a single snap (i)
   type(t_scluster), INTENT(IN) :: it ! reference cluster
-  real vec1(n_xyz), hlp ! n_xyz is the coordinates allocation size
   real, INTENT(OUT) :: val ! this is the distance from the clu (tmp_d)
+  real vec1(n_xyz) ! n_xyz is the coordinates allocation size
   if(it%nmbrs.eq.0) then
     val = 0
   else
@@ -67,8 +67,7 @@ subroutine cluster_to_cluster_d(val, it1, it2)
   implicit none
 
   type(t_scluster), INTENT(IN):: it1, it2
-  real vec1(n_xyz), hlp, vec2(n_xyz)
-  integer k
+  real vec1(n_xyz), vec2(n_xyz)
   real, INTENT(OUT) :: val
 
   if (tmp_dis_method.eq.5.or.tmp_dis_method.eq.11) then
@@ -103,7 +102,7 @@ subroutine distance(val2, veci, vecj)
 
   if (tmp_dis_method.eq.5) then
     hlp = sum((veci(1:n_xyz) - vecj(1:n_xyz))**2)
-    val2 = sqrt((3.0 * hlp)/(1.0 * (n_xyz))) ! why *3?????
+    val2 = sqrt((3.0 * hlp)/(1.0 * (n_xyz))) ! why *3????? number of coo
   else if (tmp_dis_method.eq.11) then
     hlp = ACOS(dot_product(vec_ref,veci)/&
     (dot_product(vec_ref,vec_ref) + &
@@ -177,7 +176,6 @@ subroutine cluster_addsnap(it,sn1,i)
       if (allocated(it%snaps).EQV..true.) deallocate(it%snaps)
       allocate(it%snaps(it%alsz))
     end if
-    it%sums(1:n_xyz) = it%sums(1:n_xyz) + sn1 !
     it%center = i
   else ! regular add
     it%nmbrs = it%nmbrs + 1 !number of elements in the cluster updating
@@ -283,11 +281,10 @@ subroutine preprocess_snapshot(trj3, i2, vecti2)
   real(KIND=4), intent(in) :: trj3(n_snaps,n_xyz)
   real, intent(inout) :: vecti2(n_xyz)
   integer,intent(in) :: i2
-  integer i
   if(tmp_dis_method.eq.5) then
     vecti2 = trj3(i2,1:n_xyz)
   else if(tmp_dis_method.eq.11) then
-    if(i.eq.1) then !to avoid error I can double the first value
+    if(i2.eq.1) then !to avoid error I can double the first value
        vecti2 = trj3(i2+1,1:n_xyz) - trj3(i2,1:n_xyz)
     else
       vecti2 = trj3(i2,1:n_xyz) - trj3(i2-1,1:n_xyz)
@@ -339,7 +336,7 @@ end
   oldsz = it%childr_alsz
   tmpa(:) = it%children(:)
   deallocate(it%children)
-  it%childr_alsz = it%childr_alsz*2
+  it%childr_alsz = it%childr_alsz*4
   allocate(it%children(it%childr_alsz))
   it%children(1:oldsz) = tmpa(:)
 !
@@ -467,9 +464,13 @@ subroutine copy_cluster(cfrom,cto)
 !
   implicit none
 !
-  integer tmp1
   type(t_scluster) cfrom,cto
 !
+  if (allocated(cfrom%tmpsnaps).EQV..true.) then
+    if (allocated(cto%tmpsnaps).EQV..true.) deallocate(cto%tmpsnaps)
+    allocate(cto%tmpsnaps(cfrom%alsz))
+    cto%tmpsnaps(1:cfrom%alsz) = cfrom%tmpsnaps(1:cfrom%alsz)
+  end if
   if (allocated(cfrom%snaps).EQV..true.) then
     if (allocated(cto%snaps).EQV..true.) deallocate(cto%snaps)
     allocate(cto%snaps(cfrom%alsz))

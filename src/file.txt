@@ -1,0 +1,644 @@
+contract_mst.f90: In function ‘contract_mst’:
+contract_mst.f90:44:0: warning: ‘thej’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+         do ll=1,alnbs(thej)
+ ^
+dist_clusters_utils.f90:58.71:
+
+    call distance(val,vec1,sn2) ! val=tmp_d, vec1=centroid, sn=snapshot
+                                                                       1
+Warning: Procedure 'distance' called with an implicit interface at (1)
+dist_clusters_utils.f90:77.32:
+
+  call distance(val, vec1, vec2)
+                                1
+Warning: Procedure 'distance' called with an implicit interface at (1)
+dist_clusters_utils.f90:147.29:
+
+      call cluster_resize(it)
+                             1
+Warning: Procedure 'cluster_resize' called with an implicit interface at (1)
+dist_clusters_utils.f90:184.29:
+
+      call cluster_resize(it)
+                             1
+Warning: Procedure 'cluster_resize' called with an implicit interface at (1)
+dist_clusters_utils.f90:241.28:
+
+    call cluster_resize(itl)
+                            1
+Warning: Procedure 'cluster_resize' called with an implicit interface at (1)
+dist_clusters_utils.f90:315.30:
+
+    call scluster_resizech(it)
+                              1
+Warning: Procedure 'scluster_resizech' called with an implicit interface at (1)
+dist_clusters_utils.f90:364.40:
+
+        call copy_cluster(it(j+1),it(j))
+                                        1
+Warning: Procedure 'copy_cluster' called with an implicit interface at (1)
+dist_clusters_utils.f90:397.61:
+
+  call MergeSort(iv(:,1),iv(:,2),nba,tmp_iv(:,1),tmp_iv(:,2))
+                                                             1
+Warning: Procedure 'mergesort' called with an implicit interface at (1)
+dist_clusters_utils.f90:419.34:
+
+    call copy_cluster(it(i),tmpit)
+                                  1
+Warning: Procedure 'copy_cluster' called with an implicit interface at (1)
+dist_clusters_utils.f90:420.40:
+
+    call copy_cluster(it(iv(i,2)),it(i))
+                                        1
+Warning: Procedure 'copy_cluster' called with an implicit interface at (1)
+dist_clusters_utils.f90:421.40:
+
+    call copy_cluster(tmpit,it(iv(i,2)))
+                                        1
+Warning: Procedure 'copy_cluster' called with an implicit interface at (1)
+dist_clusters_utils.f90:450.54:
+
+    call preprocess_snapshot(trj4, it%snaps(i), vecti)
+                                                      1
+Warning: Procedure 'preprocess_snapshot' called with an implicit interface at (1)
+dist_clusters_utils.f90:451.43:
+
+    call snap_to_cluster_d(tmp_di,it,vecti)
+                                           1
+Warning: Procedure 'snap_to_cluster_d' called with an implicit interface at (1)
+dist_clusters_utils.f90:607.13:
+
+    call exit()
+             1
+Warning: The intrinsic 'exit' at (1) is not included in the selected standard but a GNU Fortran extension and 'exit' will be treated as if declared EXTERNAL.  Use an appropriate -std=* option or define -fall-intrinsics to allow this intrinsic.
+dist_clusters_utils.f90:607.13:
+
+    call exit()
+             1
+Warning: The intrinsic 'exit' at (1) is not included in the selected standard but a GNU Fortran extension and 'exit' will be treated as if declared EXTERNAL.  Use an appropriate -std=* option or define -fall-intrinsics to allow this intrinsic.
+dist_clusters_utils.f90:607.15:
+
+    call exit()
+               1
+Warning: The intrinsic 'exit' at (1) is not included in the selected standard but a GNU Fortran extension and 'exit' will be treated as if declared EXTERNAL.  Use an appropriate -std=* option or define -fall-intrinsics to allow this intrinsic.
+dist_clusters_utils.f90:607.15:
+
+    call exit()
+               1
+Warning: Procedure 'exit' called with an implicit interface at (1)
+dist_clusters_utils.f90: In function ‘preprocess_snapshot’:
+dist_clusters_utils.f90:289:0: warning: ‘i’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+     if(i.eq.1) then !to avoid error I can double the first value
+ ^
+dist_clusters_utils.f90: In function ‘cluster_calc_params’:
+dist_clusters_utils.f90:531:0: warning: ‘helper’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+   else if (abs(helper)/radius.le.1.0e-8) then
+ ^
+gen_manycuts.f90:479.12:
+
+    mx(i) = (ii-sumi)/(10.0**i)
+            1
+Warning: Possible change of value in conversion from REAL(4) to INTEGER(4) at (1)
+gen_manycuts.f90:481.13:
+
+      sumi = sumi + (10.0**i) * mx(i)
+             1
+Warning: Possible change of value in conversion from REAL(4) to INTEGER(4) at (1)
+gen_manycuts.f90:32.30:
+
+  call int2str(start,nod2,tl2)
+                              1
+Warning: Procedure 'int2str' called with an implicit interface at (1)
+gen_manycuts.f90:36.9:
+
+    iu = freeunit()
+         1
+Warning: Procedure 'freeunit' called with an implicit interface at (1)
+gen_manycuts.f90:40.5:
+
+  iu=freeunit()
+     1
+Warning: Procedure 'freeunit' called with an implicit interface at (1)
+gen_manycuts.f90: In function ‘gen_manycuts’:
+gen_manycuts.f90:19:0: warning: ‘ll’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+   integer pvo(5),pvn(5),iu,i,j,k,pwidth,ii,jj,kk,ll,tl2
+ ^
+gen_progind.f90:126.8:
+
+    if (hleft(i).le.n) then
+        1
+Warning: Procedure 'hleft' called with an implicit interface at (1)
+gen_progind.f90:127.14:
+
+      if (key(hleft(i)).lt.key(x)) then
+              1
+Warning: Procedure 'hleft' called with an implicit interface at (1)
+gen_progind.f90:128.12:
+
+        x = hleft(i)
+            1
+Warning: Procedure 'hleft' called with an implicit interface at (1)
+gen_progind.f90:131.8:
+
+    if (hright(i).le.n) then !no double logic? &&??
+        1
+Warning: Procedure 'hright' called with an implicit interface at (1)
+gen_progind.f90:132.14:
+
+      if (key(hright(i)).lt.key(x)) then
+              1
+Warning: Procedure 'hright' called with an implicit interface at (1)
+gen_progind.f90:133.12:
+
+        x = hright(i)
+            1
+Warning: Procedure 'hright' called with an implicit interface at (1)
+gen_progind.f90:139.39:
+
+      call hswap(n,heap,key,source,i,x)
+                                       1
+Warning: Procedure 'hswap' called with an implicit interface at (1)
+gen_progind.f90:183.37:
+
+    call heapify(n,heap,key,source,a)
+                                     1
+Warning: Procedure 'heapify' called with an implicit interface at (1)
+gen_progind.f90:182.7:
+
+  do a=hparent(n),1,-1
+       1
+Warning: Procedure 'hparent' called with an implicit interface at (1)
+gen_progind.f90:60.76:
+
+  call hbuild(heapsize,heap(1:heapsize),key(1:heapsize),hsource(1:heapsize))
+                                                                            1
+Warning: Procedure 'hbuild' called with an implicit interface at (1)
+gen_progind.f90:242.22:
+
+    if (key(i).lt.key(hparent(i))) then
+                      1
+Warning: Procedure 'hparent' called with an implicit interface at (1)
+gen_progind.f90:243.37:
+
+      call hswap(n,heap,key,source,i,hparent(i))
+                                     1
+Warning: Procedure 'hparent' called with an implicit interface at (1)
+gen_progind.f90:243.48:
+
+      call hswap(n,heap,key,source,i,hparent(i))
+                                                1
+Warning: Procedure 'hswap' called with an implicit interface at (1)
+gen_progind.f90:244.10:
+
+      i = hparent(i)
+          1
+Warning: Procedure 'hparent' called with an implicit interface at (1)
+gen_progind.f90:69.92:
+
+ &                   alst(progind(lprogind),j),aldis(progind(lprogind),j),progind(lprogind))
+                                                                                            1
+Warning: Procedure 'hinsert' called with an implicit interface at (1)
+gen_progind.f90:265.35:
+
+  call heapify(n,heap,key,source,1)
+                                   1
+Warning: Procedure 'heapify' called with an implicit interface at (1)
+gen_progind.f90:81.82:
+
+    call hremovemin(heapsize,heap(1:heapsize),key(1:heapsize),hsource(1:heapsize))
+                                                                                  1
+Warning: Procedure 'hremovemin' called with an implicit interface at (1)
+main_clu_adjl_mst.f90:137.11:
+
+    ilog = freeunit()
+           1
+Warning: Procedure 'freeunit' called with an implicit interface at (1)
+main_clu_adjl_mst.f90:273.22:
+
+      mst_file_unit = freeunit()
+                      1
+Warning: Procedure 'freeunit' called with an implicit interface at (1)
+main_clu_adjl_mst.f90:55.14:
+
+  data_meth_in, normalize_dis_in, log_print_in, verbose_in) !modes
+              1
+Warning: Unused dummy argument 'data_meth_in' at (1)
+m_clustering.f90:675.42:
+
+        call copy_cluster(it(i),tmpcls(i))
+                                          1
+Warning: Procedure 'copy_cluster' called with an implicit interface at (1)
+m_clustering.f90:684.42:
+
+        call copy_cluster(tmpcls(i),it(i))
+                                          1
+Warning: Procedure 'copy_cluster' called with an implicit interface at (1)
+m_clustering.f90:324.121:
+
+              if ((birchtree(tree_lev)%cls(ll)%center.le.0).OR.(birchtree(tree_lev)%cls(ll)%center.gt.n_snaps)) call exit()
+                                                                                                                         1
+Warning: The intrinsic 'exit' at (1) is not included in the selected standard but a GNU Fortran extension and 'exit' will be treated as if declared EXTERNAL.  Use an appropriate -std=* option or define -fall-intrinsics to allow this intrinsic.
+m_clustering.f90:324.121:
+
+              if ((birchtree(tree_lev)%cls(ll)%center.le.0).OR.(birchtree(tree_lev)%cls(ll)%center.gt.n_snaps)) call exit()
+                                                                                                                         1
+Warning: The intrinsic 'exit' at (1) is not included in the selected standard but a GNU Fortran extension and 'exit' will be treated as if declared EXTERNAL.  Use an appropriate -std=* option or define -fall-intrinsics to allow this intrinsic.
+m_clustering.f90:324.123:
+
+              if ((birchtree(tree_lev)%cls(ll)%center.le.0).OR.(birchtree(tree_lev)%cls(ll)%center.gt.n_snaps)) call exit()
+                                                                                                                           1
+Warning: The intrinsic 'exit' at (1) is not included in the selected standard but a GNU Fortran extension and 'exit' will be treated as if declared EXTERNAL.  Use an appropriate -std=* option or define -fall-intrinsics to allow this intrinsic.
+m_clustering.f90:324.123:
+
+              if ((birchtree(tree_lev)%cls(ll)%center.le.0).OR.(birchtree(tree_lev)%cls(ll)%center.gt.n_snaps)) call exit()
+                                                                                                                           1
+Warning: Procedure 'exit' called with an implicit interface at (1)
+m_clustering.f90:326.53:
+
+              call preprocess_snapshot(trj, i, vecti)
+                                                     1
+Warning: Procedure 'preprocess_snapshot' called with an implicit interface at (1)
+m_clustering.f90:327.77:
+
+              call snap_to_cluster_d(tmp_d,birchtree(tree_lev)%cls(ll),vecti)
+                                                                             1
+Warning: Procedure 'snap_to_cluster_d' called with an implicit interface at (1)
+m_clustering.f90:364.96:
+
+     &                                    birchtree(j)%cls(birchtree(j)%ncls),birchtree(j)%ncls)
+                                                                                                1
+Warning: Procedure 'cluster_addchild' called with an implicit interface at (1)
+m_clustering.f90:368.132:
+
+                call cluster_addchild(birchtree(fail-1)%cls(kkf),kkf,birchtree(fail)%cls(birchtree(fail)%ncls),birchtree(fail)%ncls)
+                                                                                                                                    1
+Warning: Procedure 'cluster_addchild' called with an implicit interface at (1)
+m_clustering.f90:370.104:
+
+     &                                birchtree(tree_lev)%cls(jj)%parent,birchtree(tree_lev)%cls(jj),jj)
+                                                                                                        1
+Warning: Procedure 'cluster_addchild' called with an implicit interface at (1)
+m_clustering.f90:380.51:
+
+            call preprocess_snapshot(trj, i, vecti)
+                                                   1
+Warning: Procedure 'preprocess_snapshot' called with an implicit interface at (1)
+m_clustering.f90:381.69:
+
+            call cluster_addsnap(birchtree(tree_lev)%cls(kk),vecti,i)
+                                                                     1
+Warning: Procedure 'cluster_addsnap' called with an implicit interface at (1)
+m_clustering.f90:383.78:
+
+              call cluster_addsnap(birchtree(j-1)%cls(kkhistory(j-1)),vecti,i)
+                                                                              1
+Warning: Procedure 'cluster_addsnap' called with an implicit interface at (1)
+m_clustering.f90:397.62:
+
+              call preprocess_snapshot(trj, i, vecti) !working
+                                                              1
+Warning: Procedure 'preprocess_snapshot' called with an implicit interface at (1)
+m_clustering.f90:398.88:
+
+              call cluster_addsnap(birchtree(j)%cls(birchtree(j)%ncls),vecti,i) !working
+                                                                                        1
+Warning: Procedure 'cluster_addsnap' called with an implicit interface at (1)
+m_clustering.f90:401.92:
+
+     &                                birchtree(j)%cls(birchtree(j)%ncls),birchtree(j)%ncls)
+                                                                                            1
+Warning: Procedure 'cluster_addchild' called with an implicit interface at (1)
+m_clustering.f90:405.132:
+
+            call cluster_addchild(birchtree(fail-1)%cls(kk),kk,birchtree(fail)%cls(birchtree(fail)%ncls),birchtree(fail)%ncls)!last 
+                                                                                                                                    1
+Warning: Procedure 'cluster_addchild' called with an implicit interface at (1)
+m_clustering.f90:408.53:
+
+              call preprocess_snapshot(trj, i, vecti)
+                                                     1
+Warning: Procedure 'preprocess_snapshot' called with an implicit interface at (1)
+m_clustering.f90:409.78:
+
+              call cluster_addsnap(birchtree(j-1)%cls(kkhistory(j-1)),vecti,i)
+                                                                              1
+Warning: Procedure 'cluster_addsnap' called with an implicit interface at (1)
+m_clustering.f90:411.71:
+
+            call snap_to_cluster_d(maxd(1),birchtree(fail-1)%cls(kk),i)
+                                                                       1
+Warning: Procedure 'snap_to_cluster_d' called with an implicit interface at (1)
+m_clustering.f90:324.121:
+
+              if ((birchtree(tree_lev)%cls(ll)%center.le.0).OR.(birchtree(tree_lev)%cls(ll)%center.gt.n_snaps)) call exit()
+                                                                                                                         1
+Warning: The intrinsic 'exit' at (1) is not included in the selected standard but a GNU Fortran extension and 'exit' will be treated as if declared EXTERNAL.  Use an appropriate -std=* option or define -fall-intrinsics to allow this intrinsic.
+m_clustering.f90:324.121:
+
+              if ((birchtree(tree_lev)%cls(ll)%center.le.0).OR.(birchtree(tree_lev)%cls(ll)%center.gt.n_snaps)) call exit()
+                                                                                                                         1
+Warning: The intrinsic 'exit' at (1) is not included in the selected standard but a GNU Fortran extension and 'exit' will be treated as if declared EXTERNAL.  Use an appropriate -std=* option or define -fall-intrinsics to allow this intrinsic.
+m_clustering.f90:433.123:
+
+              if ((birchtree(tree_lev)%cls(ll)%center.le.0).OR.(birchtree(tree_lev)%cls(ll)%center.gt.n_snaps)) call exit()
+                                                                                                                           1
+Warning: The intrinsic 'exit' at (1) is not included in the selected standard but a GNU Fortran extension and 'exit' will be treated as if declared EXTERNAL.  Use an appropriate -std=* option or define -fall-intrinsics to allow this intrinsic.
+m_clustering.f90:433.123:
+
+              if ((birchtree(tree_lev)%cls(ll)%center.le.0).OR.(birchtree(tree_lev)%cls(ll)%center.gt.n_snaps)) call exit()
+                                                                                                                           1
+Warning: Procedure 'exit' called with an implicit interface at (1)
+m_clustering.f90:434.73:
+
+              call snap_to_cluster_d(tmp_d,birchtree(tree_lev)%cls(ll),i)
+                                                                         1
+Warning: Procedure 'snap_to_cluster_d' called with an implicit interface at (1)
+m_clustering.f90:469.51:
+
+            call preprocess_snapshot(trj, i, vecti)
+                                                   1
+Warning: Procedure 'preprocess_snapshot' called with an implicit interface at (1)
+m_clustering.f90:470.69:
+
+            call cluster_addsnap(birchtree(tree_lev)%cls(kk),vecti,i)
+                                                                     1
+Warning: Procedure 'cluster_addsnap' called with an implicit interface at (1)
+m_clustering.f90:478.53:
+
+              call preprocess_snapshot(trj, i, vecti)
+                                                     1
+Warning: Procedure 'preprocess_snapshot' called with an implicit interface at (1)
+m_clustering.f90:479.79:
+
+              call cluster_addsnap(birchtree(j)%cls(birchtree(j)%ncls),vecti,i)
+                                                                               1
+Warning: Procedure 'cluster_addsnap' called with an implicit interface at (1)
+m_clustering.f90:482.92:
+
+     &                                birchtree(j)%cls(birchtree(j)%ncls),birchtree(j)%ncls)
+                                                                                            1
+Warning: Procedure 'cluster_addchild' called with an implicit interface at (1)
+m_clustering.f90:486.126:
+
+            call cluster_addchild(birchtree(fail-1)%cls(kk),kk,birchtree(fail)%cls(birchtree(fail)%ncls),birchtree(fail)%ncls)
+                                                                                                                              1
+Warning: Procedure 'cluster_addchild' called with an implicit interface at (1)
+m_clustering.f90:495.51:
+
+            call preprocess_snapshot(trj, i, vecti)
+                                                   1
+Warning: Procedure 'preprocess_snapshot' called with an implicit interface at (1)
+m_clustering.f90:496.77:
+
+            call cluster_addsnap(birchtree(j)%cls(birchtree(j)%ncls),vecti,i)
+                                                                             1
+Warning: Procedure 'cluster_addsnap' called with an implicit interface at (1)
+m_clustering.f90:497.126:
+
+            call cluster_addchild(birchtree(fail-1)%cls(kk),kk,birchtree(fail)%cls(birchtree(fail)%ncls),birchtree(fail)%ncls)
+                                                                                                                              1
+Warning: Procedure 'cluster_addchild' called with an implicit interface at (1)
+m_clustering.f90:593.80:
+
+      call clusters_shorten(birchtree(c_nhier+1)%cls, birchtree(c_nhier+1)%ncls)
+                                                                                1
+Warning: Procedure 'clusters_shorten' called with an implicit interface at (1)
+m_clustering.f90:594.77:
+
+      call clusters_sort(birchtree(c_nhier+1)%cls, birchtree(c_nhier+1)%ncls)
+                                                                             1
+Warning: Procedure 'clusters_sort' called with an implicit interface at (1)
+m_clustering.f90:596.63:
+
+        call cluster_getcenter(birchtree(c_nhier+1)%cls(i),trj)
+                                                               1
+Warning: Procedure 'cluster_getcenter' called with an implicit interface at (1)
+m_clustering.f90:605.66:
+
+        call copy_cluster(birchtree(c_nhier+1)%cls(i),scluster(i))
+                                                                  1
+Warning: Procedure 'copy_cluster' called with an implicit interface at (1)
+m_clustering.f90:610.65:
+
+          call cluster_calc_params(birchtree(k)%cls(i),scrcts(k))
+                                                                 1
+Warning: Procedure 'cluster_calc_params' called with an implicit interface at (1)
+m_clustering.f90:649.68:
+
+            birchtree(k)%cls(1:birchtree(k)%ncls),scrcts(k),qualmet)
+                                                                    1
+Warning: Procedure 'quality_of_clustering' called with an implicit interface at (1)
+m_clustering.f90:156.48:
+
+          call preprocess_snapshot(trj,i, vecti)
+                                                1
+Warning: Procedure 'preprocess_snapshot' called with an implicit interface at (1)
+m_clustering.f90:157.57:
+
+          call snap_to_cluster_d(tmp_d,scluster(j),vecti)
+                                                         1
+Warning: Procedure 'snap_to_cluster_d' called with an implicit interface at (1)
+m_clustering.f90:160.53:
+
+            call cluster_addsnap(scluster(j),vecti,i)
+                                                     1
+Warning: Procedure 'cluster_addsnap' called with an implicit interface at (1)
+m_clustering.f90:177.73:
+
+          call cluster_addsnap(scluster(nclu),vecti,i) ! nclu new cluster
+                                                                         1
+Warning: Procedure 'cluster_addsnap' called with an implicit interface at (1)
+m_clustering.f90: In function ‘birch_clustering’:
+m_clustering.f90:353:0: warning: ‘thekk’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+                 kkf = thekk
+ ^
+m_gen_nbls.f90:75.46:
+
+              call distance(tmp_d,vecti,vectj)
+                                              1
+Warning: Procedure 'distance' called with an implicit interface at (1)
+m_gen_nbls.f90:86.78:
+
+                if (cnblst(k)%nbs.gt.cnblst(k)%alsz) call cnbl_resz(cnblst(k))
+                                                                              1
+Warning: Procedure 'cnbl_resz' called with an implicit interface at (1)
+m_gen_nbls.f90:91.78:
+
+                if (cnblst(l)%nbs.gt.cnblst(l)%alsz) call cnbl_resz(cnblst(l))
+                                                                              1
+Warning: Procedure 'cnbl_resz' called with an implicit interface at (1)
+m_gen_nbls.f90:116.62:
+
+              call snap_to_cluster_d(tmp_d,scluster(mj),vecti)
+                                                              1
+Warning: Procedure 'snap_to_cluster_d' called with an implicit interface at (1)
+m_gen_nbls.f90:130.76:
+
+                  call cluster_to_cluster_d(tmp_d,scluster(mi),scluster(mj))
+                                                                            1
+Warning: Procedure 'cluster_to_cluster_d' called with an implicit interface at (1)
+m_gen_nbls.f90:133.50:
+
+                  call distance(tmp_d,vecti,vectj)
+                                                  1
+Warning: Procedure 'distance' called with an implicit interface at (1)
+m_gen_nbls.f90:141.80:
+
+                  if (cnblst(k)%nbs.gt.cnblst(k)%alsz) call cnbl_resz(cnblst(k))
+                                                                                1
+Warning: Procedure 'cnbl_resz' called with an implicit interface at (1)
+m_gen_nbls.f90:145.80:
+
+                  if (cnblst(l)%nbs.gt.cnblst(l)%alsz) call cnbl_resz(cnblst(l))
+                                                                                1
+Warning: Procedure 'cnbl_resz' called with an implicit interface at (1)
+m_mst.f90:372.92:
+
+              call cluster_removesnap(birchtree(l)%cls(k),birchtree(l)%cls(k)%snaps(j),trj2)
+                                                                                            1
+Warning: Procedure 'cluster_removesnap' called with an implicit interface at (1)
+m_mst.f90:375.50:
+
+                birchtree(l)%cls(k)%snaps(j),trj2)
+                                                  1
+Warning: Procedure 'cluster_removesnap' called with an implicit interface at (1)
+m_mst.f90:418.94:
+
+            call MergeSort(testlst(1:mm,3),testlst(1:mm,1),mm,testlst(1:mm,4),testlst(1:mm,2))
+                                                                                              1
+Warning: Procedure 'mergesort' called with an implicit interface at (1)
+m_mst.f90:460.98:
+
+              call ibinary_search(ixx,birchtree(l)%cls(mycl)%tmpsnaps(1:ixx),csnap2tree(i)-1,ixx2)
+                                                                                                  1
+Warning: Procedure 'ibinary_search' called with an implicit interface at (1)
+m_mst.f90:475.96:
+
+              call ibinary_search(ixx,birchtree(l)%cls(mycl)%tmpsnaps(1:ixx),csnap2tree(i),ixx2)
+                                                                                                1
+Warning: Procedure 'ibinary_search' called with an implicit interface at (1)
+m_mst.f90:501.67:
+
+              call distance(jkdist,tmpcld(1:n_xyz),trj2(k,1:n_xyz))
+                                                                   1
+Warning: Procedure 'distance' called with an implicit interface at (1)
+m_mst.f90:539.67:
+
+              call distance(jkdist,tmpcld(1:n_xyz),trj2(k,1:n_xyz))
+                                                                   1
+Warning: Procedure 'distance' called with an implicit interface at (1)
+m_mst.f90:590.31:
+
+                kk = int(random(rand_seed_cnt)*m) + b2
+                               1
+Warning: Procedure 'random' called with an implicit interface at (1)
+m_mst.f90:612.71:
+
+                  call distance(jkdist,tmpcld(1:n_xyz),trj2(k,1:n_xyz))
+                                                                       1
+Warning: Procedure 'distance' called with an implicit interface at (1)
+m_mst.f90:652.31:
+
+                kk = int(random(rand_seed_cnt)*a)
+                               1
+Warning: Procedure 'random' called with an implicit interface at (1)
+m_mst.f90:662.71:
+
+                  call distance(jkdist,tmpcld(1:n_xyz),trj2(k,1:n_xyz))
+                                                                       1
+Warning: Procedure 'distance' called with an implicit interface at (1)
+m_mst.f90:767.21:
+
+            call exit()
+                     1
+Warning: The intrinsic 'exit' at (1) is not included in the selected standard but a GNU Fortran extension and 'exit' will be treated as if declared EXTERNAL.  Use an appropriate -std=* option or define -fall-intrinsics to allow this intrinsic.
+m_mst.f90:767.21:
+
+            call exit()
+                     1
+Warning: The intrinsic 'exit' at (1) is not included in the selected standard but a GNU Fortran extension and 'exit' will be treated as if declared EXTERNAL.  Use an appropriate -std=* option or define -fall-intrinsics to allow this intrinsic.
+m_mst.f90:767.23:
+
+            call exit()
+                       1
+Warning: The intrinsic 'exit' at (1) is not included in the selected standard but a GNU Fortran extension and 'exit' will be treated as if declared EXTERNAL.  Use an appropriate -std=* option or define -fall-intrinsics to allow this intrinsic.
+m_mst.f90:767.23:
+
+            call exit()
+                       1
+Warning: Procedure 'exit' called with an implicit interface at (1)
+m_mst.f90:767.21:
+
+            call exit()
+                     1
+Warning: The intrinsic 'exit' at (1) is not included in the selected standard but a GNU Fortran extension and 'exit' will be treated as if declared EXTERNAL.  Use an appropriate -std=* option or define -fall-intrinsics to allow this intrinsic.
+m_mst.f90:767.21:
+
+            call exit()
+                     1
+Warning: The intrinsic 'exit' at (1) is not included in the selected standard but a GNU Fortran extension and 'exit' will be treated as if declared EXTERNAL.  Use an appropriate -std=* option or define -fall-intrinsics to allow this intrinsic.
+m_mst.f90:854.17:
+
+      call exit()
+                 1
+Warning: The intrinsic 'exit' at (1) is not included in the selected standard but a GNU Fortran extension and 'exit' will be treated as if declared EXTERNAL.  Use an appropriate -std=* option or define -fall-intrinsics to allow this intrinsic.
+m_mst.f90:854.17:
+
+      call exit()
+                 1
+Warning: Procedure 'exit' called with an implicit interface at (1)
+m_mst.f90:127.52:
+
+      call MergeSort(alldiss,ix,allnbs,Talldiss,Tix)
+                                                    1
+Warning: Procedure 'mergesort' called with an implicit interface at (1)
+m_mst.f90:186.61:
+
+          call cluster_addsnap_ix(it(iv1(i_of_lnk)),i_of_lnk)
+                                                             1
+Warning: Procedure 'cluster_addsnap_ix' called with an implicit interface at (1)
+m_mst.f90:187.61:
+
+          call cluster_addsnap_ix(it(iv1(i_of_lnk)),j_of_lnk)
+                                                             1
+Warning: Procedure 'cluster_addsnap_ix' called with an implicit interface at (1)
+m_mst.f90:198.79:
+
+            call join_clusters(it(iv1(i_of_lnk)),it(j)) !'physically' join them
+                                                                               1
+Warning: Procedure 'join_clusters' called with an implicit interface at (1)
+m_mst.f90:204.55:
+
+            call join_clusters(it(iv1(j_of_lnk)),it(j))
+                                                       1
+Warning: Procedure 'join_clusters' called with an implicit interface at (1)
+m_mst.f90:209.61:
+
+          call cluster_addsnap_ix(it(iv1(i_of_lnk)),j_of_lnk)
+                                                             1
+Warning: Procedure 'cluster_addsnap_ix' called with an implicit interface at (1)
+m_mst.f90:213.61:
+
+          call cluster_addsnap_ix(it(iv1(j_of_lnk)),i_of_lnk)
+                                                             1
+Warning: Procedure 'cluster_addsnap_ix' called with an implicit interface at (1)
+trial.f90:79.58:
+
+  d_meth_i, normalize_it, logging, make_it_verbose) !modes
+                                                          1
+Warning: Procedure 'generate_neighbour_list' called with an implicit interface at (1)
+utilities.f90:69.53:
+
+      call Merge(T,Tix,NA,A(NA+1),ix(NA+1),NB,A,ix,N)
+                                                     1
+Warning: Procedure 'merge' called with an implicit interface at (1)
+/tmp/ccIRd36D.o: In function `cluster_removesnap_':
+dist_clusters_utils.f90:(.text+0x369c): undefined reference to `exit_'
+/tmp/ccsNUOhh.o: In function `__m_clustering_MOD_birch_clustering':
+m_clustering.f90:(.text+0x118c): undefined reference to `exit_'
+m_clustering.f90:(.text+0x332a): undefined reference to `exit_'
+/tmp/cc0kckTK.o: In function `__m_mst_MOD_gen_mst_from_treeclustering':
+m_mst.f90:(.text+0x46fc): undefined reference to `exit_'
+m_mst.f90:(.text+0x4b8b): undefined reference to `exit_'
+collect2: error: ld returned 1 exit status

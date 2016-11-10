@@ -393,6 +393,8 @@ module m_mst
     tmpix(:,:) = 0                  ! initialize
     allocate(testlst(n_snaps,4))
     testlst(:,4) = 0
+    cbnds(:) = 0 !myadd
+    thismode = 1 !myadd
   !
     call CPU_time(tmvars(1))
   !
@@ -419,7 +421,7 @@ module m_mst
   !          write(*,*) l,i,':'
   !          write(*,555) testlst(1:mm,3)
             do j=1,mm
-              testlst(j,4) = birchtree(l)%cls(i)%snaps(testlst(j,2))
+              testlst(j,4) = birchtree(l)%cls(i)%snaps(testlst(j,1))
             end do
             birchtree(l)%cls(i)%snaps(1:mm) = testlst(1:mm,4)
             birchtree(l)%cls(i)%tmpsnaps(1:mm) = testlst(1:mm,3)
@@ -431,8 +433,10 @@ module m_mst
   !
   !   first get a set of guesses based on fixed trees, clustering data structure, and prior guesses
       do i=1,n_snaps
+
         ishfx = i
         l = snplst(ishfx) ! this is remembered across Boruvka stages
+        ! write(ilog,*) "asdadsdads", snplst(ishfx)
         do while (satisfied(ishfx).lt.cprogindrmax)
   !
           mycl = csnap2clus(i,l)
@@ -596,10 +600,10 @@ module m_mst
                     csnap2tree_ik_eq_cnt = csnap2tree_ik_eq_cnt + 1
                     !TODO
                     if(csnap2tree_ik_eq_cnt.gt.100) then
-                      write(ilog,*) "Something went wrong. &
-                      &csnap2tree has similar i-k. &
-                      &Please consider changing tree height"
-                      cycle
+                      ! write(ilog,*) "Something went wrong. &
+                      ! &csnap2tree has similar i-k. &
+                      ! &Please consider changing tree height"
+                      ! cycle
                       ! call exit()
                     end if
                   else
@@ -828,7 +832,8 @@ module m_mst
       end do
   !
    567 format('... time for Boruvka stage ',i4,': ',g11.3,'s ...')
-   456 format(i4,8(g12.4,1x),i10,i10,i6,i6,1x,g12.4,g12.4,g12.4)
+      write(ilog,*) ntrees
+  !  456 format(i4,8(g12.4,1x),i10,i10,i6,i6,1x,g12.4,g12.4,g12.4)
       call CPU_time(tmvars(2))
       write(*,567) boruvkasteps, tmvars(2)-tmvars(1)
       tmvars(1) = tmvars(2)
@@ -880,7 +885,7 @@ module m_mst
     deallocate(mstedges)
     deallocate(lmstedges)
   !
-   77 format(a,20(i18,1x))
+  !  77 format(a,20(i18,1x))
     write(ilog,*) '... done after ',cdevalcnt,' additional distance evaluations.'
     write(ilog,*)
   !
