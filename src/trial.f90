@@ -52,10 +52,11 @@ program trial
 
   call RANDOM_NUMBER(INPUT_trj)
   INPUT_trj(500:1000,:) = INPUT_trj(500:1000,:) + 5
+  ! INPUT_trj(1500:5000,:) = INPUT_trj(1500:5000,:) + 11
   rootmax_rad_in1 = (sum(INPUT_trj)/(n_snapshots*xyz_3coo))*(4.0/4.0)
   ! rootmax_rad_in1 = 7.5
   tree_height_in1 = 5
-  n_search_attempts_in1 = floor(size(INPUT_trj(:,1))/1.0)
+  n_search_attempts_in1 = floor(size(INPUT_trj(:,1))/10.0)
   rad = rootmax_rad_in1/tree_height_in1
   if(.not.bir_in) rad = huge(rad)
   inter_rad = HUGE(inter_rad)

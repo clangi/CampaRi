@@ -347,8 +347,8 @@ module m_mst
   !
     write(ilog,*)
     write(ilog,*) 'Now generating approximate MST (SST) based on tree-based clustering ...'
-    do i=1,ntrees
-      allocate(tmptree(i)%snaps(1))
+    do i=1,ntrees !ntrees is initialized with number of snapshots (cstored)
+      allocate(tmptree(i)%snaps(1)) !there are n_snaps trees allocated. For each the first snap is allocated
       tmptree(i)%snaps(1) = i
       csnap2tree(i) = i
     end do
@@ -373,10 +373,10 @@ module m_mst
             else
               call cluster_removesnap(birchtree(l)%cls(csnap2clus(birchtree(l)%cls(k)%snaps(j),l)),&
                 birchtree(l)%cls(k)%snaps(j),trj2)
-              csnap2clus(birchtree(l)%cls(k)%snaps(j),l) = k
+              csnap2clus(birchtree(l)%cls(k)%snaps(j),l) = k !because the k cls has more elements than the previous stored a new maximum is assigned
             end if
           else
-            csnap2clus(birchtree(l)%cls(k)%snaps(j),l) = k
+            csnap2clus(birchtree(l)%cls(k)%snaps(j),l) = k !k has always the maximum number of snaps
           end if
         end do
       end do
@@ -393,8 +393,8 @@ module m_mst
     tmpix(:,:) = 0                  ! initialize
     allocate(testlst(n_snaps,4))
     testlst(:,4) = 0
-    cbnds(:) = 0 !myadd
-    thismode = 1 !myadd
+    ! cbnds(:) = 0 !myadd
+    ! thismode = 1 !myadd
   !
     call CPU_time(tmvars(1))
   !
@@ -606,6 +606,7 @@ module m_mst
                       ! cycle
                       ! call exit()
                     end if
+                    exit
                   else
                     ! write(ilog,*) csnap2tree(i),csnap2tree(k)
                   end if
@@ -832,7 +833,7 @@ module m_mst
       end do
   !
    567 format('... time for Boruvka stage ',i4,': ',g11.3,'s ...')
-      write(ilog,*) ntrees
+      ! write(ilog,*) "ntrees:", ntrees
   !  456 format(i4,8(g12.4,1x),i10,i10,i6,i6,1x,g12.4,g12.4,g12.4)
       call CPU_time(tmvars(2))
       write(*,567) boruvkasteps, tmvars(2)-tmvars(1)

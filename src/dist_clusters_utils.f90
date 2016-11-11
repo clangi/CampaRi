@@ -609,7 +609,7 @@ subroutine cluster_removesnap(it,i,trj3)
  & This is a bug.'
     call exit()
   end if
-  it%snaps(k) = it%snaps(it%nmbrs)
+  it%snaps(k) = it%snaps(it%nmbrs) !is it removed like this?
   it%nmbrs = it%nmbrs - 1
 !
 ! be safe (this condition should only occur in specialized applications)
