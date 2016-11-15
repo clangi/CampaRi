@@ -118,7 +118,7 @@ subroutine generate_neighbour_list( &
   !debugging flag
   superver = .false.  !dev flag for superverbose output
   mst_print = .false. !dev flag for adjlist (mst) checking
-  rand_seed_cnt = 1 !it is used to have fixed seed (different for each call)
+  rand_seed_cnt = 0 !it is used to have fixed seed (different for each call)
   !if it is 0 it uses the standard random_seed
 
   !SST

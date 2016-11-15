@@ -46,7 +46,7 @@ campari<-function(nsnaps, wd, data_file, base_name, camp_home,
   #which contains the order of atoms in the binary file in annotated form (see PDB_TEMPLATE).
   
   if(is.null(search_attempts)&&methodst==2) search_attempts <- nsnaps/10
-  else search_attempts <- nsnaps / 10
+
   
   FMCSC_PDB_R_CONV <- 1 # different conventions for the formatting of PDB files.
   #1. CAMPARI

@@ -392,7 +392,7 @@ subroutine clusters_sort(it, nba)
   end do
   iv(:,1) = it(1:nba)%nmbrs
 
-  call MergeSort(iv(:,1),iv(:,2),nba,tmp_iv(:,1),tmp_iv(:,2))
+  call MergeSort(iv(:,1),iv(:,2),nba,tmp_iv(:,1),tmp_iv(:,2),.false.)
   !call merge_sort(nba,upornot,iv(:,1),iv(:,2),ii,jj,iv(:,3),iv(:,4))
   ! 1->allnbs (3) !number of elements [nba]
   ! 3->Talldiss (4) !temporary balue for sorting iv(:,1)=> iv(:,2)

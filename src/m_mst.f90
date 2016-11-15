@@ -124,7 +124,7 @@ module m_mst
         ! real, dimension(N) :: A = alldiss
         ! integer, dimension(N) :: ix iv3
 
-      call MergeSort(alldiss,ix,allnbs,Talldiss,Tix)
+      call MergeSort(alldiss,ix,allnbs,Talldiss,Tix,.true.)
 
   !     call merge_sort(ldim=allnbs,up=atrue,list=tmpv(1:allnbs),olist=alldiss(1:allnbs),&
   !  &                ilo=aone,ihi=allnbs,idxmap=iv1(1:allnbs),olist2=iv3(1:allnbs))
@@ -307,16 +307,18 @@ module m_mst
     integer, ALLOCATABLE:: tmpix(:,:)
     real, ALLOCATABLE:: tmpdis(:,:)
     real tmvars(2),tmpcld(n_xyz) !calcsz doesn't exist nomore -> n_xyz
-    real random ! random number
+    ! real random ! random number
+    real random_or
     real jkdist ! distance between two snapshots
     integer boruvkasteps! counts how many boruvka steps are needed
     integer nmstedges   ! current number of edges in the growing trees
-    integer, ALLOCATABLE:: testlst(:,:) ! temporary list of eligible candidates for random search with annotations
-    integer, ALLOCATABLE:: snplst(:)    ! a temp array to hold lists of snapshots to scan for eligible distances
+    integer, ALLOCATABLE :: testlst(:,:) ! temporary list of eligible candidates for random search with annotations
+    integer, ALLOCATABLE :: to_order(:,:)
+    integer, ALLOCATABLE :: snplst(:)    ! a temp array to hold lists of snapshots to scan for eligible distances
     integer a           ! numbers of snapshots, used for sophisticated nearest neighbor guessing
     integer kk,kix,kixi ! local snapshot index within cluster, used for sophisticated nearest neighbor guessing
-    integer, ALLOCATABLE:: satisfied(:) ! array to indicate whether enough distances have been probed
-    integer, ALLOCATABLE:: mstedges(:,:)! contains all the edges in the SST
+    integer, ALLOCATABLE :: satisfied(:) ! array to indicate whether enough distances have been probed
+    integer, ALLOCATABLE :: mstedges(:,:)! contains all the edges in the SST
                                         ! Indices: edgenumber (1-nedges), endpoint (1-2)
     real(KIND=4), ALLOCATABLE:: lmstedges(:) ! contains the lengths of all the edges in the SST
 
@@ -392,6 +394,7 @@ module m_mst
     tmpdis(:,:) = HUGE(tmpdis(1,1)) ! initialize
     tmpix(:,:) = 0                  ! initialize
     allocate(testlst(n_snaps,4))
+    allocate(to_order(n_snaps,2))
     testlst(:,4) = 0
     ! cbnds(:) = 0 !myadd
     ! thismode = 1 !myadd
@@ -415,16 +418,18 @@ module m_mst
             ixx = 1
             ixx2 = birchtree(l)%cls(i)%nmbrs
             mm = birchtree(l)%cls(i)%nmbrs
-            call MergeSort(testlst(1:mm,3),testlst(1:mm,1),mm,testlst(1:mm,4),testlst(1:mm,2))
+            to_order(1:mm,1) = testlst(1:mm,4)
+            to_order(1:mm,2) = testlst(1:mm,1)
+            call MergeSort(to_order(1:mm,1),to_order(1:mm,2),mm,testlst(1:mm,3),testlst(1:mm,2),.true.)
   !           call merge_sort(ldim=mm,up=atrue,list=testlst(1:mm,4),olist=testlst(1:mm,3),ilo=ixx,ihi=ixx2,&
   !  &                        idxmap=testlst(1:mm,1),olist2=testlst(1:mm,2))
   !          write(*,*) l,i,':'
   !          write(*,555) testlst(1:mm,3)
             do j=1,mm
-              testlst(j,4) = birchtree(l)%cls(i)%snaps(testlst(j,1))
+              testlst(j,4) = birchtree(l)%cls(i)%snaps(to_order(j,2))
             end do
             birchtree(l)%cls(i)%snaps(1:mm) = testlst(1:mm,4)
-            birchtree(l)%cls(i)%tmpsnaps(1:mm) = testlst(1:mm,3)
+            birchtree(l)%cls(i)%tmpsnaps(1:mm) = to_order(1:mm,1)
   !          write(*,555) birchtree(l)%cls(i)%snaps(1:mm) ! testlst(1:mm,3)
   !          write(*,555) snap2tree(birchtree(l)%cls(i)%snaps(1:mm))
           end do
@@ -572,7 +577,7 @@ module m_mst
               satisfied(ishfx) = satisfied(ishfx) + 1
             end do
           else ! random
-            m = a
+            m = a !a is the numbers of elements
             b1 = 0 ! max(1,a/2)
             b2 = 0 ! b1
             if (cbnds(1).gt.0) then
@@ -589,7 +594,7 @@ module m_mst
             end if
             if (boruvkasteps.gt.0) then
               do while (satisfied(ishfx).lt.cprogindrmax)
-                kk = int(random(rand_seed_cnt)*m) + b2
+                kk = int(random_or()*m) + b2
                 if(rand_seed_cnt.gt.0)rand_seed_cnt = rand_seed_cnt + 1
                 do ki=1,cprogbatchsz
                   kix = kk
@@ -600,15 +605,12 @@ module m_mst
                     csnap2tree_ik_eq_cnt = csnap2tree_ik_eq_cnt + 1
                     !TODO
                     if(csnap2tree_ik_eq_cnt.gt.100) then
-                      ! write(ilog,*) "Something went wrong. &
-                      ! &csnap2tree has similar i-k. &
-                      ! &Please consider changing tree height"
+                      write(ilog,*) "FATAL : Something went wrong. &
+                      &csnap2tree has similar i-k. &
+                      &Please consider changing tree height"
                       ! cycle
-                      ! call exit()
+                      call exit()
                     end if
-                    exit
-                  else
-                    ! write(ilog,*) csnap2tree(i),csnap2tree(k)
                   end if
                   trcnt = trcnt + 1
                   testcnt = testcnt + 1
@@ -652,7 +654,7 @@ module m_mst
             else !boruvkasteps == 0
               kixi = max(1,a/cprogbatchsz)
               do while (satisfied(ishfx).lt.cprogindrmax)
-                kk = int(random(rand_seed_cnt)*a)
+                kk = int(random_or()*a)
                 if(rand_seed_cnt.gt.0)  rand_seed_cnt = rand_seed_cnt + 1
                 do ki=1,cprogbatchsz
                   kix = kk

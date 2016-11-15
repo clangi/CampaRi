@@ -257,6 +257,7 @@ module m_clustering
       logical notdone, cycit
       integer cl_one_elem !count of clusters with one single element
       integer cnhmax ! Toask: levels of the tree that are recalculated?
+      integer max_show_clu ! maximum number of cl to show.
 
       tmp_dis_method = dis_method(1) !This is hard. Can be eventually taylored
     ! NOT USED it seems
@@ -264,7 +265,7 @@ module m_clustering
     !  34 format('NEXT HIGHER: ',i6,' could have been part of ',i5,' at ',g14.7,'.')
     !  35 format('ERROR C: ',i6,' is meant to a child of ',i5,' at level ',i5,' but has distance ',g14.7,'.')
     !
-      if (ordering.le.2) then ! cleadermode = processing direction flags
+      if (ordering.le.2) then ! cleadermode = processing direction flags (default = 1)
         snapstart = 1
         snapend = n_snaps
         snapinc = 1
@@ -674,6 +675,7 @@ module m_clustering
         clu_summary = .true.
       else
         clu_summary = .false.
+        max_show_clu = 15
       end if
 
       ! call cluster_getcenter(birchtree(1)%cls(1),trj)
@@ -687,19 +689,23 @@ module m_clustering
         write(ilog,*) 'level  threshold     #   No.     "Center"  Diameter     Radius      '
         do k=1,c_nhier+1
           cl_one_elem = 0
-
+          j = 0
     !    do i=1,birchtree(c_nhier+1)%ncls
     !      write(ilog,63) i,scluster(i)%nmbrs,scluster(i)%center,scluster(i)%diam,scluster(i)%radius
     !    end do
           ! do i=1,birchtree(k)%ncls
+          if(clu_summary) max_show_clu = birchtree(k)%ncls
           do i=1,birchtree(k)%ncls
             if(birchtree(k)%cls(i)%nmbrs.ne.1) then
-              if(k.eq.1) then
-                write(ilog,63) k,"MAXIMAL",i,birchtree(k)%cls(i)%nmbrs,birchtree(k)%cls(i)%center,&
-                  birchtree(k)%cls(i)%diam,birchtree(k)%cls(i)%radius
-              else
-                write(ilog,63) k,scrcts(k),i,birchtree(k)%cls(i)%nmbrs,birchtree(k)%cls(i)%center,&
-                  birchtree(k)%cls(i)%diam,birchtree(k)%cls(i)%radius
+              if(j.le.max_show_clu) then
+                if(k.eq.1) then
+                  write(ilog,63) k,"MAXIMAL",i,birchtree(k)%cls(i)%nmbrs,birchtree(k)%cls(i)%center,&
+                    birchtree(k)%cls(i)%diam,birchtree(k)%cls(i)%radius
+                else
+                  write(ilog,63) k,scrcts(k),i,birchtree(k)%cls(i)%nmbrs,birchtree(k)%cls(i)%center,&
+                    birchtree(k)%cls(i)%diam,birchtree(k)%cls(i)%radius
+                end if
+                j = j + 1
               end if
             else
               cl_one_elem = cl_one_elem + 1
