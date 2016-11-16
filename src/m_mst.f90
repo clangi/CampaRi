@@ -15,8 +15,6 @@ module m_mst
   integer cprogbatchsz ! cprogbatchsz       : if cmode = 4 and cprogindex = 2: batch size for random stretches aka dim of random branches
   integer cprogrdepth ! cprogrdepth        : if cmode = 4 and cprogindex = 2: auxiliary search depth
   integer cprogindrmax ! this must be an INPUT MAIN: it is the number of guesses
-  !myvars
-  integer rand_seed_cnt !counts of the reliability of the random generation
 
 
 
@@ -595,7 +593,6 @@ module m_mst
             if (boruvkasteps.gt.0) then
               do while (satisfied(ishfx).lt.cprogindrmax)
                 kk = int(random_or()*m) + b2
-                if(rand_seed_cnt.gt.0)rand_seed_cnt = rand_seed_cnt + 1
                 do ki=1,cprogbatchsz
                   kix = kk
                   if (kix.gt.a) kix = kix - a
@@ -655,7 +652,6 @@ module m_mst
               kixi = max(1,a/cprogbatchsz)
               do while (satisfied(ishfx).lt.cprogindrmax)
                 kk = int(random_or()*a)
-                if(rand_seed_cnt.gt.0)  rand_seed_cnt = rand_seed_cnt + 1
                 do ki=1,cprogbatchsz
                   kix = kk
                   if (kix.gt.a) kix = kix - a
@@ -838,7 +834,7 @@ module m_mst
       ! write(ilog,*) "ntrees:", ntrees
   !  456 format(i4,8(g12.4,1x),i10,i10,i6,i6,1x,g12.4,g12.4,g12.4)
       call CPU_time(tmvars(2))
-      write(*,567) boruvkasteps, tmvars(2)-tmvars(1)
+      write(ilog,567) boruvkasteps, tmvars(2)-tmvars(1)
       tmvars(1) = tmvars(2)
       if(csnap2tree_ik_eq_cnt.gt.0) then
         write(ilog,*) "Warning: we found exit flags for csnap2tree identity. Amount:", csnap2tree_ik_eq_cnt
@@ -880,6 +876,7 @@ module m_mst
     call gen_MST(adjl_deg2,adjl_ix2,adjl_dis2, &
     mstedges,lmstedges,max_degree)
     do i=1,ntrees
+      if (allocated(tmptree(i)%snaps).EQV..true.) deallocate(tmptree(i)%snaps)
       if (allocated(tmptree(i)%siblings).EQV..true.) deallocate(tmptree(i)%siblings)
     end do
     deallocate(tmptree)
@@ -887,6 +884,18 @@ module m_mst
     deallocate(csnap2clus)
     deallocate(mstedges)
     deallocate(lmstedges)
+    if (allocated(birchtree).EQV..true.) then
+      do i=1,c_nhier+1
+        do j=1,size(birchtree(i)%cls) ! birchtree(i)%ncls
+          if (allocated(birchtree(i)%cls(j)%snaps).EQV..true.) deallocate(birchtree(i)%cls(j)%snaps)
+          if (allocated(birchtree(i)%cls(j)%tmpsnaps).EQV..true.) deallocate(birchtree(i)%cls(j)%tmpsnaps)
+          if (allocated(birchtree(i)%cls(j)%sums).EQV..true.) deallocate(birchtree(i)%cls(j)%sums)
+          if (allocated(birchtree(i)%cls(j)%children).EQV..true.) deallocate(birchtree(i)%cls(j)%children)
+        end do
+        deallocate(birchtree(i)%cls)
+      end do
+      deallocate(birchtree)
+    end if
   !
   !  77 format(a,20(i18,1x))
     write(ilog,*) '... done after ',cdevalcnt,' additional distance evaluations.'

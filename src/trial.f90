@@ -90,6 +90,23 @@ print *, n_search_attempts_in1, "ADSAJFKSFLSDGJDG"
   print *, "max_deg", max_deg
   print *, ""
   print *, ""
+  print *,"INITIALIZATION BEFORE====maxmin:::",maxval(INPUT_trj),minval(INPUT_trj)
+  call generate_neighbour_list( &
+  INPUT_trj, xyz_3coo, n_snapshots, rad, inter_rad, & !input
+  a_deg, a_ix, a_dis, max_deg, & !output
+  distances, dis_wei_in, bir_in, mst_iin, & !algorithm details
+  rootmax_rad_in1, tree_height_in1, n_search_attempts_in1, & !sst details
+  d_meth_i, normalize_it, logging, make_it_verbose) !modes
+  print *, ""
+  print *, "a_deg(1:50)",a_deg(1:50)
+  print *, ""
+  print *, "a_ix(1,1:100)",a_ix(1,1:100)
+  print *, ""
+  print *, "a_dis(1,1:100)",a_dis(1,1:100)
+  print *, ""
+  print *, "max_deg", max_deg
+  print *, ""
+  print *, ""
   !
   ! call gen_progind_from_adjlst(n_snapshots, 10, &
   ! max_deg, a_deg, a_ix, &

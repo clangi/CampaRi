@@ -107,7 +107,7 @@ module m_clustering
   end type t_ctree
 
   type(t_scluster), ALLOCATABLE :: scluster(:)
-  type(t_ctree), ALLOCATABLE:: birchtree(:)
+  type(t_ctree), ALLOCATABLE :: birchtree(:)
   real(KIND=4) radius !radius for clusters belonging limit
   integer n_clu_alc_sz_gen ! number of clusters allocatable in total
   integer nclu ! number of clusters allocated
@@ -116,7 +116,7 @@ module m_clustering
   integer ordering
   real cmaxrad
   logical clu_summary !helper var for precise_clu_descr
-  logical precise_clu_descr !the clusters are shortened and presented properly
+  integer precise_clu_descr !the clusters are shortened and presented properly
 
   ! This are the sizes for sums variable that keeps the centroid measures.
   ! In the rmsd (dis_method = 5) only needs sumssz = 1 and clstsz = calcsz
@@ -562,9 +562,9 @@ module m_clustering
 
       !PRINTING RESULTS
       write(ilog,*) "--------------------------- TREE SUMMARY ----------------------------"
-     66 format('Level    # Clusters     Threshold     Total Snaps    Total Children')
-     67 format(i9,i10,1x,g14.4,4x,i12,4x,i12)
-     68 format(i9,i10,5x,a7,7x,i12,4x,i12)
+     66 format('Level    #Clusters     Threshold      TotalSnaps    Tot Children')
+     67 format(i5,3x,i10,4x,g14.4,1x,i11,4x,i12)
+     68 format(i5,3x,i10,7x,a7,5x,i11,4x,i12)
       write(ilog,66)
       write(ilog,68) 1,birchtree(1)%ncls,'MAXIMAL',sum(birchtree(1)%cls(1:birchtree(1)%ncls)%nmbrs),&
      &               sum(birchtree(1)%cls(1:birchtree(1)%ncls)%nchildren)
@@ -661,32 +661,27 @@ module m_clustering
     !   end do
       ! nnodes = birchtree(c_nhier+1)%ncls
       ! do k=2,c_nhier+1
-      if(precise_clu_descr) then
-        do k=1,c_nhier+1
-          call clusters_shorten(birchtree(k)%cls, birchtree(k)%ncls)
-          call clusters_sort(birchtree(k)%cls, birchtree(k)%ncls)
-          do i=1,birchtree(k)%ncls
-            call cluster_getcenter(birchtree(k)%cls(i),trj)
-          end do
-          do i=1,birchtree(k)%ncls
-            call cluster_calc_params(birchtree(k)%cls(i),scrcts(k))
-          end do
+
+      do k=1,c_nhier+1
+        call clusters_shorten(birchtree(k)%cls, birchtree(k)%ncls)
+        call clusters_sort(birchtree(k)%cls, birchtree(k)%ncls)
+        do i=1,birchtree(k)%ncls
+          call cluster_getcenter(birchtree(k)%cls(i),trj)
         end do
-        clu_summary = .true.
-      else
-        clu_summary = .false.
-        max_show_clu = 15
-      end if
+        do i=1,birchtree(k)%ncls
+          call cluster_calc_params(birchtree(k)%cls(i),scrcts(k))
+        end do
+      end do
 
       ! call cluster_getcenter(birchtree(1)%cls(1),trj)
       ! call cluster_calc_params(birchtree(1)%cls(1),huge(scrcts(k)))
       if(clu_summary) then
-        63 format(i6,1x,g12.5,1x,i7,1x,i7,1x,i8,1000(1x,g12.5))
+        63 format(i6,3x,g12.5,1x,i7,1x,i7,2x,i8,3x,1000(1x,g11.5))
         ! 64 format(1000(g12.5,1x))
-        69 format('------------------------- CLUSTERS SUMMARY --------------------------')
+        69 format('------------------------- CLUSTERS SUMMARY ---------------------------')
         70 format(' -> level ',i3,' has ',i7,' clusters with one element')
         write(ilog,69)
-        write(ilog,*) 'level  threshold     #   No.     "Center"  Diameter     Radius      '
+        write(ilog,*) 'level    threshold         #     No.    Center   Diameter      Radius      '
         do k=1,c_nhier+1
           cl_one_elem = 0
           j = 0
@@ -694,12 +689,17 @@ module m_clustering
     !      write(ilog,63) i,scluster(i)%nmbrs,scluster(i)%center,scluster(i)%diam,scluster(i)%radius
     !    end do
           ! do i=1,birchtree(k)%ncls
-          if(clu_summary) max_show_clu = birchtree(k)%ncls
+          if(precise_clu_descr.eq.0.or.precise_clu_descr.ge.birchtree(k)%ncls) then
+            max_show_clu = birchtree(k)%ncls
+          else
+            max_show_clu = precise_clu_descr
+          end if
+
           do i=1,birchtree(k)%ncls
             if(birchtree(k)%cls(i)%nmbrs.ne.1) then
               if(j.le.max_show_clu) then
                 if(k.eq.1) then
-                  write(ilog,63) k,"MAXIMAL",i,birchtree(k)%cls(i)%nmbrs,birchtree(k)%cls(i)%center,&
+                  write(ilog,63) k,"",i,birchtree(k)%cls(i)%nmbrs,birchtree(k)%cls(i)%center,&
                     birchtree(k)%cls(i)%diam,birchtree(k)%cls(i)%radius
                 else
                   write(ilog,63) k,scrcts(k),i,birchtree(k)%cls(i)%nmbrs,birchtree(k)%cls(i)%center,&

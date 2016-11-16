@@ -60,13 +60,14 @@ subroutine generate_neighbour_list( &
   use m_mst
   implicit none
 
-  integer, INTENT(IN) :: n_xyz_in !numbers of xyz (atoms*3)
-  integer, INTENT(IN) :: n_snaps_in !number of snapshots in input
+  ! INPUT VARIABLES
+  integer, intent(in) :: n_xyz_in !numbers of xyz (atoms*3)
+  integer, intent(in) :: n_snaps_in !number of snapshots in input
   integer, intent(in) :: dis_method_in(11) !distance method
   integer, intent(in) :: data_meth_in !data managing method TODO netcdf
   integer, intent(in) :: tree_height_in !number of levels in the tree
   integer, intent(in) :: n_search_attempts_in !number of search attempts in sst
-  real(KIND=4), INTENT(IN) :: trj_data(n_snaps_in, n_xyz_in) !trajectory input
+  real(KIND=4), intent(in) :: trj_data(n_snaps_in, n_xyz_in) !trajectory input
   real(KIND=4), intent(in) :: dis_weight_in(11) !distance weight when averaged
   real(KIND=4), intent(in) :: clu_radius_in !defines the max cluster sizes
   real(KIND=4), intent(in) :: clu_hardcut_in !threshold between cluster snaps
@@ -76,67 +77,67 @@ subroutine generate_neighbour_list( &
   logical, intent(in) :: normalize_dis_in !flag for normalize the distance matrix
   logical, intent(in) :: birch_in !flag for birch clustering
   logical, intent(in) :: log_print_in !flag for printing log file or on terminal
-  !if the intent is in this cannot be an ALLOCATABLE variable
 
-
-  ! N B :
-  ! clu_hardcut is used for distances between different clusters snapshos as
-  ! a threshold.
-
+  ! HELPING AND DEBUGGING VARIABLES
   integer i ! helper variables
   integer nzeros ! nzeros = number of not connected components (dis .le. 0)
   integer mst_file_unit, freeunit ! must have for using the same-name-function
-  logical exist, mst_print, log_print !file dumping for mst tree for debugging
+  logical exist, mst_print !file dumping for mst tree for debugging
   character(len=1024) :: format_var !format for above mentioned dumping
   real t2,t1 !timing variables
 
+
+  ! OUTPUT VARIABLES
   integer, intent(inout) :: max_degr !maximum degree of the adjlist
   integer, intent(inout) :: adjl_deg(n_snaps_in)
   integer, intent(inout) :: adjl_ix(n_snaps_in,n_snaps_in)
   real(KIND=4), intent(inout) :: adjl_dis(n_snaps_in,n_snaps_in)
-  ! real(KIND=4), intent(inout) :: adj_mat(:,:) !adjac matrix
-  !to have an inout intent the thing cant be allocatable...
 
+  ! N B :
+  ! clu_hardcut is used for distances between different clusters snapshos as
+  ! a threshold in leader clusting (MST).
+  ! If the intent is in this cannot be an ALLOCATABLE variable
 
-
-  ! Intents are not allocatable
   n_xyz = n_xyz_in
   n_snaps = n_snaps_in
   ver = verbose_in
-  log_print = log_print_in !logging flag
+  log_print = log_print_in
   radius = clu_radius_in
   dis_method = dis_method_in
   birch = birch_in
   mst = mst_in
   normalize_dis = normalize_dis_in
 
-  !defaults
+  ! Internal defaults
   dis_weight = 1
   n_dis_method = 0
   if (hardcut.lt.radius) hardcut = 2.0*radius
+  firstcall = .true.
 
-  !debugging flag
+  !debugging flags
   superver = .false.  !dev flag for superverbose output
   mst_print = .false. !dev flag for adjlist (mst) checking
-  rand_seed_cnt = 0 !it is used to have fixed seed (different for each call)
+  rand_seed = 10 !it is used to have fixed seed
   !if it is 0 it uses the standard random_seed
+  clu_summary = .true. !showing or not the clu summary
+  precise_clu_descr = 10 !dev var that shows the first 10 clusters
 
   !SST
   cmaxrad = rootmax_rad_in !root level size threshold
-  c_nhier = tree_height_in
-  ! default vars that should be set from main function
+  c_nhier = tree_height_in !height of the tree
+  ! default vars that should be set from main function TODO
   ! cprogindrmax = max(floor((n_snaps*7.0)/100),min(n_snaps,5)) !def 7/100
   cprogindrmax = n_search_attempts_in
   cprogbatchsz = 1  !  batch size for random stretches aka dim of random branches def = 1 TODO
   cprogrdepth = 0   !  auxiliary search depth def = 0 TODO
   if(cprogrdepth.gt.c_nhier) cprogrdepth = c_nhier
   if(cmaxrad.le.radius) cmaxrad = 2.0*radius
-  c_multires = 0 !inital value of FMCSC_BIRCHMULTI
-  ordering = 1
-  precise_clu_descr = .true.
+  c_multires = 0 !inital value of FMCSC_BIRCHMULTI TODO
+  ordering = 1 !TODO
 
 
-! defining the logging id. 0 is sterror, 5 stinput, 6 stoutput
+  !LOGGING id
+  ! defining the logging id. 0 is sterror, 5 stinput, 6 stoutput
   if(log_print) then
     ilog = freeunit()
   else
@@ -175,35 +176,32 @@ subroutine generate_neighbour_list( &
   write(ilog,*) "Distance weights:", dis_weight(1:n_dis_method)
   write(ilog,*)
 
-  allocate(cnblst(n_snaps))
-  if(n_dis_method.gt.1) allocate(cnblst_dis(n_snaps))
 
-
-  cnblst(:)%nbs = 0 ! number of snapshots that are connected to one snap
-  cnblst(:)%alsz = 4 ! allocation size
-  ! maxalcsz = 4 ! default variable for the total max allocation size
-  do i=1,n_snaps
-    allocate(cnblst(i)%idx(cnblst(i)%alsz))
-    allocate(cnblst(i)%dis(cnblst(i)%alsz))
-    if(n_dis_method.gt.1) allocate(cnblst_dis(i)%dis(cnblst(i)%nbs))
-  end do
 
   write(ilog,*) "Input dimensions:", n_snaps, " row and ", n_xyz," col"
   write(ilog,*)
   if(superver) then
-     write(ilog,*) "clu_radius_in", clu_radius_in
-     write(ilog,*) "clu_hardcut_in", clu_hardcut_in
-     write(ilog,*)
      write(ilog,*) "Input example", trj_data(1:10,1:10)
      write(ilog,*)
    end if
-
-  write(ilog,*)
 
 
   if(.not.birch) then
     call CPU_time(t1)
     call leader_clustering(trj_data)
+
+    allocate(cnblst(n_snaps))
+    if(n_dis_method.gt.1) allocate(cnblst_dis(n_snaps))
+
+
+    cnblst(:)%nbs = 0 ! number of snapshots that are connected to one snap
+    cnblst(:)%alsz = 4 ! allocation size
+    ! maxalcsz = 4 ! default variable for the total max allocation size
+    do i=1,n_snaps
+      allocate(cnblst(i)%idx(cnblst(i)%alsz))
+      allocate(cnblst(i)%dis(cnblst(i)%alsz))
+      if(n_dis_method.gt.1) allocate(cnblst_dis(i)%dis(cnblst(i)%nbs))
+    end do
 
     ! now compare all blocks to each other (the slowest part) taking advantage
     ! of information generated previously (otherwise intractable)
@@ -296,5 +294,6 @@ subroutine generate_neighbour_list( &
   end if
 
   if(log_print) close(ilog)
+  firstcall = .false.
 
 end

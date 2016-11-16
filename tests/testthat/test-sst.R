@@ -4,7 +4,7 @@ setwd(wd)
 remove.packages("CampaRi", lib="~/R/x86_64-pc-linux-gnu-library/3.1")
 install.packages("../CampaRi/",repos = NULL,type = 'source')
 library(CampaRi)
-file_dcd <- "../CampaRi/inst/extdata/NBU_250fs.dcd"
+file_dcd <- "../CampaRi/inst/extdata/NBU_1250fs.dcd"
 input_trj <- CampaRi::load_trj_dcd(t_file = file_dcd)
 # CampaRi::write.pdb.d(x = input_trj, base_name = "NBU_250fs")
 # library(bio3d)
@@ -14,12 +14,12 @@ birch_hei <- 5
 crad <- cmaxrad/birch_hei
 campari(nsnaps = nrow(input_trj), wd = wd, data_file = file_dcd, camp_home = "/software/campari/", base_name = "nbu", pdb_format = 4,
         cprogindstart = 2,distance_met = 5,birch_height = birch_hei, cmaxrad = cmaxrad, cradius = crad,
-        cprogindwidth = floor(nrow(input_trj)/27),search_attempts = nrow(input_trj)/10,methodst = 2)
+        cprogindwidth = floor(nrow(input_trj)/27),search_attempts = nrow(input_trj)/100,methodst = 2)
 zap_ggplot(sap_file = "PROGIDX_000000000002.dat",local_cut = T,timeline = T,ann_trace = 2,title = "ORIGINAL CAMPARI")
 
 adjl <- CampaRi::adjl_from_trj(trj = input_trj, distance_method = 5, clu_radius = crad,
                                birch_clu = T, mode = "fortran", rootmax_rad = cmaxrad, logging = T,
-                               tree_height = birch_hei,n_search_attempts = nrow(input_trj)/10)
+                               tree_height = birch_hei,n_search_attempts = nrow(input_trj)/100)
 ret <- CampaRi::gen_progindex(adjl = adjl, snap_start = 2)
 CampaRi::gen_annotation(ret_data = ret,snap_start = 2,local_cut_width = floor(nrow(input_trj)/27))
 zap_ggplot(sap_file = "REPIX_000000000002.dat",local_cut = T,timeline = T, ann_trace = 2,title = "WRAPPER CAMPARI")

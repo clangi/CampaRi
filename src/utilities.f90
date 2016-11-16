@@ -233,17 +233,12 @@ function random_or()
   parameter (imm1=im1-1)
   parameter (ndiv=1+imm1/ntable)
   parameter (factor=1.0d0/im1)
-  integer i,k,seed,seed2
-  integer iy,itable(ntable)
+  integer i,k
   integer(KIND=8) dts(8)
   character(12) rc(3)
   integer cont,iomess
   character(MAXKWLEN) seedstr
   character(MAXKEYLEN) kline,readfrom
-  logical firstcall
-  save firstcall,seed,seed2,iy,itable
-  data firstcall /.true./
-
 !
 !
 ! the default seed is set to a large number and then time-incremented
@@ -259,33 +254,10 @@ function random_or()
     seed = seed + 60*dts(6) + dts(7) + dts(8)
 !
 !   provide further increment by process ID
-    ! seed = abs(seed + handwrapped_getpid())
+    ! seed = abs(seed + handwrapped_getpid()) NOT IMPLEMENTED
 !
 !   get a user-specified seed
- !    do i=1,nkey
- !      cont = 1
- !      do j=1,size(key(i)%line)
- !        kline(j:j) = key(i)%line(j)
- !      end do
- !      do j=size(key(i)%line)+1,MAXKEYLEN
- !        kline(j:j) = ' '
- !      end do
- !      call extract_str(kline,seedstr,cont)
- !      call toupper(seedstr)
- !      if (seedstr(1:11) .eq. 'RANDOMSEED ') then
- !        readfrom = kline(cont:MAXKEYLEN)
- !        read (readfrom,*,iostat=iomess) seed
- !        if (iomess.eq.-1) then
- !          exit
- !        else if (iomess.eq.2) then
- !          write(ilog,*) 'Fatal. I/O error while attempting to read r&
- ! &andom seed.'
- !          call exit()
- !        end if
- !        seed = max(1,seed)
- !      end if
- !    end do
-    seed = 10
+    if(rand_seed.gt.0) seed = rand_seed
 !
     write(ilog,*)
     write(ilog,*) 'Initialized PRNG with Seed of ',seed
@@ -320,13 +292,13 @@ function random_or()
 !
 end
 
-function random(seed)
+function random_st()
+  use m_variables_gen
   implicit none
-  integer, intent(in) :: seed
   integer,allocatable :: seed_a(:)
   integer n
-  real(kind=4) random
-
+  real(kind=4) random_st
+  if(rand_seed.gt.0) seed = rand_seed
   if(seed.gt.0) then
     call random_seed(size = n)
     allocate(seed_a(n))
@@ -334,6 +306,6 @@ function random(seed)
     call random_seed(put = seed_a)
   end if
 
-  call random_number(random)
+  call random_number(random_st)
 !
 end
