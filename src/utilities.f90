@@ -292,12 +292,17 @@ function random_or()
 !
 end
 
+!-------------------------------------------------------------------------------
+!
+! Random generator based on the standard random_number gnu subroutine.
+! This is a wrapper to have a function.
+!
 function random_st()
   use m_variables_gen
   implicit none
   integer,allocatable :: seed_a(:)
   integer n
-  real(kind=4) random_st
+  real random_st
   if(rand_seed.gt.0) seed = rand_seed
   if(seed.gt.0) then
     call random_seed(size = n)
@@ -309,3 +314,30 @@ function random_st()
   call random_number(random_st)
 !
 end
+
+!-----------------------------------------------------------------------------
+!
+! fatal exit: call when encountering an internal problem
+!
+subroutine fexit()
+!
+!
+  implicit none
+!
+  integer k
+!
+!
+  k = 6
+  write(k,*)
+  write(k,*) '------------------------------------------------>'
+  write(k,*)
+  write(k,*) 'CAMPARI CRASHED UNEXPECTEDLY. PLEASE RECORD ANY '
+  write(k,*) ' INFORMATION ABOUT THE PROBLEM PROVIDED ABOVE.'
+  write(k,*)
+  write(k,*) '<------------------------------------------------'
+!
+  stop 98
+!
+end
+!
+!-----------------------------------------------------------------------

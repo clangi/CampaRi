@@ -6,7 +6,7 @@ subroutine contract_mst(n_snaps,mnb,alnbs,alst,aldis,nrnds,istats)
   implicit none
 !
   integer, INTENT(IN):: n_snaps,mnb,nrnds,alnbs(n_snaps),alst(n_snaps,mnb)
-  real(KIND=4), INTENT(INOUT):: aldis(n_snaps,mnb)
+  real, INTENT(INOUT):: aldis(n_snaps,mnb)
   integer, INTENT(OUT):: istats(2)
 !
   integer i,j,kk,thej,ll

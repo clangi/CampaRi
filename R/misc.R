@@ -3,7 +3,7 @@
 # @keywords internal
 .onAttach<- function (libname, pkgname){
   # if (!interactive()|| stats::runif(1) > 0.1) return()
-  cat(paste0(
+  packageStartupMessage(paste0(
     " ==============================================================\n",
     "    \n",
     "                            CAMPARI                           \n",
@@ -20,12 +20,11 @@
   op.CampaRi <- list(
     CampaRi.path = getwd(),
     CampaRi.data_management = "R",
-    CampaRi.data_filename = "dsetf.h5"
+    CampaRi.data_filename = ""
   )
   toset <- !(names(op.CampaRi) %in% names(op))
   if(any(toset)) options(op.CampaRi[toset])
-  # cat("All output will be written to the current working directory: ", getwd(),"\n")
-  invisible() #??
+  invisible() #no output from this function
 }
 # .onLoad <- function() {
 #   

@@ -278,7 +278,7 @@ subroutine preprocess_snapshot(trj3, i2, vecti2)
   use m_variables_gen
   implicit none
 
-  real(KIND=4), intent(in) :: trj3(n_snaps,n_xyz)
+  real, intent(in) :: trj3(n_snaps,n_xyz)
   real, intent(inout) :: vecti2(n_xyz)
   integer,intent(in) :: i2
   if(tmp_dis_method.eq.5) then
@@ -438,7 +438,7 @@ subroutine cluster_getcenter(it,trj4)
   implicit none
 !
   type(t_scluster) it
-  real(KIND=4), intent(in) :: trj4(n_snaps,n_xyz)
+  real, intent(in) :: trj4(n_snaps,n_xyz)
   integer i
   real maxdis, tmp_di
   real vecti(n_xyz)
@@ -607,7 +607,7 @@ subroutine cluster_removesnap(it,i,trj3)
   if (k.gt.it%nmbrs) then
     write(ilog,*) 'Fatal. Attempting to remove snap from cluster that is not a member of that cluster.&
  & This is a bug.'
-    call exit()
+    call fexit()
   end if
   it%snaps(k) = it%snaps(it%nmbrs) !is it removed like this?
   it%nmbrs = it%nmbrs - 1

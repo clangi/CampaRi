@@ -4,7 +4,7 @@
 \alias{write.pdb.d}
 \title{writing the pdb file}
 \usage{
-write.pdb.d(x, filename, round = FALSE, digit = 3)
+write.pdb.d(x, base_name, round = FALSE, digit = 4)
 }
 \arguments{
 \item{fl}{file location}

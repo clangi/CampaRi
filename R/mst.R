@@ -60,36 +60,45 @@ contract_mst <- function(adjl,n_fold=0){
 #' @export gen_progindex
 #' @useDynLib CampaRi
 
-gen_progindex<-function(adjl, snap_start = 0){
-  warning("if you use an input different in format to the output of the other CampaRi functions there is an high probability of crashing")
-  nsnaps <- length(adjl[[1]]) # Working only if the graph it is complete -crash with not connected components
-  maxnb <- max(as.numeric(adjl[[1]]))
-  
-  if(!is.numeric(snap_start) || snap_start<0 || snap_start>nsnaps) stop("Starting snapshot is out of snapshot bounds.")
-
+gen_progindex <- function(adjl=NULL, nsnaps=NULL, snap_start = 0){
+  d_management <- getOption("CampaRi.data_management")
+  if(is.null(adjl))
+    if(d_management!="netcdf") stop("The input must follow the standard used in 'R' data_management protocol (output from adjl_from_trj).")
+  if(!is.null(adjl)) warning("if you use an input different in format to the output of the other CampaRi functions there is an high probability of crashing")
+  if(is.null(nsnaps)&&!is.null(adjl)) nsnaps <- length(adjl[[1]]) 
+  if(!is.numeric(snap_start) || snap_start < 0 || snap_start > nsnaps) stop("Starting snapshot is out of snapshot bounds.")
   #    this generates the new index along with parent and distance-to-parent information
   o_invvec <- array(as.integer(0),c(nsnaps+2)) # mistery
   o_iv2 <- array(as.integer(0),c(nsnaps)) # mistery
   o_progind <- array(as.integer(0),c(nsnaps))
   o_distv <- array(as.single(0.0),c(nsnaps))
-  
-  adjl[[2]] <- matrix(as.integer(adjl[[2]]),nsnaps,maxnb)
-  if(is.null(attributes(adjl[[3]])$Csingle)) attr(adjl[[3]],"Csingle") <- TRUE
-  ret_data <- .Fortran("gen_progind_from_adjlst",
-                       n_snaps=as.integer(nsnaps),
-                       starter=as.integer(snap_start),
-                       mnb=as.integer(maxnb),
-                       alnbs=as.integer(adjl[[1]]),
-                       alst=adjl[[2]],
-                       aldis=adjl[[3]],
-                       progind=as.integer(o_progind),
-                       distv=as.single(o_distv),
-                       invvec=as.integer(o_invvec),
-                       iv2=as.integer(o_iv2))
-
-  # writeLines(sprintf("Check your directory, something happened! %g %f",o_progind[1],o_distv[12]))
-  #    this generates the kinetic annotation function both globally and locally
-  #    it also writes (to disk) the new output files
+  if(d_management!="netcdf"){
+    # Working only if the graph it is complete -crash with not connected components
+    maxnb <- max(as.numeric(adjl[[1]]))
+    adjl[[2]] <- matrix(as.integer(adjl[[2]]),nsnaps,maxnb)
+    if(is.null(attributes(adjl[[3]])$Csingle)) attr(adjl[[3]],"Csingle") <- TRUE
+    ret_data <- .Fortran("gen_progind_from_adjlst",
+                         n_snaps=as.integer(nsnaps),
+                         starter=as.integer(snap_start),
+                         mnb=as.integer(maxnb),
+                         alnbs=as.integer(adjl[[1]]),
+                         alst=adjl[[2]],
+                         aldis=adjl[[3]],
+                         progind=as.integer(o_progind),
+                         distv=as.single(o_distv),
+                         invvec=as.integer(o_invvec),
+                         iv2=as.integer(o_iv2))
+  }else{
+    cat("Going netcdf...\n")
+    if(is.null(nsnaps) || !is.numeric(nsnaps)) stop("For netcdf data management you must write the number of snapshots in your trj")
+    ret_data <- .Fortran("gen_progind_from_adjlst_r",
+                         n_snaps_in=as.integer(nsnaps),
+                         starter=as.integer(snap_start),
+                         progind=as.integer(o_progind),
+                         distv=as.single(o_distv),
+                         invvec=as.integer(o_invvec),
+                         iv2=as.integer(o_iv2))
+  }
   return(ret_data)
 }
 

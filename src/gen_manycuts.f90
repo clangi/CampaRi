@@ -12,7 +12,7 @@ subroutine gen_manycuts(n_snaps,start,ntbrks2,&
   integer, INTENT(IN) :: ntbrks2 !number of breaks == 0
   integer, INTENT(IN) :: trbrkslst(max(1,ntbrks2)) !one value == 0
 
-  real(KIND=4), INTENT(IN) :: distv(n_snaps) !distance list
+  real, INTENT(IN) :: distv(n_snaps) !distance list
 !
 !
   integer tmat(3,3),vv1(3),vv2(3),vv3(3)

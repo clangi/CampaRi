@@ -1,27 +1,27 @@
 module m_gen_nbls
 
-  real(KIND=4) hardcut
+  real hardcut
   integer maxalcsz ! default variable for the total max allocation size
 
   ! cnblst,cnc_ids : if cmode = 3(4): snapshot NB-list variables
-    type t_cnblst
-      integer nbs,alsz ! actual number of neighbors and current allocation size
-      real(KIND=4), ALLOCATABLE:: dis(:) ! list of distances
-      integer, ALLOCATABLE:: idx(:) ! and associated indices
-    end type t_cnblst
-    type t_tmp_cnblst_dis
-      real(KIND=4), ALLOCATABLE:: dis(:) ! list of distances
-    end type t_tmp_cnblst_dis
-    ! type t_adjlist
-    !   integer deg ! degree of vertex
-    !   integer alsz ! allocation size
-    !   integer, ALLOCATABLE:: adj(:) ! list of adjacent vertices
-    !   real(KIND=4), ALLOCATABLE:: dist(:) ! distance to the adjacent vertices
-    ! end type t_adjlist
+  type t_cnblst
+    integer nbs, alsz ! actual number of neighbors and current allocation size
+    real, ALLOCATABLE :: dis(:) ! list of distances
+    integer, ALLOCATABLE :: idx(:) ! and associated indices
+  end type t_cnblst
+  type t_tmp_cnblst_dis
+    real, ALLOCATABLE :: dis(:) ! list of distances
+  end type t_tmp_cnblst_dis
+  ! type t_adjlist
+  !   integer deg ! degree of vertex
+  !   integer alsz ! allocation size
+  !   integer, ALLOCATABLE:: adj(:) ! list of adjacent vertices
+  !   real, ALLOCATABLE:: dist(:) ! distance to the adjacent vertices
+  ! end type t_adjlist
 
-    type(t_cnblst), ALLOCATABLE :: cnblst(:)
-    type(t_tmp_cnblst_dis), ALLOCATABLE :: cnblst_dis(:)
-    ! type(t_adjlist), ALLOCATABLE:: approxmst(:)
+  type(t_cnblst), ALLOCATABLE :: cnblst(:)
+  type(t_tmp_cnblst_dis), ALLOCATABLE :: cnblst_dis(:)
+  ! type(t_adjlist), ALLOCATABLE:: approxmst(:)
 
   contains
     subroutine gen_nb(trj)
@@ -29,9 +29,9 @@ module m_gen_nbls
       use m_variables_gen
       implicit none
 
-      real(KIND=4), intent(in) :: trj(n_snaps,n_xyz)
+      real, intent(in) :: trj(n_snaps,n_xyz)
       ! integer oldsz
-      real(KIND=4) tmp_d ! temporary variable for radiuses and distances
+      real tmp_d ! temporary variable for radiuses and distances
       integer i, ii, k, kk, j, l, ll, mi, mj, u, h1
       integer testcnt, testcnt2, overbounds
       real vecti(n_xyz),vectj(n_xyz)
@@ -39,7 +39,16 @@ module m_gen_nbls
       ! write(ilog,*) "DEBUGGING"
       ! write(ilog,*) "trj_input",trj(1:10,1:10)
       ! write(ilog,*) "scluster 1", scluster(2)%snaps
-
+      allocate(cnblst(n_snaps))
+      if(n_dis_method.gt.1) allocate(cnblst_dis(n_snaps))
+      cnblst(:)%nbs = 0 ! number of snapshots that are connected to one snap
+      cnblst(:)%alsz = 4 ! allocation size
+      ! maxalcsz = 4 ! default variable for the total max allocation size
+      do i=1,n_snaps
+        allocate(cnblst(i)%idx(cnblst(i)%alsz))
+        allocate(cnblst(i)%dis(cnblst(i)%alsz))
+        if(n_dis_method.gt.1) allocate(cnblst_dis(i)%dis(cnblst(i)%nbs))
+      end do
       maxx = 0
       ii = 0
       testcnt = 0

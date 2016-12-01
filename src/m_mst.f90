@@ -11,7 +11,7 @@ module m_mst
     integer ptr ! simple pointer
   end type t_progindextree
   type(t_progindextree), ALLOCATABLE:: tmptree(:)
-  integer(KIND=8) cdevalcnt !faith mystery (some kind of count)
+  integer cdevalcnt !faith mystery (some kind of count)
   integer cprogbatchsz ! cprogbatchsz       : if cmode = 4 and cprogindex = 2: batch size for random stretches aka dim of random branches
   integer cprogrdepth ! cprogrdepth        : if cmode = 4 and cprogindex = 2: auxiliary search depth
   integer cprogindrmax ! this must be an INPUT MAIN: it is the number of guesses
@@ -50,7 +50,7 @@ module m_mst
       integer, ALLOCATABLE :: tmp_all_lnks(:,:), alllnks(:,:)
 
       !distances and indexes
-      real(KIND=4), ALLOCATABLE :: alldiss(:) !vector of all distances
+      real, ALLOCATABLE :: alldiss(:) !vector of all distances
       integer, ALLOCATABLE :: ix(:)
 
       !for sorting
@@ -225,6 +225,8 @@ module m_mst
       do i=1,n_clu_alc_sz_gen
         if (allocated(it(i)%snaps).EQV..true.) deallocate(it(i)%snaps)
         if (allocated(it(i)%sums).EQV..true.) deallocate(it(i)%sums)
+        if (allocated(it(i)%tmpsnaps).EQV..true.) deallocate(it(i)%tmpsnaps)
+        if (allocated(it(i)%children).EQV..true.) deallocate(it(i)%children)
       end do
       deallocate(it)
       call gen_MST(adjl_deg2,adjl_ix2,adjl_dis2,&
@@ -253,7 +255,7 @@ module m_mst
       integer maxdeg
       integer e,v
       integer mstedges(2,n_snaps-1) !mstedges(v,e) are the indexes for an edge
-      REAL(kind=4) lmstedges(n_snaps-1)
+      real lmstedges(n_snaps-1)
 
 
       !transform edgelist of MST (mstedges) to adjacencylist:
@@ -318,7 +320,7 @@ module m_mst
     integer, ALLOCATABLE :: satisfied(:) ! array to indicate whether enough distances have been probed
     integer, ALLOCATABLE :: mstedges(:,:)! contains all the edges in the SST
                                         ! Indices: edgenumber (1-nedges), endpoint (1-2)
-    real(KIND=4), ALLOCATABLE:: lmstedges(:) ! contains the lengths of all the edges in the SST
+    real, ALLOCATABLE:: lmstedges(:) ! contains the lengths of all the edges in the SST
 
 
     !myvars
@@ -606,7 +608,7 @@ module m_mst
                       &csnap2tree has similar i-k. &
                       &Please consider changing tree height"
                       ! cycle
-                      call exit()
+                      call fexit()
                     end if
                   end if
                   trcnt = trcnt + 1
@@ -765,7 +767,7 @@ module m_mst
           if (nmstedges.ge.n_snaps) then
             write(ilog,*) 'Fatal. The number of edges in the approximate minimum spanning tree is not correct. Please report &
    &this bug.'
-            call exit()
+            call fexit()
           end if
           mstedges(1,nmstedges) = tmptree(e)%mine(1) ! edgelst(e,1)
           mstedges(2,nmstedges) = tmptree(e)%mine(2) ! edgelst(e,2)
@@ -853,7 +855,7 @@ module m_mst
     if (n_snaps-1.ne.nmstedges) then
       write(ilog,*) 'Fatal. The number of edges in the approximate minimum spanning tree is not correct. Please report &
    &this bug.'
-      call exit()
+      call fexit()
     end if
   !
     ! allocate(approxmst(n_snaps))

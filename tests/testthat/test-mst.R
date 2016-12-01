@@ -1,18 +1,18 @@
 #THIS FILE SHOULD BE COPIED IN THE WORKING DIRECTORY. Take care about directories specifics
-wd <- "/home/dgarolini/projects/CampaR/"
+wd <- "/home/dgarolini/projects/CampaR/testmst/"
+package_dir <- "/home/dgarolini/projects/CampaR/"
 # library(devtools)
 # wd <- "~/Projects/2016/CampaR/"
 setwd(wd)
 # install_github("Melkiades/CampaRi")
-package_dir <- "CampaRi/"
-system(paste0("bash ",package_dir,"src/cleaner.sh"))
-remove.packages("CampaRi", lib="~/R/x86_64-pc-linux-gnu-library/3.1")
-install.packages(package_dir, repos = NULL, type="source")
+# system(paste0("bash ",package_dir,"CampaRi/src/cleaner.sh"))
+remove.packages(paste0(package_dir,"CampaRi"), lib="~/R/x86_64-pc-linux-gnu-library/3.1")
+install.packages(paste0(package_dir,"CampaRi"), repos = NULL, type="source")
 library(CampaRi)
 
 
 # REPIXING: computing sapphire plots from PROGIDX output
-tree <- adjl_from_pi(fil = "CampaRi/inst/extdata/output_examples/PROGIDX_000000000001.dat")
+tree <- adjl_from_pi(fil = paste0(package_dir,"CampaRi/inst/extdata/output_examples/PROGIDX_000000000001.dat"))
 
 # contrac <- contract_mst(adjl = tree,n_fold = 0) to check
 
@@ -26,8 +26,8 @@ zap_ggplot(sap_file = sap_file,
 
 # SECOND TEST - butane chain2
 # Load trajectory [Full 1000000 snaps]
-trj2<-load_trj_dcd("CampaRi/inst/extdata/NBU.dcd")
-trj2 <- load_trj_dcd("CampaRi/inst/extdata/NBU_250fs.dcd")
+trj2<-load_trj_dcd(paste0(package_dir,"CampaRi/inst/extdata/NBU.dcd"))
+trj2 <- load_trj_dcd(paste0(package_dir,"CampaRi/inst/extdata/NBU_250fs.dcd"))
 # SUBSAMPLING. dim_reduction is the variable indicating the factor of it
 # the computational complexity is O(rmsd)~O(d) having d = dimension of a snap
 # *O(number of distances calculated) = O(bin(n,2)) = O(n^2) ---> O(dn^2)
@@ -53,23 +53,23 @@ zap_ggplot(sap_file = sap_file,
 
 # DIRECT COMPARISON OF THE SAME DATA-SET [original campari needed]
 # less_original run
-data_file <- "inst/extdata/NBU_1250fs.dcd"
-trj<-load_trj_dcd(paste0(package_dir,data_file))
+data_file <- paste0(package_dir,"CampaRi/inst/extdata/NBU_1250fs.dcd")
+trj<-load_trj_dcd(data_file)
 adjl<-adjl_from_trj(trj = trj, mode = "fortran", normalize_d = FALSE,birch_clu = F,logging = F)
 ret<-gen_progindex(adjl, snap_start = 10)
 ret2<-gen_annotation(ret, snap_start = 10, local_cut_width = floor(6000/27))
 sap_file <- 'REPIX_000000000010.dat'
 sap_table <- read.table(sap_file)
 # sap_table[,4] <- sap_table[,4] + mean(sap_table2[,4])-mean(sap_table[,4])
-zap_ggplot(sap_file = sap_file)
+zap_ggplot(sap_file = sap_file, title = "WRAPPER CAMPARI - MST")
 # zap_ggplot(sap_table = sap_table)
 
 # original run on the same input file
-system(paste0('cp ',package_dir,'inst/extdata/NBU* .'))
-system(paste0('cp ',package_dir,'inst/extdata/nbu.* .'))
+system(paste0('cp ',package_dir,'CampaRi/inst/extdata/NBU* .'))
+system(paste0('cp ',package_dir,'CampaRi/inst/extdata/nbu.* .'))
 camp_home <- "/software/campari/"
 campari(nsnaps = nrow(trj), wd, "NBU_1250fs.dcd", base_name="nbu",camp_home,
         cprogindstart = 10,pdb_format = 4,distance_met = 5,cprogindwidth=floor(6000/27))
 sap_file2 <- "PROGIDX_000000000010.dat"
 sap_table2 <- read.table(sap_file2)
-zap_ggplot(sap_file2)
+zap_ggplot(sap_file2, title = "ORIGINAL CAMPARI - MST")

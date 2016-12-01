@@ -81,8 +81,8 @@ module m_clustering
 
   type t_scluster
     integer nmbrs, alsz !alsz is the allocation size of the snaps principally
-    real(KIND=4) sqsum
-    real(KIND=4), ALLOCATABLE :: sums(:)
+    real sqsum
+    real, ALLOCATABLE :: sums(:)
     integer, ALLOCATABLE :: snaps(:) ! snapshot lists
     integer, ALLOCATABLE :: children(:) !for tree-based clustering
     ! for tree-based clustering
@@ -106,9 +106,10 @@ module m_clustering
     integer ncls, n_clu_alsz_tree ! real and allocation sizes
   end type t_ctree
 
+
   type(t_scluster), ALLOCATABLE :: scluster(:)
   type(t_ctree), ALLOCATABLE :: birchtree(:)
-  real(KIND=4) radius !radius for clusters belonging limit
+  real radius !radius for clusters belonging limit
   integer n_clu_alc_sz_gen ! number of clusters allocatable in total
   integer nclu ! number of clusters allocated
   integer c_nhier !height of the tree
@@ -132,8 +133,8 @@ module m_clustering
       use m_variables_gen
       implicit none
 
-      real(KIND=4), intent(in) :: trj(n_snaps,n_xyz)
-      real(KIND=4) tmp_d ! temporary variable for radiuses and distances
+      real, intent(in) :: trj(n_snaps,n_xyz)
+      real tmp_d ! temporary variable for radiuses and distances
       integer i, j, ii, u
       real vecti(n_xyz)
 
@@ -243,13 +244,13 @@ module m_clustering
       integer ii !level of the tree
       integer fail,kkf,thekk,nlst1,nlst2
       integer snapstart,snapend,snapinc !sequence of clustering(in,en,step)
-      real(KIND=4), intent(in) :: trj(n_snaps,n_xyz)
+      real, intent(in) :: trj(n_snaps,n_xyz)
       real vecti(n_xyz)
 
       ! integer nnodes ! number of nodes ? it is assigned here and used here only
       ! integer modei ! not used here
       integer, ALLOCATABLE :: kklst(:,:),kkhistory(:)
-      integer(KIND=8) cnt1,cnt2 !counter variables
+      integer cnt1,cnt2 !counter variables
       real, ALLOCATABLE:: scrcts(:) !threshold array
       real tmp_d !temporary variable for the distance
       real min_d,maxd(2),qualmet(4)
@@ -332,7 +333,7 @@ module m_clustering
               cnt1 = cnt1 + 1 !number of calculated distances
               if ((birchtree(ii)%cls(ll)%center.le.0).OR.(birchtree(ii)%cls(ll)%center.gt.n_snaps)) then
                 write(ilog,*) "BUG: the center is not allocated. Please contact the admin."
-                call exit()
+                call fexit()
               end if
               !distance between the one element i with all the children clusters ll
               call preprocess_snapshot(trj, i, vecti)
@@ -474,7 +475,7 @@ module m_clustering
                   !    write(ilog,*) "number of elem:", birchtree(ii)%cls(ll)%nmbrs
                   !  end if
                   write(ilog,*) "BUG: the center is not allocated. Please contact the admin."
-                  call exit()
+                  call fexit()
                 end if
                 call preprocess_snapshot(trj, i, vecti) !working
                 call snap_to_cluster_d(tmp_d,birchtree(ii)%cls(ll),vecti)
@@ -676,7 +677,7 @@ module m_clustering
       ! call cluster_getcenter(birchtree(1)%cls(1),trj)
       ! call cluster_calc_params(birchtree(1)%cls(1),huge(scrcts(k)))
       if(clu_summary) then
-        63 format(i6,3x,g12.5,1x,i7,1x,i7,2x,i8,3x,1000(1x,g11.5))
+        63 format(i6,3x,g12.5,1x,i7,1x,i7,2x,i8,3x,2(1x,g11.5))
         ! 64 format(1000(g12.5,1x))
         69 format('------------------------- CLUSTERS SUMMARY ---------------------------')
         70 format(' -> level ',i3,' has ',i7,' clusters with one element')

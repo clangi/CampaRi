@@ -1,14 +1,16 @@
 Package: CampaRi
 Type: Package
 Title: Trajectory analysis
-Version: 0.1.2
+Version: 0.2.1
 Date: 2016-06-15
 Author: Garolini Davide
 Maintainer: Spallucci Giacomo <spallucci.giacomo95@gmail.com>
 Description: Analysis algorithms extracted from the original campari sofwtare package. For other information please consult http://campari.sourceforge.net/index.html
-License: GPL-3
+License: GPL (>= 3)
 Depends: R (>= 3.1.0)
 Imports: bio3d, ggplot2
 LazyData: TRUE
 RoxygenNote: 5.0.1
 Suggests: testthat
+NeedsCompilation: yes
+
