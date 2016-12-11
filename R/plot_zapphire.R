@@ -144,8 +144,7 @@ zap_ggplot<-function(sap_file=NULL, sap_table=NULL,write=F, folderPlot = "plots/
   }else if(!is.null(ann_names_R)){
     stop('The annotation names have not been inserted correctly')
   }
-  #basic annotation
-  gg <- gg + geom_line(color=main_col,size=0.2)
+  
   
   #timeline at the bottom
   if(timeline&&!is.logical(ann_trace)&&nrow_an_tr==1) {
@@ -154,6 +153,8 @@ zap_ggplot<-function(sap_file=NULL, sap_table=NULL,write=F, folderPlot = "plots/
       gg <- gg + geom_point(aes(x=xx,y=(pin[,3]*1.0*ymax*1/5)/dp[1]-1/10),col=rep("black",length(xx)),size=0.01)
     }
   
+  #basic annotation
+  gg <- gg + geom_line(color=main_col,size=0.2)
   #local cut
   if(local_cut) gg <- gg + geom_point(mapping = aes(x=xx,y=2.5 - (1./3.)*log((pin[,10] + pin[,12]) / Nsnap)), 
                                       color="red3", size=0.1)

@@ -102,7 +102,7 @@ adjl_from_trj<-function(trj, distance_method = 5, distance_weights = NULL,  clu_
     #distance value
     tmp_dis <- distance_method
     distance_method <- rep(0,11)
-    if(!is.numeric(tmp_dis)||(any(tmp_dis!=5&&tmp_dis!=11))||length(tmp_dis)>11)
+    if(!is.numeric(tmp_dis)||(any(tmp_dis!=5&&tmp_dis!=11&&tmp_dis!=1))||length(tmp_dis)>11)
       stop("The distance values that have been inserted are not supported")
     distance_method[1:length(tmp_dis)] <- tmp_dis
 

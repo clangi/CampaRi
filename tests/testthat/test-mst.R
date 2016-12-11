@@ -27,7 +27,7 @@ zap_ggplot(sap_file = sap_file,
 # SECOND TEST - butane chain2
 # Load trajectory [Full 1000000 snaps]
 trj2<-load_trj_dcd(paste0(package_dir,"CampaRi/inst/extdata/NBU.dcd"))
-trj2 <- load_trj_dcd(paste0(package_dir,"CampaRi/inst/extdata/NBU_250fs.dcd"))
+trj2 <- load_trj_dcd(paste0(package_dir,"CampaRi/inst/extdata/NBU_250fs2.dcd"))
 # SUBSAMPLING. dim_reduction is the variable indicating the factor of it
 # the computational complexity is O(rmsd)~O(d) having d = dimension of a snap
 # *O(number of distances calculated) = O(bin(n,2)) = O(n^2) ---> O(dn^2)

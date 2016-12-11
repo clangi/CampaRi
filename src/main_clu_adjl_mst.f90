@@ -86,7 +86,7 @@ subroutine generate_neighbour_list( &
   real t2,t1 !timing variables
 
 
-  ! OUTPUT VARIABLES
+  ! OUTPUT VARIABLES !strict output collaboration with R
   integer, intent(inout) :: max_degr !maximum degree of the adjlist
   integer, intent(inout) :: adjl_deg(n_snaps_in)
   integer, intent(inout) :: adjl_ix(n_snaps_in,n_snaps_in)
@@ -198,7 +198,7 @@ subroutine generate_neighbour_list( &
 
     call gen_nb(trj_data)
     call CPU_time(t2)
-    write(ilog,*) 'TIME elapsed for neighbor list creation/reading: ',t2-t1, ' [s]'
+    write(ilog,*) 'Time elapsed for neighbor list creation/reading: ',t2-t1, ' [s]'
 
     write(ilog,*)
     write(ilog,*) 'Neighbor list generated.'
@@ -208,9 +208,7 @@ subroutine generate_neighbour_list( &
       do i=1,n_snaps
         if (cnblst(i)%nbs.le.0) then
           nzeros = nzeros + 1
-         if(superver) write(ilog,*) 'Warning. Snapshot # ',i,' is without a &
-         &neighbor (similar) structure. This may cause the clustering algorithm &
-         &to crash or misbehave otherwise.'
+         if(superver) write(ilog,*) 'Warning. Snapshot # ',i,' is with 0 degree'
        end if
       end do
       if (nzeros.gt.0) then

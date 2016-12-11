@@ -1,4 +1,4 @@
-  #' @title Compute the contraction of the extremes of the mst
+#' @title Compute the contraction of the extremes of the mst
 #' @description
 #'      This is a wonderful description(X)
 #'

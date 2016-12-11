@@ -52,7 +52,7 @@ subroutine snap_to_cluster_d(val, it, sn2) !i={1:n_snaps}
     val = 0
   else
 
-    if (tmp_dis_method.eq.5.or.tmp_dis_method.eq.11) then
+    if (tmp_dis_method.eq.5.or.tmp_dis_method.eq.11.or.tmp_dis_method.eq.1) then
       vec1 = it%sums(1:n_xyz)/(1.0 * it%nmbrs) ! cluster center
     end if
     call distance(val,vec1,sn2) ! val=tmp_d, vec1=centroid, sn=snapshot
@@ -70,7 +70,7 @@ subroutine cluster_to_cluster_d(val, it1, it2)
   real vec1(n_xyz), vec2(n_xyz)
   real, INTENT(OUT) :: val
 
-  if (tmp_dis_method.eq.5.or.tmp_dis_method.eq.11) then
+  if (tmp_dis_method.eq.5.or.tmp_dis_method.eq.11.or.tmp_dis_method.eq.1) then
     vec1 = it1%sums(:)/(1.0 * it1%nmbrs) ! center it1
     vec2 = it2%sums(:)/(1.0 * it2%nmbrs) ! center it2
   end if
@@ -94,13 +94,21 @@ subroutine distance(val2, veci, vecj)
   real vec_ref(n_xyz)
   real  hlp, hlp2
   real, INTENT(OUT) :: val2
+  integer k
 
   vec_ref = 1
   val2 = 0.0
   hlp = 0.0
   hlp2 = 0.0
 
-  if (tmp_dis_method.eq.5) then
+  if (tmp_dis_method.eq.1) then
+    do k=1,n_xyz
+      hlp = abs(veci(k) - vecj(k))
+      if (hlp.gt.180.0) hlp = abs(hlp - 360.0)
+      val2 = val2 + hlp*hlp
+    end do
+    val2 = sqrt(val2/(1.0*n_xyz))
+  else if(tmp_dis_method.eq.5) then
     hlp = sum((veci(1:n_xyz) - vecj(1:n_xyz))**2)
     val2 = sqrt((3.0 * hlp)/(1.0 * (n_xyz))) ! why *3????? number of coo
   else if (tmp_dis_method.eq.11) then
@@ -158,8 +166,11 @@ subroutine cluster_addsnap(it,sn1,i)
   implicit none
 
   type (t_scluster), INTENT(INOUT) :: it !cluster it is modified by adding i
-  real , INTENT(IN) :: sn1(n_xyz) !snap that must be added (vector of positions)
+  real, INTENT(IN) :: sn1(n_xyz) !snap that must be added (vector of positions)
   integer, intent(in) :: i !id of the snap
+  ! for dist = 1 dihedral
+  integer clstsz, k
+  real normer, normer2, incr
   ! real , intent(in) :: r ! distance from the center of the cluster
 
   if (it%nmbrs.eq.0) then !case in which it is the first element of the cluster
@@ -185,11 +196,35 @@ subroutine cluster_addsnap(it,sn1,i)
   end if
 
   it%snaps(it%nmbrs) = i !add the snap
-
-  if((tmp_dis_method.eq.5.or.tmp_dis_method.eq.11)) then
+  clstsz = n_xyz
+  !cludata = sn1
+  if(tmp_dis_method.eq.1) then
+    if (it%nmbrs.gt.1) then
+      normer2 = 1.0/(1.0*it%nmbrs-1.0)
+    else
+      normer2 = 0.0
+    end if
+    normer = 1.0/(1.0*it%nmbrs)
+  !   this is approximate: the average mustn't shift very much and/or the points need to be well-clustered
+    do k=1,clstsz
+      incr = 0.0
+      if (sn1(k)-normer2*it%sums(k).lt.-180.0) incr = 360.0
+      if (sn1(k)-normer2*it%sums(k).gt.180.0) incr = -360.0
+      incr = incr + sn1(k)
+      it%sums(k) = it%sums(k) + incr
+      it%sqsum = it%sqsum + incr*incr
+      if (normer*it%sums(k).lt.-180.0) then
+        it%sqsum = it%sqsum + it%nmbrs*360.0*360.0 + 720.0*it%sums(k)
+        it%sums(k) = it%sums(k) + it%nmbrs*360.0
+      end if
+      if (normer*it%sums(k).gt.180.0) then
+        it%sqsum = it%sqsum + it%nmbrs*360.0*360.0 - 720.0*it%sums(k)
+        it%sums(k) = it%sums(k) - it%nmbrs*360.0
+      end if
+    end do
+  else if((tmp_dis_method.eq.5.or.tmp_dis_method.eq.11)) then
     it%sums(1:n_xyz) = it%sums(1:n_xyz) + sn1 !
     it%sqsum = it%sqsum + dot_product(sn1,sn1)
-
   end if
 end
 !
@@ -229,8 +264,43 @@ subroutine join_clusters(itl,its)
 !
 
   type (t_scluster) its, itl
-!
-  if ((tmp_dis_method.eq.5).OR.(tmp_dis_method.eq.6)) then
+
+  !for dihedral angles dist = 1
+  real normer, normer2, normer3
+  integer clstsz
+  integer k
+  real incr
+
+  clstsz = n_xyz
+
+  if (tmp_dis_method.eq.1) then
+    normer2 = 1.0/(1.0*itl%nmbrs)
+    normer3 = 1.0/(1.0*its%nmbrs)
+    normer = 1.0/(1.0*itl%nmbrs+its%nmbrs)
+!   this is approximate: the average mustn't shift very much and/or the points need to be well-clustered
+    itl%sqsum = itl%sqsum + its%sqsum
+    do k=1,clstsz
+      incr = 0.0
+      if (normer3*its%sums(k)-normer2*itl%sums(k).lt.-180.0) then
+        incr = its%nmbrs*360.0
+        itl%sqsum = itl%sqsum + its%nmbrs*360.0*360.0 + 720.0*its%sums(k)
+      end if
+      if (normer3*its%sums(k)-normer2*itl%sums(k).gt.180.0) then
+        incr = -its%nmbrs*360.0
+        itl%sqsum = itl%sqsum + its%nmbrs*360.0*360.0 - 720.0*its%sums(k)
+      end if
+      incr = incr + its%sums(k)
+      itl%sums(k) = itl%sums(k) + incr
+      if (normer*itl%sums(k).lt.-180.0) then
+        itl%sqsum = itl%sqsum + (itl%nmbrs+its%nmbrs)*360.0*360.0 + 720.0*itl%sums(k)
+        itl%sums(k) = itl%sums(k) + (itl%nmbrs+its%nmbrs)*360.0
+      end if
+      if (normer*itl%sums(k).gt.180.0) then
+        itl%sqsum = itl%sqsum + (itl%nmbrs+its%nmbrs)*360.0*360.0 - 720.0*itl%sums(k)
+        itl%sums(k) = itl%sums(k) - (itl%nmbrs+its%nmbrs)*360.0
+      end if
+    end do
+  else if ((tmp_dis_method.eq.5).OR.(tmp_dis_method.eq.6)) then
     itl%sums(1:n_xyz) = itl%sums(1:n_xyz) + its%sums(1:n_xyz)
     itl%sqsum = itl%sqsum + its%sqsum
   end if
@@ -511,11 +581,14 @@ subroutine cluster_calc_params(it,targetsz)
   implicit none
 !
   type (t_scluster) it
-  real helper,targetsz
-!
-  if(tmp_dis_method.eq.5.or.tmp_dis_method.eq.11) then
-    helper = 3.0*(it%nmbrs*it%sqsum - dot_product(it%sums(1:n_xyz),it%sums(1:n_xyz)))&
-    &              /(1.0*(n_xyz)) !sasdaafsjghdsviubwFB TODO
+  real helper, targetsz
+  ! this is occasionally inaccurate for mode 1 due to the approximate treatment of wraparound
+  if (tmp_dis_method.eq.1) then
+    helper = (it%nmbrs*it%sqsum - dot_product(it%sums(:),it%sums(:)))/(1.0*n_xyz)
+  !  this is approximate for all clusters exceeding size 2 if alignment is used
+  else if(tmp_dis_method.eq.5.or.tmp_dis_method.eq.11) then
+  helper = 3.0*(it%nmbrs*it%sqsum - dot_product(it%sums(1:n_xyz),it%sums(1:n_xyz)))&
+  &              /(1.0*(n_xyz)) !sasdaafsjghdsviubwFB TODO
   end if
 
   if ((it%nmbrs.gt.1).AND.(helper.ge.0.0)) then
@@ -590,16 +663,20 @@ end
 !
 !-------------------------------------------------------------------------------------------
 !
-subroutine cluster_removesnap(it,i,trj3)
+subroutine cluster_removesnap(it,i,vecti2)
 !
   use m_clustering
   use m_variables_gen
 !
   implicit none
 !
-  real, intent(in) :: trj3(n_snaps,n_xyz)
+  real, intent(in) :: vecti2(n_xyz)
   type (t_scluster) it
   integer i,k
+  !for dist = 1
+  integer clstsz
+  real normer, normer2, incr
+
 !
   do k=1,it%nmbrs
     if (it%snaps(k).eq.i) exit
@@ -623,9 +700,34 @@ subroutine cluster_removesnap(it,i,trj3)
     return
   end if
 !
-  if ((tmp_dis_method.eq.5).OR.(tmp_dis_method.eq.11)) then
-    it%sums(1:n_xyz) = it%sums(1:n_xyz) - trj3(i,1:n_xyz)
-    it%sqsum = it%sqsum - dot_product(trj3(i,1:n_xyz),trj3(i,1:n_xyz))
+  clstsz = n_xyz
+  if (tmp_dis_method.eq.1) then
+    if (it%nmbrs.gt.1) then
+      normer2 = 1.0/(1.0*it%nmbrs+1.0)
+    else
+      normer2 = 0.0
+    end if
+    normer = 1.0/(1.0*it%nmbrs)
+  !   this is approximate: the average mustn't shift very much and/or the points need to be well-clustered
+    do k=1,clstsz
+      incr = 0.0
+      if (vecti2(k)-normer2*it%sums(k).lt.-180.0) incr = 360.0
+      if (vecti2(k)-normer2*it%sums(k).gt.180.0) incr = -360.0
+      incr = -incr - vecti2(k)
+      it%sums(k) = it%sums(k) + incr
+      it%sqsum = it%sqsum + incr*incr
+      if (normer*it%sums(k).lt.-180.0) then
+        it%sqsum = it%sqsum + it%nmbrs*360.0*360.0 + 720.0*it%sums(k)
+        it%sums(k) = it%sums(k) + it%nmbrs*360.0
+      end if
+      if (normer*it%sums(k).gt.180.0) then
+        it%sqsum = it%sqsum + it%nmbrs*360.0*360.0 - 720.0*it%sums(k)
+        it%sums(k) = it%sums(k) - it%nmbrs*360.0
+      end if
+    end do
+  else if ((tmp_dis_method.eq.5).OR.(tmp_dis_method.eq.11)) then
+    it%sums(1:n_xyz) = it%sums(1:n_xyz) - vecti2(1:n_xyz)
+    it%sqsum = it%sqsum - dot_product(vecti2(1:n_xyz),vecti2(1:n_xyz))
   end if
 !
 end

@@ -18,7 +18,7 @@ campari(nsnaps = nrow(input_trj), wd = wd, data_file = file_dcd, camp_home = "/s
         cprogindwidth = floor(nrow(input_trj)/27),search_attempts = nrow(input_trj)/100,methodst = 2)
 zap_ggplot(sap_file = "PROGIDX_000000000002.dat",local_cut = T,timeline = T,ann_trace = 2,title = "ORIGINAL CAMPARI")
 
-adjl <- CampaRi::adjl_from_trj(trj = input_trj, distance_method = 5, clu_radius = crad,
+adjl <- CampaRi::adjl_from_trj(trj = input_trj, distance_method = 1, clu_radius = crad,
                                birch_clu = T, mode = "fortran", rootmax_rad = cmaxrad, logging = F,
                                tree_height = birch_hei,n_search_attempts = nrow(input_trj)/100)
 ret <- CampaRi::gen_progindex(adjl = adjl, snap_start = 2)

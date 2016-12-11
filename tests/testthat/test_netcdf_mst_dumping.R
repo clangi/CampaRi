@@ -10,27 +10,15 @@ library(CampaRi)
 # Initialization of important variables
 options(CampaRi.data_management = "netcdf")
 file_dcd <- "../CampaRi/inst/extdata/NBU_250fs.dcd"
+file_dcd <- "nbu_napapigiri_traj.dcd"
 input_trj <- CampaRi::load_trj_dcd(t_file = file_dcd)
-time <- 0
-for(i in seq(100,10,-5)){
-  input_trj <- input_trj[seq(1,nrow(input_trj),by = i),]
-  cat(i,"\n")
-  mst <- F
-  cmaxrad <- mean(input_trj)*4.0/4.0
-  birch_hei <- 5
-  crad <- cmaxrad/birch_hei
-  b1rchclu <- T
-  time <- c(time, system.time(adjl <- CampaRi::adjl_from_trj(trj = input_trj, distance_method = 5, clu_radius = crad,
-                                 birch_clu = b1rchclu, mode = "fortran", rootmax_rad = cmaxrad, logging = F,
-                                 tree_height = birch_hei, n_search_attempts = nrow(input_trj)/100)))
-}
 # CampaRi::write.pdb.d(x = input_trj, base_name = "NBU_250fs")
 # library(bio3d)
 # in2 <- bio3d::read.pdb("NBU250fs.pdb")
 mst <- F
-cmaxrad <- mean(input_trj)*4.0/4.0
-birch_hei <- 5
-crad <- cmaxrad/birch_hei
+cmaxrad <- 120.0
+birch_hei <- 8
+crad <- 60.0
 b1rchclu <- T
 metodst <- 2
 if(mst) {
@@ -41,15 +29,15 @@ if(mst) {
 # ------------------------------------------------------
 # Original campari run
 campari(nsnaps = nrow(input_trj), wd = wd, data_file = file_dcd, camp_home = "/software/campari/", base_name = "nbu", pdb_format = 4,
-        cprogindstart = 2,distance_met = 5,birch_height = birch_hei, cmaxrad = cmaxrad, cradius = crad,
-        cprogindwidth = floor(nrow(input_trj)/27),search_attempts = nrow(input_trj)/100, methodst = metodst)
+        cprogindstart = 2,distance_met = 1,birch_height = birch_hei, cmaxrad = cmaxrad, cradius = crad,
+        cprogindwidth = floor(nrow(input_trj)/27),search_attempts = 7000, methodst = metodst)
 zap_ggplot(sap_file = "PROGIDX_000000000002.dat",local_cut = T,timeline = T,ann_trace = 2,title = "ORIGINAL CAMPARI")
 # ------------------------------------------------------
 # Wrapper run
 options(CampaRi.data_management = "netcdf")
 adjl <- CampaRi::adjl_from_trj(trj = input_trj, distance_method = 5, clu_radius = crad,
                                birch_clu = b1rchclu, mode = "fortran", rootmax_rad = cmaxrad, logging = F,
-                               tree_height = birch_hei, n_search_attempts = nrow(input_trj)/100)
+                               tree_height = birch_hei, n_search_attempts = 7000)
 ret <- gen_progindex(nsnaps=nrow(input_trj), snap_start = 2)
 # ret <- gen_progindex(adjl = adjl, snap_start = 2)
 CampaRi::gen_annotation(ret_data = ret,snap_start = 2,local_cut_width = floor(nrow(input_trj)/27))
