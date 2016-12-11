@@ -734,3 +734,267 @@ end
 !
 !------------------------------------------------------------------------------------------
 !
+! subroutine store_for_clustering()
+! !
+!   use sequen
+!   use forces
+!   use clusters
+!   use fyoc
+!   use polypep
+!   use atoms
+!   use system
+!   use aminos
+!   use molecule
+!   use movesets
+!   use iounit
+!   use zmatrix
+!   use math
+!   use mcsums
+!   use interfaces
+!
+!   use pdb, ONLY: pdb_rmol
+! !
+!   implicit none
+! !
+!   integer kk,ttc,ttc2,i,rs,imol,lmol,kidx,cdofsz,cta,shf
+!   logical afalse
+!   RTYPE d2v,mmtw,clutmp(calcsz),tmpzt,getztor,tvec(3)
+!
+! !
+!   afalse = .false.
+! !
+!   cstored = cstored + 1
+!   cta = cstored
+!   shf = 0
+!   if (ua_model.gt.0) then
+!     shf = 1
+!   end if
+! !
+! ! transcribe breaks list (in-place)
+!   if (ntbrks.ge.itbrklst) then
+!     if ((cstored.eq.1).AND.(nstep.gt.trbrkslst(itbrklst))) then
+!       do while ((itbrklst.le.ntbrks).AND.(trbrkslst(itbrklst).lt.nstep))
+!         itbrklst = itbrklst + 1 ! skip any break located before read-in starts
+!         if (itbrklst.gt.ntbrks) exit
+!         if ((nstep.eq.nsim).AND.(trbrkslst(itbrklst).eq.nstep)) then
+!           ntbrks2 = ntbrks2 + 1
+!           trbrkslst(ntbrks2) = cstored
+!           itbrklst = itbrklst + 1
+!         end if
+!         if (itbrklst.gt.ntbrks) exit
+!       end do
+!     else if (cstored.gt.1) then
+!       if (nstep.gt.trbrkslst(itbrklst)) then
+!         ntbrks2 = ntbrks2 + 1
+!         trbrkslst(ntbrks2) = cstored - 1
+!         do while ((itbrklst.le.ntbrks).AND.(trbrkslst(itbrklst).lt.nstep))
+!           itbrklst = itbrklst + 1
+!           if (itbrklst.gt.ntbrks) exit
+!           if ((nstep.eq.nsim).AND.(trbrkslst(itbrklst).eq.nstep)) then
+!             ntbrks2 = ntbrks2 + 1
+!             trbrkslst(ntbrks2) = cstored
+!             itbrklst = itbrklst + 1
+!           end if
+!           if (itbrklst.gt.ntbrks) exit
+!         end do
+!       else if ((nstep.eq.nsim).AND.(trbrkslst(itbrklst).eq.nstep)) then
+!         ntbrks2 = ntbrks2 + 1
+!         trbrkslst(ntbrks2) = cstored
+!         itbrklst = itbrklst + 1
+!       end if
+!     end if
+!   end if
+! !
+! ! torsional
+!   if ((cdis_crit.ge.1).AND.(cdis_crit.le.4)) then
+!     cdofsz = calcsz/2
+!     if (cdis_crit.eq.1) cdofsz = calcsz
+!     clutmp(:) = 0.0
+! !   all torsions
+!     ttc = 0
+!     ttc2 = 1
+!     do rs=1,nseq
+!       imol = molofrs(rs)
+! !     omega
+!       if (wline(rs).gt.0) then
+!         ttc = ttc + 1
+!         mmtw = 1.0
+!         if (cdofset(ttc2,1).eq.ttc) then
+!           if (cdis_crit.eq.1) then
+!             clutmp(ttc2) = omega(rs)
+!           end if
+!           ttc2 = ttc2 + 1
+!           if (ttc2.gt.cdofsz) exit
+!         end if
+!       end if
+! !     phi
+!       if (fline(rs).gt.0) then
+!         ttc = ttc + 1
+!         mmtw = 1.0
+!         if (cdofset(ttc2,1).eq.ttc) then
+!           if (cdis_crit.eq.1) then
+!             clutmp(ttc2) = phi(rs)
+!           end if
+!           ttc2 = ttc2 + 1
+!           if (ttc2.gt.cdofsz) exit
+!         end if
+!       end if
+! !     psi
+!       if (yline(rs).gt.0) then
+!         ttc = ttc + 1
+!         mmtw = 1.0
+!         if (cdofset(ttc2,1).eq.ttc) then
+!           if (yline2(rs).gt.0) then
+!             tmpzt = ztor(yline2(rs))
+!           else
+!             tmpzt = psi(rs)
+!           end if
+!           if (cdis_crit.eq.1) then
+!             clutmp(ttc2) = tmpzt
+!           end if
+!           ttc2 = ttc2 + 1
+!           if (ttc2.gt.cdofsz) exit
+!         end if
+!       end if
+! !     nucleic acid bb angles
+!       do kk = 1,nnucs(rs)
+!         ttc = ttc + 1
+!         mmtw = 1.0
+!         if (cdofset(ttc2,1).eq.ttc) then
+!           if (cdis_crit.eq.1) then
+!             clutmp(ttc2) = nucs(kk,rs)
+!           end if
+!           ttc2 = ttc2 + 1
+!           if (ttc2.gt.cdofsz) exit
+!         end if
+!       end do
+!       if (ttc2.gt.cdofsz) exit
+! !     sugar bond in nucleotides
+!       if (seqpolty(rs).eq.'N') then
+!         kidx = nucsline(6,rs)
+!         ttc = ttc + 1
+!         mmtw = 1.0
+!         !       note the cheating on the inertial mass for the sugar bond
+!         if (cdofset(ttc2,1).eq.ttc) then
+!           if (cdis_crit.eq.1) then
+!             clutmp(ttc2) = ztor(kidx)
+!           end if
+!           ttc2 = ttc2 + 1
+!           if (ttc2.gt.cdofsz) exit
+!         end if
+!       end if
+! !     chi angles
+!       do kk = 1,nchi(rs)
+!         ttc = ttc + 1
+!         mmtw = 1.0
+!         if (cdofset(ttc2,1).eq.ttc) then
+!           if (cdis_crit.eq.1) then
+!             clutmp(ttc2) = chi(kk,rs)
+!           end if
+!           ttc2 = ttc2 + 1
+!           if (ttc2.gt.cdofsz) exit
+!         end if
+!       end do
+!       if (ttc2.gt.cdofsz) exit
+! !     completion for crosslinks
+!       if (disulf(rs).gt.0) then
+!         if (crosslink(crlk_idx(rs))%itstype.le.2) then ! disulfide
+!           ttc = ttc + 1
+!           if (cdofset(ttc2,1).eq.ttc) then
+!             tmpzt = getztor(cai(rs),at(rs)%sc(2-shf),at(rs)%sc(3-shf),at(disulf(rs))%sc(3-shf))
+!             if (cdis_crit.eq.1) then
+!               clutmp(ttc2) = tmpzt
+!             end if
+!             ttc2 = ttc2 + 1
+!             if (ttc2.gt.cdofsz) exit
+!           end if
+!           if (disulf(rs).gt.rs) then
+!             ttc = ttc + 1
+!             if (cdofset(ttc2,1).eq.ttc) then
+!               tmpzt = getztor(at(rs)%sc(2-shf),at(rs)%sc(3-shf),at(disulf(rs))%sc(3-shf),at(disulf(rs))%sc(2-shf))
+!               if (cdis_crit.eq.1) then
+!                 clutmp(ttc2) = tmpzt
+!               end if
+!               ttc2 = ttc2 + 1
+!               if (ttc2.gt.cdofsz) exit
+!             end if
+!           end if
+!         end if
+!       end if
+! !     possibly completion for unsupported
+!       if (((dyn_integrator_ops(10).eq.3).OR.((dyn_integrator_ops(10).eq.2).AND.(seqtyp(rs).ne.26)).OR.&
+!                                             ((dyn_integrator_ops(10).eq.1).AND.(seqtyp(rs).eq.26))).AND.&
+!  &        ((unslst%nr.gt.0).OR.(unklst%nr.gt.0))) then
+!         do kk=max(atmol(molofrs(rs),1)+3,at(rs)%bb(1)),at(rs)%bb(1)+at(rs)%na-1
+!           if (izrot(kk)%alsz.gt.0) then
+!             if (natlst%nr.gt.0) then
+!               call binary_search(natlst%nr,natlst%idx(1:natlst%nr),kk,kidx)
+!               if (natlst%idx(max(1,min(natlst%nr,kidx))).eq.kk) cycle
+!             end if
+!             if ((kk.eq.fline(rs)).OR.(kk.eq.yline(rs)).OR.(kk.eq.fline2(rs)).OR.(kk.eq.yline2(rs))) cycle
+!             if (((dyn_integrator_ops(10).ge.2).AND.(seqtyp(rs).ne.26)).OR.& ! must be in unslst
+!                 ((dyn_integrator_ops(10).ne.2).AND.(seqtyp(rs).eq.26))) then ! must be in unklst
+!               ttc = ttc + 1
+!               if (cdofset(ttc2,1).eq.ttc) then
+!                 if (cdis_crit.eq.1) then
+!                   clutmp(ttc2) = ztor(kk)
+!                 end if
+!                 ttc2 = ttc2 + 1
+!                 if (ttc2.gt.cdofsz) exit
+!               end if
+!             end if
+!           end if
+!         end do
+!         if (ttc2.gt.cdofsz) exit
+!       end if
+!     end do
+! ! xyz atom set
+!   else if ((cdis_crit.eq.5).OR.(cdis_crit.eq.6).OR.(cdis_crit.eq.10)) then
+! !   respect ref mol shifts
+!     lmol = 0
+!     tvec(:) = 0.0
+!     do i=1,clstsz/3
+!       imol = molofrs(atmres(cdofset(i,1)))
+!       if (pdb_rmol.gt.0) then
+!         if (lmol.ne.imol) then
+!           call shift_bound3(pdb_rmol,imol,tvec)
+!         end if
+!         lmol = imol
+!       end if
+!       clutmp(3*i-2) = x(cdofset(i,1)) + tvec(1)
+!       clutmp(3*i-1) = y(cdofset(i,1)) + tvec(2)
+!       clutmp(3*i) = z(cdofset(i,1)) + tvec(3)
+!     end do
+!     if (cdis_crit.eq.10) clutmp((clstsz+1):calcsz) = 1.0 ! currently no locally adaptive weight is collected live
+! ! internal distance vector
+!   else if ((cdis_crit.ge.7).AND.(cdis_crit.le.9)) then
+!     do i=1,clstsz
+!       call dis_bound(cdofset(i,1),cdofset(i,2),d2v)
+!       clutmp(i) = sqrt(d2v)
+!     end do
+!     if (cdis_crit.eq.9) clutmp((clstsz+1):calcsz) = 1.0 ! currently no locally adaptive weight is collected live
+!   end if
+! !
+! #ifdef ENABLE_MPI
+!   if (use_MPIAVG.EQV..true.) then
+!     if (myrank.eq.masterrank) then
+!       cludata(:,cstored) = clutmp(:)
+!       do i=1,mpi_nodes-1
+!         call MPI_RECV(clutmp,calcsz,MPI_RTYPE,i,MPI_ANY_TAG,MPI_COMM_WORLD,mstatus,ierr)
+!         if (mstatus(MPI_TAG).ne.clumpiavgtag) then
+!           write(*,*) 'Fatal. Received bad message (',mstatus(MPI_TAG),' from master. Expected ',clumpiavgtag,'.'
+!           call fexit()
+!         end if
+!         cludata(:,i*cmaxsnaps+cstored) = clutmp(:)
+!       end do
+!     else
+!       call MPI_SEND(clutmp,calcsz,MPI_RTYPE,masterrank,clumpiavgtag,MPI_COMM_WORLD,ierr)
+!     end if
+!   else
+!     cludata(:,cstored) = clutmp(:)
+!   end if
+! #else
+!   cludata(:,cstored) = clutmp(:)
+! #endif
+! !
+! end

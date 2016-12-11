@@ -12,9 +12,18 @@ options(CampaRi.data_management = "netcdf")
 file_dcd <- "../CampaRi/inst/extdata/NBU_250fs.dcd"
 file_dcd <- "nbu_napapigiri_traj.dcd"
 input_trj <- CampaRi::load_trj_dcd(t_file = file_dcd)
-# CampaRi::write.pdb.d(x = input_trj, base_name = "NBU_250fs")
-# library(bio3d)
-# in2 <- bio3d::read.pdb("NBU250fs.pdb")
+# ------------------------------------------------------
+# Torsional space projection
+library(bio3d)
+for(i in 1:24)
+  print(torsion.xyz(input_trj[1,i:(11+i)]))
+for(i in 4:14)
+  print(torsion.xyz(input_trj[1,1:(3*i)],atm.inc = i))
+
+input_trj2 <- cbind(apply(input_trj[,1:12],MARGIN = 1,torsion.xyz),
+                    apply(input_trj[,16:27],MARGIN = 1,torsion.xyz),
+                    apply(input_trj[,24:35],MARGIN = 1,torsion.xyz))
+
 mst <- F
 cmaxrad <- 120.0
 birch_hei <- 8
@@ -35,7 +44,7 @@ zap_ggplot(sap_file = "PROGIDX_000000000002.dat",local_cut = T,timeline = T,ann_
 # ------------------------------------------------------
 # Wrapper run
 options(CampaRi.data_management = "netcdf")
-adjl <- CampaRi::adjl_from_trj(trj = input_trj, distance_method = 5, clu_radius = crad,
+adjl <- CampaRi::adjl_from_trj(trj = input_trj2, distance_method = 5, clu_radius = crad,
                                birch_clu = b1rchclu, mode = "fortran", rootmax_rad = cmaxrad, logging = F,
                                tree_height = birch_hei, n_search_attempts = 7000)
 ret <- gen_progindex(nsnaps=nrow(input_trj), snap_start = 2)
