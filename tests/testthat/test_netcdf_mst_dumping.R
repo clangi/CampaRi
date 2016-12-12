@@ -48,15 +48,16 @@ zap_ggplot(sap_file = "PROGIDX_000000000002.dat",local_cut = T,timeline = T,ann_
 # Wrapper run
 options(CampaRi.data_management = "netcdf")
 # if(dista==1) input_trj <- read.table("../base_sim/FYC.dat", header = F)[,2:4]
-if(dista==1) input_trj <- read.table("dihedral_original.fyc")
-adjl <- CampaRi::adjl_from_trj(trj = input_trj, distance_method = dista, clu_radius = crad,
-                               birch_clu = b1rchclu, mode = "fortran", rootmax_rad = cmaxrad, logging = F,
-                               tree_height = birch_hei, n_search_attempts = 7000)
-ret <- gen_progindex(nsnaps=nrow(input_trj), snap_start = 2)
+if(dista==1) input_trj2 <- read.table("dihedral_original.fyc")
+profvis(
+CampaRi::adjl_from_trj(trj = input_trj2, distance_method = dista, clu_radius = crad,
+                       birch_clu = b1rchclu, mode = "fortran", rootmax_rad = cmaxrad, logging = F,
+                       tree_height = birch_hei, n_search_attempts = 7000)
+)
+ret <- gen_progindex(nsnaps=nrow(input_trj2), snap_start = 2)
 # ret <- gen_progindex(adjl = adjl, snap_start = 2)
-CampaRi::gen_annotation(ret_data = ret,snap_start = 2,local_cut_width = floor(nrow(input_trj)/27))
+CampaRi::gen_annotation(ret_data = ret,snap_start = 2,local_cut_width = floor(nrow(input_trj2)/27))
 zap_ggplot(sap_file = "REPIX_000000000002.dat",local_cut = T,timeline = T, ann_trace = 2,title = "WRAPPER CAMPARI")
-
 # ----------------------------------------------------
 # Adding annotation
 progind <- read.table("REPIX_000000000002.dat")[,c(3,4)]
@@ -67,7 +68,20 @@ title1 <- "NBU SST, 30k snapshots - WRAPPER"
 zap_ggplot(sap_file = "REPIX_000000000002.dat",local_cut = T,timeline = T,ann_trace = ann,ann_names_L = c("CCCC","HCCC","CCCH"),title = title1)
 title2 <- "NBU SST, 30k snapshots - ORIGINAL"
 zap_ggplot(sap_file = "PROGIDX_000000000002.dat",local_cut = T,timeline = T,ann_trace = ann,ann_names_L = c("CCCC","HCCC","CCCH"),title = title2)
-
+# ------------------------------------------------------
+# Wrapper run with distance = 5
+cmaxrad <- mean(input_trj)*4.0/4.0
+birch_hei <- 5
+crad <- cmaxrad/birch_hei
+dista <- 5
+options(CampaRi.data_management = "netcdf")
+adjl <- CampaRi::adjl_from_trj(trj = input_trj, distance_method = dista, clu_radius = crad,
+                               birch_clu = b1rchclu, mode = "fortran", rootmax_rad = cmaxrad, logging = F,
+                               tree_height = birch_hei, n_search_attempts = 7000)
+ret <- gen_progindex(nsnaps=nrow(input_trj), snap_start = 2)
+# ret <- gen_progindex(adjl = adjl, snap_start = 2)
+CampaRi::gen_annotation(ret_data = ret,snap_start = 2,local_cut_width = floor(nrow(input_trj)/27))
+zap_ggplot(sap_file = "REPIX_000000000002.dat",local_cut = T,timeline = T, ann_trace = 2,title = "WRAPPER CAMPARI")
 # ------------------------------------------------------
 # checking the checkable on the output tables of the two softwares
 st1 <- read.table("PROGIDX_000000000002.dat")

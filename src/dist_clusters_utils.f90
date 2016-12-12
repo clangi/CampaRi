@@ -223,8 +223,8 @@ subroutine cluster_addsnap(it,sn1,i)
       end if
     end do
   else if((tmp_dis_method.eq.5.or.tmp_dis_method.eq.11)) then
-    it%sums(1:n_xyz) = it%sums(1:n_xyz) + sn1 !
-    it%sqsum = it%sqsum + dot_product(sn1,sn1)
+    it%sums(1:n_xyz) = it%sums(1:n_xyz) + sn1(1:n_xyz) !
+    it%sqsum = it%sqsum + dot_product(sn1(1:n_xyz),sn1(1:n_xyz))
   end if
 end
 !
@@ -406,7 +406,7 @@ end
   oldsz = it%childr_alsz
   tmpa(:) = it%children(:)
   deallocate(it%children)
-  it%childr_alsz = it%childr_alsz*4
+  it%childr_alsz = it%childr_alsz*2
   allocate(it%children(it%childr_alsz))
   it%children(1:oldsz) = tmpa(:)
 !
@@ -587,8 +587,8 @@ subroutine cluster_calc_params(it,targetsz)
     helper = (it%nmbrs*it%sqsum - dot_product(it%sums(:),it%sums(:)))/(1.0*n_xyz)
   !  this is approximate for all clusters exceeding size 2 if alignment is used
   else if(tmp_dis_method.eq.5.or.tmp_dis_method.eq.11) then
-  helper = 3.0*(it%nmbrs*it%sqsum - dot_product(it%sums(1:n_xyz),it%sums(1:n_xyz)))&
-  &              /(1.0*(n_xyz)) !sasdaafsjghdsviubwFB TODO
+    helper = 3.0*(it%nmbrs*it%sqsum - dot_product(it%sums(1:n_xyz),it%sums(1:n_xyz)))&
+    &              /(1.0*(n_xyz)) !sasdaafsjghdsviubwFB TODO
   end if
 
   if ((it%nmbrs.gt.1).AND.(helper.ge.0.0)) then
