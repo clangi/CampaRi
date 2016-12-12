@@ -9,7 +9,7 @@ install.packages("../CampaRi/",repos = NULL,type = 'source')
 library(CampaRi)
 # ------------------------------------------------------
 # Initialization of important variables
-file_dcd <- "../CampaRi/inst/extdata/NBU_250fs.dcd"
+file_dcd <- "../CampaRi/inst/extdata/nbu_napapigiri_traj.dcd"
 input_trj <- CampaRi::load_trj_dcd(t_file = file_dcd)
 time <- 0
 for(i in seq(100,10,-5)){

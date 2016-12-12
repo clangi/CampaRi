@@ -5,7 +5,7 @@ program trial
   integer :: distances(11)
   real :: dis_wei_in(11)
   integer, parameter :: n_snapshots = 6000
-  integer, parameter :: xyz_3coo = 42
+  integer, parameter :: xyz_3coo = 3
   real INPUT_trj(n_snapshots,xyz_3coo)
   integer :: d_meth_i = 13
   integer :: starter1
@@ -38,7 +38,7 @@ program trial
   integer :: n_search_attempts_in1
 
   forall(i = 1:11) distances(i) = 0
-  distances(1) = 5
+  distances(1) = 1
   ! distances(2) = 11
   ! distances(1) = 11
   forall(i = 1:11) dis_wei_in(i) = 0
@@ -47,19 +47,21 @@ program trial
   ! rad = HUGE(rad)
 
   mst_iin = .true.
-  bir_in = .false.
+  bir_in = .true.
   logging = .false.
-  normalize_it = .true.
+  normalize_it = .false.
   make_it_verbose = .true.
 
   call RANDOM_NUMBER(INPUT_trj)
-  INPUT_trj(500:1000,:) = INPUT_trj(500:1000,:) + 5
-  ! INPUT_trj(1500:5000,:) = INPUT_trj(1500:5000,:) + 11
+  INPUT_trj(500:1000,:) = INPUT_trj(500:1000,:) + 60
+  INPUT_trj(1500:5000,:) = INPUT_trj(1500:5000,:) + 150
   rootmax_rad_in1 = (sum(INPUT_trj)/(n_snapshots*xyz_3coo))*(4.0/4.0)
-  ! rootmax_rad_in1 = 7.5
-  tree_height_in1 = 5
   n_search_attempts_in1 = floor(size(INPUT_trj(:,1))/100.0)
   rad = rootmax_rad_in1/tree_height_in1
+  tree_height_in1 = 8
+  rootmax_rad_in1 = 160
+  n_search_attempts_in1 = 7000
+  rad = 60
   if(.not.bir_in) rad = huge(rad)
   inter_rad = HUGE(inter_rad)
   a_deg = 0
@@ -93,20 +95,20 @@ program trial
     ! print *, "max_deg", max_deg
     print *, ""
     print *, ""
-
-    starter1 = 1
-    call gen_progind_from_adjlst_r(n_snapshots, starter1, &
-    o_progind, o_distv, o_invec, o_iv2)
-    print *, ""
-    print *, o_progind(1:10)
-    print *, ""
-    print *, o_distv(1:10)
-    print *, ""
-    print *, ""
-    call gen_manycuts(n_snapshots, starter1,0,50,&
-    o_progind,o_distv,o_invec,o_iv2,trbrkslst2)
-
-    print *,o_invec(1:10)
+    !
+    ! starter1 = 1
+    ! call gen_progind_from_adjlst_r(n_snapshots, starter1, &
+    ! o_progind, o_distv, o_invec, o_iv2)
+    ! print *, ""
+    ! print *, o_progind(1:10)
+    ! print *, ""
+    ! print *, o_distv(1:10)
+    ! print *, ""
+    ! print *, ""
+    ! call gen_manycuts(n_snapshots, starter1,0,50,&
+    ! o_progind,o_distv,o_invec,o_iv2,trbrkslst2)
+    !
+    ! print *,o_invec(1:10)
   else
     ! print *, INPUT_trj
     print *,"INITIALIZATION BEFORE====maxmin:::",maxval(INPUT_trj),minval(INPUT_trj)

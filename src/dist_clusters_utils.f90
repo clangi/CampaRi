@@ -351,7 +351,7 @@ subroutine preprocess_snapshot(trj3, i2, vecti2)
   real, intent(in) :: trj3(n_snaps,n_xyz)
   real, intent(inout) :: vecti2(n_xyz)
   integer,intent(in) :: i2
-  if(tmp_dis_method.eq.5) then
+  if(tmp_dis_method.eq.5.or.tmp_dis_method.eq.1) then
     vecti2 = trj3(i2,1:n_xyz)
   else if(tmp_dis_method.eq.11) then
     if(i2.eq.1) then !to avoid error I can double the first value

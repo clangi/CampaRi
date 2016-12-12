@@ -46,7 +46,10 @@ subroutine dump_nbl_nc()
   attstring(1:9) = "distances"
   call check_err( nf90_def_var(ncid, attstring(1:9), NF90_FLOAT, cnc_ids(1), cnc_ids(4)) )
   attstring(1:9) = "         "
-  if (tmp_dis_method.eq.5) then
+  if (tmp_dis_method.eq.1) then
+    xlen = 14
+    attstring(1:xlen) = "torsional RMSD"
+  else if (tmp_dis_method.eq.5) then
     xlen = 21
     attstring(1:xlen) = "unaligned atomic RMSD"
   else
@@ -56,7 +59,10 @@ subroutine dump_nbl_nc()
   call check_err( nf90_put_att(ncid, cnc_ids(1), "type", attstring(1:xlen)) )
 !  call check_err( nf90_def_var(ncid, attstring(1:xlen), NF90_FLOAT, cnc_ids(2), cnc_ids(5)) )
   attstring(1:5) = "units"
-  if (tmp_dis_method.eq.5) then
+  if (tmp_dis_method.le.2) then
+    attstring(6:12) = "degrees"
+    call check_err( nf90_put_att(ncid, cnc_ids(1), attstring(1:5), attstring(6:12)) )
+  else if (tmp_dis_method.eq.5) then
     attstring(6:13) = "angstrom"
     call check_err( nf90_put_att(ncid, cnc_ids(1), attstring(1:5), attstring(6:13)) )
   end if
