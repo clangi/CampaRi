@@ -13,13 +13,15 @@ zap_ggplot(sap_file = NULL, sap_table = NULL, write = F,
 \arguments{
 \item{fl}{file location}
 
-\item{n_fold}{Number of links contractions (folds)
-Default: \code{0}}
+\item{n_fold}{Number of links contractions (folds)}
 }
 \value{
 tree: degree list, connectivity matrix and weights
 }
 \description{
 plotting from file(X)
+}
+\details{
+For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}
 }
 

@@ -18,4 +18,7 @@ tree: degree list, connectivity matrix and weights
 \description{
 pwriting the pdb file(X)
 }
+\details{
+For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}
+}
 

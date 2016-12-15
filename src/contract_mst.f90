@@ -1,17 +1,18 @@
-!---------------------------------------------------------------------------------------------------
-!
+! -----------------------------------------------------------------------------
+! This function aims to reduce the fringe regions by collapsing the tree leaves
+! on their branches. In this way we have less grouping of fringe regions
 !
 subroutine contract_mst(n_snaps,mnb,alnbs,alst,aldis,nrnds,istats)
 !
   implicit none
 !
-  integer, INTENT(IN):: n_snaps,mnb,nrnds,alnbs(n_snaps),alst(n_snaps,mnb)
-  real, INTENT(INOUT):: aldis(n_snaps,mnb)
-  integer, INTENT(OUT):: istats(2)
+  integer, INTENT(IN) :: n_snaps,mnb,nrnds,alnbs(n_snaps),alst(n_snaps,mnb)
+  real, INTENT(INOUT) :: aldis(n_snaps,mnb)
+  integer, INTENT(OUT) :: istats(2)
 !
   integer i,j,kk,thej,ll
 !
-  logical, ALLOCATABLE:: terminal(:)
+  logical, ALLOCATABLE :: terminal(:)
 !
   allocate(terminal(n_snaps))
   terminal(:) = .false.
@@ -23,7 +24,7 @@ subroutine contract_mst(n_snaps,mnb,alnbs,alst,aldis,nrnds,istats)
       istats(2) = istats(2) + 1
     end if
   end do
-  write(*,*) nrnds,n_snaps,istats(2)
+  ! write(*,*) nrnds,n_snaps,istats(2)
 !
   istats(1) = 0
   do kk=1,nrnds

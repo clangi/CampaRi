@@ -1,19 +1,45 @@
-#' @title plotting
+#' @title Original campari run
 #' @description
-#'      plotting from file(X)
+#'      \code{campari} will call the original campari software, specified in the directory camp_home. 
+#'      It is possible to use this function following the instructions in \url{http://campari.sourceforge.net/tutorial11.html}.
+#'      For that purpose a keyfile and sequence file are present inside this package as an example.
 #'
-#' @param fl file location
-#' @param n_fold Number of links contractions (folds)
-#' Default: \code{0}
-#'
-#'
-#' @return tree: degree list, connectivity matrix and weights
+#' @param nsnaps Number of snapshots in the trajectory file.
+#' @param wd Working directory.
+#' @param data_file Input file (e.g. \code{trajectory.dcd}) location.
+#' @param base_name This name should be used for the input files (\code{base_name.key} and \code{base_name.in}) in order to run campari.
+#' @param camp_home Location of the installed campari software.
+#' @param ... Analysis variables (similarly to \code{\link{mst_from_trj}})
+#' @details For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}
+#' @examples 
+#' \dontrun{
+#' campari(nsnaps = 100, wd = "./", data_file = "file_dcd", camp_home = "/campari_home/",
+#'         base_name = "nbu", pdb_format = 4,
+#'         cprogindstart = 2,distance_met = 5, birch_height = 5, cmaxrad = 1, cradius = 0.1,
+#'         cprogindwidth = 10,search_attempts = 10, methodst = 2)
+#' }
 #'
 #' @export campari
-campari<-function(nsnaps, wd, data_file, base_name, camp_home, 
-                  cprogindstart = 1, pdb_format = 4, distance_met = 5,
-                  birch_height = 5, cmaxrad = 2147483647, cradius = 2147483647,
-                  cprogindwidth = 1,search_attempts = NULL, methodst = 1){
+campari<-function(nsnaps, wd, data_file, base_name, camp_home, ...){
+  input_list <- list(...)
+  if(!"cprogindstart" %in% names(input_list)) cprogindstart = 1
+  else cprogindstart = as.numeric(x["cprogindstart"])
+  if(!"pdb_format" %in% names(input_list)) pdb_format = 4
+  else pdb_format = as.numeric(x["pdb_format"])
+  if(!"distance_met" %in% names(input_list)) distance_met = 5
+  else distance_met = as.numeric(x["distance_met"])
+  if(!"birch_height" %in% names(input_list)) birch_height = 5
+  else birch_height = as.numeric(x["birch_height"])
+  if(!"cmaxrad" %in% names(input_list)) cmaxrad = 2147483647
+  else cmaxrad = as.numeric(x["cmaxrad"])
+  if(!"cradius" %in% names(input_list)) cradius = 2147483647
+  else cradius = as.numeric(x["cradius"])
+  if(!"cprogindwidth" %in% names(input_list)) cprogindwidth = 1
+  else cprogindwidth = as.numeric(x["cprogindwidth"])
+  if(!"search_attempts" %in% names(input_list)) search_attempts = NULL
+  else search_attempts = as.numeric(x["search_attempts"])
+  if(!"methodst" %in% names(input_list)) methodst = 1
+  else methodst = as.numeric(x["methodst"])
   # dirs/file definitions
   kfile <- paste0(base_name,".key")
   klog <-paste0(base_name,".log")
@@ -34,7 +60,6 @@ campari<-function(nsnaps, wd, data_file, base_name, camp_home,
   if(FMCSC_PDB_FORMAT==4) 
     FMCSC_DCDFILE <- paste0(wd,data_file)
   
-  
   #1. CAMPARI expects a single trajectory file in pdb-format using the MODEL /ENDMDL syntax to denote the individual snapshots.
   #2. CAMPARI expects to find multiple pdb files with one snapshot each that are systematically numbered starting from the file provided via PDBFILE.
   #3. CAMPARI expects to find a single trajectory in binary xtc-format (GROMACS style).
@@ -53,6 +78,7 @@ campari<-function(nsnaps, wd, data_file, base_name, camp_home,
   #2. GROMOS
   #3. CHARMM
   #4. AMBER
+  
   FMCSC_NRSTEPS <- nsnaps
   FMCSC_CDISTANCE <- distance_met # seq(0,10,1) #1-5 crashed because torsional
   

@@ -4,8 +4,8 @@ program trial
 
   integer :: distances(11)
   real :: dis_wei_in(11)
-  integer, parameter :: n_snapshots = 6000
-  integer, parameter :: xyz_3coo = 42
+  integer, parameter :: n_snapshots = 100
+  integer, parameter :: xyz_3coo = 10
   real INPUT_trj(n_snapshots,xyz_3coo)
   integer :: d_meth_i = 13
   integer :: starter1
@@ -47,7 +47,7 @@ program trial
   ! rad = HUGE(rad)
 
   mst_iin = .true.
-  bir_in = .true.
+  bir_in = .false.
   logging = .false.
   normalize_it = .false.
   make_it_verbose = .true.
@@ -77,7 +77,7 @@ program trial
   o_progind = 0
   o_distv = 0
 
-  netcdfT = .true.
+  netcdfT = .false.
   if(netcdfT) then
     print *, 'INIT NETCDF DUMPING TEST'
     call generate_neighbour_list_w( &
@@ -111,15 +111,15 @@ program trial
     rootmax_rad_in1, tree_height_in1, n_search_attempts_in1, & !sst details
     normalize_it, logging, make_it_verbose) !modes
     print *, ""
-    ! print *, "a_deg(1:50)",a_deg(1:50)
-    ! print *, ""
-    ! print *, "a_ix(1,1:100)",a_ix(1,1:100)
-    ! print *, ""
-    ! print *, "a_dis(1,1:100)",a_dis(1,1:100)
-    ! print *, ""
-    ! print *, "max_deg", max_deg
-    ! print *, ""
-    ! print *, ""
+    print *, "a_deg(1:50)",a_deg(1:50)
+    print *, ""
+    print *, "a_ix(1,1:100)",a_ix(1,1:100)
+    print *, ""
+    print *, "a_dis(1,1:100)",a_dis(1,1:100)
+    print *, ""
+    print *, "max_deg", max_deg
+    print *, ""
+    print *, ""
     ! print *,"INITIALIZATION BEFORE====maxmin:::",maxval(INPUT_trj),minval(INPUT_trj)
     ! call generate_neighbour_list( &
     ! INPUT_trj, xyz_3coo, n_snapshots, rad, inter_rad, & !input

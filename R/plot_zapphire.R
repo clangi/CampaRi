@@ -4,8 +4,7 @@
 #'
 #' @param fl file location
 #' @param n_fold Number of links contractions (folds)
-#' Default: \code{0}
-#'
+#' @details For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}
 #'
 #' @return tree: degree list, connectivity matrix and weights
 #'

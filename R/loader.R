@@ -1,35 +1,48 @@
-  #' @title Load trajectory
+#' @title Create the minimum spanning tree from trajectories of snapshots
 #' @description
-#'      This is a wonderful description(X)
+#'      \code{mst_from_trj} creates a minimum spanning tree from a trajectory using different distance metrics
+#'      between pairwise snapshots.
+#'      
 #'
-#' @param fl file location
-#' @param n_fold Number of links contractions (folds)
-#' Default: \code{0}
+#' @param trj Input trajectory (variables on the columns and time snpashots on the row). It must be a \code{matrix} or a \code{data.frame} of numeric.
+#' @param distance_method Distance metric between distances. This value can be set 1 (dihedral angles) or 5 (rmsd)
+#' @param distance_weights Vector of weights to be applied to the averaging between each other. It must be between 0 and 1. This option works only if \code{birch_clu=F}.
+#' @param clu_radius Used in the clustering step in order to make clusters of the same radius at the base level.
+#' @param clu_hardcut This option is used only with \code{birch_clu=F} and defines if inter-clusters distance must be add to the analysis or not.
+#' @param min_span_tree This option is used only with \code{birch_clu=F} and defines if the returning adjacency list must be a minimum spanning tree.
+#' @param mode It takes a string in input and can be either "fortran" (highly advised and default) or "R".
+#' @param rootmax_rad If \code{birch_clu=T} this option defines the maximum radius at the root level of the tree in the advanced clustering algorithm.
+#' @param tree_height If \code{birch_clu=T} this option defines the height of the tree in the advanced clustering algorithm.
+#' @param n_search_attemps If \code{birch_clu=T} a number of search attempts must be provided for the minimum spanning tree search.
+#' @param cores If \code{mode="R"} a complete adjacency matrix can be created in parallel using multiple cores (anyhow slower than "fortran" mode).
+#' @param logging If \code{logging=T} the function will print to file the fortran messages ("campari.log").
 #'
+#' @details For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}
 #'
-#' @return tree: degree list, connectivity matrix and weights
-#'
-#' @export load_trj_dcd
-#' @import bio3d
-load_trj_dcd<-function(t_file){
- return(read.dcd(trjfile = t_file))
-}
-
-#' @title Build the network from the trajectory file
-#' @description
-#'      This is a wonderful description(X)
-#'
-#' @param fl file location
-#' @param n_fold Number of links contractions (folds)
-#' Default: \code{0}
-#'
-#'
-#' @return tree: degree list, connectivity matrix and weights
-#'
-#' @export adjl_from_trj
+#' @return If no netcdf support is available the function will return a list with 3 arguments: node degrees, adjacency list and associated distances. 
+#' If netcdf support is activated the function will dump the mst in the file "DUMPLING.nc"
+#' @seealso
+#' \code{\link{adjl_from_progindex}}
+#' @examples
+#' 
+#' adjl <- mst_from_trj(trj = matrix(rnorm(1000), nrow = 100, ncol = 10))
+#' 
+#' \dontrun{
+#' adjl <- mst_from_trj(trj = matrix(rnorm(1000),ncol=10,nrow=100),
+#' distance_method = 5, clu_radius = 0.5, clu_hardcut = 0.9,
+#' birch_clu = FALSE, mode = "fortran", logging = TRUE)
+#' 
+#' adjl <- adjl_from_trj(trj = matrix(rnorm(1000),ncol=10,nrow=100), 
+#' distance_method = 5, clu_radius = 0.1,
+#' birch_clu = TRUE, mode = "fortran", rootmax_rad = 1, logging = TRUE,
+#' tree_height = 5, n_search_attempts = 50) 
+#' }
+#' 
+#' @importFrom bio3d rmsd
+#' @export mst_from_trj
 #' @import parallel
 
-adjl_from_trj<-function(trj, distance_method = 5, distance_weights = NULL,  clu_radius = NULL, clu_hardcut = NULL, #inputs
+mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL,  clu_radius = NULL, clu_hardcut = NULL, #inputs
                         normalize_d = TRUE, birch_clu = FALSE, min_span_tree = TRUE, mode = "fortran", #algo modes
                         rootmax_rad = NULL, tree_height = NULL, n_search_attempts = NULL, #sst default
                         cores = NULL, logging = FALSE){ #misc
@@ -40,7 +53,6 @@ adjl_from_trj<-function(trj, distance_method = 5, distance_weights = NULL,  clu_
   #memory handling
   data_management <- getOption("CampaRi.data_management")
   if(data_management == "R") cat("Normal memory handling selected. Without hdf5/netcdf backend file management it will be difficult for R to handle big data-sets.\n")
-  # else if(data_management == "h5pfc") cat("Selected data support: hdf5 with mpi support\n")
   else if(data_management == "netcdf") cat("Selected data support: netcdf without mpi support\n")
   else stop("Invalid data management keyword inserted. Check the available methods on the guide.\n")
 
@@ -84,17 +96,6 @@ adjl_from_trj<-function(trj, distance_method = 5, distance_weights = NULL,  clu_
 
     stopCluster(cl)
     warning('No MST made. Please use igraph package and in particular "mst" function in order to continue the analysis')
-    # library(igraph)
-#     g  <- graph.adjacency(as.matrix(dis), weighted=TRUE)
-#     g_mst <- mst(g)
-#     And the resulting tree looks like this (plot(g_mst, vertex.color=NA, vertex.size=10, edge.arrow.size=0.5)):
-#
-#       enter image description here
-#
-#     Once you have your igraph tree, you already know that you can transform it into an adjacency matrix with function as_adjacency_matrix:
-#
-#       A <- as_adjacency_matrix(mst)
-
 
   }else if(is.character(mode)&&(mode=="fortran")){
     #Fortran mode
@@ -215,28 +216,28 @@ adjl_from_trj<-function(trj, distance_method = 5, distance_weights = NULL,  clu_
       #double Cstyle deginitions
       attr(trj,"Csingle") <- TRUE
       #main fortran talker
-      output<-.Fortran("generate_neighbour_list_w", PACKAGE="CampaRi",
-                       #input
-                       trj_data=trj,
-                       n_xyz_in=as.integer(n_xyz),
-                       n_snaps_in=as.integer(n_snaps),
-                       clu_radius_in=as.single(clu_radius),
-                       clu_hardcut_in=as.single(clu_hardcut),
-                       #output
-                       #none -> it is printed to file
-                       #algorithm details
-                       dis_method_in=as.integer(distance_method),
-                       dis_weight_in=distance_weights,
-                       birch_in=as.logical(birch_clu),
-                       # mst_in=as.logical(min_span_tree), #no more specificable
-                       #sst details
-                       rootmax_rad_in=as.single(rootmax_rad),
-                       tree_height_in=as.integer(tree_height),
-                       n_search_attempts_in=as.integer(n_search_attempts),
-                       #modes
-                       normalize_dis_in=as.logical(normalize_d),
-                       log_print_in=as.logical(logging),
-                       verbose_in=as.logical(TRUE))
+      .Fortran("generate_neighbour_list_w", PACKAGE="CampaRi",
+               #input
+               trj_data=trj,
+               n_xyz_in=as.integer(n_xyz),
+               n_snaps_in=as.integer(n_snaps),
+               clu_radius_in=as.single(clu_radius),
+               clu_hardcut_in=as.single(clu_hardcut),
+               #output
+               #none -> it is printed to file
+               #algorithm details
+               dis_method_in=as.integer(distance_method),
+               dis_weight_in=distance_weights,
+               birch_in=as.logical(birch_clu),
+               # mst_in=as.logical(min_span_tree), #no more specificable
+               #sst details
+               rootmax_rad_in=as.single(rootmax_rad),
+               tree_height_in=as.integer(tree_height),
+               n_search_attempts_in=as.integer(n_search_attempts),
+               #modes
+               normalize_dis_in=as.logical(normalize_d),
+               log_print_in=as.logical(logging),
+               verbose_in=as.logical(TRUE))
     }else if(data_management=="h5fc"){
       stop("still to-do")
     }else{
@@ -249,19 +250,26 @@ adjl_from_trj<-function(trj, distance_method = 5, distance_weights = NULL,  clu_
 
 #' @title Build the network from the already processed Progress Index file
 #' @description
-#'      This is a wonderful description(X)
+#'      \code{adjl_from_progindex} is able to use the input from original campari software 
+#'      (or the output of \code{\link{gen_annotation}}) in order to generate again the minimum spanning tree.
 #'
-#' @param fl file location
-#' @param n_fold Number of links contractions (folds)
+#' @param fl Progress index
 #' Default: \code{0}
 #'
 #'
-#' @return tree: degree list, connectivity matrix and weights
-#'
-#' @export adjl_from_pi
+#' @return \code{adjl_from_progindex} will return a minimum spanning tree: degree list, connectivity matrix and weights
+#' @details For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}
+#' 
+#' @examples
+#' \dontrun{
+#' adjl <- adjl_from_progindex(fil = "inst/data/PROGIDX_000000000001.dat")
+#' }
+#' 
+#' 
+#' @export adjl_from_progindex
 #' @useDynLib CampaRi
 
-adjl_from_pi<-function(fil){
+adjl_from_progindex <- function(fil){
   # extract the SST or MST from the output of the analysis already made with campari.
   # Here we will reconstruct a bit of the tree in order to be able to find again the MST/SST
   piOut<-read.table(file = fil)
@@ -291,34 +299,34 @@ adjl_from_pi<-function(fil){
   }
   return(list(treennb,treenbl,treedis))
 }
-
-#' @title Transform from an adjmatrix to an adjlist of variables
-#' @description
-#'      This is a wonderful description(X)
-#'
-#' @param adj_mat Matrix
-#' @param n_fold Number of links contractions (folds)
-#' Default: \code{0}
-#'
-#'
-#' @return tree: degree list, connectivity matrix and weights
-#'
-#' @export adjl_from_adjmat
-#' @useDynLib CampaRi
-
-adjl_from_adjmat<-function(adj_m){ #deprecated
-  # extract the SST or MST from the output of the analysis already made with campari.
-  # Here we will reconstruct a bit of the tree in order to be able to find again the MST/SST
-  adjl_nmbrs<-c()
-  adjl<-list()
-  adjl_dis<-list()
-  for (i in 1:nrow(adj_m)){
-    tmp <- sort(adj_m[i,adj_m[i,]!=0], index.return = TRUE)
-    adjl_nmbrs[i] <- length(tmp$ix)
-    adjl[[i]] <- tmp$ix
-    adjl_dis[[i]] <- tmp$x
-  }
-  adjl <- array(unlist(adjl),dim = c(length(adjl_nmbrs),max(adjl_nmbrs)))
-  adjl_dis <- array(unlist(adjl_dis),dim = c(length(adjl_nmbrs),max(adjl_nmbrs)))
-  return(list(array(adjl_nmbrs), adjl, adjl_dis))
-}
+# 
+# #' @title Transform from an adjmatrix to an adjlist of variables
+# #' @description
+# #'      This is a wonderful description(X)
+# #'
+# #' @param adj_mat Matrix
+# #' @param n_fold Number of links contractions (folds)
+# #' Default: \code{0}
+# #'
+# #'
+# #' @return tree: degree list, connectivity matrix and weights
+# #'
+# #' @export adjl_from_adjmat
+# #' @useDynLib CampaRi
+# 
+# adjl_from_adjmat<-function(adj_m){ #deprecated
+#   # extract the SST or MST from the output of the analysis already made with campari.
+#   # Here we will reconstruct a bit of the tree in order to be able to find again the MST/SST
+#   adjl_nmbrs<-c()
+#   adjl<-list()
+#   adjl_dis<-list()
+#   for (i in 1:nrow(adj_m)){
+#     tmp <- sort(adj_m[i,adj_m[i,]!=0], index.return = TRUE)
+#     adjl_nmbrs[i] <- length(tmp$ix)
+#     adjl[[i]] <- tmp$ix
+#     adjl_dis[[i]] <- tmp$x
+#   }
+#   adjl <- array(unlist(adjl),dim = c(length(adjl_nmbrs),max(adjl_nmbrs)))
+#   adjl_dis <- array(unlist(adjl_dis),dim = c(length(adjl_nmbrs),max(adjl_nmbrs)))
+#   return(list(array(adjl_nmbrs), adjl, adjl_dis))
+# }

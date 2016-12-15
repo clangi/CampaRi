@@ -2,7 +2,6 @@
 # @description  Load required data into gloval enviroment
 # @keywords internal
 .onAttach<- function (libname, pkgname){
-  # if (!interactive()|| stats::runif(1) > 0.1) return()
   packageStartupMessage(paste0(
     " ==============================================================\n",
     "    \n",
@@ -18,12 +17,11 @@
 .onLoad <- function(libname, pkgname) {
   op <- options()
   op.CampaRi <- list(
-    CampaRi.path = getwd(),
-    CampaRi.data_management = "R",
-    CampaRi.data_filename = ""
+    CampaRi.data_management = "R"
   )
   toset <- !(names(op.CampaRi) %in% names(op))
   if(any(toset)) options(op.CampaRi[toset])
+  # .setting_up_netcdf()
 #   if(getOption("CampaRi.data_management")=='netcdf'){
 #     nc_lib_dir <- "/usr/include/"
 #     makevars_file <- paste0('MY_PKG_LIBS= -lnetcdff -I', nc_lib_dir, '
