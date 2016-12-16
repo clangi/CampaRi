@@ -1,14 +1,14 @@
 #' @title Compute the contraction of the leaves in the minimum spanning tree extreme branches
 #' @description
 #'      This function aims to reduce the fringe regions by collapsing the tree leaves 
-#'      on their branches. In this way we have less grouping of fringe regions
+#'      on their branches. In this way we have less grouping of fringe regions.
 #'
-#' @param adjl A list of three elements: degree list, connectivity matrix and weights
-#' @param n_fold Number of links contractions (folds)
-#' @details For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}
+#' @param adjl A list of three elements: degree list, connectivity matrix and weights.
+#' @param n_fold Number of links contractions (folds).
+#' @details For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
 #'
 #'
-#' @return This function will return an adjacency list modified
+#' @return This function will return an adjacency list modified.
 #' @examples 
 #' adjl <- mst_from_trj(trj = matrix(rnorm(1000), nrow = 100, ncol = 10))
 #' adjl2 <- contract_mst(adjl = adjl)

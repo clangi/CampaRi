@@ -7,19 +7,19 @@
 contract_mst(adjl, n_fold = 1)
 }
 \arguments{
-\item{adjl}{A list of three elements: degree list, connectivity matrix and weights}
+\item{adjl}{A list of three elements: degree list, connectivity matrix and weights.}
 
-\item{n_fold}{Number of links contractions (folds)}
+\item{n_fold}{Number of links contractions (folds).}
 }
 \value{
-This function will return an adjacency list modified
+This function will return an adjacency list modified.
 }
 \description{
 This function aims to reduce the fringe regions by collapsing the tree leaves 
-     on their branches. In this way we have less grouping of fringe regions
+     on their branches. In this way we have less grouping of fringe regions.
 }
 \details{
-For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}
+For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
 }
 \examples{
 adjl <- mst_from_trj(trj = matrix(rnorm(1000), nrow = 100, ncol = 10))

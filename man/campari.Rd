@@ -17,7 +17,7 @@ campari(nsnaps, wd, data_file, base_name, camp_home, ...)
 
 \item{camp_home}{Location of the installed campari software.}
 
-\item{...}{Analysis variables (similarly to \code{\link{mst_from_trj}})}
+\item{...}{Analysis variables (similarly to \code{\link{mst_from_trj}}).}
 }
 \description{
 \code{campari} will call the original campari software, specified in the directory camp_home. 
@@ -25,7 +25,7 @@ campari(nsnaps, wd, data_file, base_name, camp_home, ...)
      For that purpose a keyfile and sequence file are present inside this package as an example.
 }
 \details{
-For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}
+For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
 }
 \examples{
 \dontrun{
@@ -35,5 +35,8 @@ campari(nsnaps = 100, wd = "./", data_file = "file_dcd", camp_home = "/campari_h
         cprogindwidth = 10,search_attempts = 10, methodst = 2)
 }
 
+}
+\seealso{
+\code{\link{mst_from_trj}}, \code{\link{gen_progindex}}, \code{\link{gen_annotation}}.
 }
 

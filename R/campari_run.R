@@ -9,8 +9,10 @@
 #' @param data_file Input file (e.g. \code{trajectory.dcd}) location.
 #' @param base_name This name should be used for the input files (\code{base_name.key} and \code{base_name.in}) in order to run campari.
 #' @param camp_home Location of the installed campari software.
-#' @param ... Analysis variables (similarly to \code{\link{mst_from_trj}})
-#' @details For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}
+#' @param ... Analysis variables (similarly to \code{\link{mst_from_trj}}).
+#' @details For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
+#' @seealso
+#' \code{\link{mst_from_trj}}, \code{\link{gen_progindex}}, \code{\link{gen_annotation}}.
 #' @examples 
 #' \dontrun{
 #' campari(nsnaps = 100, wd = "./", data_file = "file_dcd", camp_home = "/campari_home/",
@@ -23,23 +25,23 @@
 campari<-function(nsnaps, wd, data_file, base_name, camp_home, ...){
   input_list <- list(...)
   if(!"cprogindstart" %in% names(input_list)) cprogindstart = 1
-  else cprogindstart = as.numeric(x["cprogindstart"])
+  else cprogindstart = as.numeric(input_list["cprogindstart"])
   if(!"pdb_format" %in% names(input_list)) pdb_format = 4
-  else pdb_format = as.numeric(x["pdb_format"])
+  else pdb_format = as.numeric(input_list["pdb_format"])
   if(!"distance_met" %in% names(input_list)) distance_met = 5
-  else distance_met = as.numeric(x["distance_met"])
+  else distance_met = as.numeric(input_list["distance_met"])
   if(!"birch_height" %in% names(input_list)) birch_height = 5
-  else birch_height = as.numeric(x["birch_height"])
+  else birch_height = as.numeric(input_list["birch_height"])
   if(!"cmaxrad" %in% names(input_list)) cmaxrad = 2147483647
-  else cmaxrad = as.numeric(x["cmaxrad"])
+  else cmaxrad = as.numeric(input_list["cmaxrad"])
   if(!"cradius" %in% names(input_list)) cradius = 2147483647
-  else cradius = as.numeric(x["cradius"])
+  else cradius = as.numeric(input_list["cradius"])
   if(!"cprogindwidth" %in% names(input_list)) cprogindwidth = 1
-  else cprogindwidth = as.numeric(x["cprogindwidth"])
+  else cprogindwidth = as.numeric(input_list["cprogindwidth"])
   if(!"search_attempts" %in% names(input_list)) search_attempts = NULL
-  else search_attempts = as.numeric(x["search_attempts"])
+  else search_attempts = as.numeric(input_list["search_attempts"])
   if(!"methodst" %in% names(input_list)) methodst = 1
-  else methodst = as.numeric(x["methodst"])
+  else methodst = as.numeric(input_list["methodst"])
   # dirs/file definitions
   kfile <- paste0(base_name,".key")
   klog <-paste0(base_name,".log")

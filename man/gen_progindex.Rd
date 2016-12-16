@@ -21,10 +21,10 @@ The output of this function MUST be used as input for the \code{\link{gen_annota
 }
 \description{
 This function is able to create the progrex index of a time series from its minimum spanning tree of the distances. 
-     In order to understand how the progrex index is generated please refer to \url{http://www.sciencedirect.com/science/article/pii/S0010465513002038}
+     In order to understand how the progrex index is generated please refer to \url{http://www.sciencedirect.com/science/article/pii/S0010465513002038}.
 }
 \details{
-For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}
+For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
 }
 \examples{
 adjl <- mst_from_trj(trj = matrix(rnorm(1000), nrow = 100, ncol = 10))

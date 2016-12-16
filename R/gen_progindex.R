@@ -1,7 +1,7 @@
 #' @title Compute the progress index along with parent and distance-to-parent information
 #' @description
 #'      This function is able to create the progrex index of a time series from its minimum spanning tree of the distances. 
-#'      In order to understand how the progrex index is generated please refer to \url{http://www.sciencedirect.com/science/article/pii/S0010465513002038}
+#'      In order to understand how the progrex index is generated please refer to \url{http://www.sciencedirect.com/science/article/pii/S0010465513002038}.
 #'
 #' @param adjl A list of three elements: degree list, connectivity matrix and weights. This input must be a minimum spanning tree, otherwise
 #' the function will not be able to resolve the progress index in a unique solution. If backend netcdf data handling is active, this input can be left
@@ -11,7 +11,7 @@
 #' @param snap_start The snapshot from which the progrex index will start.
 #' @return The output of this function MUST be used as input for the \code{\link{gen_annotation}} function.
 #'
-#' @details For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}
+#' @details For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
 #'
 #' @examples 
 #' adjl <- mst_from_trj(trj = matrix(rnorm(1000), nrow = 100, ncol = 10))

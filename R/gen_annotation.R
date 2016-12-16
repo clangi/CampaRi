@@ -1,19 +1,28 @@
 #' @title Compute the annotation of the progrex index
 #' @description
-#'      \code{gen_annotation} is able to 
+#'      \code{gen_annotation} is able to annotate the progrex index using the mean first passage time between two basins on the progrex index.
+#'      This function will produce a file (e.g. \code{"REPIX_000000000001.dat"}) that contains all the information about progress index and annotations
+#'      and it can be used to plot the sapphire plot using \code{sapphire_plot}.
 #'
-#' @param ret_data asdrubali che corrono (X)
-#' @param local_cut_width local cut(X)
-#' Default: \code{15000}
-#' @param snap_start Starting snapshot
-#' Default: \code{0}
-#' @details For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}
-#' @return ret_data
+#' @param ret_data This input must be the output from the function \code{gen_progindex}.
+#' @param local_cut_width This variable defines the width for a 3 states annotation of the progrex index.
+#' @param snap_start Starting snapshot. It must be the same as in gen_progindex. Best to leave not assigned.
+#' @details For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
 #'
+#' @seealso 
+#' \code{\link{gen_progindex}}, \code{\link{sapphire_plot}}.
+#'
+#' @examples 
+#' adjl <- mst_from_trj(trj = matrix(rnorm(1000), nrow = 100, ncol = 10))
+#' adjl2 <- contract_mst(adjl = adjl)
+#' ret<-gen_progindex(adjl = adjl2)
+#' gen_annotation(ret_data = ret, local_cut_width = 10)
+#' 
+#' 
 #' @export gen_annotation
 #' @useDynLib CampaRi
 
-gen_annotation<-function(ret_data, local_cut_width=NULL, snap_start = NULL){
+gen_annotation <- function(ret_data, local_cut_width = NULL, snap_start = NULL){
   warning("if you use an input different in format to the output of the other CampaRi functions there is an high probability of crashing")
   # local_cut_widtg is a (potentially) new setting for the width for the local cut
   n_breaks <- 0 #not a clue ?
@@ -28,7 +37,7 @@ gen_annotation<-function(ret_data, local_cut_width=NULL, snap_start = NULL){
   }
   if(is.null(snap_start)||
      (is.numeric(snap_start)&&snap_start>nsnaps)) {
-    snap_start <- as.integer(1)
+    snap_start <- as.integer(ret_data$starter)
     warning(paste0(
       "Starting snapshot has not been assigned or it has been wrogly assigned.
       It will be set at: ",snap_start))

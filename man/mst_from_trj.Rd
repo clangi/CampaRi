@@ -21,6 +21,11 @@ mst_from_trj(trj, distance_method = 5, distance_weights = NULL,
 
 \item{clu_hardcut}{This option is used only with \code{birch_clu=F} and defines if inter-clusters distance must be add to the analysis or not.}
 
+\item{normalize_d}{A logical that indicates whether the distances must be normalized or not. Usually used with averaging.}
+
+\item{birch_clu}{A logical that indicates whether the algorithm will use a birch-tree like clustering step (short spanning tree) or it will be generated 
+using a simple leader clustering algorithm (minimum spanning tree).}
+
 \item{min_span_tree}{This option is used only with \code{birch_clu=F} and defines if the returning adjacency list must be a minimum spanning tree.}
 
 \item{mode}{It takes a string in input and can be either "fortran" (highly advised and default) or "R".}
@@ -29,25 +34,24 @@ mst_from_trj(trj, distance_method = 5, distance_weights = NULL,
 
 \item{tree_height}{If \code{birch_clu=T} this option defines the height of the tree in the advanced clustering algorithm.}
 
+\item{n_search_attempts}{If \code{birch_clu=T} a number of search attempts must be provided for the minimum spanning tree search.}
+
 \item{cores}{If \code{mode="R"} a complete adjacency matrix can be created in parallel using multiple cores (anyhow slower than "fortran" mode).}
 
 \item{logging}{If \code{logging=T} the function will print to file the fortran messages ("campari.log").}
-
-\item{n_search_attemps}{If \code{birch_clu=T} a number of search attempts must be provided for the minimum spanning tree search.}
 }
 \value{
 If no netcdf support is available the function will return a list with 3 arguments: node degrees, adjacency list and associated distances. 
-If netcdf support is activated the function will dump the mst in the file "DUMPLING.nc"
+If netcdf support is activated the function will dump the mst in the file "DUMPLING.nc".
 }
 \description{
 \code{mst_from_trj} creates a minimum spanning tree from a trajectory using different distance metrics
      between pairwise snapshots.
 }
 \details{
-For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}
+For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
 }
 \examples{
-
 adjl <- mst_from_trj(trj = matrix(rnorm(1000), nrow = 100, ncol = 10))
 
 \dontrun{
@@ -63,6 +67,6 @@ tree_height = 5, n_search_attempts = 50)
 
 }
 \seealso{
-\code{\link{adjl_from_progindex}}
+\code{\link{adjl_from_progindex}}, \code{\link{gen_progindex}}, \code{\link{gen_annotation}}.
 }
 
