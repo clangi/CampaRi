@@ -3,7 +3,7 @@
 #'      \code{write.pdb.d} writes to file a pdb file with the trajectory matrix in input. 
 #'      The number of variables (number of columns) must be divisible by 3 to mantain the atomic 3D structure.
 #'
-#' @param trj Time series in a matrix shape.
+#' @param trj Time series in a matrix shape. The number of variables (nrow) must be divisible by 3.
 #' @param base_name File base name.
 #' @param round \code{TRUE} will truncate the output following the \code{digit} variable.
 #' @param digit Number of digits that will be kept from truncation (\code{round}).

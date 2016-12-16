@@ -2,7 +2,7 @@
 % Please edit documentation in R/loader.R
 \name{mst_from_trj}
 \alias{mst_from_trj}
-\title{Create the minimum spanning tree from trajectories of snapshots}
+\title{Create the minimum spanning tree from time series}
 \usage{
 mst_from_trj(trj, distance_method = 5, distance_weights = NULL,
   clu_radius = NULL, clu_hardcut = NULL, normalize_d = TRUE,
@@ -11,19 +11,20 @@ mst_from_trj(trj, distance_method = 5, distance_weights = NULL,
   cores = NULL, logging = FALSE)
 }
 \arguments{
-\item{trj}{Input trajectory (variables on the columns and time snpashots on the row). It must be a \code{matrix} or a \code{data.frame} of numeric.}
+\item{trj}{Input trajectory (variables on the columns and equal-time spaced snpashots on the row). It must be a \code{matrix} or a \code{data.frame} of numeric.}
 
-\item{distance_method}{Distance metric between distances. This value can be set 1 (dihedral angles) or 5 (rmsd)}
+\item{distance_method}{Distance metric between snapshots. This value can be set 1 (dihedral angles) or 5 (root mean square deviation).}
 
-\item{distance_weights}{Vector of weights to be applied to the averaging between each other. It must be between 0 and 1. This option works only if \code{birch_clu=F}.}
+\item{distance_weights}{Vector of weights to be applied in order to compute averaged weighted distance using multiple \code{distance_method}.
+Each value must be between 0 and 1. This option works only if \code{birch_clu=F}.}
 
-\item{clu_radius}{Used in the clustering step in order to make clusters of the same radius at the base level.}
+\item{clu_radius}{This numeric argument is used in the clustering step in order to make clusters of the same radius at the base level.}
 
-\item{clu_hardcut}{This option is used only with \code{birch_clu=F} and defines if inter-clusters distance must be add to the analysis or not.}
+\item{clu_hardcut}{This option is used only with \code{birch_clu=F} and defines the inter-clusters distance threshold.}
 
 \item{normalize_d}{A logical that indicates whether the distances must be normalized or not. Usually used with averaging.}
 
-\item{birch_clu}{A logical that indicates whether the algorithm will use a birch-tree like clustering step (short spanning tree) or it will be generated 
+\item{birch_clu}{A logical that indicates whether the algorithm will use a birch-tree like clustering step (short spanning tree - fast) or it will be generated 
 using a simple leader clustering algorithm (minimum spanning tree).}
 
 \item{min_span_tree}{This option is used only with \code{birch_clu=F} and defines if the returning adjacency list must be a minimum spanning tree.}
@@ -45,7 +46,7 @@ If no netcdf support is available the function will return a list with 3 argumen
 If netcdf support is activated the function will dump the mst in the file "DUMPLING.nc".
 }
 \description{
-\code{mst_from_trj} creates a minimum spanning tree from a trajectory using different distance metrics
+\code{mst_from_trj} creates a minimum spanning tree from a time series (e.g. a trajectory in molecular dynamics) using different distance metrics
      between pairwise snapshots.
 }
 \details{
@@ -56,12 +57,12 @@ adjl <- mst_from_trj(trj = matrix(rnorm(1000), nrow = 100, ncol = 10))
 
 \dontrun{
 adjl <- mst_from_trj(trj = matrix(rnorm(1000),ncol=10,nrow=100),
-distance_method = 5, clu_radius = 0.5, clu_hardcut = 0.9,
-birch_clu = FALSE, mode = "fortran", logging = TRUE)
+distance_method = 5, clu_radius = 100, clu_hardcut = 100,
+birch_clu = FALSE, mode = "fortran", logging = FALSE)
 
 adjl <- adjl_from_trj(trj = matrix(rnorm(1000),ncol=10,nrow=100), 
 distance_method = 5, clu_radius = 0.1,
-birch_clu = TRUE, mode = "fortran", rootmax_rad = 1, logging = TRUE,
+birch_clu = TRUE, mode = "fortran", rootmax_rad = 1.3, logging = FALSE,
 tree_height = 5, n_search_attempts = 50) 
 }
 

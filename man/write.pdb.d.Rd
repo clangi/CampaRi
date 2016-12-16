@@ -7,7 +7,7 @@
 write.pdb.d(trj, base_name, round = FALSE, digit = 4)
 }
 \arguments{
-\item{trj}{Time series in a matrix shape.}
+\item{trj}{Time series in a matrix shape. The number of variables (nrow) must be divisible by 3.}
 
 \item{base_name}{File base name.}
 

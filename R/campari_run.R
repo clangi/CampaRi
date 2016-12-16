@@ -2,7 +2,7 @@
 #' @description
 #'      \code{campari} will call the original campari software, specified in the directory camp_home. 
 #'      It is possible to use this function following the instructions in \url{http://campari.sourceforge.net/tutorial11.html}.
-#'      For that purpose a keyfile and sequence file are present inside this package as an example.
+#'      For that purpose a keyfile and sequence file are present inside this package as an example (in \code{CampaRi/inst/extdata}).
 #'
 #' @param nsnaps Number of snapshots in the trajectory file.
 #' @param wd Working directory.

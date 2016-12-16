@@ -9,12 +9,12 @@ gen_annotation(ret_data, local_cut_width = NULL, snap_start = NULL)
 \arguments{
 \item{ret_data}{This input must be the output from the function \code{gen_progindex}.}
 
-\item{local_cut_width}{This variable defines the width for a 3 states annotation of the progrex index.}
+\item{local_cut_width}{This variable defines the width for a 3 groups annotation of the progrex index.}
 
 \item{snap_start}{Starting snapshot. It must be the same as in gen_progindex. Best to leave not assigned.}
 }
 \description{
-\code{gen_annotation} is able to annotate the progrex index using the mean first passage time between two basins on the progrex index.
+\code{gen_annotation} is able to annotate the progrex index using the mean first passage time between groups of snapshots on the progrex index.
      This function will produce a file (e.g. \code{"REPIX_000000000001.dat"}) that contains all the information about progress index and annotations
      and it can be used to plot the sapphire plot using \code{sapphire_plot}.
 }
