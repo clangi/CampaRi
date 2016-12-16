@@ -162,7 +162,9 @@ module m_clustering
           ! it starts to shift on that limit forwards.
           call preprocess_snapshot(trj,i, vecti)
           call snap_to_cluster_d(tmp_d,scluster(j),vecti)
-          if(superver .and. (i.lt.10)) write(ilog,*) "The distance is : ",tmp_d
+          if(superver .and. (i.lt.10)) then
+            write(ilog,*) "The distance is : ",tmp_d
+          end if
           if (tmp_d.lt.radius) then
             call cluster_addsnap(scluster(j),vecti,i)
             ! add snapshot i in the cluster j
@@ -186,8 +188,8 @@ module m_clustering
         end if
       end do
 
-      write(ilog,*) '... done with initial cluster generation for distances list with &
-      &a total number of ', nclu , ' clusters'
+      write(ilog,*) '... done with initial cluster generation for distances &
+      &list with a total number of ', nclu , ' clusters'
       if(superver) then
         write(ilog,*) 'Number of elements per cluster: '
         do u=1,nclu
@@ -377,7 +379,8 @@ module m_clustering
                     cnt2 = cnt2 + 1
                   end if
                 end do
-                call cluster_addchild(birchtree(fail-1)%cls(kkf),kkf,birchtree(fail)%cls(birchtree(fail)%ncls),birchtree(fail)%ncls)
+                call cluster_addchild(birchtree(fail-1)%cls(kkf),kkf,&
+                                      birchtree(fail)%cls(birchtree(fail)%ncls),birchtree(fail)%ncls)
                 call cluster_addchild(birchtree(ii-1)%cls(birchtree(ii-1)%ncls),&
      &                                birchtree(ii)%cls(jj)%parent,birchtree(ii)%cls(jj),jj)
                 fail = -1
@@ -567,10 +570,10 @@ module m_clustering
      68 format(i5,3x,i10,7x,a7,5x,i11,4x,i12)
       write(ilog,66)
       write(ilog,68) 1,birchtree(1)%ncls,'MAXIMAL',sum(birchtree(1)%cls(1:birchtree(1)%ncls)%nmbrs),&
-     &               sum(birchtree(1)%cls(1:birchtree(1)%ncls)%nchildren)
+      sum(birchtree(1)%cls(1:birchtree(1)%ncls)%nchildren)
       do i=2,c_nhier+1
         write(ilog,67) i,birchtree(i)%ncls,scrcts(i),sum(birchtree(i)%cls(1:birchtree(i)%ncls)%nmbrs),&
-     &               sum(birchtree(i)%cls(1:birchtree(i)%ncls)%nchildren)
+        sum(birchtree(i)%cls(1:birchtree(i)%ncls)%nchildren)
       end do
       write(ilog,*) '---------------------------------------------------------------------'
       write(ilog,*)
@@ -700,10 +703,10 @@ module m_clustering
               if(j.le.max_show_clu) then
                 if(k.eq.1) then
                   write(ilog,63) k,"",i,birchtree(k)%cls(i)%nmbrs,birchtree(k)%cls(i)%center,&
-                    birchtree(k)%cls(i)%diam,birchtree(k)%cls(i)%radius
+                  birchtree(k)%cls(i)%diam,birchtree(k)%cls(i)%radius
                 else
                   write(ilog,63) k,scrcts(k),i,birchtree(k)%cls(i)%nmbrs,birchtree(k)%cls(i)%center,&
-                    birchtree(k)%cls(i)%diam,birchtree(k)%cls(i)%radius
+                  birchtree(k)%cls(i)%diam,birchtree(k)%cls(i)%radius
                 end if
                 j = j + 1
               end if
@@ -711,7 +714,9 @@ module m_clustering
               cl_one_elem = cl_one_elem + 1
             end if
           end do
-          if(cl_one_elem.gt.0) write(ilog,70) k,cl_one_elem
+          if(cl_one_elem.gt.0) then
+            write(ilog,70) k,cl_one_elem
+          end if
 
         end do
         write(ilog,*)

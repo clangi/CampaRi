@@ -164,7 +164,7 @@ subroutine read_nbl_nc()
 ! open
  44 format('Warning. Ambiguous dimensions in NetCDF file. Encountered ',a,' twice but keeping&
  &only first.')
-  call check_err( nf90_open(dumpfile, NF90_NOWRITE, ncid) )
+  call check_err( nf90_open(dumpfile, NF90_NOwrite, ncid) )
 !
 ! find the necessary dimensions: three are required
   fndds = 0

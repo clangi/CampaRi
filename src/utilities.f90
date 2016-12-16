@@ -336,7 +336,7 @@ subroutine fexit()
   write(k,*)
   write(k,*) '<------------------------------------------------'
 !
-  stop 98
+  ! stop 98
 !
 end
 !

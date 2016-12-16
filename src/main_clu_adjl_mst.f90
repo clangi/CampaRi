@@ -82,7 +82,7 @@ subroutine generate_neighbour_list( &
   integer nzeros ! nzeros = number of not connected components (dis .le. 0)
   integer mst_file_unit, freeunit ! must have for using the same-name-function
   logical exist, mst_print !file dumping for mst tree for debugging
-  character(len=1024) :: format_var !format for above mentioned dumping
+  ! character(len=1024) :: format_var !format for above mentioned dumping
   real t2,t1 !timing variables
 
 
