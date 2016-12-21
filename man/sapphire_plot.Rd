@@ -10,10 +10,10 @@ sapphire_plot(sap_file = NULL, sap_table = NULL, write = F,
   ann_names_R = NULL, title = "no title")
 }
 \arguments{
-\item{sap_file}{Annotated progrex index file. This can be left unused if \code{sap_table} is used instead. 
+\item{sap_file}{Annotated progrex index file. This can be left unused if \code{sap_table} is used instead.
 This input must be the file output of \code{gen_annotation}.}
 
-\item{sap_table}{Annotated progrex index table. As for \code{sap_file} it can be left unused if the other input is used. 
+\item{sap_table}{Annotated progrex index table. As for \code{sap_file} it can be left unused if the other input is used.
 Also in this case the format of the table must be the file output of \code{gen_annotation}.}
 
 \item{write}{A logical indicating whether to write the plot to file.}
@@ -25,8 +25,8 @@ Also in this case the format of the table must be the file output of \code{gen_a
 \item{local_cut}{A logical that, if \code{TRUE} plots the local cut annotation function (see \code{gen_annotation}).}
 
 \item{ann_trace}{This argument can be set to logical, an integer or a matrix of integers. If logical, the annotation will be a horizontal thick line
-that follows a split in half of the original timeline. If only an integer have been inserted the time line will be split in that number of splits. 
-Instead if a matrix have been inserted it will be a plotted as it is on the top of the plot mapping the range of numbers in order to 
+that follows a split in half of the original timeline. If only an integer have been inserted the time line will be split in that number of splits.
+Instead if a matrix have been inserted it will be a plotted as it is on the top of the plot mapping the range of numbers in order to
 produce a gray scale horizontal annotation.}
 
 \item{ann_trace_ret}{If \code{TRUE} the annotation vector is returned.}

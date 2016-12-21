@@ -2,7 +2,7 @@
 #' @description
 #'      \code{mst_from_trj} creates a minimum spanning tree from a time series (e.g. a trajectory in molecular dynamics) using different distance metrics
 #'      between pairwise snapshots.
-#'      
+#'
 #'
 #' @param trj Input trajectory (variables on the columns and equal-time spaced snpashots on the row). It must be a \code{matrix} or a \code{data.frame} of numeric.
 #' @param distance_method Distance metric between snapshots. This value can be set 1 (dihedral angles) or 5 (root mean square deviation).
@@ -11,7 +11,7 @@
 #' @param clu_radius This numeric argument is used in the clustering step in order to make clusters of the same radius at the base level.
 #' @param clu_hardcut This option is used only with \code{birch_clu=F} and defines the inter-clusters distance threshold.
 #' @param normalize_d A logical that indicates whether the distances must be normalized or not. Usually used with averaging.
-#' @param birch_clu A logical that indicates whether the algorithm will use a birch-tree like clustering step (short spanning tree - fast) or it will be generated 
+#' @param birch_clu A logical that indicates whether the algorithm will use a birch-tree like clustering step (short spanning tree - fast) or it will be generated
 #' using a simple leader clustering algorithm (minimum spanning tree).
 #' @param min_span_tree This option is used only with \code{birch_clu=F} and defines if the returning adjacency list must be a minimum spanning tree.
 #' @param mode It takes a string in input and can be either "fortran" (highly advised and default) or "R".
@@ -23,24 +23,25 @@
 #'
 #' @details For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
 #'
-#' @return If no netcdf support is available the function will return a list with 3 arguments: node degrees, adjacency list and associated distances. 
+#' @return If no netcdf support is available the function will return a list with 3 arguments: node degrees, adjacency list and associated distances.
 #' If netcdf support is activated the function will dump the mst in the file "DUMPLING.nc".
 #' @seealso
 #' \code{\link{adjl_from_progindex}}, \code{\link{gen_progindex}}, \code{\link{gen_annotation}}.
 #' @examples
 #' adjl <- mst_from_trj(trj = matrix(rnorm(1000), nrow = 100, ncol = 10))
-#' 
+#'
 #' \dontrun{
 #' adjl <- mst_from_trj(trj = matrix(rnorm(1000),ncol=10,nrow=100),
 #' distance_method = 5, clu_radius = 100, clu_hardcut = 100,
 #' birch_clu = FALSE, mode = "fortran", logging = FALSE)
-#' 
-#' adjl <- adjl_from_trj(trj = matrix(rnorm(1000),ncol=10,nrow=100), 
+#'
+#' adjl <- adjl_from_trj(trj = matrix(rnorm(1000),ncol=10,nrow=100),
 #' distance_method = 5, clu_radius = 0.1,
 #' birch_clu = TRUE, mode = "fortran", rootmax_rad = 1.3, logging = FALSE,
-#' tree_height = 5, n_search_attempts = 50) 
+#' tree_height = 5, n_search_attempts = 50)
 #' }
-#' 
+#'
+#' @importFrom utils read.table
 #' @importFrom bio3d rmsd
 #' @export mst_from_trj
 #' @import parallel
@@ -148,7 +149,7 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL,  clu_r
     #sst checks
     if(birch_clu){
       if(is.null(rootmax_rad))
-        rootmax_rad <- max(trj)*(8.0/10.0)
+        rootmax_rad <- max(trj)*2
       else if(!is.numeric(rootmax_rad)||length(rootmax_rad)!=1)
         stop('rootmax_rad must be a numeric of length 1.')
       if(is.null(tree_height)||(is.numeric(tree_height)&&length(tree_height)==1&&tree_height<2))
@@ -156,7 +157,7 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL,  clu_r
       else if(!is.numeric(tree_height)||length(tree_height)!=1)
         stop('tree_heigth must be a numeric of length 1.')
       if(is.null(n_search_attempts))
-        n_search_attempts <- rootmax_rad/tree_height
+        n_search_attempts <- ceiling(nrow(trj)/10)
       else if(!is.numeric(n_search_attempts)||length(n_search_attempts)!=1)
         stop('n_search_attempts must be a numeric of length 1.')
       if(is.null(clu_radius)||clu_radius==2147483647)
@@ -253,25 +254,25 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL,  clu_r
 
 #' @title Build the network from the already processed Progress Index file
 #' @description
-#'      \code{adjl_from_progindex} is able to use the output file from original campari software 
+#'      \code{adjl_from_progindex} is able to use the output file from original campari software
 #'      (or the output file from \code{\link{gen_annotation}}) in order to generate again the minimum spanning tree.
 #'
-#' @param prog_index_file Progress index file location. This should be of the kind \code{"PROGIDX_000000000001.dat"} (original campari) 
+#' @param prog_index_file Progress index file location. This should be of the kind \code{"PROGIDX_000000000001.dat"} (original campari)
 #' or \code{"REPIX_000000000001.dat"} (CampaRi).
 #'
 #'
 #' @return \code{adjl_from_progindex} will return a minimum spanning tree: degree list, connectivity matrix and weights
 #' @details For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}
-#' 
-#' @seealso 
+#'
+#' @seealso
 #' \code{\link{gen_progindex}}, \code{\link{gen_annotation}}
-#' 
+#'
 #' @examples
 #' \dontrun{
 #' adjl <- adjl_from_progindex(fil = "PROGIDX_000000000001.dat")
 #' }
-#' 
-#' 
+#'
+#'
 #' @export adjl_from_progindex
 #' @useDynLib CampaRi
 
@@ -312,10 +313,10 @@ adjl_from_progindex <- function(prog_index_file){
 #'      Please remember that \code{gen_progindex} accepts only minimum spanning trees.
 #'
 #' @param adj_m Input matrix (adjacency matrix).
-#' 
+#'
 #' @return A list of three elements: degree list, connectivity matrix and weights.
 #'
-#' @seealso 
+#' @seealso
 #' \code{\link{gen_progindex}}, \code{\link{mst_from_trj}}.
 #' @export adjl_from_adjmat
 #' @useDynLib CampaRi

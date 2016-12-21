@@ -1,11 +1,16 @@
-Package: CampaRi
+Package: CampaR1
 Type: Package
-Title: Trajectory analysis
-Version: 0.2.4
-Date: 2016-06-15
+Title: Trajectory Analysis
+Version: 0.8.4
+Date: 2016-12-20
 Author: Garolini Davide
 Maintainer: Garolini Davide <d.garolini@bioc.uzh.ch>
-Description: Analysis algorithms extracted from the original campari sofwtare package. For other information please consult http://campari.sourceforge.net/index.html
+Description: Analysis algorithms extracted from the original 'campari' software package.
+  They consists in a kinetic annotation of the trajectory based on the minimum spanning tree
+  constructed on the distances between snapshots. The fast algorithm is implemented on
+  the basis of a modified version of the birch algorithm, while the slow one is based on a
+  simple leader clustering. For more information please visit the original documentation
+  on <http://campari.sourceforge.net/index.html>.
 License: GPL (>= 3)
 Depends: R (>= 3.1.0)
 Imports: bio3d, ggplot2
@@ -13,5 +18,6 @@ LazyData: true
 RoxygenNote: 5.0.1
 Suggests: testthat
 NeedsCompilation: yes
-URL: https://github.com/Melkiades/CampaRi
-BugReports: https://github.com/Melkiades/CampaRi/issues
+SystemRequirements: netcdf library version 4.1 or later
+URL: https://github.com/Melkiades/CampaR1, http://campari.sourceforge.net/index.html
+BugReports: https://github.com/Melkiades/CampaR1/issues

@@ -7,14 +7,14 @@
 adjl_from_progindex(prog_index_file)
 }
 \arguments{
-\item{prog_index_file}{Progress index file location. This should be of the kind \code{"PROGIDX_000000000001.dat"} (original campari) 
+\item{prog_index_file}{Progress index file location. This should be of the kind \code{"PROGIDX_000000000001.dat"} (original campari)
 or \code{"REPIX_000000000001.dat"} (CampaRi).}
 }
 \value{
 \code{adjl_from_progindex} will return a minimum spanning tree: degree list, connectivity matrix and weights
 }
 \description{
-\code{adjl_from_progindex} is able to use the output file from original campari software 
+\code{adjl_from_progindex} is able to use the output file from original campari software
      (or the output file from \code{\link{gen_annotation}}) in order to generate again the minimum spanning tree.
 }
 \details{

@@ -24,7 +24,7 @@ Each value must be between 0 and 1. This option works only if \code{birch_clu=F}
 
 \item{normalize_d}{A logical that indicates whether the distances must be normalized or not. Usually used with averaging.}
 
-\item{birch_clu}{A logical that indicates whether the algorithm will use a birch-tree like clustering step (short spanning tree - fast) or it will be generated 
+\item{birch_clu}{A logical that indicates whether the algorithm will use a birch-tree like clustering step (short spanning tree - fast) or it will be generated
 using a simple leader clustering algorithm (minimum spanning tree).}
 
 \item{min_span_tree}{This option is used only with \code{birch_clu=F} and defines if the returning adjacency list must be a minimum spanning tree.}
@@ -42,7 +42,7 @@ using a simple leader clustering algorithm (minimum spanning tree).}
 \item{logging}{If \code{logging=T} the function will print to file the fortran messages ("campari.log").}
 }
 \value{
-If no netcdf support is available the function will return a list with 3 arguments: node degrees, adjacency list and associated distances. 
+If no netcdf support is available the function will return a list with 3 arguments: node degrees, adjacency list and associated distances.
 If netcdf support is activated the function will dump the mst in the file "DUMPLING.nc".
 }
 \description{
@@ -60,10 +60,10 @@ adjl <- mst_from_trj(trj = matrix(rnorm(1000),ncol=10,nrow=100),
 distance_method = 5, clu_radius = 100, clu_hardcut = 100,
 birch_clu = FALSE, mode = "fortran", logging = FALSE)
 
-adjl <- adjl_from_trj(trj = matrix(rnorm(1000),ncol=10,nrow=100), 
+adjl <- adjl_from_trj(trj = matrix(rnorm(1000),ncol=10,nrow=100),
 distance_method = 5, clu_radius = 0.1,
 birch_clu = TRUE, mode = "fortran", rootmax_rad = 1.3, logging = FALSE,
-tree_height = 5, n_search_attempts = 50) 
+tree_height = 5, n_search_attempts = 50)
 }
 
 }
