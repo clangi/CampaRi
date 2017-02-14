@@ -5,7 +5,7 @@
 #'      For that purpose a keyfile and sequence file are present inside this package as an example (in \code{CampaRi/inst/extdata}).
 #'
 #' @param nsnaps Number of snapshots in the trajectory file.
-#' @param wd Working directory.
+#' @param working_dir Working directory.
 #' @param data_file Input file (e.g. \code{trajectory.dcd}) location.
 #' @param base_name This name should be used for the input files (\code{base_name.key} and \code{base_name.in}) in order to run campari.
 #' @param camp_home Location of the installed campari software.
@@ -15,14 +15,14 @@
 #' \code{\link{mst_from_trj}}, \code{\link{gen_progindex}}, \code{\link{gen_annotation}}.
 #' @examples 
 #' \dontrun{
-#' campari(nsnaps = 100, wd = "./", data_file = "file_dcd", camp_home = "/campari_home/",
+#' campari(nsnaps = 100, working_dir = "./", data_file = "file_dcd", camp_home = "/campari_home/",
 #'         base_name = "nbu", pdb_format = 4,
 #'         cprogindstart = 2,distance_met = 5, birch_height = 5, cmaxrad = 1, cradius = 0.1,
 #'         cprogindwidth = 10,search_attempts = 10, methodst = 2)
 #' }
 #'
 #' @export campari
-campari<-function(nsnaps, wd, data_file, base_name, camp_home, ...){
+campari<-function(nsnaps, working_dir, data_file, base_name, camp_home, ...){
   input_list <- list(...)
   if(!"cprogindstart" %in% names(input_list)) cprogindstart = 1
   else cprogindstart = as.numeric(input_list["cprogindstart"])
@@ -36,31 +36,31 @@ campari<-function(nsnaps, wd, data_file, base_name, camp_home, ...){
   else cmaxrad = as.numeric(input_list["cmaxrad"])
   if(!"cradius" %in% names(input_list)) cradius = 2147483647
   else cradius = as.numeric(input_list["cradius"])
-  if(!"cprogindwidth" %in% names(input_list)) cprogindwidth = 1
+  if(!"cprogindwidth" %in% names(input_list)) cprogindwidth = as.integer(floor(nsnaps-1)/2)
   else cprogindwidth = as.numeric(input_list["cprogindwidth"])
   if(!"search_attempts" %in% names(input_list)) search_attempts = NULL
   else search_attempts = as.numeric(input_list["search_attempts"])
   if(!"methodst" %in% names(input_list)) methodst = 1
   else methodst = as.numeric(input_list["methodst"])
   # dirs/file definitions
-  kfile <- paste0(base_name,".key")
-  klog <-paste0(base_name,".log")
-  seq_in <- paste0(base_name,".in")
+  kfile <- paste0(working_dir,"/",base_name,".key")
+  klog <-paste0(working_dir,"/",base_name,".log")
+  seq_in <- paste0(working_dir,"/",base_name,".in")
   
-  kchar<-readChar(paste0(wd,kfile), file.info(paste0(wd,kfile))$size)
+  kchar<-readChar(kfile, file.info(kfile)$size)
   
   FMCSC_PDBANALYZE <- 1
-  PARAMETERS <- paste0(camp_home,"params/abs3.2_opls.prm")  # file defining system energies. Irrelevant fuer blosse Analyse.
-  FMCSC_BBSEGFILE <- paste0(camp_home,"data/bbseg2.dat")    # lookup table for secondary structure measures
-  FMCSC_SEQFILE  <- paste0(wd,seq_in)                      # input file that defines the sequence of the molecule(s)
+  PARAMETERS <- paste0(camp_home,"/params/abs3.2_opls.prm")  # file defining system energies. Irrelevant fuer blosse Analyse.
+  FMCSC_BBSEGFILE <- paste0(camp_home,"/data/bbseg2.dat")    # lookup table for secondary structure measures
+  FMCSC_SEQFILE  <- seq_in                     # input file that defines the sequence of the molecule(s)
   
   FMCSC_PDB_FORMAT <- pdb_format 
   if(FMCSC_PDB_FORMAT==1) 
-    FMCSC_PDBFILE <- paste0(wd,data_file)
+    FMCSC_PDBFILE <- paste0(working_dir, "/", data_file)
   if(FMCSC_PDB_FORMAT==3) 
-    FMCSC_XTCFILE <- paste0(wd,data_file)
+    FMCSC_XTCFILE <- paste0(working_dir, "/", data_file)
   if(FMCSC_PDB_FORMAT==4) 
-    FMCSC_DCDFILE <- paste0(wd,data_file)
+    FMCSC_DCDFILE <- paste0(working_dir, "/", data_file)
   
   #1. CAMPARI expects a single trajectory file in pdb-format using the MODEL /ENDMDL syntax to denote the individual snapshots.
   #2. CAMPARI expects to find multiple pdb files with one snapshot each that are systematically numbered starting from the file provided via PDBFILE.
@@ -144,6 +144,6 @@ campari<-function(nsnaps, wd, data_file, base_name, camp_home, ...){
   writeLines(kchar, fileConn)
   close(fileConn)
   
-  system(paste0(camp_home,"bin/x86_64/campari -k ",kfile, paste0(">& ",klog)))
-  system(paste0("tail ",klog))
+  system(paste0(camp_home, "bin/x86_64/campari -k ", kfile, ">& ", klog))
+  system(paste0("tail ", klog))
 }

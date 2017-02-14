@@ -10,3 +10,4 @@ src/*.dll
 src/*.mod
 src/a.out
 src/REPIX*
+output_to_delete/

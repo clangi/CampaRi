@@ -27,7 +27,7 @@ contract_mst <- function(adjl, n_fold = 1){
   output <- .Fortran("contract_mst", PACKAGE="CampaRi",
                        n_snaps=as.integer(nsnaps),
                        mnb=as.integer(maxnb),
-                       alnbs=as.integer(adjl[[1]]), #why should I need this thing
+                       alnbs=as.integer(adjl[[1]]), 
                        alst=matrix(as.integer(adjl[[2]]), nrow = nsnaps, ncol = maxnb),
                        aldis=adjl[[3]],
                        nrnds=as.integer(n_fold),
