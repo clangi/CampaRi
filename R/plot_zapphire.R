@@ -63,18 +63,18 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
     nrow_an_tr <- 1
   else
     nrow_an_tr <- NULL
-
+  
   #checking the trace input
   if(is.null(nrow_an_tr)&&length(ann_trace)!=dp[1]&&length(ann_trace)!=1&&!is.null(ann_trace)&&!is.logical(ann_trace))
     stop("The annotation trace must be eighter a number vector (or matrix) with length = input trj eighter
          a single value (1-10,T/F). ")
-
+  
   if(!is.null(ann_trace)&&!is.logical(ann_trace)&&(any(!sapply(ann_trace,is.numeric)) ||
-     max(ann_trace)>10)) stop("For manual insertion of the trace use numbers 1-10 for each value (also more than one row)")
+                                                   max(ann_trace)>10)) stop("For manual insertion of the trace use numbers 1-10 for each value (also more than one row)")
   if(!is.null(nrow_an_tr)) max_an_tr <- max(ann_trace)
-
-
-#Main ann_trace constructor
+  
+  
+  #Main ann_trace constructor
   if(is.null(ann_trace)||
      (is.logical(ann_trace)&&ann_trace)||
      (is.numeric(ann_trace)&&length(ann_trace)==1&&ann_trace==2)){
@@ -89,8 +89,8 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
     if(ann_trace>10) ann_trace = 10
     ann_tr[pin[,3]<dp[1]/ann_trace] <- "gray1"
     for(i in 1:(ann_trace-1)) ann_tr[pin[,3]<dp[1]*(i+1)/ann_trace
-                                 & pin[,3]>=dp[1]*(i)/ann_trace
-                                 & ann_tr == "NA"] <- paste0("gray",floor(100/ann_trace)*i)
+                                     & pin[,3]>=dp[1]*(i)/ann_trace
+                                     & ann_tr == "NA"] <- paste0("gray",floor(100/ann_trace)*i)
     nrow_an_tr <- 1
   }else if(nrow_an_tr==1){
     ann_tr <- sapply(ann_trace,FUN = function(x){
@@ -106,9 +106,9 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
   }else if(!ann_trace){
     warning("ann_trace = F silenced the annotation trace.")
   }else{
-      stop("check the input of ann_trace or read the documentation. It is neither a number nor a color array")
+    stop("check the input of ann_trace or read the documentation. It is neither a number nor a color array")
   }
-
+  
   # Set range of x and y values for the plot:
   Nsnap<-dp[1]
   xx = seq(from=1, by=1, to=Nsnap)
@@ -116,13 +116,13 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
   ymax = -log(pin[,4]/Nsnap)
   ymax = ymax[!is.infinite(ymax)&!is.na(ymax)]
   ymax = max(ymax)
-
+  
   # initial creation of the plot
   gg <- ggplot(data = pin, mapping = aes(x = xx, y = -log((pin[,4]/Nsnap)))) +
     xlab("Progress Index") + ylab("Annotation")
-    # theme_bw() +
-    # theme(panel.grid.minor = element_line(colour="gray80"))
-
+  # theme_bw() +
+  # theme(panel.grid.minor = element_line(colour="gray80"))
+  
   #Trace height from the top. This is the 0-16 parts out of ymax
   if(!is.null(background_height)&&is.numeric(background_height)&&length(background_height)==1){
     if(background_height>14||background_height<0){
@@ -152,7 +152,7 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
   } else if(!is.logical(ann_trace)){
     for(i in 0:(nrow_an_tr-1))
       gg <- gg + geom_segment(x=xx, y = rep(ymax*((tr_init+((i*(16-tr_init))/nrow_an_tr))/16),length(xx)),
-                                  xend = xx, yend = rep(ymax*((tr_init+(((i+1)*(16-tr_init))/nrow_an_tr))/16), length(xx)),
+                              xend = xx, yend = rep(ymax*((tr_init+(((i+1)*(16-tr_init))/nrow_an_tr))/16), length(xx)),
                               col = ann_tr[(i+1),])
   }
   # annotation names LEFT
@@ -171,20 +171,27 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
   }else if(!is.null(ann_names_R)){
     stop('The annotation names have not been inserted correctly')
   }
-
-
+  
+  
   #timeline at the bottom
-  if(timeline&&!is.logical(ann_trace)&&nrow_an_tr==1) {
-    gg <- gg + geom_point(aes(x=xx,y=(pin[,3]*1.0*ymax*1/5)/dp[1]-1/10),col=ann_tr,size=0.01)
-    }else if(timeline&&!is.logical(ann_trace)){
-      gg <- gg + geom_point(aes(x=xx,y=(pin[,3]*1.0*ymax*1/5)/dp[1]-1/10),col=rep("black",length(xx)),size=0.01)
-    }
+  if(timeline&&!is.logical(ann_trace)&&nrow_an_tr==1) 
+    gg <- gg + geom_point(aes(x=xx,y=(pin[,3]*1.0*ymax*1/6)/dp[1]), col=ann_tr, size=0.01) + 
+    annotate("text", label = "0%", x = -dp[1]/100, y = 0, size = 3, angle = 90) +
+    annotate("text", label = "100%", x = -dp[1]/100, y = 1.0*ymax*1/6, size = 3, angle = 90)
+  
+      # geom_text(data = NULL, x = 0, y = 0, label = "0%", angle = 90) +
+      # geom_text(data = NULL, x = 0, y = 1.0*ymax*1/5, label = "100%", angle = 90) 
+    # }else if(timeline&&!is.logical(ann_trace)){
+    #   gg <- gg + geom_point(aes(x=xx,y=(pin[,3]*1.0*ymax*1/5)/dp[1]-1/10),col=rep("black",length(xx)),size=0.01)
+    # } 
 
   #basic annotation
   gg <- gg + geom_line(color=main_col,size=0.2)
   #local cut
-  if(local_cut) gg <- gg + geom_point(mapping = aes(x=xx,y=2.5 - (1./3.)*log((pin[,10] + pin[,12]) / Nsnap)),
-                                      color="red3", size=0.1)
+  if(local_cut) gg <- gg + 
+    geom_point(mapping = aes(x=xx,y=2.5 - (1./3.)*log((pin[,10] + pin[,12]) / Nsnap)), 
+               color="red3", size=0.1) 
+    
 
 #   #basin call
 #   if(basin_call) gg <- gg +

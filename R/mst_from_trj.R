@@ -3,7 +3,6 @@
 #'      \code{mst_from_trj} creates a minimum spanning tree from a time series (e.g. a trajectory in molecular dynamics) using different distance metrics
 #'      between pairwise snapshots.
 #'
-#'
 #' @param trj Input trajectory (variables on the columns and equal-time spaced snpashots on the row). It must be a \code{matrix} or a \code{data.frame} of numeric.
 #' @param distance_method Distance metric between snapshots. This value can be set 1 (dihedral angles) or 5 (root mean square deviation).
 #' @param distance_weights Vector of weights to be applied in order to compute averaged weighted distance using multiple \code{distance_method}.
@@ -47,34 +46,42 @@
 #' @import parallel
 
 mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL,  clu_radius = NULL, clu_hardcut = NULL, #inputs
-                        normalize_d = TRUE, birch_clu = FALSE, min_span_tree = TRUE, mode = "fortran", #algo modes
-                        rootmax_rad = NULL, tree_height = NULL, n_search_attempts = NULL, #sst default
-                        cores = NULL, logging = FALSE){ #misc
+                       normalize_d = TRUE, birch_clu = FALSE, min_span_tree = TRUE, mode = "fortran", #algo modes
+                       rootmax_rad = NULL, tree_height = NULL, n_search_attempts = NULL, #sst default
+                       cores = NULL, logging = FALSE){ #misc
   if(!is.matrix(trj)){
     if(!is.data.frame(trj)) stop('trj input must be a matrix or a data.frame')
     trj <- as.matrix(trj)
   }
-  #memory handling
+  # Memory handling (data management checks)
   data_management <- getOption("CampaRi.data_management")
   if(data_management == "R") cat("Normal memory handling selected. Without hdf5/netcdf backend file management it will be difficult for R to handle big data-sets.\n")
-  else if(data_management == "netcdf") cat("Selected data support: netcdf without mpi support\n")
+  else if(data_management == "netcdf") cat("Selected data support: netcdf data management.\n")
   else stop("Invalid data management keyword inserted. Check the available methods on the guide.\n")
 
   if(data_management == "R") cat("To set new data_management method: options(list(CampaRi.data_management = 'R'))\n")
 
   if(data_management != "R"){
-    warning(paste0('The dumping filename will be ',getOption("CampaRi.data_filename"),'. If already existent it will be overwritten'))
-# TODO in installing routine the check!!
-#     cat("Checking for netcdf support...")
-#     command_loc <- system(paste0("which ",data_management))
-#     if(command_loc=="") stop("No support for hdf5. Please check installation and correct linkage of the command to your enviroment.")
+    # warning(paste0('The dumping filename will be ',getOption("CampaRi.data_filename"),'. If already existent it will be overwritten'))
+    # TODO in installing routine the check!!
+    #     cat("Checking for netcdf support...")
+    #     command_loc <- system(paste0("which ",data_management))
+    #     if(command_loc=="") stop("No support for hdf5. Please check installation and correct linkage of the command to your enviroment.")
   }
 
   #Input setting
   n_snaps <- nrow(trj)
   n_xyz <- ncol(trj)
 
-  #normal -LONG- mode (parallel)
+  # -----------------------------------------------------------------------
+  # Normal mode (R).
+  #
+  # This feature is using only R in parallel to calculate all the paired
+  # distances. It is incredible LONGY.
+  #
+  #
+
+
   if(is.character(mode)&&mode == "R"){
     n_cores <- detectCores() - 1
     if(!is.null(cores)&&(cores%%1==0)) n_cores=cores
@@ -101,17 +108,28 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL,  clu_r
     stopCluster(cl)
     warning('No MST made. Please use igraph package and in particular "mst" function in order to continue the analysis')
 
+
+  # -----------------------------------------------------------------------
+  # Fortran mode.
+  #
+  # This is the main routine which is using extracted code from campari.
+  # Here all the variables specific to the fortran interface are defined.
+  #
+  #
+
   }else if(is.character(mode)&&(mode=="fortran")){
-    #Fortran mode
-    #default vars
-    #distance value
+    # --------------
+    # Default vars
+    # --------------
+
+    # Distance value
     tmp_dis <- distance_method
     distance_method <- rep(0,11)
     if(!is.numeric(tmp_dis)||(any(tmp_dis!=5&&tmp_dis!=11&&tmp_dis!=1))||length(tmp_dis)>11)
       stop("The distance values that have been inserted are not supported")
     distance_method[1:length(tmp_dis)] <- tmp_dis
 
-    #distance weights
+    # Distance weights
     tmp_dis_w <- distance_weights
     distance_weights <- rep(1,11)
     if(!is.null(distance_weights)){
@@ -120,7 +138,7 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL,  clu_r
       else distance_weights[1:length(tmp_dis_w)] <- tmp_dis_w
     }
 
-    #thresholds for radius and inter radius values. This is MST leader clustering
+    # Thresholds for radius and inter radius values. This is MST leader clustering
     if(is.null(clu_radius)||clu_radius<=0){
       clu_radius <- 2147483647
       warning(paste("clu_radius variable (a priori fixed clustering radius) has not been selected.
@@ -134,7 +152,7 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL,  clu_r
     if(!is.numeric(clu_radius)||length(clu_radius)!=1||!is.numeric(clu_hardcut)||length(clu_hardcut)!=1)
       stop("clu_radius and clu_hardcut must be a real number.")
 
-    #logical inputs check
+    # Logical inputs check
     if(!is.logical(normalize_d))
       stop("Normalization mode must be activated using T/F inputs.")
     if(!is.logical(min_span_tree))
@@ -146,7 +164,7 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL,  clu_r
     if(birch_clu&&min_span_tree)
       message("MST option is automatically used when birch_clu is activated.")
 
-    #sst checks
+    # sst checks
     if(birch_clu){
       if(is.null(rootmax_rad))
         rootmax_rad <- max(trj)*2
@@ -167,7 +185,14 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL,  clu_r
       tree_height <- 0
       n_search_attempts <- 0
     }
+    # ------------------------------------------------------------------------------
+    # Main functions for internal calling of Fortran code
+    #
+    #
 
+    # -------------
+    #    R - old
+    # -------------
     if(data_management == "R"){
       #input-output initialization
       if(n_snaps > 25000)
@@ -178,45 +203,48 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL,  clu_r
       adj_deg <- as.integer(rep(0,n_snaps))
       adj_ix <- matrix(as.integer(rep(0,n_snaps*n_snaps)),n_snaps,n_snaps)
       adj_dis <- matrix(as.single(rep(0.0,n_snaps*n_snaps)),n_snaps,n_snaps)
-      trj <- matrix(as.single(trj),ncol = n_xyz,nrow = n_snaps)
       #double Cstyle deginitions
       attr(trj,"Csingle") <- TRUE
       attr(adj_dis,"Csingle") <- TRUE
       attr(distance_weights,"Csingle") <- TRUE
       #main fortran talker
       output<-.Fortran("generate_neighbour_list", PACKAGE="CampaRi",
-                      #input
-                      trj_data=trj,
-                      n_xyz_in=as.integer(n_xyz),
-                      n_snaps_in=as.integer(n_snaps),
-                      clu_radius_in=as.single(clu_radius),
-                      clu_hardcut_in=as.single(clu_hardcut),
-                      #output
-                      adjl_deg=adj_deg,
-                      adjl_ix=adj_ix,
-                      adjl_dis=adj_dis,
-                      max_degr=as.integer(max_d),
-                      #algorithm details
-                      dis_method_in=as.integer(distance_method),
-                      dis_weight_in=distance_weights,
-                      birch_in=as.logical(birch_clu),
-                      mst_in=as.logical(min_span_tree),
-                      #sst details
-                      rootmax_rad_in=as.single(rootmax_rad),
-                      tree_height_in=as.integer(tree_height),
-                      n_search_attempts_in=as.integer(n_search_attempts),
-                      #modes
-                      normalize_dis_in=as.logical(normalize_d),
-                      log_print_in=as.logical(logging),
-                      verbose_in=as.logical(TRUE))
+                              #input
+                              trj_data=trj,
+                              n_xyz_in=as.integer(n_xyz),
+                              n_snaps_in=as.integer(n_snaps),
+                              clu_radius_in=as.single(clu_radius),
+                              clu_hardcut_in=as.single(clu_hardcut),
+                              #output
+                              adjl_deg=adj_deg,
+                              adjl_ix=adj_ix,
+                              adjl_dis=adj_dis,
+                              max_degr=as.integer(max_d),
+                              #algorithm details
+                              dis_method_in=as.integer(distance_method),
+                              dis_weight_in=distance_weights,
+                              birch_in=as.logical(birch_clu),
+                              mst_in=as.logical(min_span_tree),
+                              #sst details
+                              rootmax_rad_in=as.single(rootmax_rad),
+                              tree_height_in=as.integer(tree_height),
+                              n_search_attempts_in=as.integer(n_search_attempts),
+                              #modes
+                              normalize_dis_in=as.logical(normalize_d),
+                              log_print_in=as.logical(logging),
+                              verbose_in=as.logical(TRUE))
+
       #output adjustment
       output_fin[[1]] <- output$adjl_deg
       output_fin[[2]] <- output$adjl_ix[,1:output$max_degr]
       output_fin[[3]] <- output$adjl_dis[,1:output$max_degr]
       return(output_fin)
+
+    # -------------
+    #    NetCDF
+    # -------------
     }else if(data_management=="netcdf"){
       output_fin <- list()
-      trj <- matrix(as.single(trj),ncol = n_xyz,nrow = n_snaps)
       #double Cstyle deginitions
       attr(trj,"Csingle") <- TRUE
       #main fortran talker
@@ -250,89 +278,4 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL,  clu_r
   }else{
       stop("Mode entry not correct.")
     }
-}
-
-#' @title Build the network from the already processed Progress Index file
-#' @description
-#'      \code{adjl_from_progindex} is able to use the output file from original campari software
-#'      (or the output file from \code{\link{gen_annotation}}) in order to generate again the minimum spanning tree.
-#'
-#' @param prog_index_file Progress index file location. This should be of the kind \code{"PROGIDX_000000000001.dat"} (original campari)
-#' or \code{"REPIX_000000000001.dat"} (CampaRi).
-#'
-#'
-#' @return \code{adjl_from_progindex} will return a minimum spanning tree: degree list, connectivity matrix and weights
-#' @details For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}
-#'
-#' @seealso
-#' \code{\link{gen_progindex}}, \code{\link{gen_annotation}}
-#'
-#' @examples
-#' \dontrun{
-#' adjl <- adjl_from_progindex(fil = "PROGIDX_000000000001.dat")
-#' }
-#'
-#'
-#' @export adjl_from_progindex
-#' @useDynLib CampaRi
-
-adjl_from_progindex <- function(prog_index_file){
-  # extract the SST or MST from the output of the analysis already made with campari.
-  # Here we will reconstruct a bit of the tree in order to be able to find again the MST/SST
-  piOut<-read.table(file = prog_index_file)
-
-  # number of snapshots
-  nsnaps <- nrow(piOut)
-  nbl<-piOut[,6] #number list
-  itl<-piOut[,3] #index teo? list
-  ditl<-piOut[,5] #distance of 6 from 3
-  #max number of connections
-  maxnb <- max(hist(breaks=seq(from=0.5,by=1,to=nsnaps+0.5),x=nbl,plot=FALSE)$counts) + 1
-  # empty vector of future number of connections for each node in column 6
-  treennb <- array(as.integer(0),c(nsnaps))
-  # adjlist matrix with obvious limit in maxnb of connections
-  treenbl <- array(as.integer(0),c(nsnaps,maxnb))
-  # distance of each connection
-  treedis <- array(as.single(0.0),c(nsnaps,maxnb))
-  # slow
-  for (i in 2:nsnaps) {
-    treennb[nbl[i]] <- treennb[nbl[i]] + 1
-    treenbl[nbl[i],treennb[nbl[i]]] <- itl[i]
-    treedis[nbl[i],treennb[nbl[i]]] <- ditl[i]
-    treennb[itl[i]] <- treennb[itl[i]] + 1
-    treenbl[itl[i],treennb[itl[i]]] <- nbl[i]
-    treedis[itl[i],treennb[itl[i]]] <- ditl[i]
-    # list of breaks (must be passed at least of size 1, but n_breaks can be zero) eh?
-  }
-  return(list(treennb,treenbl,treedis))
-}
-
-#' @title From adjacency matrix to adjacency list
-#' @description
-#'      This function is able to transform a matrix of distances into an adjacency list that can be used for the analysis pipeline.
-#'      Please remember that \code{gen_progindex} accepts only minimum spanning trees.
-#'
-#' @param adj_m Input matrix (adjacency matrix).
-#'
-#' @return A list of three elements: degree list, connectivity matrix and weights.
-#'
-#' @seealso
-#' \code{\link{gen_progindex}}, \code{\link{mst_from_trj}}.
-#' @export adjl_from_adjmat
-#' @useDynLib CampaRi
-adjl_from_adjmat<-function(adj_m){ #deprecated
-  # extract the SST or MST from the output of the analysis already made with campari.
-  # Here we will reconstruct a bit of the tree in order to be able to find again the MST/SST
-  adjl_nmbrs<-c()
-  adjl<-list()
-  adjl_dis<-list()
-  for (i in 1:nrow(adj_m)){
-    tmp <- sort(adj_m[i,adj_m[i,]!=0], index.return = TRUE)
-    adjl_nmbrs[i] <- length(tmp$ix)
-    adjl[[i]] <- tmp$ix
-    adjl_dis[[i]] <- tmp$x
-  }
-  adjl <- array(unlist(adjl),dim = c(length(adjl_nmbrs),max(adjl_nmbrs)))
-  adjl_dis <- array(unlist(adjl_dis),dim = c(length(adjl_nmbrs),max(adjl_nmbrs)))
-  return(list(array(adjl_nmbrs), adjl, adjl_dis))
 }

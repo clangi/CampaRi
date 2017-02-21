@@ -121,8 +121,8 @@ subroutine generate_neighbour_list_w( &
   write(ilog,*)
 
 
-
-  write(ilog,*) "Input dimensions:", n_snaps, " row and ", n_xyz," col"
+! call dblepr("Birch clustering input data...",-1,0,0)
+  write(ilog,*) "Input dimensions:", n_snaps, " row (snapshots) and ", n_xyz," col (variables)"
   write(ilog,*)
   if(superver) then
      write(ilog,*) "Input example", trj_data(1:10,1:10)
