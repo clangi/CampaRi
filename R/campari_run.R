@@ -32,9 +32,9 @@ campari<-function(nsnaps, working_dir, data_file, base_name, camp_home, ...){
   else distance_met = as.numeric(input_list["distance_met"])
   if(!"birch_height" %in% names(input_list)) birch_height = 5
   else birch_height = as.numeric(input_list["birch_height"])
-  if(!"cmaxrad" %in% names(input_list)) cmaxrad = 2147483647
+  if(!"cmaxrad" %in% names(input_list)) cmaxrad = 214748364
   else cmaxrad = as.numeric(input_list["cmaxrad"])
-  if(!"cradius" %in% names(input_list)) cradius = 2147483647
+  if(!"cradius" %in% names(input_list)) cradius = 214748364
   else cradius = as.numeric(input_list["cradius"])
   if(!"cprogindwidth" %in% names(input_list)) cprogindwidth = as.integer(floor(nsnaps-1)/2)
   else cprogindwidth = as.numeric(input_list["cprogindwidth"])
@@ -73,7 +73,7 @@ campari<-function(nsnaps, working_dir, data_file, base_name, camp_home, ...){
   #which contains the order of atoms in the binary file in annotated form (see PDB_TEMPLATE).
   
   if(is.null(search_attempts)&&methodst==2) search_attempts <- nsnaps/10
-
+  
   
   FMCSC_PDB_R_CONV <- 1 # different conventions for the formatting of PDB files.
   #1. CAMPARI
@@ -87,7 +87,7 @@ campari<-function(nsnaps, working_dir, data_file, base_name, camp_home, ...){
   FMCSC_BIRCHHEIGHT <- birch_height #12 #nothing is changing 1,51,2
   FMCSC_CMAXRAD <- cmaxrad  #nothing is changing 0,5,0.5
   FMCSC_CRADIUS <- cradius #nothing is changing seq(0.1,5.1,0.2)
-  FMCSC_CCUTOFF <- 2147483647  #nothing seq(0,10) chardcut is different from cmaxrad which is used only in the case of sst (root lev)
+  FMCSC_CCUTOFF <- 214748364  #nothing seq(0,10) chardcut is different from cmaxrad which is used only in the case of sst (root lev)
   
   FMCSC_CPROGINDMODE <- methodst #exact MST = 1
   FMCSC_CPROGINDRMAX <- search_attempts #ONLY SST
@@ -105,41 +105,59 @@ campari<-function(nsnaps, working_dir, data_file, base_name, camp_home, ...){
   # the actual RMSD of the two coordinate sets is computed. To achieve this, provide any 
   # value other than 1 (the default) for this on/off-type keyword.
   
+  first <- TRUE
+  
+  kchar<-sub(pattern = "PARAMETERS[ ]{1,}[A-Za-z0-9_/.~]+", replacement = paste0("PARAMETERS ", PARAMETERS), x = kchar)
+  kchar<-sub(pattern = "FMCSC_PDBANALYZE[ ]{1,}[0-9]+", replacement = paste0("FMCSC_PDBANALYZE ", FMCSC_PDBANALYZE), x = kchar)
+  kchar<-sub(pattern = "FMCSC_BBSEGFILE[ ]{1,}[A-Za-z0-9_/.~]+", replacement = paste0("FMCSC_BBSEGFILE ", FMCSC_BBSEGFILE), x = kchar)
+  kchar<-sub(pattern = "FMCSC_SEQFILE[ ]{1,}[A-Za-z0-9_/.~]+", replacement = paste0("FMCSC_SEQFILE ", FMCSC_SEQFILE), x = kchar)
+  
+  # putting flagger to use the correct key word
+  if(grepl(pattern = "FMCSC_PDBFILE[ ]{1,}[A-Za-z0-9_/.~]+", x = kchar)){
+    if(first) kchar<-sub(pattern = "FMCSC_PDBFILE[ ]{1,}[A-Za-z0-9_/.~]+", replacement = "FMCSC_theFILE", x = kchar)
+    else kchar<-sub(pattern = "FMCSC_PDBFILE[ ]{1,}[A-Za-z0-9_/.~]+", replacement = "", x = kchar)
+    first <- FALSE 
+  }
+  if(grepl(pattern = "FMCSC_XTCFILE[ ]{1,}[A-Za-z0-9_/.~]+", x = kchar)){
+    if(first) kchar<-sub(pattern = "FMCSC_XTCFILE[ ]{1,}[A-Za-z0-9_/.~]+", replacement = "FMCSC_theFILE", x = kchar)
+    else kchar<-sub(pattern = "FMCSC_XTCFILE[ ]{1,}[A-Za-z0-9_/.~]+", replacement = "", x = kchar)
+    first <- FALSE 
+  }
+  if(grepl(pattern = "FMCSC_DCDFILE[ ]{1,}[A-Za-z0-9_/.~]+", x = kchar)){
+    if(first) kchar<-sub(pattern = "FMCSC_DCDFILE[ ]{1,}[A-Za-z0-9_/.~]+", replacement = "FMCSC_theFILE", x = kchar)
+    else kchar<-sub(pattern = "FMCSC_DCDFILE[ ]{1,}[A-Za-z0-9_/.~]+", replacement = "", x = kchar)
+    first <- FALSE 
+  }
+  
+  if(first) kchar<-sub(pattern = "\n", replacement = "\nFMCSC_theFILE\n", x = kchar)
   
   
-  kchar<-sub(pattern = "PARAMETERS\\s[A-Za-z0-9_/.~]+", replacement = paste0("PARAMETERS ", PARAMETERS), x = kchar)
-  kchar<-sub(pattern = "FMCSC_PDBANALYZE\\s[0-9]+", replacement = paste0("FMCSC_PDBANALYZE ", FMCSC_PDBANALYZE), x = kchar)
-  kchar<-sub(pattern = "FMCSC_BBSEGFILE\\s[A-Za-z0-9_/.~]+", replacement = paste0("FMCSC_BBSEGFILE ", FMCSC_BBSEGFILE), x = kchar)
-  kchar<-sub(pattern = "FMCSC_SEQFILE\\s[A-Za-z0-9_/.~]+", replacement = paste0("FMCSC_SEQFILE ", FMCSC_SEQFILE), x = kchar)
   if(FMCSC_PDB_FORMAT==1) 
-    #if there is bla bla if not bla bla
-    kchar<-sub(pattern = "FMCSC_PDBFILE\\s[A-Za-z0-9_/.~]+", replacement = paste0("FMCSC_PDBFILE ", FMCSC_PDBFILE), x = kchar)
+    kchar<-sub(pattern = "FMCSC_theFILE", replacement = paste0("FMCSC_PDBFILE ", FMCSC_PDBFILE), x = kchar)
+  else if(FMCSC_PDB_FORMAT==3) 
+    kchar<-sub(pattern = "FMCSC_theFILE", replacement = paste0("FMCSC_XTCFILE ", FMCSC_XTCFILE), x = kchar)
+  else if(FMCSC_PDB_FORMAT==4) 
+    kchar<-sub(pattern = "FMCSC_theFILE", replacement = paste0("FMCSC_DCDFILE ", FMCSC_DCDFILE), x = kchar)
   else
-    kchar<-sub(pattern = "FMCSC_PDBFILE\\s[A-Za-z0-9_/.~]+", replacement = "", x = kchar)
-  if(FMCSC_PDB_FORMAT==3) 
-    kchar<-sub(pattern = "FMCSC_XTCFILE\\s[A-Za-z0-9_/.~]+", replacement = paste0("FMCSC_XTCFILE ", FMCSC_XTCFILE), x = kchar)
-  else
-    kchar<-sub(pattern = "FMCSC_XTCFILE\\s[A-Za-z0-9_/.~]+", replacement = "", x = kchar)
-  if(FMCSC_PDB_FORMAT==4) 
-    kchar<-sub(pattern = "FMCSC_DCDFILE\\s[A-Za-z0-9_/.~]+", replacement = paste0("FMCSC_DCDFILE ", FMCSC_DCDFILE), x = kchar)
-  else
-    kchar<-sub(pattern = "FMCSC_DCDFILE\\s[A-Za-z0-9_/.~]+", replacement = "", x = kchar)
-  kchar<-sub(pattern = "FMCSC_PDB_FORMAT\\s[0-9]+", replacement = paste0("FMCSC_PDB_FORMAT ", FMCSC_PDB_FORMAT), x = kchar)
-  kchar<-sub(pattern = "FMCSC_PDB_R_CONV\\s[0-9]+", replacement = paste0("FMCSC_PDB_R_CONV ", FMCSC_PDB_R_CONV), x = kchar)
-  kchar<-sub(pattern = "FMCSC_NRSTEPS\\s[0-9]+", replacement = paste0("FMCSC_NRSTEPS ", FMCSC_NRSTEPS), x = kchar)
-  kchar<-sub(pattern = "FMCSC_CDISTANCE\\s[0-9]+", replacement = paste0("FMCSC_CDISTANCE ",FMCSC_CDISTANCE),x = kchar)
-  kchar<-sub(pattern = "FMCSC_BIRCHHEIGHT\\s[0-9]+", replacement = paste0("FMCSC_BIRCHHEIGHT ",FMCSC_BIRCHHEIGHT),x = kchar)
-  kchar<-sub(pattern = "FMCSC_CMAXRAD\\s([0-9]+.[0-9]+|[0-9]+)",replacement = paste0("FMCSC_CMAXRAD ",FMCSC_CMAXRAD),x = kchar)
-  kchar<-sub(pattern = "FMCSC_CRADIUS\\s([0-9]+.[0-9]+|[0-9]+)",replacement = paste0("FMCSC_CRADIUS ",FMCSC_CRADIUS),x = kchar)
-  kchar<-sub(pattern = "FMCSC_CCUTOFF\\s([0-9]+.[0-9]+|[0-9]+)",replacement = paste0("FMCSC_CCUTOFF ",FMCSC_CCUTOFF),x = kchar)
-  kchar<-sub(pattern = "FMCSC_CPROGINDMODE\\s[0-9]+",replacement = paste0("FMCSC_CPROGINDMODE ",FMCSC_CPROGINDMODE),x = kchar)
-  kchar<-sub(pattern = "FMCSC_CPROGINDRMAX\\s[0-9]+",replacement = paste0("FMCSC_CPROGINDRMAX ",FMCSC_CPROGINDRMAX),x = kchar)
-  kchar<-sub(pattern = "FMCSC_CPROGINDSTART\\s([0-9]+|-[0-9]+)",replacement = paste0("FMCSC_CPROGINDSTART ",FMCSC_CPROGINDSTART),x = kchar)
-  kchar<-sub(pattern = "FMCSC_CPROGINDWIDTH\\s[0-9]+",replacement = paste0("FMCSC_CPROGINDWIDTH ",FMCSC_CPROGINDWIDTH),x = kchar)
-  kchar<-sub(pattern = "FMCSC_CPROGMSTFOLD\\s[0-9]+",replacement = paste0("FMCSC_CPROGMSTFOLD ",FMCSC_CPROGMSTFOLD),x = kchar)
-  kchar<-sub(pattern = "FMCSC_PCAMODE\\s[0-9]+",replacement = paste0("FMCSC_PCAMODE ",FMCSC_PCAMODE),x = kchar)
-  kchar<-sub(pattern = "FMCSC_CREDUCEDIM\\s[0-9]+",replacement = paste0("FMCSC_CREDUCEDIM ",FMCSC_CREDUCEDIM),x = kchar)
-  kchar<-sub(pattern = "FMCSC_CALIGN\\s[0-9]+",replacement = paste0("FMCSC_CALIGN ",FMCSC_CALIGN),x = kchar)
+    stop("File input not supported. We have 1/3/4")
+  
+  
+  kchar<-sub(pattern = "FMCSC_PDB_FORMAT[ ]{1,}[0-9]+", replacement = paste0("FMCSC_PDB_FORMAT ", FMCSC_PDB_FORMAT), x = kchar)
+  kchar<-sub(pattern = "FMCSC_PDB_R_CONV[ ]{1,}[0-9]+", replacement = paste0("FMCSC_PDB_R_CONV ", FMCSC_PDB_R_CONV), x = kchar)
+  kchar<-sub(pattern = "FMCSC_NRSTEPS[ ]{1,}[0-9]+", replacement = paste0("FMCSC_NRSTEPS ", FMCSC_NRSTEPS), x = kchar)
+  kchar<-sub(pattern = "FMCSC_CDISTANCE[ ]{1,}[0-9]+", replacement = paste0("FMCSC_CDISTANCE ",FMCSC_CDISTANCE),x = kchar)
+  kchar<-sub(pattern = "FMCSC_BIRCHHEIGHT[ ]{1,}[0-9]+", replacement = paste0("FMCSC_BIRCHHEIGHT ",FMCSC_BIRCHHEIGHT),x = kchar)
+  kchar<-sub(pattern = "FMCSC_CMAXRAD[ ]{1,}(-?[0-9]+.[0-9]+|[0-9]+)",replacement = paste0("FMCSC_CMAXRAD ",FMCSC_CMAXRAD),x = kchar)
+  kchar<-sub(pattern = "FMCSC_CRADIUS[ ]{1,}(-?[0-9]+.[0-9]+|[0-9]+)",replacement = paste0("FMCSC_CRADIUS ",FMCSC_CRADIUS),x = kchar)
+  kchar<-sub(pattern = "FMCSC_CCUTOFF[ ]{1,}([-?0-9]+.[0-9]+|[0-9]+)",replacement = paste0("FMCSC_CCUTOFF ",FMCSC_CCUTOFF),x = kchar)
+  kchar<-sub(pattern = "FMCSC_CPROGINDMODE[ ]{1,}[0-9]+",replacement = paste0("FMCSC_CPROGINDMODE ",FMCSC_CPROGINDMODE),x = kchar)
+  kchar<-sub(pattern = "FMCSC_CPROGINDRMAX[ ]{1,}[0-9]+",replacement = paste0("FMCSC_CPROGINDRMAX ",FMCSC_CPROGINDRMAX),x = kchar)
+  kchar<-sub(pattern = "FMCSC_CPROGINDSTART[ ]{1,}([0-9]+|-[0-9]+)",replacement = paste0("FMCSC_CPROGINDSTART ",FMCSC_CPROGINDSTART),x = kchar)
+  kchar<-sub(pattern = "FMCSC_CPROGINDWIDTH[ ]{1,}[0-9]+",replacement = paste0("FMCSC_CPROGINDWIDTH ",FMCSC_CPROGINDWIDTH),x = kchar)
+  kchar<-sub(pattern = "FMCSC_CPROGMSTFOLD[ ]{1,}[0-9]+",replacement = paste0("FMCSC_CPROGMSTFOLD ",FMCSC_CPROGMSTFOLD),x = kchar)
+  kchar<-sub(pattern = "FMCSC_PCAMODE[ ]{1,}[0-9]+",replacement = paste0("FMCSC_PCAMODE ",FMCSC_PCAMODE),x = kchar)
+  kchar<-sub(pattern = "FMCSC_CREDUCEDIM[ ]{1,}[0-9]+",replacement = paste0("FMCSC_CREDUCEDIM ",FMCSC_CREDUCEDIM),x = kchar)
+  kchar<-sub(pattern = "FMCSC_CALIGN[ ]{1,}[0-9]+",replacement = paste0("FMCSC_CALIGN ",FMCSC_CALIGN),x = kchar)
   fileConn<-file(kfile)
   writeLines(kchar, fileConn)
   close(fileConn)

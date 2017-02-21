@@ -179,25 +179,25 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
     annotate("text", label = "0%", x = -dp[1]/100, y = 0, size = 3, angle = 90) +
     annotate("text", label = "100%", x = -dp[1]/100, y = 1.0*ymax*1/6, size = 3, angle = 90)
   
-      # geom_text(data = NULL, x = 0, y = 0, label = "0%", angle = 90) +
-      # geom_text(data = NULL, x = 0, y = 1.0*ymax*1/5, label = "100%", angle = 90) 
-    # }else if(timeline&&!is.logical(ann_trace)){
-    #   gg <- gg + geom_point(aes(x=xx,y=(pin[,3]*1.0*ymax*1/5)/dp[1]-1/10),col=rep("black",length(xx)),size=0.01)
-    # } 
-
+  # geom_text(data = NULL, x = 0, y = 0, label = "0%", angle = 90) +
+  # geom_text(data = NULL, x = 0, y = 1.0*ymax*1/5, label = "100%", angle = 90) 
+  # }else if(timeline&&!is.logical(ann_trace)){
+  #   gg <- gg + geom_point(aes(x=xx,y=(pin[,3]*1.0*ymax*1/5)/dp[1]-1/10),col=rep("black",length(xx)),size=0.01)
+  # } 
+  
   #basic annotation
   gg <- gg + geom_line(color=main_col,size=0.2)
   #local cut
   if(local_cut) gg <- gg + 
     geom_point(mapping = aes(x=xx,y=2.5 - (1./3.)*log((pin[,10] + pin[,12]) / Nsnap)), 
                color="red3", size=0.1) 
-    
-
-#   #basin call
-#   if(basin_call) gg <- gg +
-#     geom_text(data = data.frame(), aes(Nsnap/4, ymax-1*ymax/14, label = "Basin 1")) +
-#     geom_text(data = data.frame(), aes(Nsnap*3/4, ymax-1*ymax/14, label = "Basin 2"))
-#   # p + annotate("rect", xmin = 3, xmax = 4.2, ymin = 12, ymax = 21,
+  
+  
+  #   #basin call
+  #   if(basin_call) gg <- gg +
+  #     geom_text(data = data.frame(), aes(Nsnap/4, ymax-1*ymax/14, label = "Basin 1")) +
+  #     geom_text(data = data.frame(), aes(Nsnap*3/4, ymax-1*ymax/14, label = "Basin 2"))
+  #   # p + annotate("rect", xmin = 3, xmax = 4.2, ymin = 12, ymax = 21,
   #              alpha = .2)
   # if(!is.null(subtitle)&&is.character(subtitle))
   #   gg <- gg + ggtitle(bquote(atop(.(title), atop(italic(.(subtitle)), ""))))

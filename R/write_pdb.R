@@ -38,9 +38,9 @@ write.pdb.d<-function(trj, base_name, round=FALSE, digit=4, dim_check = TRUE){
   for (i in seq(nr)){
     cat(paste0("MODEL        ",i), file = paste0(base_name,".pdb"), sep = "\n", append=TRUE)
     for(j in seq(to = (nc),by = 3)){
-#       if(!(((j-1)/3)%%1==0)) next
-#       if(((j+2)/3)<10) space<-" " 
-#       else space<-""
+      #       if(!(((j-1)/3)%%1==0)) next
+      #       if(((j+2)/3)<10) space<-" " 
+      #       else space<-""
       space[1] <- paste0(rep(" ", 6 - nchar((j+2)/3)), collapse = '')
       space[2] <- paste0(rep(" ", 1 - (if(trj[i,j]<0) 1 else 0)), collapse = '')
       space[3] <- paste0(rep(" ", 1 - (if(trj[i,j+1]<0) 1 else 0)), collapse = '')

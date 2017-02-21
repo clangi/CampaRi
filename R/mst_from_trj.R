@@ -4,9 +4,11 @@
 #'      between pairwise snapshots.
 #'
 #' @param trj Input trajectory (variables on the columns and equal-time spaced snpashots on the row). It must be a \code{matrix} or a \code{data.frame} of numeric.
-#' @param distance_method Distance metric between snapshots. This value can be set 1 (dihedral angles) or 5 (root mean square deviation).
-#' @param distance_weights Vector of weights to be applied in order to compute averaged weighted distance using multiple \code{distance_method}.
+#' @param distance_method Distance metric between snapshots. This value can be set 1 (dihedral angles) or 5 (root mean square deviation) or 11 (balistic distance)
+#' or 12 (network construction, see \code{window var}).
+#' @param distance_weights Vector of weights to be applied in order to compute averaged weighted distance using multiple \code{distance_method}. 
 #' Each value must be between 0 and 1. This option works only if \code{birch_clu=F}.
+#' @param window This variables is used only with distance 12 and defines the window from which the network is constructed (see \code{distance_method = 12}).
 #' @param clu_radius This numeric argument is used in the clustering step in order to make clusters of the same radius at the base level.
 #' @param clu_hardcut This option is used only with \code{birch_clu=F} and defines the inter-clusters distance threshold.
 #' @param normalize_d A logical that indicates whether the distances must be normalized or not. Usually used with averaging.
@@ -20,7 +22,7 @@
 #' @param cores If \code{mode="R"} a complete adjacency matrix can be created in parallel using multiple cores (anyhow slower than "fortran" mode).
 #' @param logging If \code{logging=T} the function will print to file the fortran messages ("campari.log").
 #'
-#' @details For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
+#' @details For more details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
 #'
 #' @return If no netcdf support is available the function will return a list with 3 arguments: node degrees, adjacency list and associated distances.
 #' If netcdf support is activated the function will dump the mst in the file "DUMPLING.nc".
@@ -45,7 +47,7 @@
 #' @export mst_from_trj
 #' @import parallel
 
-mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL,  clu_radius = NULL, clu_hardcut = NULL, #inputs
+mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL, window = NULL, clu_radius = NULL, clu_hardcut = NULL, #inputs
                        normalize_d = TRUE, birch_clu = FALSE, min_span_tree = TRUE, mode = "fortran", #algo modes
                        rootmax_rad = NULL, tree_height = NULL, n_search_attempts = NULL, #sst default
                        cores = NULL, logging = FALSE){ #misc
@@ -121,35 +123,54 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL,  clu_r
     # --------------
     # Default vars
     # --------------
-
+    
     # Distance value
-    tmp_dis <- distance_method
-    distance_method <- rep(0,11)
-    if(!is.numeric(tmp_dis)||(any(tmp_dis!=5&&tmp_dis!=11&&tmp_dis!=1))||length(tmp_dis)>11)
-      stop("The distance values that have been inserted are not supported")
-    distance_method[1:length(tmp_dis)] <- tmp_dis
-
+    max_supported_dist <- 12
+    sup_dist <- c(1, 5, 11, 12)
+    if(!birch_clu){
+      # The multiple distance insertion (and weights) are available only with MST
+      tmp_dis <- distance_method
+      distance_method <- rep(0, max_supported_dist)
+      if(!is.numeric(tmp_dis) || 
+         (!all(tmp_dis %in% sup_dist)) || length(tmp_dis)>max_supported_dist)
+        stop("The distance values that have been inserted are not supported. The supported values can be checked in the documentation.")
+      if(length(tmp_dis) > 1) cat("More than one distance selected. They will be averaged (this feature is available only for MST).")
+      distance_method[1:length(tmp_dis)] <- tmp_dis
+      # Network construction if the distance is = 12  
+    }else{
+      if(length(distance_method) != 1) stop('When using the birch clustering algorithm (SST) only one distance is available per time.')
+      if(!is.numeric(distance_method) || !(distance_method %in% sup_dist)) stop("The distance inserted is not valid. Check the documentation for precise values.")
+      if(distance_method == 12){
+        if(!is.null(window) && (length(window) != 1 || !is.numeric(window) || window <= 0 || window > n_snaps/2))
+          stop('The used window (distance 12) is too small or too big (must be less than half to have sense) or it is simply an erroneus insertion.')
+        if((!is.null(overlapping_reduction) && (length(overlapping_reduction) != 1 ||!is.numeric(overlapping_reduction) ||
+                                                overlapping_reduction <= 0 || overlapping_reduction > 1)))
+          stop('The used overlapping_reduction is not correctly defined. It must be a number between 0 and 1.')
+        trj2 <- generate_network(trj, window, overlapping_reduction)  
+      }
+    }
+    
     # Distance weights
     tmp_dis_w <- distance_weights
-    distance_weights <- rep(1,11)
+    distance_weights <- rep(1,max_supported_dist)
     if(!is.null(distance_weights)){
-      if(!is.numeric(tmp_dis_w)||length(tmp_dis)>11)
-        warning("Distances are not num. The option will be turned off")
+      if(!is.numeric(tmp_dis_w) || length(tmp_dis)>max_supported_dist || tmp_dis_w < 0 || tmp_dis_w > 1)
+        warning("Distances are not num or they are not in [0,1]. The option will be turned off")
       else distance_weights[1:length(tmp_dis_w)] <- tmp_dis_w
     }
-
+    
     # Thresholds for radius and inter radius values. This is MST leader clustering
-    if(is.null(clu_radius)||clu_radius<=0){
-      clu_radius <- 2147483647
+    if(is.null(clu_radius) || clu_radius <= 0){
+      clu_radius <- 214748364
       warning(paste("clu_radius variable (a priori fixed clustering radius) has not been selected.
-              A standard value of",clu_radius,"will be used."))
+              A standard value of", clu_radius, "will be used."))
     }
-    if(is.null(clu_hardcut)||clu_hardcut<=0){
-      clu_hardcut <- 2147483647
+    if(is.null(clu_hardcut) || clu_hardcut <= 0){
+      clu_hardcut <- 214748364
       warning(paste("clu_hardcut variable (a priori fixed distance threshold between different cluster members) has not been selected.
-              A standard value of",clu_hardcut,"will be used."))
+              A standard value of", clu_hardcut, "will be used."))
     }
-    if(!is.numeric(clu_radius)||length(clu_radius)!=1||!is.numeric(clu_hardcut)||length(clu_hardcut)!=1)
+    if(!is.numeric(clu_radius) || length(clu_radius)!=1 || !is.numeric(clu_hardcut) || length(clu_hardcut)!=1)
       stop("clu_radius and clu_hardcut must be a real number.")
 
     # Logical inputs check
@@ -168,23 +189,28 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL,  clu_r
     if(birch_clu){
       if(is.null(rootmax_rad))
         rootmax_rad <- max(trj)*2
-      else if(!is.numeric(rootmax_rad)||length(rootmax_rad)!=1)
+      else if(!is.numeric(rootmax_rad) || length(rootmax_rad)!=1)
         stop('rootmax_rad must be a numeric of length 1.')
-      if(is.null(tree_height)||(is.numeric(tree_height)&&length(tree_height)==1&&tree_height<2))
-        tree_height <- 3
-      else if(!is.numeric(tree_height)||length(tree_height)!=1)
+      
+      if(is.null(tree_height) || (is.numeric(tree_height) && length(tree_height)==1 && tree_height<2))
+        tree_height <- 5
+      else if(!is.numeric(tree_height) || length(tree_height)!=1)
         stop('tree_heigth must be a numeric of length 1.')
+      
       if(is.null(n_search_attempts))
         n_search_attempts <- ceiling(nrow(trj)/10)
-      else if(!is.numeric(n_search_attempts)||length(n_search_attempts)!=1)
+      else if(!is.numeric(n_search_attempts) || length(n_search_attempts)!=1)
         stop('n_search_attempts must be a numeric of length 1.')
-      if(is.null(clu_radius)||clu_radius==2147483647)
+      
+      if(is.null(clu_radius) || clu_radius==214748364)
         clu_radius <- rootmax_rad/tree_height
     }else{
       rootmax_rad <- 0
       tree_height <- 0
       n_search_attempts <- 0
     }
+    
+    
     # ------------------------------------------------------------------------------
     # Main functions for internal calling of Fortran code
     #

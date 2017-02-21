@@ -55,8 +55,8 @@ sapphire_plot(sap_file = "PROGIDX_000000000002.dat",local_cut = T,timeline = T,a
 # Wrapper run
 if(distance_measure==1) trj2 <- read.table("dihedral_original.fyc")
 mst_from_trj(trj = trj, distance_method = distance_measure, clu_radius = cluster_rad,
-                       birch_clu = birch_clustering, mode = "fortran", rootmax_rad = cluster_maxrad, logging = F,
-                       tree_height = birch_height, n_search_attempts = 100)
+             birch_clu = birch_clustering, mode = "fortran", rootmax_rad = cluster_maxrad, logging = F,
+             tree_height = birch_height, n_search_attempts = 100)
 ret <- gen_progindex(nsnaps=nrow(trj), snap_start = 2)
 # ret <- gen_progindex(adjl = adjl, snap_start = 2)
 gen_annotation(ret_data = ret,snap_start = 2,local_cut_width = floor(nrow(trj)/27))
