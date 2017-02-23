@@ -37,6 +37,7 @@ write.pdb.d<-function(trj, base_name, round=FALSE, digit=4, dim_check = TRUE){
   cat("END", sep = "\n", file = paste0(base_name,".in"), append = TRUE)
   for (i in seq(nr)){
     cat(paste0("MODEL        ",i), file = paste0(base_name,".pdb"), sep = "\n", append=TRUE)
+    if(((i*100)/nr)%%10) message(((i*100)/nr),"% done")
     for(j in seq(to = (nc),by = 3)){
       #       if(!(((j-1)/3)%%1==0)) next
       #       if(((j+2)/3)<10) space<-" " 

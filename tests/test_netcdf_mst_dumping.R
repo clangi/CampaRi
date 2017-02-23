@@ -30,7 +30,7 @@ birch_height <- 8
 cluster_maxrad <- 120.0
 cluster_rad <- 60.0
 
-distance_measure <- 5
+distance_measure <- 1
 
 if(mst) {
   cluster_rad <- cluster_maxrad <-.Machine$integer.max
@@ -53,7 +53,7 @@ sapphire_plot(sap_file = "PROGIDX_000000000002.dat",local_cut = T,timeline = T,a
 # zap_ggplot(sap_file = "../base_sim/PROGIDX_000000000002.dat",local_cut = T,timeline = T,ann_trace = 2,title = "ORIGINAL CAMPARI")
 # ------------------------------------------------------
 # Wrapper run
-if(distance_measure==1) trj2 <- read.table("dihedral_original.fyc")
+if(distance_measure==1) trj <- read.table("../../dihedral_original.fyc")
 mst_from_trj(trj = trj, distance_method = distance_measure, clu_radius = cluster_rad,
              birch_clu = birch_clustering, mode = "fortran", rootmax_rad = cluster_maxrad, logging = F,
              tree_height = birch_height, n_search_attempts = 100)
@@ -63,17 +63,17 @@ gen_annotation(ret_data = ret,snap_start = 2,local_cut_width = floor(nrow(trj)/2
 sapphire_plot(sap_file = "REPIX_000000000002.dat",local_cut = T,timeline = T, ann_trace = 2,title = "WRAPPER CAMPARI")
 # ----------------------------------------------------
 # Adding annotation
-progind2 <- read.table("REPIX_000000000002.dat")[,c(3,4)]
-xx <- seq(from=1, by=1, to=nrow(trj2))
-ann <- t((trj2[progind2[xx, 1], ] %% 360 < 120) + (trj2[progind2[xx, 1], ] %% 360 < 240) + 1)
 title1 <- "NBU SST, 30k snapshots - WRAPPER"
-zap_ggplot(sap_file = "REPIX_000000000002.dat",local_cut = T,timeline = T,ann_trace = ann,ann_names_L = c("CCCC","HCCC","CCCH"),title = title1)
+progind2 <- read.table("REPIX_000000000002.dat")[,c(3,4)]
+xx <- seq(from=1, by=1, to=nrow(trj))
+ann <- t((trj[progind2[xx, 1], ] %% 360 < 120) + (trj[progind2[xx, 1], ] %% 360 < 240) + 1)
+sapphire_plot(sap_file = "REPIX_000000000002.dat",local_cut = T,timeline = T,ann_trace = ann,ann_names_L = c("CCCC","HCCC","CCCH"),title = title1)
 # ORIGINAL ann
 title2 <- "NBU SST, 30k snapshots - ORIGINAL"
 progind2 <- read.table("PROGIDX_000000000002.dat")[,c(3,4)]
-xx <- seq(from=1, by=1, to=nrow(trj2))
-ann <- t((trj2[progind2[xx, 1], ] %% 360 < 120) + (trj2[progind2[xx, 1], ] %% 360 < 240) + 1)
-zap_ggplot(sap_file = "PROGIDX_000000000002.dat",local_cut = T,timeline = T,ann_trace = ann,ann_names_L = c("CCCC","HCCC","CCCH"),title = title2)
+xx <- seq(from=1, by=1, to=nrow(trj))
+ann <- t((trj[progind2[xx, 1], ] %% 360 < 120) + (trj[progind2[xx, 1], ] %% 360 < 240) + 1)
+sapphire_plot(sap_file = "PROGIDX_000000000002.dat",local_cut = T,timeline = T,ann_trace = ann,ann_names_L = c("CCCC","HCCC","CCCH"),title = title2)
 # ------------------------------------------------------
 # Wrapper run with distance = 5
 cluster_maxrad <- mean(trj)*4.0/4.0
@@ -117,3 +117,7 @@ points(which(st1[,3]==1),y = 0,col="blue",pch=19,cex=0.8)
 sum(st1[,10]==0);sum(st12[,10]==0);sum(st1[,12]==0);sum(st12[,12]==0)
 mean(st1[,10]);mean(st12[,10]);mean(st1[,12]);mean(st12[,12])
 
+
+# DELETING THE WORKING DIR where we just worked
+setwd("..")
+system("rm -rf output_to_delete")

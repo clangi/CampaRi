@@ -47,10 +47,19 @@
 #' @export mst_from_trj
 #' @import parallel
 
-mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL, window = NULL, clu_radius = NULL, clu_hardcut = NULL, #inputs
+mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL, clu_radius = NULL, clu_hardcut = NULL, #inputs
                        normalize_d = TRUE, birch_clu = FALSE, min_span_tree = TRUE, mode = "fortran", #algo modes
                        rootmax_rad = NULL, tree_height = NULL, n_search_attempts = NULL, #sst default
-                       cores = NULL, logging = FALSE){ #misc
+                       cores = NULL, logging = FALSE, ...){ #misc
+  # Checking additional inputs
+  input_args <- list(...)
+  avail_extra_argoments <- c('pre_process', 'window', 'overlapping_reduction')
+  if(any(!(names(input_args) %in% avail_extra_argoments))) 
+    warning('There is a probable mispelling in one of the inserted variables. Please check the available extra input arguments.')
+  if(!('pre_process' %in% names(input_args))) pre_process <- NULL else pre_process <- input_args[['pre_process']]
+  if(!('window' %in% names(input_args))) window <- NULL else window <- input_args[['window']]
+  if(!('overlapping_reduction' %in% names(input_args))) overlapping_reduction <- NULL else overlapping_reduction <- input_args[['overlapping_reduction']]
+  # checking trajectory input
   if(!is.matrix(trj)){
     if(!is.data.frame(trj)) stop('trj input must be a matrix or a data.frame')
     trj <- as.matrix(trj)
@@ -75,6 +84,35 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL, window
   n_snaps <- nrow(trj)
   n_xyz <- ncol(trj)
 
+  # Preprocessing - options = 'wgcna'   
+  preprocessing_opts <- c('wgcna', 'multiplication')
+  if(!is.null(pre_process) && (length(pre_process)!=1 || !is.character(pre_process) || !(pre_process %in% preprocessing_opts)))
+    stop('Inserted preprocessing method (string) not valid.')
+  if(!is.null(pre_process)) cat('Preprocessing mode activated. ')
+  if(!is.null(pre_process) && pre_process == 'wgcna'){
+    # checking network construction varoables
+    if(!is.null(window) && (length(window) != 1 || !is.numeric(window) || window <= 3 || window > n_snaps/2))
+      stop('The used window (distance 12) is too small or too big (must be less than half to have sense) or it is simply an erroneus insertion.')
+    if((!is.null(overlapping_reduction) && (length(overlapping_reduction) != 1 ||!is.numeric(overlapping_reduction) ||
+                                            overlapping_reduction <= 0 || overlapping_reduction > 1)))
+      stop('The used overlapping_reduction is not correctly defined. It must be a number between 0 and 1.')
+    
+    # setting standard window size
+    if(is.null(window)) window <- nrow(trj)/100
+    cat('A network will be generated using the WGCNA correlation algorithm and using a sliding window of', window, 'snapshots.\n')
+    # Calling generate_network
+    trj <- generate_network(trj, window, overlapping_reduction)
+    n_xyz <- ncol(trj)
+  }
+  if(!is.null(pre_process) && pre_process == 'multiplication'){
+    cat('A multiplication will be generated copy-pasting dimensionalities from a sliding window of', window, 'snapshots.\n')
+    # Calling multiplicate_trj (the )
+    trj <- multiplicate_trj(trj, window, overlapping_reduction) 
+    n_xyz <- ncol(trj)
+  }
+  
+  
+  
   # -----------------------------------------------------------------------
   # Normal mode (R).
   #
@@ -125,38 +163,31 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL, window
     # --------------
     
     # Distance value
-    max_supported_dist <- 12
-    sup_dist <- c(1, 5, 11, 12)
+    max_supported_dist <- 11
+    sup_dist <- c(1, 5, 11)
     if(!birch_clu){
       # The multiple distance insertion (and weights) are available only with MST
-      tmp_dis <- distance_method
-      distance_method <- rep(0, max_supported_dist)
       if(!is.numeric(tmp_dis) || 
          (!all(tmp_dis %in% sup_dist)) || length(tmp_dis)>max_supported_dist)
         stop("The distance values that have been inserted are not supported. The supported values can be checked in the documentation.")
       if(length(tmp_dis) > 1) cat("More than one distance selected. They will be averaged (this feature is available only for MST).")
-      distance_method[1:length(tmp_dis)] <- tmp_dis
-      # Network construction if the distance is = 12  
     }else{
       if(length(distance_method) != 1) stop('When using the birch clustering algorithm (SST) only one distance is available per time.')
       if(!is.numeric(distance_method) || !(distance_method %in% sup_dist)) stop("The distance inserted is not valid. Check the documentation for precise values.")
-      if(distance_method == 12){
-        if(!is.null(window) && (length(window) != 1 || !is.numeric(window) || window <= 0 || window > n_snaps/2))
-          stop('The used window (distance 12) is too small or too big (must be less than half to have sense) or it is simply an erroneus insertion.')
-        if((!is.null(overlapping_reduction) && (length(overlapping_reduction) != 1 ||!is.numeric(overlapping_reduction) ||
-                                                overlapping_reduction <= 0 || overlapping_reduction > 1)))
-          stop('The used overlapping_reduction is not correctly defined. It must be a number between 0 and 1.')
-        trj2 <- generate_network(trj, window, overlapping_reduction)  
-      }
     }
+    tmp_dis <- distance_method
+    distance_method <- rep(0, max_supported_dist)
+    distance_method[1:length(tmp_dis)] <- tmp_dis
     
     # Distance weights
-    tmp_dis_w <- distance_weights
-    distance_weights <- rep(1,max_supported_dist)
     if(!is.null(distance_weights)){
-      if(!is.numeric(tmp_dis_w) || length(tmp_dis)>max_supported_dist || tmp_dis_w < 0 || tmp_dis_w > 1)
+      tmp_dis_w <- distance_weights
+      distance_weights <- rep(1,max_supported_dist)
+      if(!is.numeric(tmp_dis_w) || length(tmp_dis_w)>max_supported_dist || tmp_dis_w < 0 || tmp_dis_w > 1)
         warning("Distances are not num or they are not in [0,1]. The option will be turned off")
       else distance_weights[1:length(tmp_dis_w)] <- tmp_dis_w
+    }else{
+      distance_weights <- rep(1,max_supported_dist)
     }
     
     # Thresholds for radius and inter radius values. This is MST leader clustering
@@ -209,7 +240,6 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL, window
       tree_height <- 0
       n_search_attempts <- 0
     }
-    
     
     # ------------------------------------------------------------------------------
     # Main functions for internal calling of Fortran code
@@ -273,8 +303,9 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL, window
       output_fin <- list()
       #double Cstyle deginitions
       attr(trj,"Csingle") <- TRUE
+      attr(distance_weights,"Csingle") <- TRUE
       #main fortran talker
-      .Fortran("generate_neighbour_list_w", PACKAGE="CampaRi",
+      invisible(.Fortran("generate_neighbour_list_w", PACKAGE="CampaRi",
                #input
                trj_data=trj,
                n_xyz_in=as.integer(n_xyz),
@@ -295,7 +326,7 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL, window
                #modes
                normalize_dis_in=as.logical(normalize_d),
                log_print_in=as.logical(logging),
-               verbose_in=as.logical(TRUE))
+               verbose_in=as.logical(TRUE)))
     }else if(data_management=="h5fc"){
       stop("still to-do")
     }else{
