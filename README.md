@@ -8,10 +8,10 @@
 -->
 [![Build Status](https://travis-ci.org/Melkiades/CampaRi.svg?branch=master)](https://travis-ci.org/Melkiades/CampaRi)
 ------------------------------------------------------------------------
-# CampaRi - An R package
+# CampaRi - An R wrapper for fast trajectory analysis
 
 Analysis algorithms extracted from the original 'campari' software package.
-They consists in a kinetic annotation of the trajectory based on the minimum spanning tree constructed on the distances between snapshots. The fast algorithm is implemented on the basis of a modified version of the birch algorithm, while the slow one is based on a simple leader clustering. For more information please visit the original documentation on <http://campari.sourceforge.net/index.html>
+They consists in a kinetic annotation of the trajectory based on the minimum spanning tree constructed on the distances between snapshots. The fast algorithm is implemented on the basis of a modified version of the birch algorithm, while the slow one is based on a simple leader clustering. For more information please visit the [original website](http://campari.sourceforge.net/index.html)
 
 ### Installation ###
 ```R
