@@ -1,18 +1,3 @@
-
-
-## Synopsis
-Analysis of data series and trajectories using fortran backend.
-
-## Installation
-```bash
-cp CampaRi/tests/testthat/test-mst.R .
-```
-In the working directory (.. of CampaRi) please open test-mst.R using RStudio or similarly.
-
-## Tests
-To try the package, pleaser refer to test-mst.R. Copy it in the working directory along with the package (extracted) file.
-
-[![Build Status](https://travis-ci.org/Melkiades/CampaRi.svg?branch=master)](https://travis-ci.org/Melkiades/CampaRi)
 <!---
 [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/BioinformaticsFMRP/TCGAbiolinks?branch=master&svg=true)](https://ci.appveyor.com/project/BioinformaticsFMRP/TCGAbiolinks)
 [![codecov.io](https://codecov.io/github/BioinformaticsFMRP/TCGAbiolinks/coverage.svg?branch=master)](https://codecov.io/github/BioinformaticsFMRP/TCGAbiolinks?branch=master)
@@ -21,7 +6,7 @@ To try the package, pleaser refer to test-mst.R. Copy it in the working director
 [![bioc](http://bioconductor.org/shields/availability/devel/TCGAbiolinks.svg)](http://bioconductor.org/packages/TCGAbiolinks/)
 
 -->
-
+[![Build Status](https://travis-ci.org/Melkiades/CampaRi.svg?branch=master)](https://travis-ci.org/Melkiades/CampaRi)
 ------------------------------------------------------------------------
 # CampaRi - An R package
 
