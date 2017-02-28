@@ -46,7 +46,9 @@ You can check you have actually made a reproducible example by starting up a fre
 
 ## Pull requests
 
-To contribute a change to CampaRi, you follow these steps:
+Before contributing in this sense please read a guide like [this](https://code.tutsplus.com/tutorials/how-to-collaborate-on-github--net-34267).
+
+In general, to contribute a change to CampaRi, you should follow these steps:
 
 1. Create a branch in git and make your changes.
 1. Push branch to github and issue pull request (PR).
