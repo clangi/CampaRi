@@ -8,7 +8,7 @@
 #' @param overlapping_reduction
 #' 
 #' 
-#' @details #For more details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
+#' @details For more details on the SAPPHIRE plot, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
 #'
 #' @return It will return a modified trajectory matrix.
 #' @seealso
