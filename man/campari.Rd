@@ -4,12 +4,12 @@
 \alias{campari}
 \title{Original campari run}
 \usage{
-campari(nsnaps, wd, data_file, base_name, camp_home, ...)
+campari(nsnaps, working_dir, data_file, base_name, camp_home, ...)
 }
 \arguments{
 \item{nsnaps}{Number of snapshots in the trajectory file.}
 
-\item{wd}{Working directory.}
+\item{working_dir}{Working directory.}
 
 \item{data_file}{Input file (e.g. \code{trajectory.dcd}) location.}
 
@@ -29,7 +29,7 @@ For details, please refer to the main documentation of the original campari soft
 }
 \examples{
 \dontrun{
-campari(nsnaps = 100, wd = "./", data_file = "file_dcd", camp_home = "/campari_home/",
+campari(nsnaps = 100, working_dir = "./", data_file = "file_dcd", camp_home = "/campari_home/",
         base_name = "nbu", pdb_format = 4,
         cprogindstart = 2,distance_met = 5, birch_height = 5, cmaxrad = 1, cradius = 0.1,
         cprogindwidth = 10,search_attempts = 10, methodst = 2)
@@ -39,4 +39,3 @@ campari(nsnaps = 100, wd = "./", data_file = "file_dcd", camp_home = "/campari_h
 \seealso{
 \code{\link{mst_from_trj}}, \code{\link{gen_progindex}}, \code{\link{gen_annotation}}.
 }
-

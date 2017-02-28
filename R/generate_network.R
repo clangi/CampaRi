@@ -30,6 +30,7 @@ generate_network <- function(trj, window = NULL, overlapping_reduction = NULL){
 
   # Long calculation warning
   if(dim(trj)[1] > 20000) warning('The network generation can be really long. Please consider multi-threads options of the WGCNA package.')
+  if(dim(trj)[2] > 50) warning('The network generation can create an exagerated number of variables')
   
   # setting standard window size
   if(is.null(window)) window <- nrow(trj)/100

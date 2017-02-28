@@ -4,10 +4,10 @@
 \alias{write.pdb.d}
 \title{Writing a pdb file from trajectory matrix in R}
 \usage{
-write.pdb.d(trj, base_name, round = FALSE, digit = 4)
+write.pdb.d(trj, base_name, round = FALSE, digit = 4, dim_check = TRUE)
 }
 \arguments{
-\item{trj}{Time series in a matrix shape. The number of variables (nrow) must be divisible by 3.}
+\item{trj}{Time series in a matrix shape (also data.frame numeric). The number of variables (nrow) must be divisible by 3 for atom-like pdb writing.}
 
 \item{base_name}{File base name.}
 
@@ -28,4 +28,3 @@ write.pdb.d(matrix(rnorm(900), nrow = 100, ncol = 9), base_name = "rnorm_trj")
 \seealso{
 \code{\link{campari}}
 }
-

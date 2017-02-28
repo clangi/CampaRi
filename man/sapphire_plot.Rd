@@ -60,4 +60,3 @@ zap_ggplot("REPIX_000000000001.dat")
 \seealso{
 \code{\link{mst_from_trj}}, \code{\link{gen_progindex}}, \code{\link{gen_annotation}}.
 }
-

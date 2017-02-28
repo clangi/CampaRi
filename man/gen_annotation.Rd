@@ -32,4 +32,3 @@ gen_annotation(ret_data = ret, local_cut_width = 10)
 \seealso{
 \code{\link{gen_progindex}}, \code{\link{sapphire_plot}}.
 }
-

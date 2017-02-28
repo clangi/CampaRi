@@ -45,7 +45,7 @@ campari<-function(nsnaps, working_dir, data_file, base_name, camp_home, ...){
   # dirs/file definitions
   kfile <- paste0(working_dir,"/",base_name,".key")
   klog <-paste0(working_dir,"/",base_name,".log")
-  seq_in <- paste0(working_dir,"/",base_name,".in")
+  seq_in <- paste0(working_dir,"/",strsplit(data_file, ".pdb")[[1]],".in")
   
   kchar<-readChar(kfile, file.info(kfile)$size)
   
