@@ -56,6 +56,7 @@ gen_annotation(ret_data = ret, local_cut_width = 10)
 \dontrun{
 zap_ggplot("REPIX_000000000001.dat")
 }
+
 }
 \seealso{
 \code{\link{mst_from_trj}}, \code{\link{gen_progindex}}, \code{\link{gen_annotation}}.

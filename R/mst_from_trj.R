@@ -42,7 +42,7 @@
 #' tree_height = 5, n_search_attempts = 50)
 #' }
 #'
-#' @importFrom utils read.table
+#' 
 #' @importFrom bio3d rmsd
 #' @export mst_from_trj
 #' @import parallel
@@ -53,12 +53,19 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL, clu_ra
                        cores = NULL, logging = FALSE, ...){ #misc
   # Checking additional inputs
   input_args <- list(...)
-  avail_extra_argoments <- c('pre_process', 'window', 'overlapping_reduction')
+  avail_extra_argoments <- c('pre_process', 'window', 'overlapping_reduction', 'feature_selection', 'n_princ_comp')
   if(any(!(names(input_args) %in% avail_extra_argoments))) 
     warning('There is a probable mispelling in one of the inserted variables. Please check the available extra input arguments.')
+  
+  # wgcna and multiplication pre-processing
   if(!('pre_process' %in% names(input_args))) pre_process <- NULL else pre_process <- input_args[['pre_process']]
   if(!('window' %in% names(input_args))) window <- NULL else window <- input_args[['window']]
   if(!('overlapping_reduction' %in% names(input_args))) overlapping_reduction <- NULL else overlapping_reduction <- input_args[['overlapping_reduction']]
+  
+  # feature selection
+  if(!('feature_selection' %in% names(input_args))) feature_selection <- NULL else feature_selection <- input_args[['feature_selection']]
+  if(!('n_princ_comp' %in% names(input_args))) n_princ_comp <- NULL else n_princ_comp <- input_args[['n_princ_comp']]
+  
   # checking trajectory input
   if(!is.matrix(trj)){
     if(!is.data.frame(trj)) stop('trj input must be a matrix or a data.frame')
@@ -83,8 +90,17 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL, clu_ra
   #Input setting
   n_snaps <- nrow(trj)
   n_xyz <- ncol(trj)
-
-  # Preprocessing - options = 'wgcna'   
+  
+  
+  
+  # -----------------------------------------------------------------------
+  # Preprocessing 
+  #
+  # Available options: 'wgcna' 'multiplication'
+  #
+  #
+  #
+  
   preprocessing_opts <- c('wgcna', 'multiplication')
   if(!is.null(pre_process) && (length(pre_process)!=1 || !is.character(pre_process) || !(pre_process %in% preprocessing_opts)))
     stop('Inserted preprocessing method (string) not valid.')
@@ -112,7 +128,24 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL, clu_ra
   }
   
   
+  # -----------------------------------------------------------------------
+  # Feature selection
+  #
+  # This method has been implemented after the common pre-processing analysis
+  # function because this step of feature selection coul be performed only 
+  # internally while the a priori feature selection was passible also outside
+  # this function.
+  # 
+  # Supported algorithms: 'pca'
+  #
+  if(!is.null(feature_selection)){
+    if(is.null(n_princ_comp)) n_princ_comp <- floor(ncol(trj)/10)
+    trj <- select_features(trj, feature_selection = feature_selection, n_princ_comp = n_princ_comp)
+    n_xyz <- ncol(trj)
+  }
   
+  
+  # -----------------------------------------------------------------------
   # -----------------------------------------------------------------------
   # Normal mode (R).
   #
@@ -150,6 +183,7 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL, clu_ra
 
 
   # -----------------------------------------------------------------------
+  # -----------------------------------------------------------------------
   # Fortran mode.
   #
   # This is the main routine which is using extracted code from campari.
@@ -165,6 +199,7 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL, clu_ra
     # Distance value
     max_supported_dist <- 11
     sup_dist <- c(1, 5, 11)
+    tmp_dis <- distance_method
     if(!birch_clu){
       # The multiple distance insertion (and weights) are available only with MST
       if(!is.numeric(tmp_dis) || 
@@ -175,7 +210,6 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL, clu_ra
       if(length(distance_method) != 1) stop('When using the birch clustering algorithm (SST) only one distance is available per time.')
       if(!is.numeric(distance_method) || !(distance_method %in% sup_dist)) stop("The distance inserted is not valid. Check the documentation for precise values.")
     }
-    tmp_dis <- distance_method
     distance_method <- rep(0, max_supported_dist)
     distance_method[1:length(tmp_dis)] <- tmp_dis
     

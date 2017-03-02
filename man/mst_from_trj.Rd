@@ -69,6 +69,7 @@ birch_clu = TRUE, mode = "fortran", rootmax_rad = 1.3, logging = FALSE,
 tree_height = 5, n_search_attempts = 50)
 }
 
+
 }
 \seealso{
 \code{\link{adjl_from_progindex}}, \code{\link{gen_progindex}}, \code{\link{gen_annotation}}.

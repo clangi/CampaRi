@@ -34,6 +34,8 @@
 #' \dontrun{
 #' zap_ggplot("REPIX_000000000001.dat")
 #' }
+#' 
+#' @importFrom data.table fread
 #' @importFrom grDevices dev.off jpeg
 #' @importFrom graphics hist plot 
 #' @export sapphire_plot
@@ -51,8 +53,10 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
     dir.create(folderPlot)
     cat(paste0(folderPlot," created in order to contain my plots."))
   }
+  
   # loading data - sapphire table
-  if(is.null(sap_table)&&!is.null(sap_file)) pin <- read.table(sap_file)
+  # the coercion to data.frame is made for retrocompatibili with non-data.table code
+  if(is.null(sap_table)&&!is.null(sap_file)) pin <- data.frame(fread(sap_file)) 
   else if(is.null(sap_file)&&!is.null(sap_table)) pin <- sap_table
   else stop("Sapphire table needed in input. Check the documentation")
   dp <- dim(pin)
