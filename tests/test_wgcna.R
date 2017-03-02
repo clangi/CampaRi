@@ -9,7 +9,7 @@
 
 
 # Set and making working directory
-#----------------------------------------------
+#----------------------------------
 w_dir <- getwd()
 system("mkdir output_to_delete")
 setwd("output_to_delete/")
@@ -19,12 +19,38 @@ w_dir <- getwd()
 # install_github("Melkiades/CampaRi")
 # library(CampaRi)
 
-# butane chain simulated data - variables init
-# ------------------------------------------
+# butane chain simulated data
+# ---------------------------
 library(bio3d)
 trj <- read.dcd("../inst/extdata/NBU_1250fs.dcd")
 options(CampaRi.data_management = "netcdf") # netcdf handling
 
+
+# Testing the covariance construction of WGCNA
+# ------------------------
+
+library(WGCNA)
+mat_wgcna <- WGCNA::adjacency(datExpr = trj, type = 'unsigned', corFnc = 'cor', power = 1, 
+                              corOptions = "use = 'p', method = 'spearman'", # "use = 'p'" is the standard
+                              distFnc = ) 
+
+homemade_mat_wgcna <- array(0, dim(mat_wgcna))
+
+for(i in 1:nrow(mat_wgcna)){
+  for(j in 1:ncol(mat_wgcna)){
+    homemade_mat_wgcna[i,j] <- abs(cor(trj[,i], trj[,j]))
+  }
+}
+
+sum(mat_wgcna == homemade_mat_wgcna)
+42*42
+
+# let's try the covariance matrix
+cov_mat <- cov(trj)
+
+
+
+# variables initialization
 mst <- F
 birch_height <- 8
 cluster_maxrad <- 120.0

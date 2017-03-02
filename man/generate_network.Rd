@@ -21,7 +21,7 @@ It will return a modified trajectory matrix.
      It is also possible to reduce the dimensionality using an overlapping reduction (see \code{overlapping_reduction})
 }
 \details{
-#For more details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
+For more details on the SAPPHIRE plot, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
 }
 \seealso{
 \code{\link{adjl_from_progindex}}, \code{\link{gen_progindex}}, \code{\link{gen_annotation}}.

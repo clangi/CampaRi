@@ -45,22 +45,37 @@ campari<-function(nsnaps, working_dir, data_file, base_name, camp_home, ...){
   # dirs/file definitions
   kfile <- paste0(working_dir,"/",base_name,".key")
   klog <-paste0(working_dir,"/",base_name,".log")
-  seq_in <- paste0(working_dir,"/",strsplit(data_file, ".pdb")[[1]],".in")
+  if(!file.exists(kfile)) stop(kfile, " not in the working directory. ")
+
   
   kchar<-readChar(kfile, file.info(kfile)$size)
   
   FMCSC_PDBANALYZE <- 1
   PARAMETERS <- paste0(camp_home,"/params/abs3.2_opls.prm")  # file defining system energies. Irrelevant fuer blosse Analyse.
   FMCSC_BBSEGFILE <- paste0(camp_home,"/data/bbseg2.dat")    # lookup table for secondary structure measures
-  FMCSC_SEQFILE  <- seq_in                     # input file that defines the sequence of the molecule(s)
+  if(!file.exists(PARAMETERS)) stop(PARAMETERS, " not present.")
+  if(!file.exists(FMCSC_BBSEGFILE)) stop(FMCSC_BBSEGFILE, " not present.")
   
   FMCSC_PDB_FORMAT <- pdb_format 
-  if(FMCSC_PDB_FORMAT==1) 
+  # pdb file
+  if(FMCSC_PDB_FORMAT==1){
     FMCSC_PDBFILE <- paste0(working_dir, "/", data_file)
-  if(FMCSC_PDB_FORMAT==3) 
+    seq_in <- paste0(working_dir,"/",strsplit(data_file, ".pdb")[[1]],".in")
+  }
+  # xtc file
+  if(FMCSC_PDB_FORMAT==3) { 
     FMCSC_XTCFILE <- paste0(working_dir, "/", data_file)
-  if(FMCSC_PDB_FORMAT==4) 
+    seq_in <- paste0(working_dir,"/",strsplit(data_file, ".xtc")[[1]],".in")
+  }
+  # dcd file
+  if(FMCSC_PDB_FORMAT==4){
     FMCSC_DCDFILE <- paste0(working_dir, "/", data_file)
+    seq_in <- paste0(working_dir,"/",strsplit(data_file, ".dcd")[[1]],".in")
+  } 
+  
+  if(!file.exists(seq_in)) stop(seq_in, " not in the working directory. ")
+  FMCSC_SEQFILE  <- seq_in                                  # input file that defines the sequence of the molecule(s)
+  
   
   #1. CAMPARI expects a single trajectory file in pdb-format using the MODEL /ENDMDL syntax to denote the individual snapshots.
   #2. CAMPARI expects to find multiple pdb files with one snapshot each that are systematically numbered starting from the file provided via PDBFILE.

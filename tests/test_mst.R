@@ -16,9 +16,9 @@ system("mkdir output_to_delete")
 setwd("output_to_delete/")
 w_dir <- getwd()
 # remove.packages("CampaRi", lib="~/R/x86_64-pc-linux-gnu-library/3.1")
-library(devtools)
-install_github("Melkiades/CampaRi")
-library(CampaRi)
+# library(devtools)
+# install_github("Melkiades/CampaRi")
+# library(CampaRi)
 
 
 # butane chain simulated data - variables init
@@ -28,7 +28,8 @@ trj <- read.dcd("../inst/extdata/NBU_1250fs.dcd")
 
 # Wrapper analysis
 # ------------------------------------------
-adjl <- mst_from_trj(trj = trj, mode = "fortran", normalize_d = FALSE, logging = F)
+
+adjl <- mst_from_trj(trj = trj, mode = "fortran", normalize_d = FALSE, logging = T)
 ret <- gen_progindex(adjl, snap_start = 10)
 ret2 <- gen_annotation(ret, snap_start = 10)
 sapphire_plot(sap_file = 'REPIX_000000000010.dat', title = "CAMPARI WRAPPER - MST", 
@@ -38,8 +39,8 @@ sapphire_plot(sap_file = 'REPIX_000000000010.dat', title = "CAMPARI WRAPPER - MS
 # ------------------------------------------
 system('cp ../inst/extdata/NBU_1250fs.dcd .')
 system('cp ../inst/extdata/nbu.key .')
-system('cp ../inst/extdata/nbu.in .')
-camp_home <- "/software/campari/"
+system('cp ../inst/extdata/NBU_1250fs.in .')
+camp_home <- "/software/campariv3/"
 campari(nsnaps = nrow(trj), w_dir, "NBU_1250fs.dcd", base_name="nbu", camp_home,
         cprogindstart = 10, pdb_format = 4, distance_met = 5)
 sapphire_plot(sap_file = "PROGIDX_000000000010.dat", title = "ORIGINAL CAMPARI - MST")
@@ -47,7 +48,6 @@ sapphire_plot(sap_file = "PROGIDX_000000000010.dat", title = "ORIGINAL CAMPARI -
 # recompute the progress index from PROGIDX/REPIX matrix output
 # ------------------------------------------
 tree <- adjl_from_progindex(prog_index_file = "PROGIDX_000000000010.dat")
-
 
 r1<-gen_progindex(tree,snap_start = 1000)
 r2<-gen_annotation(r1, snap_start = 1000)
