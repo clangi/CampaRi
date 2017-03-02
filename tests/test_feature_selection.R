@@ -34,10 +34,40 @@ birch_clustering <- T
 # possible preprocessing tools
 # ----------------------------
 
+# some test on pca (princomp vs PCAproj)
+library(mlbench)
+library(caret)
+library(ggfortify)
+data(PimaIndiansDiabetes)
+# Check importance levels
+control <- trainControl(method="repeatedcv", number=10, repeats=3)
+# train the model
+model <- train(diabetes~., data=PimaIndiansDiabetes, method="lvq", preProcess="scale", trControl=control)
+# estimate variable importance
+importance <- varImp(model, scale=FALSE)
+# summarize importance
+print(importance)
+plot(importance)
+
+# PCA - classic
+pca <- prcomp(PimaIndiansDiabetes[,1:8], scale. = T)
+princomp2 <- princomp(PimaIndiansDiabetes[,1:8])
+print(princomp2$loadings)
+
+# PCA - pcaPP
+pca_pr <- pcaPP::PCAproj(PimaIndiansDiabetes[,1:8],8)
+print(pca_pr$loadings)
+
+
+# plotting them
+autoplot(pca, data = PimaIndiansDiabetes, colour = "diabetes", size=0.05, frame=T)
+autoplot(princomp2, data = PimaIndiansDiabetes, colour = "diabetes", size=0.05, frame=T)
+autoplot(pca_pr, data = PimaIndiansDiabetes, colour = "diabetes", size=0.05, frame=T)
+
 # pre-feature_selection
 trj_pca <- select_features(trj, feature_selection = 'pca')
 
-
+trj_pca_robust <- select_features(trj, feature_selection = 'pca', pca_method = 'robust')
 
 # ------------------------------------------------------
 # Wrapper run - no wgcna
@@ -45,7 +75,7 @@ mst_from_trj(distance_method = distance_measure, clu_radius = cluster_rad,
              birch_clu = birch_clustering, mode = "fortran", rootmax_rad = cluster_maxrad, logging = F,
              tree_height = birch_height, n_search_attempts = 100,
              # changing vars
-             trj = trj_pca)
+             trj = trj_pca_robust)
 ret <- gen_progindex(nsnaps=nrow(trj), snap_start = 2)
 # ret <- gen_progindex(adjl = adjl, snap_start = 2)
 gen_annotation(ret_data = ret,snap_start = 2,local_cut_width = floor(nrow(trj)/27))

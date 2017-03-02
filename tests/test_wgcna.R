@@ -31,8 +31,8 @@ options(CampaRi.data_management = "netcdf") # netcdf handling
 
 library(WGCNA)
 mat_wgcna <- WGCNA::adjacency(datExpr = trj, type = 'unsigned', corFnc = 'cor', power = 1, 
-                              corOptions = "use = 'p', method = 'spearman'", # "use = 'p'" is the standard
-                              distFnc = ) 
+                              corOptions = "use = 'p', method = 'spearman'") # "use = 'p'" is the standard 
+# NB: the spearman construction is outrageously long
 
 homemade_mat_wgcna <- array(0, dim(mat_wgcna))
 
@@ -42,12 +42,13 @@ for(i in 1:nrow(mat_wgcna)){
   }
 }
 
+# Let's check it is really as it seems! -> they are == !
 sum(mat_wgcna == homemade_mat_wgcna)
 42*42
 
 # let's try the covariance matrix
-cov_mat <- cov.wt(trj)
-
+cov_mat <- cov(trj)
+cov_mat <- cov_mat/max(cov_mat)
 
 
 # variables initialization

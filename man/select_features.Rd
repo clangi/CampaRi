@@ -5,14 +5,16 @@
 \title{Multiple pre-processing methods for feature selection}
 \usage{
 select_features(trj, feature_selection = "pca",
-  n_princ_comp = floor(ncol(trj)/10))
+  n_princ_comp = floor(ncol(trj)/10), pca_method = "robust")
 }
 \arguments{
 \item{trj}{Input trajectory (variables on the columns and equal-time spaced snpashots on the row). It must be a \code{matrix} or a \code{data.frame} of numeric.}
 
+\item{pca_method}{If set 'original' it will use \code{\link{princomp}}. The default is 'robust' which is using \code{\link{PCAproj}}}
+
 \item{window}{Number of snapshots taken before and after the considered snapshot.}
 
-\item{overlapping_reduction}{}
+\item{overlapping_reduction}{Not yet supported (It will if a great number of snapshots will be considered in this analysis - snapshot selection)}
 }
 \value{
 It will return a modified trajectory matrix and print the principal components vector.
@@ -22,9 +24,9 @@ It will return a modified trajectory matrix and print the principal components v
      is supported. Moreover, this tool is meant to be used with the total trajectory input.
 }
 \details{
-This function is based primarly on the basic R function pricomp. Insead, for more details on the SAPPHIRE anlysis, please refer to the main documentation 
+This function is based primarly on the basic R function \code{pricomp} and on \code{PCAproj} from the package pcaPP. Insead, for more details on the SAPPHIRE anlysis, please refer to the main documentation 
 of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
 }
 \seealso{
-\code{\link{princomp}}, \code{\link{adjl_from_progindex}}, \code{\link{gen_progindex}}, \code{\link{gen_annotation}}.
+\code{\link{princomp}}, \code{\link{PCAproj}}, \code{\link{adjl_from_progindex}}, \code{\link{gen_progindex}}, \code{\link{gen_annotation}}.
 }

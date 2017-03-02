@@ -4,14 +4,14 @@
 \alias{generate_network}
 \title{Create a network for each snapshots}
 \usage{
-generate_network(trj, window = NULL, overlapping_reduction = NULL)
+generate_network(trj, window = NULL, overlapping_reduction = NULL, ...)
 }
 \arguments{
 \item{trj}{Input trajectory (variables on the columns and equal-time spaced snpashots on the row). It must be a \code{matrix} or a \code{data.frame} of numeric.}
 
 \item{window}{Number of snapshots taken before and after the considered snapshot.}
 
-\item{overlapping_reduction}{}
+\item{overlapping_reduction}{Not yet supported (It will if a great number of snapshots will be considered in this analysis - snapshot selection)}
 }
 \value{
 It will return a modified trajectory matrix.
@@ -21,7 +21,11 @@ It will return a modified trajectory matrix.
      It is also possible to reduce the dimensionality using an overlapping reduction (see \code{overlapping_reduction})
 }
 \details{
-For more details on the SAPPHIRE plot, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
+From WGCNA::adjacency: Correlation and distance are transformed as follows: for type = "unsigned", 
+adjacency = |cor|^power; for type = "signed", adjacency = (0.5 * (1+cor) )^power; for type = "signed hybrid",
+adjacency = cor^power if cor>0 and 0 otherwise; and for type = "distance", adjacency = (1-(dist/max(dist))^2)^power.
+For more details on the SAPPHIRE plot, please refer to the main documentation of the original 
+campari software \url{http://campari.sourceforge.net/documentation.html}.
 }
 \seealso{
 \code{\link{adjl_from_progindex}}, \code{\link{gen_progindex}}, \code{\link{gen_annotation}}.

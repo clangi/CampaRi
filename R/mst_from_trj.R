@@ -53,7 +53,11 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL, clu_ra
                        cores = NULL, logging = FALSE, ...){ #misc
   # Checking additional inputs
   input_args <- list(...)
-  avail_extra_argoments <- c('pre_process', 'window', 'overlapping_reduction', 'feature_selection', 'n_princ_comp')
+  avail_extra_argoments <- c('pre_process', 'window', 'overlapping_reduction', 
+                             # specific wgcna vars
+                             'wgcna_type', 'wgcna_power', 'wgcna_corOp',
+                             # feature selection
+                             'feature_selection', 'n_princ_comp')
   if(any(!(names(input_args) %in% avail_extra_argoments))) 
     warning('There is a probable mispelling in one of the inserted variables. Please check the available extra input arguments.')
   
@@ -117,7 +121,7 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL, clu_ra
     if(is.null(window)) window <- nrow(trj)/100
     cat('A network will be generated using the WGCNA correlation algorithm and using a sliding window of', window, 'snapshots.\n')
     # Calling generate_network
-    trj <- generate_network(trj, window, overlapping_reduction)
+    trj <- generate_network(trj, window, overlapping_reduction, ...)
     n_xyz <- ncol(trj)
   }
   if(!is.null(pre_process) && pre_process == 'multiplication'){
