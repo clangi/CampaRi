@@ -1,34 +1,41 @@
 #' @title Identifying basins in the SAPPHIRE plot
 #' @description
-#'     \code{basins_recognition} uses the information provided by the SAPPHIRE plot in order to identify free energy basins, thus leading to a discretized trajectory.
-#'     In particular, it inspect both the kinetic annotation and times of occurence (called dynamical annotation hereafter) and, at the end,it matches the resulting state barriers coming from each of their single analysis.
-#'     An underlying 2-D histogram drives the dynamical trace analysis; the number of bins on the x-axis, \code{nx} is an user input, whereas, on the y-axis, an optimal value is automatically calculated. [...] 
-
+#'     \code{basins_recognition} uses the information provided by the SAPPHIRE plot in order to identify free energy basins, 
+#'     thus leading to a discretized trajectory. In particular, it inspect both the kinetic annotation and times of occurence
+#'     (called dynamical annotation hereafter) and, at the end,it matches the resulting state barriers coming from each of their single analysis.
+#'     
+#'     
 #' @param file Name of the PROGIDX_<...>.dat file 
-#' @param nx Numbers of bins on the x-axis of the 2-D histogram 
+#' @param nx Number of bins on the x-axis of the 2-D histogram 
 #' @param avg.opt Smoothing filter in the kinetic annotation analysis
-#'       \begin{itemize}
+#'       \itemize{
 #'            \item "\code{movav}" for moving average filter
 #'            \item "\code{SG}" for savitzkyGolay filter
-#'       \end{itemize}
+#'       }
+#'       
+#'       
 #' @param plot A logical value indicating whether a plot with te . 
 #' @param ...
-#'      \begin{itemize}
-#'            \item "\code{pol.degree}" degree of the Savitzky-Golay filter
-#'            \item "\code{SG}" for savitzkyGolay filter
-#'      \end{itemize}
-
-#' @return None
-
-#' @examples
-#'      adjl <- mst_from_trj(trj = matrix(rnorm(1000), nrow = 100, ncol = 10))
-#'      ret<-gen_progindex(adjl = adjl)
-#'      gen_annotation(ret_data = ret, local_cut_width = 10)
-#'      \dontrun{
-#'      basins_recognition("PROGIDX_000000000001.dat")
+#'      \itemize{
+#'        \item "\code{pol.degree}" degree of the Savitzky-Golay filter
+#'        \item "\code{SG}" for savitzkyGolay filter
 #'      }
-#' @details For details regarding the SAPPHIRE plot, please refer to the relative publications \url{http://www.nature.com/articles/srep06264}. Main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
-
+#'      
+#'      
+#' @return None
+#' 
+#' @examples
+#' 
+#' adjl <- mst_from_trj(trj = matrix(rnorm(1000), nrow = 100, ncol = 10))
+#' ret<-gen_progindex(adjl = adjl)
+#' gen_annotation(ret_data = ret, local_cut_width = 10)
+#' \dontrun{
+#' basins_recognition("PROGIDX_000000000001.dat")
+#' }
+#' 
+#' @details For details regarding the SAPPHIRE plot, please refer to the relative publications \url{http://www.nature.com/articles/srep06264}. 
+#' Main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
+#' 
 #' @import RcppArmadillo
 #' @importFrom gplots hist2d
 #' @importFrom distrEx HellingerDist

@@ -46,7 +46,7 @@ sum(mat_wgcna == homemade_mat_wgcna)
 42*42
 
 # let's try the covariance matrix
-cov_mat <- cov(trj)
+cov_mat <- cov.wt(trj)
 
 
 
