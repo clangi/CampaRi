@@ -37,7 +37,6 @@
 #' @details For details regarding the SAPPHIRE plot, please refer to the relative publications \url{http://www.nature.com/articles/srep06264}. 
 #' Main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
 #' 
-#' @import RcppArmadillo
 #' @importFrom gplots hist2d
 #' @importFrom distrEx HellingerDist
 #' @importFrom outliers grubbs.test

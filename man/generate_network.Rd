@@ -12,6 +12,8 @@ generate_network(trj, window = NULL, overlapping_reduction = NULL, ...)
 \item{window}{Number of snapshots taken before and after the considered snapshot.}
 
 \item{overlapping_reduction}{Not yet supported (It will if a great number of snapshots will be considered in this analysis - snapshot selection)}
+
+\item{...}{Various variables. Possible values are \code{c('wgcna_type', 'wgcna_power', 'wgcna_corOp')}.}
 }
 \value{
 It will return a modified trajectory matrix.

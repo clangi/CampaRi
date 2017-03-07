@@ -8,7 +8,6 @@
 #' or 12 (network construction, see \code{window var}).
 #' @param distance_weights Vector of weights to be applied in order to compute averaged weighted distance using multiple \code{distance_method}. 
 #' Each value must be between 0 and 1. This option works only if \code{birch_clu=F}.
-#' @param window This variables is used only with distance 12 and defines the window from which the network is constructed (see \code{distance_method = 12}).
 #' @param clu_radius This numeric argument is used in the clustering step in order to make clusters of the same radius at the base level.
 #' @param clu_hardcut This option is used only with \code{birch_clu=F} and defines the inter-clusters distance threshold.
 #' @param normalize_d A logical that indicates whether the distances must be normalized or not. Usually used with averaging.
