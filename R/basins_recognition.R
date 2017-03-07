@@ -42,6 +42,9 @@
 #' @importFrom outliers grubbs.test
 #' @importFrom prospectr movav savitzkyGolay
 #' @importFrom splus2R peaks
+#' @importFrom grDevices dev.new
+#' @importFrom is.whole sfsmisc
+#' @importFrom distr DiscreteDistribution
 #' @export basins_recognition
 
 ## library(distrEx) #HellingerDist
@@ -416,8 +419,6 @@ basins_recognition <- function(file, nx=500, ny.aut=TRUE, match=TRUE, avg.opt="m
 ###MAIN JOINING procedure: comparison with training uniform samples
 ########################################################################################
     lstHell.tot <- sort.int(distHell.tot, index.return=TRUE)$ix
-    meanHells.tot <- NULL
-    devHells.tot <- NULL
     discbreaks.tot <- NULL
     flagbreak <- 0
     ll <- 0
@@ -452,8 +453,6 @@ basins_recognition <- function(file, nx=500, ny.aut=TRUE, match=TRUE, avg.opt="m
             print(paste("Joining partitions"))
             flagbreak <- 0
             ll <- ll+1
-            meanHells.tot[ll] <- mean(sampleHell.tot)
-            devHells.tot[ll] <- stdev(sampleHell.tot)
             discbreaks.tot[ll] <- breaks.tot[i+1]
         }
         else flagbreak <- flagbreak+1
