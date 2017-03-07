@@ -1,18 +1,20 @@
 #' @title Writing a pdb file from trajectory matrix in R
 #' @description
-#'      \code{write.pdb.d} writes to file a pdb file with the trajectory matrix in input. 
+#'      \code{write.pdb.d} writes to file a pdb file with the trajectory matrix in input.
 #'      The number of variables (number of columns) must be divisible by 3 to mantain the atomic 3D structure.
 #'
 #' @param trj Time series in a matrix shape (also data.frame numeric). The number of variables (nrow) must be divisible by 3 for atom-like pdb writing.
 #' @param base_name File base name.
 #' @param round \code{TRUE} will truncate the output following the \code{digit} variable.
 #' @param digit Number of digits that will be kept from truncation (\code{round}).
+#' @param dim_check \code{TRUE} to check if number of columns is higher than number of rows and stop consequently.
+#' 
 #' @details For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
-#' @seealso 
+#' @seealso
 #' \code{\link{campari}}
-#' @examples 
+#' @examples
 #' write.pdb.d(matrix(rnorm(900), nrow = 100, ncol = 9), base_name = "rnorm_trj")
-#' @export 
+#' @export
 write.pdb.d<-function(trj, base_name, round=FALSE, digit=4, dim_check = TRUE){
   if(!is.matrix(trj)){
     if(!is.data.frame(trj)) stop('trj input must be a matrix or a data.frame')
@@ -25,11 +27,14 @@ write.pdb.d<-function(trj, base_name, round=FALSE, digit=4, dim_check = TRUE){
   nc <- ncol(trj)
   # checking if the input has not been inverted in dimensions
   if(dim_check){
-    if(nc > nr) stop("The number of columns (variable dimensions) are more than the number of snapshots (rows). 
+    if(nc > nr) stop("The number of columns (variable dimensions) are more than the number of snapshots (rows).
                      To continue set the dim_check flag off (FALSE).")
   }
   if(nc%%3 != 0) stop("The number of row in input must be divisible for 3 for atom-like representation.")
   if(nchar(nc) > 4) stop("Unfeasible dimensions of the input matrix. It would get collapsed on other character space in the pdb.")
+  if(any(trj)< 0) stop("Negative values in trj are not supported yet.")
+  
+    
   space <- c()
   for(n in seq(nc/3)){
     cat("CL-", sep = "\n", file = paste0(base_name,".in"), append = TRUE)
@@ -41,7 +46,7 @@ write.pdb.d<-function(trj, base_name, round=FALSE, digit=4, dim_check = TRUE){
     if(((i*100)/nr)%%10 == 0) message(((i*100)/nr),"% done...")
     for(j in seq(to = (nc),by = 3)){
       #       if(!(((j-1)/3)%%1==0)) next
-      #       if(((j+2)/3)<10) space<-" " 
+      #       if(((j+2)/3)<10) space<-" "
       #       else space<-""
       space[1] <- paste0(rep(" ", 6 - nchar((j+2)/3)), collapse = '')
       space[2] <- paste0(rep(" ", 1 - (if(trj[i,j]<0) 1 else 0)), collapse = '')

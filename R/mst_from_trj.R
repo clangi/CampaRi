@@ -21,6 +21,7 @@
 #' @param n_search_attempts If \code{birch_clu=T} a number of search attempts must be provided for the minimum spanning tree search.
 #' @param cores If \code{mode="R"} a complete adjacency matrix can be created in parallel using multiple cores (anyhow slower than "fortran" mode).
 #' @param logging If \code{logging=T} the function will print to file the fortran messages ("campari.log").
+#' @param ... Various variables. Possible values are \code{c('pre_process', 'window', 'overlapping_reduction','wgcna_type', 'wgcna_power', 'wgcna_corOp','feature_selection', 'n_princ_comp')}
 #'
 #' @details For more details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
 #'

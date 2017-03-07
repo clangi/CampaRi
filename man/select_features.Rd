@@ -10,21 +10,21 @@ select_features(trj, feature_selection = "pca",
 \arguments{
 \item{trj}{Input trajectory (variables on the columns and equal-time spaced snpashots on the row). It must be a \code{matrix} or a \code{data.frame} of numeric.}
 
+\item{feature_selection}{Available method is 'pca'}
+
+\item{n_princ_comp}{number of principal components to use}
+
 \item{pca_method}{If set 'original' it will use \code{\link{princomp}}. The default is 'robust' which is using \code{\link{PCAproj}}}
-
-\item{window}{Number of snapshots taken before and after the considered snapshot.}
-
-\item{overlapping_reduction}{Not yet supported (It will if a great number of snapshots will be considered in this analysis - snapshot selection)}
 }
 \value{
 It will return a modified trajectory matrix and print the principal components vector.
 }
 \description{
-\code{select_features} is able to select input variables on the basis of the trajectory input. For the moment only PCA-based feature selection 
+\code{select_features} is able to select input variables on the basis of the trajectory input. For the moment only PCA-based feature selection
      is supported. Moreover, this tool is meant to be used with the total trajectory input.
 }
 \details{
-This function is based primarly on the basic R function \code{pricomp} and on \code{PCAproj} from the package pcaPP. Insead, for more details on the SAPPHIRE anlysis, please refer to the main documentation 
+This function is based primarly on the basic R function \code{pricomp} and on \code{PCAproj} from the package pcaPP. Insead, for more details on the SAPPHIRE anlysis, please refer to the main documentation
 of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
 }
 \seealso{

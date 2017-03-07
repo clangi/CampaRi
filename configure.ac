@@ -19,7 +19,7 @@ dnl AC_CHECK_HEADERS(iostream)
 dnl Small macro to print out a nice, pretty section title.
 define(SECTION_TITLE,
 [
-	echo >& AS_MESSAGE_FD
+	dnl echo >& AS_MESSAGE_FD
 	echo '   $1   ' | sed -e's/./-/g' >&AS_MESSAGE_FD
 	echo '   $1' >& AS_MESSAGE_FD
 	echo '   $1   ' | sed -e's/./-/g' >&AS_MESSAGE_FD
@@ -75,6 +75,10 @@ fi
 
 FC=`"${R_HOME}/bin/R" CMD config FC`
 FCFLAGS=`"${R_HOME}/bin/R" CMD config FCFLAGS`
+SHLIB_FFLAGS=`"${R_HOME}/bin/R" CMD config SHLIB_FFLAGS`
+FPICFLAGS=`"${R_HOME}/bin/R" CMD config FPICFLAGS`
+SAFE_FFLAGS=`"${R_HOME}/bin/R" CMD config SAFE_FFLAGS`
+
 
 FLIBS=`"${R_HOME}/bin/R" CMD config FLIBS`
 BLAS_LIBS=`"${R_HOME}/bin/R" CMD config BLAS_LIBS`
@@ -88,9 +92,21 @@ SECTION_TITLE([Important variables])
 if test "$with_netcdf4_fortran" = "yes"; then
 	echo "NETCDF4_VERSION=$NETCDF4_VERSION" >& AS_MESSAGE_FD
 	echo "NETCDF4_FC=$NETCDF4_FC" >& AS_MESSAGE_FD
+
 	echo "NETCDF4_FLIBS=$NETCDF4_FLIBS" >& AS_MESSAGE_FD
 	echo "NETCDF4_FFLAGS=$NETCDF4_FFLAGS" >& AS_MESSAGE_FD
-	echo "LIBS=$LIBS" >& AS_MESSAGE_FD
+	echo "" >& AS_MESSAGE_FD
+	echo "From R session:" >& AS_MESSAGE_FD
+	echo '   $1   ' | sed -e's/./-/g' >& AS_MESSAGE_FD
+	echo "FC=$FC" >& AS_MESSAGE_FD
+	echo "FCFLAGS=$FCFLAGS" >& AS_MESSAGE_FD
+	echo "SHLIB_FFLAGS=$SHLIB_FFLAGS" >& AS_MESSAGE_FD
+	echo "FPICFLAGS=$FPICFLAGS" >& AS_MESSAGE_FD
+	echo "SAFE_FFLAGS=$SAFE_FFLAGS" >& AS_MESSAGE_FD
+	echo "FLIBS=$FLIBS" >& AS_MESSAGE_FD
+	echo "BLAS_LIBS=$BLAS_LIBS" >& AS_MESSAGE_FD
+	echo "LAPACK_LIBS=$LAPACK_LIBS" >& AS_MESSAGE_FD
+	echo "" >& AS_MESSAGE_FD
 fi
 
 dnl Process Makevars.in to make Makevars

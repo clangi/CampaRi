@@ -14,9 +14,11 @@ write.pdb.d(trj, base_name, round = FALSE, digit = 4, dim_check = TRUE)
 \item{round}{\code{TRUE} will truncate the output following the \code{digit} variable.}
 
 \item{digit}{Number of digits that will be kept from truncation (\code{round}).}
+
+\item{dim_check}{\code{TRUE} to check if number of columns is higher than number of rows and stop consequently.}
 }
 \description{
-\code{write.pdb.d} writes to file a pdb file with the trajectory matrix in input. 
+\code{write.pdb.d} writes to file a pdb file with the trajectory matrix in input.
      The number of variables (number of columns) must be divisible by 3 to mantain the atomic 3D structure.
 }
 \details{

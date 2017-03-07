@@ -11,13 +11,13 @@ multiplicate_trj(trj, window = NULL, overlapping_reduction = NULL)
 
 \item{window}{Number of snapshots taken before and after the considered snapshot.}
 
-\item{overlapping_reduction}{}
+\item{overlapping_reduction}{Not yet supported (It will if a great number of snapshots will be considered in this analysis - snapshot selection)}
 }
 \value{
 It will return a modified trajectory matrix.
 }
 \description{
-\code{multiplicate_trj} copy the future and past variables in the snapshot considered. This leads to a multiplication of the variables 
+\code{multiplicate_trj} copy the future and past variables in the snapshot considered. This leads to a multiplication of the variables
      for each snapshot, following the variable \code{window}.
 }
 \details{

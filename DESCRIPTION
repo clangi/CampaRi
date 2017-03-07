@@ -1,8 +1,8 @@
 Package: CampaRi
 Type: Package
 Title: Trajectory Analysis
-Version: 0.8.5
-Date: 2016-12-20
+Version: 0.8.8
+Date: 2017-03-06
 Author: Garolini Davide
 Maintainer: Garolini Davide <d.garolini@bioc.uzh.ch>
 Description: Analysis algorithms extracted from the original 'campari' software package.
@@ -14,12 +14,12 @@ Description: Analysis algorithms extracted from the original 'campari' software 
 License: GPL (>= 3)
 Depends: R (>= 3.1.0)
 Imports:
-  bio3d, ggplot2, WGCNA, RcppArmadillo, parallel, data.table,
+  bio3d, ggplot2, WGCNA, parallel, data.table, Rcpp (≥ 0.11.0),
   distrEx, gplots, grDevices, graphics, outliers, pcaPP,
   prospectr, splus2R, stats
+LinkingTo: Rcpp, RcppArmadillo
 LazyData: true
 RoxygenNote: 6.0.1
-Suggests: testthat
 NeedsCompilation: yes
 SystemRequirements: netcdf library version 4.1 or later
 URL: https://github.com/Melkiades/CampaR1, http://campari.sourceforge.net/index.html

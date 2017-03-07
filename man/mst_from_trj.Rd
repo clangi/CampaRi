@@ -42,6 +42,8 @@ using a simple leader clustering algorithm (minimum spanning tree).}
 
 \item{logging}{If \code{logging=T} the function will print to file the fortran messages ("campari.log").}
 
+\item{...}{Various variables. Possible values are \code{c('pre_process', 'window', 'overlapping_reduction','wgcna_type', 'wgcna_power', 'wgcna_corOp','feature_selection', 'n_princ_comp')}}
+
 \item{window}{This variables is used only with distance 12 and defines the window from which the network is constructed (see \code{distance_method = 12}).}
 }
 \value{

@@ -20,7 +20,7 @@ campari(nsnaps, working_dir, data_file, base_name, camp_home, ...)
 \item{...}{Analysis variables (similarly to \code{\link{mst_from_trj}}).}
 }
 \description{
-\code{campari} will call the original campari software, specified in the directory camp_home. 
+\code{campari} will call the original campari software, specified in the directory camp_home.
      It is possible to use this function following the instructions in \url{http://campari.sourceforge.net/tutorial11.html}.
      For that purpose a keyfile and sequence file are present inside this package as an example (in \code{CampaRi/inst/extdata}).
 }

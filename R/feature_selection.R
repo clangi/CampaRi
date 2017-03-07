@@ -1,30 +1,30 @@
 #' @title Multiple pre-processing methods for feature selection
 #' @description
-#'      \code{select_features} is able to select input variables on the basis of the trajectory input. For the moment only PCA-based feature selection 
+#'      \code{select_features} is able to select input variables on the basis of the trajectory input. For the moment only PCA-based feature selection
 #'      is supported. Moreover, this tool is meant to be used with the total trajectory input.
 #'
 #' @param trj Input trajectory (variables on the columns and equal-time spaced snpashots on the row). It must be a \code{matrix} or a \code{data.frame} of numeric.
-#' @param window  Number of snapshots taken before and after the considered snapshot.
-#' @param overlapping_reduction Not yet supported (It will if a great number of snapshots will be considered in this analysis - snapshot selection)
+#' @param feature_selection Available method is 'pca'
+#' @param n_princ_comp number of principal components to use
 #' @param pca_method If set 'original' it will use \code{\link{princomp}}. The default is 'robust' which is using \code{\link{PCAproj}}
-#' 
-#' 
-#' @details This function is based primarly on the basic R function \code{pricomp} and on \code{PCAproj} from the package pcaPP. Insead, for more details on the SAPPHIRE anlysis, please refer to the main documentation 
+#'
+#'
+#' @details This function is based primarly on the basic R function \code{pricomp} and on \code{PCAproj} from the package pcaPP. Insead, for more details on the SAPPHIRE anlysis, please refer to the main documentation
 #' of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
 #'
 #' @return It will return a modified trajectory matrix and print the principal components vector.
 #' @seealso
 #' \code{\link{princomp}}, \code{\link{PCAproj}}, \code{\link{adjl_from_progindex}}, \code{\link{gen_progindex}}, \code{\link{gen_annotation}}.
 # @examples
-#' 
+#'
 #'
 #' @export select_features
 #' @importFrom data.table fwrite
 #' @importFrom pcaPP PCAproj
-#' 
+#'
 
 select_features <- function(trj, feature_selection = 'pca', n_princ_comp = floor(ncol(trj)/10), pca_method = 'robust'){
-  
+
   # Checking input variables (again - it is also a stand alone function)
   if(is.null(n_princ_comp) || (length(n_princ_comp) != 1 || !is.numeric(n_princ_comp) || n_princ_comp < 0 || n_princ_comp > ncol(trj)))
     stop('The number of principal components to use has not been inserted correctly.')
@@ -34,16 +34,16 @@ select_features <- function(trj, feature_selection = 'pca', n_princ_comp = floor
     stop('The used feature selection method is not correctly defined.')
   if(is.null(pca_method) || (length(pca_method) != 1 ||!is.character(pca_method) || !(pca_method %in% c('robust','R'))))
     stop('The inserted pca method is not correctly defined.')
-  
+
   # General messages
   cat('Feature selection mode active.', feature_selection, 'dimensionality reduction will be performed.\n')
-  
+
   # Long calculation warning
   if(dim(trj)[1] > 20000) warning('The dimensionality reduction can be really long.')
-  
+
   # Starting the PCA
   if(feature_selection == 'pca'){
-    if(pca_method == 'robust') 
+    if(pca_method == 'robust')
       pcahah <- pcaPP::PCAproj(trj, k = n_princ_comp, method = "mad", CalcMethod = "eachobs",
                                nmax = 1000, update = TRUE, scores = TRUE, maxit = 5, maxhalf = 5, scale = NULL, zero.tol = 1e-16)
     else pcahah <- princomp(x = trj)
@@ -57,13 +57,13 @@ select_features <- function(trj, feature_selection = 'pca', n_princ_comp = floor
     else more_selected <- selected_components
     # impossible check
     if(any(selected_components == 0)) stop('An internal error occured. Please refer it to the mantainers.')
-    
+
     # Printing simple output and to file
     cat('PCA performed successfully.\n')
     cat('The most indipendent values selected are:', more_selected)
     message('The details of the pca output will be oscurated but the selected values will be written in "selected_pca.out" ASCII file.')
     fwrite(x = as.list(selected_components), file = "selected_pca.out", sep = '\t')
   }
-  
+
   return(trj[,selected_components])
 }

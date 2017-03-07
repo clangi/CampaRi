@@ -2640,8 +2640,7 @@ options=
 
 
 
-	echo >& 6
-	echo '   Checking for netcdf4 libraries   ' | sed -e's/./-/g' >&6
+		echo '   Checking for netcdf4 libraries   ' | sed -e's/./-/g' >&6
 	echo '   Checking for netcdf4 libraries' >& 6
 	echo '   Checking for netcdf4 libraries   ' | sed -e's/./-/g' >&6
 
@@ -3859,8 +3858,7 @@ fi
 
 
 
-	echo >& 6
-	echo '   Configuration results   ' | sed -e's/./-/g' >&6
+		echo '   Configuration results   ' | sed -e's/./-/g' >&6
 	echo '   Configuration results' >& 6
 	echo '   Configuration results   ' | sed -e's/./-/g' >&6
 
@@ -3873,21 +3871,6 @@ echo "Missing options:" >& 6
 echo "$options" "$all_options" | tr ' ' '\n' | sort | uniq -u | tr '\n' ' ' >& 6
 
 
-echo -e "\n\n" >& 6
-
-	echo >& 6
-	echo '   Important variables   ' | sed -e's/./-/g' >&6
-	echo '   Important variables' >& 6
-	echo '   Important variables   ' | sed -e's/./-/g' >&6
-
-if test "$with_netcdf4_fortran" = "yes"; then
-	echo "NETCDF4_VERSION=$NETCDF4_VERSION" >& 6
-	echo "NETCDF4_FC=$NETCDF4_FC" >& 6
-	echo "NETCDF4_FLIBS=$NETCDF4_FLIBS" >& 6
-	echo "NETCDF4_FFLAGS=$NETCDF4_FFLAGS" >& 6
-	echo "LIBS=$LIBS" >& 6
-fi
-
 
 
 : ${R_HOME=`R RHOME`}
@@ -3898,12 +3881,43 @@ fi
 
 FC=`"${R_HOME}/bin/R" CMD config FC`
 FCFLAGS=`"${R_HOME}/bin/R" CMD config FCFLAGS`
+SHLIB_FFLAGS=`"${R_HOME}/bin/R" CMD config SHLIB_FFLAGS`
+FPICFLAGS=`"${R_HOME}/bin/R" CMD config FPICFLAGS`
+SAFE_FFLAGS=`"${R_HOME}/bin/R" CMD config SAFE_FFLAGS`
+
 
 FLIBS=`"${R_HOME}/bin/R" CMD config FLIBS`
 BLAS_LIBS=`"${R_HOME}/bin/R" CMD config BLAS_LIBS`
 LAPACK_LIBS=`"${R_HOME}/bin/R" CMD config LAPACK_LIBS`
 SAFE_FFLAGS=`"${R_HOME}/bin/R" CMD config SAFE_FFLAGS`
 
+
+
+echo -e "\n" >& 6
+
+		echo '   Important variables   ' | sed -e's/./-/g' >&6
+	echo '   Important variables' >& 6
+	echo '   Important variables   ' | sed -e's/./-/g' >&6
+
+if test "$with_netcdf4_fortran" = "yes"; then
+	echo "NETCDF4_VERSION=$NETCDF4_VERSION" >& 6
+	echo "NETCDF4_FC=$NETCDF4_FC" >& 6
+
+	echo "NETCDF4_FLIBS=$NETCDF4_FLIBS" >& 6
+	echo "NETCDF4_FFLAGS=$NETCDF4_FFLAGS" >& 6
+	echo "" >& 6
+	echo "From R session:" >& 6
+	echo '   $1   ' | sed -e's/./-/g' >& 6
+	echo "FC=$FC" >& 6
+	echo "FCFLAGS=$FCFLAGS" >& 6
+	echo "SHLIB_FFLAGS=$SHLIB_FFLAGS" >& 6
+	echo "FPICFLAGS=$FPICFLAGS" >& 6
+	echo "SAFE_FFLAGS=$SAFE_FFLAGS" >& 6
+	echo "FLIBS=$FLIBS" >& 6
+	echo "BLAS_LIBS=$BLAS_LIBS" >& 6
+	echo "LAPACK_LIBS=$LAPACK_LIBS" >& 6
+	echo "" >& 6
+fi
 
 ac_config_files="$ac_config_files src/Makevars"
 
@@ -5062,5 +5076,4 @@ if test -n "$ac_unrecognized_opts" && test "$enable_option_checking" != no; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: unrecognized options: $ac_unrecognized_opts" >&5
 $as_echo "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
-
 
