@@ -1,7 +1,7 @@
-NETCDF4_FC=gfortran
-NETCDF4_LDFLAGS=-L/usr/lib/x86_64-linux-gnu/hdf5/serial -L/usr/lib 
-NETCDF4_FFLAGS=-I/usr/include
-NETCDF4_FLIBS=-lnetcdff 
+NETCDF4_FC=@NETCDF4_FC@
+NETCDF4_LDFLAGS=@NETCDF4_LDFLAGS@
+NETCDF4_FFLAGS=@NETCDF4_FFLAGS@
+NETCDF4_FLIBS=@NETCDF4_FLIBS@
 
 # These variables are generally defined and can be assigned only once
 MY_PKG_LIBS= $(LAPACK_LIBS) $(FLIBS) $(BLAS_LIBS) $(NETCDF4_FLIBS)
