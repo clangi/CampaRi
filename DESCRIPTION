@@ -13,7 +13,10 @@ Description: Analysis algorithms extracted from the original 'campari' software 
   on <http://campari.sourceforge.net/index.html>.
 License: GPL (>= 3)
 Depends: R (>= 3.1.0)
-Imports: bio3d, ggplot2, WGCNA
+Imports:
+  bio3d, ggplot2, WGCNA, RcppArmadillo, parallel, data.table,
+  distrEx, gplots, grDevices, graphics, outliers, pcaPP,
+  prospectr, splus2R, stats
 LazyData: true
 RoxygenNote: 6.0.1
 Suggests: testthat

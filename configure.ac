@@ -6,13 +6,13 @@ dnl include m4 macro for netcdf4 check
 m4_include([m4/ax_lib_netcdf4.m4])
 
 dnl list of all possible optional components
-all_options="netcdf4" 
+all_options="netcdf4"
 
 dnl When a component is found, append it here
 options=
 
 dnl Force the compiler to run once and do all the basic checks
-dnl if you don't, it will do the test on the first invocation 
+dnl if you don't, it will do the test on the first invocation
 dnl below and so your pretty section titles won't work as well
 dnl AC_CHECK_HEADERS(iostream)
 
@@ -63,16 +63,6 @@ echo "Missing options:" >& AS_MESSAGE_FD
 echo "$options" "$all_options" | tr ' ' '\n' | sort | uniq -u | tr '\n' ' ' >& AS_MESSAGE_FD
 
 
-echo -e "\n\n" >& AS_MESSAGE_FD
-SECTION_TITLE([Important variables])
-if test "$with_netcdf4_fortran" = "yes"; then
-	echo "NETCDF4_VERSION=$NETCDF4_VERSION" >& AS_MESSAGE_FD
-	echo "NETCDF4_FC=$NETCDF4_FC" >& AS_MESSAGE_FD
-	echo "NETCDF4_FLIBS=$NETCDF4_FLIBS" >& AS_MESSAGE_FD
-	echo "NETCDF4_FFLAGS=$NETCDF4_FFLAGS" >& AS_MESSAGE_FD
-	echo "LIBS=$LIBS" >& AS_MESSAGE_FD
-fi
-
 
 dnl This part will be used to establish R variables
 
@@ -91,8 +81,17 @@ BLAS_LIBS=`"${R_HOME}/bin/R" CMD config BLAS_LIBS`
 LAPACK_LIBS=`"${R_HOME}/bin/R" CMD config LAPACK_LIBS`
 SAFE_FFLAGS=`"${R_HOME}/bin/R" CMD config SAFE_FFLAGS`
 
-dnl As I am not going to modify the above I will not subst it
 
-dnl Process Makevars.in to make Makevars 
+
+echo -e "\n" >& AS_MESSAGE_FD
+SECTION_TITLE([Important variables])
+if test "$with_netcdf4_fortran" = "yes"; then
+	echo "NETCDF4_VERSION=$NETCDF4_VERSION" >& AS_MESSAGE_FD
+	echo "NETCDF4_FC=$NETCDF4_FC" >& AS_MESSAGE_FD
+	echo "NETCDF4_FLIBS=$NETCDF4_FLIBS" >& AS_MESSAGE_FD
+	echo "NETCDF4_FFLAGS=$NETCDF4_FFLAGS" >& AS_MESSAGE_FD
+	echo "LIBS=$LIBS" >& AS_MESSAGE_FD
+fi
+
+dnl Process Makevars.in to make Makevars
 AC_OUTPUT(src/Makevars)
-
