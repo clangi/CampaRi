@@ -408,7 +408,7 @@ basins_recognition <- function(file, nx=500, ny.aut=TRUE, match=TRUE, avg.opt="m
 ########################################################################
     ##JOINING PARTITIONS METHODS
 ########################################################################
-    #Computation of Distances Hell and Kolm between consecutive partitions
+    ## Computation of Distances Hell and Kolm between consecutive partitions
     distHell.tot <- NULL
     for(j in 1:(length(breaks.tot)-2)) {
         prova1 <- DiscreteDistribution(supp = c(1:ny) , prob=dens.tot[,j])
@@ -421,6 +421,7 @@ basins_recognition <- function(file, nx=500, ny.aut=TRUE, match=TRUE, avg.opt="m
 ########################################################################################
     lstHell.tot <- sort.int(distHell.tot, index.return=TRUE)$ix
     discbreaks.tot <- NULL
+    ncounts <- NULL
     flagbreak <- 0
     ll <- 0
     for (i in lstHell.tot) { 
@@ -430,26 +431,25 @@ basins_recognition <- function(file, nx=500, ny.aut=TRUE, match=TRUE, avg.opt="m
         l2 <- which(hist$x==breaks.tot[i+1])
         l3 <- which(hist$x==breaks.tot[i+2])
         if (i==length(lstHell.tot)) l3 <- nx
-        print(paste("Dyn Break Number ", i, ", Borders", round(breaks.tot[i]),round(breaks.tot[i+1]),round(breaks.tot[i+2]))) 
+        pr <- (l2-l1+1)/(l3-l1+1)
+        print(paste("Dyn Break Number ", i, ", Borders", round(breaks.tot[i]),round(breaks.tot[i+1]),round(breaks.tot[i+2])))
+        for (j in 1:ny) ncounts[j] <- sum(hist$counts[c(l1:l3),j])
         for (idx in 1:nsample) {
-            unif1 <- matrix(rep(0,ny*(l2-l1+1)), nrow=ny)
-            unif2 <- matrix(rep(0,ny*(l3-l2)), nrow=ny)
+            unif1 <- rep(0,ny)
+            unif2 <- rep(0,ny)
             for (j in 1:ny) {
-                ncounts <- sum(hist$counts[c(l1:l3),j])
-                if(ncounts==0) next
-                dum <- sample(1:(l3-l1+1), ncounts, replace=TRUE)
-                dumhist <- hist(dum, breaks=seq(from=0.5,to=(l3-l1+1)+0.5,by=1), plot=FALSE)
-                unif1[j,] <- dumhist$counts[c(1:(l2-l1+1))]
-                unif2[j,] <- dumhist$counts[c((l2-l1+2):(l3-l1+1))]
+                if(ncounts[j]==0) next
+                dum <- sample(c(0:1), ncounts[j], replace=TRUE, prob=c(pr,1-pr))
+                unif1[j] <- ncounts[j]-sum(dum)
+                unif2[j] <- sum(dum)
             }
-            dens1 <- rowSums(unif1)/sum(unif1)
-            dens2 <- rowSums(unif2)/sum(unif2)
+            dens1 <- unif1/sum(unif1)
+            dens2 <- unif2/sum(unif2)
             part1 <- DiscreteDistribution(supp = c(1:ny) , prob=dens1)
             part2 <- DiscreteDistribution(supp = c(1:ny) , prob=dens2)
             sampleHell.tot[idx] <- HellingerDist(part1,part2)
         }
         grubbsHell.tot <- grubbs.test(c(sampleHell.tot,distHell.tot[i]), type=10)
-                                        #print(paste(grubbsHell.tot$p.value))
         if (distHell.tot[i] < max(sampleHell.tot) | grubbsHell.tot$p.value>conf.lev) {
             print(paste("Joining partitions"))
             flagbreak <- 0
@@ -458,7 +458,6 @@ basins_recognition <- function(file, nx=500, ny.aut=TRUE, match=TRUE, avg.opt="m
         }
         else flagbreak <- flagbreak+1
         if (flagbreak==cutjoin) break
-                                        #print(" ")
     }
 
     brk.dyn <- sort(breaks.tot[-match(discbreaks.tot, breaks.tot)])
