@@ -54,44 +54,44 @@
 ## library(prospectr) #movav, savitzkyGolay
 ## library(splus2R) #peaks 
 
-file <- "/home/fcocina/Desktop/Campari/GitHub/feature_selection/BPTIdata/PROGIDXSAMPLE_000000020521.dat"
-ptm <- proc.time()
+## file <- "/home/fcocina/Desktop/Campari/GitHub/feature_selection/BPTIdata/PROGIDXSAMPLE_000000020521.dat"
+## ptm <- proc.time()
 
-#basins_recognition <- function(file, nx=500, ny.aut=TRUE, match=TRUE, avg.opt="movav", plot=FALSE, ...) {
+basins_recognition <- function(file, nx=500, ny.aut=TRUE, match=TRUE, avg.opt="movav", plot=FALSE, ...) {
 
-    ## if(!is.character(file)) stop("file must be a string")
-    ## if(!is.whole(nx)) stop("nx must be an integer")
-    ## if(!is.logical(match)) stop("match must be a logical value")
-    ## if(!is.logical(plot)) stop("plot must be a logical value")
-    ## avg.opt.arg <- c("movav", "SG")
-    ## if(!(avg.opt %in% avg.opt.arg)) stop("Average option not valid")
+    if(!is.character(file)) stop("file must be a string")
+    if(!is.whole(nx)) stop("nx must be an integer")
+    if(!is.logical(match)) stop("match must be a logical value")
+    if(!is.logical(plot)) stop("plot must be a logical value")
+    avg.opt.arg <- c("movav", "SG")
+    if(!(avg.opt %in% avg.opt.arg)) stop("Average option not valid")
 
-    ## input.args <- list(...)
-    ## avail.extra.arg <- c("pol.degree","ny")
-    ## if(!is.null(names(input.args)) && any(!(names(input.args) %in% avail.extra.arg))) 
-    ##     warning('There is a probable mispelling in one of the inserted variables. Please check the available extra input arguments.')
-    ## if(!ny.aut) {
-    ##     if(!("ny" %in% names(input.args))) {
-    ##         warning("ny not specified, set to default value nx")
-    ##         ny <- nx
-    ##     } else ny <- input.args$ny
-    ## }
-    ## if(avg.opt=="SG") {
-    ##     if(!("pol.degree" %in% names(input.args))) {
-    ##         print("SG but pol not specified")
-    ##         pol.degree <- 2
-    ##     } else if(!(input.args$pol.degree %in% c(2:6))) {
-    ##         warning("Degree of the polynomial not valid, set to default value 2")
-    ##         pol.degree <- 2 
-    ##     } else pol.degree <- input.args$pol.degree
-    ## }
+    input.args <- list(...)
+    avail.extra.arg <- c("pol.degree","ny")
+    if(!is.null(names(input.args)) && any(!(names(input.args) %in% avail.extra.arg))) 
+        warning('There is a probable mispelling in one of the inserted variables. Please check the available extra input arguments.')
+    if(!ny.aut) {
+        if(!("ny" %in% names(input.args))) {
+            warning("ny not specified, set to default value nx")
+            ny <- nx
+        } else ny <- input.args$ny
+    }
+    if(avg.opt=="SG") {
+        if(!("pol.degree" %in% names(input.args))) {
+            print("SG but pol not specified")
+            pol.degree <- 2
+        } else if(!(input.args$pol.degree %in% c(2:6))) {
+            warning("Degree of the polynomial not valid, set to default value 2")
+            pol.degree <- 2 
+        } else pol.degree <- input.args$pol.degree
+    }
 
     ## TO BE REMOVED
-    nx <- 500
-    plot <- TRUE
-    match <- FALSE
-    avg.opt <- "movav"
-    ny.aut <- TRUE
+    ## nx <- 500
+    ## plot <- TRUE
+    ## match <- FALSE
+    ## avg.opt <- "movav"
+    ## ny.aut <- TRUE
 
     ## print(nx)
     ## print(plot)
@@ -639,8 +639,8 @@ ptm <- proc.time()
         } else abline(v=breaks, lwd=0.7, col="black")
     }
 
-print(proc.time()-ptm)
+## print(proc.time()-ptm)
 
-#}
+}
 
 
