@@ -42,6 +42,9 @@
 #' @importFrom outliers grubbs.test
 #' @importFrom prospectr movav savitzkyGolay
 #' @importFrom splus2R peaks
+#' @importFrom grDevices dev.new
+#' @importFrom is.whole sfsmisc
+#' @importFrom distr DiscreteDistribution
 #' @export basins_recognition
 
 ## library(distrEx) #HellingerDist
@@ -52,6 +55,7 @@
 ## library(splus2R) #peaks 
 
 ## file <- "/home/fcocina/Desktop/Campari/GitHub/feature_selection/BPTIdata/PROGIDXSAMPLE_000000020521.dat"
+## ptm <- proc.time()
 
 basins_recognition <- function(file, nx=500, ny.aut=TRUE, match=TRUE, avg.opt="movav", plot=FALSE, ...) {
 
@@ -87,11 +91,12 @@ basins_recognition <- function(file, nx=500, ny.aut=TRUE, match=TRUE, avg.opt="m
     ## plot <- TRUE
     ## match <- FALSE
     ## avg.opt <- "movav"
+    ## ny.aut <- TRUE
 
-    print(nx)
-    print(plot)
-    print(avg.opt)
-    if(any("pol.degree" %in% ls())) print(pol.degree)
+    ## print(nx)
+    ## print(plot)
+    ## print(avg.opt)
+    ## if(any("pol.degree" %in% ls())) print(pol.degree)
 
     as.real <- function(x) {
         return(as.double(x))
@@ -161,7 +166,7 @@ basins_recognition <- function(file, nx=500, ny.aut=TRUE, match=TRUE, avg.opt="m
         idx <- 0
         nbin <- 0
         lthbin <- NULL
-        seqbin <- seq(from=10, to=2000, by=20)
+        seqbin <- seq(from=10, to=min(2000,cstored/10), by=10)
         for (nbin in seqbin) {
             lth <- NULL
             br <- seq(from=1, to=cstored, length.out=(nbin+1))
@@ -215,7 +220,7 @@ basins_recognition <- function(file, nx=500, ny.aut=TRUE, match=TRUE, avg.opt="m
 ##################################################################################
     ## STRETCHES CREATION
 ##################################################################################
-                                        # Joining cells through density criterion: the larger values of xids the larger tolerance 
+    # Joining cells through density criterion: the larger values of xids the larger tolerance 
     joinx <- hist$counts
     joinx[,] <- 0
     for (j in 1:ny) {
@@ -252,7 +257,7 @@ basins_recognition <- function(file, nx=500, ny.aut=TRUE, match=TRUE, avg.opt="m
 #################################################################################
     ## WEIGHTED SUMS FUNCTIONS
 ##############################################################################
-                                        #Forward
+    #Forward
     sumwr <- function(first,meanopt,wthopt) {
         if (first=="min") rawfirst <- rawsetsort$min
         if (first=="max") rawfirst <- rawsetsort$max
@@ -367,7 +372,7 @@ basins_recognition <- function(file, nx=500, ny.aut=TRUE, match=TRUE, avg.opt="m
                 softbreaks.min <- softbreaks.min[-which(softbreaks.min==selbreaks.min[j])]
                 next
             }
-                                        #if (selcell.max[i]>selcell.min+3) break    
+            ## if (selcell.max[i]>selcell.min+3) break    
         }
     }
     breaks.tot <- sort(c(1,cstored,sep,softbreaks.max,softbreaks.min))
@@ -390,21 +395,20 @@ basins_recognition <- function(file, nx=500, ny.aut=TRUE, match=TRUE, avg.opt="m
             ncls <- which(hist$x==breaks.tot[i])+1
             ncle <- which(hist$x==breaks.tot[i+1])
         }
-                                        #Costruisco l'istogramma
         for (j in 1:ny) {
             brkjy.tot[j,i] <- sum(hist$counts[c(ncls:ncle),j])
         }
     }
     dens.tot <- brkjy.tot
     for (i in 1:(length(breaks.tot)-1)) {
-                                        #dens.tot[,i] <-  brkjy.tot[,i]/(breaks.tot[i+1]-breaks.tot[i])
+        #dens.tot[,i] <-  brkjy.tot[,i]/(breaks.tot[i+1]-breaks.tot[i])
         dens.tot[,i] <-  brkjy.tot[,i]/(sum(brkjy.tot[,i]))
     }
 
 ########################################################################
     ##JOINING PARTITIONS METHODS
 ########################################################################
-                                        #Computation of Distances Hell and Kolm between consecutive partitions
+    #Computation of Distances Hell and Kolm between consecutive partitions
     distHell.tot <- NULL
     for(j in 1:(length(breaks.tot)-2)) {
         prova1 <- DiscreteDistribution(supp = c(1:ny) , prob=dens.tot[,j])
@@ -416,14 +420,12 @@ basins_recognition <- function(file, nx=500, ny.aut=TRUE, match=TRUE, avg.opt="m
 ###MAIN JOINING procedure: comparison with training uniform samples
 ########################################################################################
     lstHell.tot <- sort.int(distHell.tot, index.return=TRUE)$ix
-    meanHells.tot <- NULL
-    devHells.tot <- NULL
     discbreaks.tot <- NULL
     flagbreak <- 0
     ll <- 0
-    for (i in lstHell.tot) { #I should take into account the order within the Kolmogorov distance...
+    for (i in lstHell.tot) { 
         sampleHell.tot <- NULL
-        l1 <- which(hist$x==breaks.tot[i])+1 ##The first cell belongs to the previous partition
+        l1 <- which(hist$x==breaks.tot[i])+1 
         if (i==1) l1 <- 1
         l2 <- which(hist$x==breaks.tot[i+1])
         l3 <- which(hist$x==breaks.tot[i+2])
@@ -452,8 +454,6 @@ basins_recognition <- function(file, nx=500, ny.aut=TRUE, match=TRUE, avg.opt="m
             print(paste("Joining partitions"))
             flagbreak <- 0
             ll <- ll+1
-            meanHells.tot[ll] <- mean(sampleHell.tot)
-            devHells.tot[ll] <- stdev(sampleHell.tot)
             discbreaks.tot[ll] <- breaks.tot[i+1]
         }
         else flagbreak <- flagbreak+1
@@ -639,6 +639,8 @@ basins_recognition <- function(file, nx=500, ny.aut=TRUE, match=TRUE, avg.opt="m
             abline(v=brk.mtc, lwd=0.7, col="black")
         } else abline(v=breaks, lwd=0.7, col="black")
     }
+
+## print(proc.time()-ptm)
 
 }
 
