@@ -43,7 +43,7 @@
 #' @importFrom prospectr movav savitzkyGolay
 #' @importFrom splus2R peaks
 #' @importFrom grDevices dev.new
-#' @importFrom is.whole sfsmisc
+#' @importFrom sfsmisc is.whole
 #' @importFrom distr DiscreteDistribution
 #' @export basins_recognition
 
