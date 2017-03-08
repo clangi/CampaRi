@@ -30,7 +30,7 @@ SECTION_TITLE([Checking for netcdf4 libraries])
 
 
 AX_LIB_NETCDF4()
-if test "$with_netcdf4" = "yes"; then
+if test "$with_netcdf4_fortran" = "yes"; then
 	dnl This add to the NETCDF4_LIBS was needed to compile
 	AC_SUBST(NETCDF4_VERSION)
 	AC_SUBST(NETCDF4_CC)
@@ -44,7 +44,7 @@ if test "$with_netcdf4" = "yes"; then
 	AC_DEFINE(HAVE_NETCDF4)
 	options="$options netcdf4"
 else
-	AC_MSG_ERROR([Unable to find NetCDF4, we need NetCDF4 for Fortran (nf-config).])
+	AC_MSG_ERROR([Unable to find NetCDF4 (version >=4.4.0), we need NetCDF4 for Fortran (nf-config).])
 fi
 
 

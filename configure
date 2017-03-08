@@ -3837,7 +3837,7 @@ $as_echo "#define HAVE_NETCDF4 1" >>confdefs.h
     fi
 fi
 
-if test "$with_netcdf4" = "yes"; then
+if test "$with_netcdf4_fortran" = "yes"; then
 
 
 
@@ -3851,7 +3851,7 @@ if test "$with_netcdf4" = "yes"; then
 
 	options="$options netcdf4"
 else
-	as_fn_error $? "Unable to find NetCDF4, we need NetCDF4 for Fortran (nf-config)." "$LINENO" 5
+	as_fn_error $? "Unable to find NetCDF4 (version >=4.4.0), we need NetCDF4 for Fortran (nf-config)." "$LINENO" 5
 fi
 
 
