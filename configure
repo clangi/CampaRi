@@ -3837,7 +3837,7 @@ $as_echo "#define HAVE_NETCDF4 1" >>confdefs.h
     fi
 fi
 
-if test "$with_netcdf4_fortran" = "yes"; then
+if test "$with_netcdf4" = "yes"; then
 
 
 

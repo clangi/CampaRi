@@ -30,7 +30,7 @@ SECTION_TITLE([Checking for netcdf4 libraries])
 
 
 AX_LIB_NETCDF4()
-if test "$with_netcdf4_fortran" = "yes"; then
+if test "$with_netcdf4" = "yes"; then
 	dnl This add to the NETCDF4_LIBS was needed to compile
 	AC_SUBST(NETCDF4_VERSION)
 	AC_SUBST(NETCDF4_CC)
