@@ -57,7 +57,7 @@ generate_covariance <- function(trj, window = NULL, overlapping_reduction = NULL
     else
       cov_mat <- cov(trj[(i-window_l):(i+window_r),])
     
-    trj_out[i,] <- array(cov_mat/max(cov_mat))
+    trj_out[i,] <- array(cov_mat/max(abs(cov_mat)))
   }
   return(trj_out)
 }

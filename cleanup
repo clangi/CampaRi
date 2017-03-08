@@ -1,1 +1,3 @@
-rm src/*.o
+if [ -e src/Makevars ]; then
+	rm -f src/Makevars
+fi
