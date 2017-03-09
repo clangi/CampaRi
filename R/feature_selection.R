@@ -6,7 +6,7 @@
 #' @param trj Input trajectory (variables on the columns and equal-time spaced snpashots on the row). It must be a \code{matrix} or a \code{data.frame} of numeric.
 #' @param feature_selection Available method is 'pca'
 #' @param n_princ_comp number of principal components to use
-#' @param pca_method If set 'original' it will use \code{\link{princomp}}. The default is 'robust' which is using \code{\link{PCAproj}}
+#' @param pca_method If set 'R' (default) it will use \code{\link{princomp}}. The other (slower) option is 'robust' which is using \code{\link{PCAproj}}.
 #'
 #'
 #' @details This function is based primarly on the basic R function \code{pricomp} and on \code{PCAproj} from the package pcaPP. Insead, for more details on the SAPPHIRE anlysis, please refer to the main documentation
@@ -23,7 +23,7 @@
 #' @importFrom pcaPP PCAproj
 #'
 
-select_features <- function(trj, feature_selection = 'pca', n_princ_comp = floor(ncol(trj)/10), pca_method = 'robust'){
+select_features <- function(trj, feature_selection = 'pca', n_princ_comp = floor(ncol(trj)/10), pca_method = 'R'){
 
   # Checking input variables (again - it is also a stand alone function)
   if(is.null(n_princ_comp) || (length(n_princ_comp) != 1 || !is.numeric(n_princ_comp) || n_princ_comp < 0 || n_princ_comp > ncol(trj)))
@@ -41,6 +41,9 @@ select_features <- function(trj, feature_selection = 'pca', n_princ_comp = floor
   # Long calculation warning
   if(dim(trj)[1] > 20000) warning('The dimensionality reduction can be really long.')
 
+  # Check for NA
+  if(any(is.na(trj))) stop('There are NA values in the input trajectory')
+    
   # Starting the PCA
   if(feature_selection == 'pca'){
     if(pca_method == 'robust')

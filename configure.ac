@@ -1,5 +1,18 @@
-AC_INIT(myconfig, version-0.1)
-AC_LANG(C++)
+AC_INIT([CampaRi],[version 0.8.8],[dgarolini@gmail.com])
+
+dnl Small macro to print out a nice, pretty section title.
+define(SECTION_TITLE,
+[
+	dnl echo >& AS_MESSAGE_FD
+	echo '   $1   ' | sed -e's/./-/g' >&AS_MESSAGE_FD
+	echo '   $1' >& AS_MESSAGE_FD
+	echo '   $1   ' | sed -e's/./-/g' >&AS_MESSAGE_FD
+])
+
+
+dnl Writing the version to screen
+SECTION_TITLE([CampaRi package, AC_PACKAGE_VERSION])
+AC_LANG(Fortran)
 AC_PROG_FC
 
 dnl include m4 macro for netcdf4 check
@@ -16,14 +29,7 @@ dnl if you don't, it will do the test on the first invocation
 dnl below and so your pretty section titles won't work as well
 dnl AC_CHECK_HEADERS(iostream)
 
-dnl Small macro to print out a nice, pretty section title.
-define(SECTION_TITLE,
-[
-	dnl echo >& AS_MESSAGE_FD
-	echo '   $1   ' | sed -e's/./-/g' >&AS_MESSAGE_FD
-	echo '   $1' >& AS_MESSAGE_FD
-	echo '   $1   ' | sed -e's/./-/g' >&AS_MESSAGE_FD
-])
+
 
 
 SECTION_TITLE([Checking for netcdf4 libraries])

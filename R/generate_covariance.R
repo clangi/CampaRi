@@ -37,6 +37,9 @@ generate_covariance <- function(trj, window = NULL, overlapping_reduction = NULL
   # setting standard window size
   if(is.null(window)) window <- nrow(trj)/100
   
+  # Check for NA
+  if(any(is.na(trj))) stop('There are NA values in the input trajectory')
+  
   # setting window left and window right (if it is not divisible by 2)
   if(((window-1)/2)%%1 == 0) {
     window_r <- window_l <- (window-1)/2

@@ -64,6 +64,9 @@ generate_network <- function(trj, window = NULL, overlapping_reduction = NULL, .
     window_l <- ceiling((window-1)/2)
   } 
   
+  # Check for NA
+  if(any(is.na(trj))) stop('There are NA values in the input trajectory')
+    
   # initialising the variables
   trj_out <- matrix(NA, nrow = nrow(trj), ncol = ((ncol(trj)-1)*ncol(trj)/2)) 
   
@@ -82,6 +85,14 @@ generate_network <- function(trj, window = NULL, overlapping_reduction = NULL, .
       
     trj_out[i,] <- built_net[upper.tri(built_net)]
   }
+  
+  if(any(is.na(trj_out))){
+    n_na_trj <- sum(is.na(trj_out))
+    warning('Attention: NA generated. They will substituted with 0. Probably it is due to too short window of time used. Fraction of NA: ', 
+            (n_na_trj*100/(nrow(trj_out)*ncol(trj_out))), ' %')
+    trj_out[is.na(trj_out)] <- 0 
+  }
+  
   message('Network construction completed.')
   return(trj_out)
 }

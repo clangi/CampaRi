@@ -28,9 +28,6 @@ multiplicate_trj <- function(trj, window = NULL, overlapping_reduction = NULL){
                                           overlapping_reduction <= 0 || overlapping_reduction > 1)))
     stop('The used overlapping_reduction is not correctly defined. It must be a number between 0 and 1.')
 
-  # Long calculation warning
-  if(dim(trj)[1] > 20000) warning('The network generation can be really long. Please consider multi-threads options of the WGCNA package.')
-
   # setting standard window size
   if(is.null(window)) window <- 3
 
