@@ -5,7 +5,7 @@
 \title{Multiple pre-processing methods for feature selection}
 \usage{
 select_features(trj, feature_selection = "pca",
-  n_princ_comp = floor(ncol(trj)/10), pca_method = "robust")
+  n_princ_comp = floor(ncol(trj)/10), pca_method = "R")
 }
 \arguments{
 \item{trj}{Input trajectory (variables on the columns and equal-time spaced snpashots on the row). It must be a \code{matrix} or a \code{data.frame} of numeric.}
@@ -14,7 +14,7 @@ select_features(trj, feature_selection = "pca",
 
 \item{n_princ_comp}{number of principal components to use}
 
-\item{pca_method}{If set 'original' it will use \code{\link{princomp}}. The default is 'robust' which is using \code{\link{PCAproj}}}
+\item{pca_method}{If set 'R' (default) it will use \code{\link{princomp}}. The other (slower) option is 'robust' which is using \code{\link{PCAproj}}.}
 }
 \value{
 It will return a modified trajectory matrix and print the principal components vector.

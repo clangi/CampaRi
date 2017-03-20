@@ -12,9 +12,9 @@ Description: Analysis algorithms extracted from the original 'campari' software 
   simple leader clustering. For more information please visit the original documentation
   on <http://campari.sourceforge.net/index.html>.
 License: GPL (>= 3)
-Depends: R (>= 3.1.0)
+Depends: R (>= 3.1.0), survival (>= 2.40-1)
 Imports:
-  bio3d, ggplot2, WGCNA, parallel, data.table, Rcpp, 
+  bio3d, ggplot2, WGCNA, parallel, data.table, Rcpp,
   distrEx, gplots, grDevices, graphics, outliers, pcaPP,
   prospectr, splus2R, stats
 LinkingTo: Rcpp, RcppArmadillo

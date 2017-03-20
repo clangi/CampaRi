@@ -4,15 +4,17 @@
 \alias{basins_recognition}
 \title{Identifying basins in the SAPPHIRE plot}
 \usage{
-basins_recognition(file, nx = 500, ny.aut = TRUE, match = TRUE,
-  avg.opt = "movav", plot = FALSE, ...)
+basins_recognition(file, nx = 500, ny.aut = TRUE, local.cut = FALSE,
+  match = TRUE, avg.opt = "movav", plot = FALSE, ...)
 }
 \arguments{
-\item{file}{Name of the PROGIDX_<...>.dat file}
+\item{file}{Name of the PROGIDX_<...>.dat file.}
 
-\item{nx}{Number of bins on the x-axis of the 2-D histogram}
+\item{nx}{Number of bins on the x-axis of the 2-D histogram.}
 
-\item{ny.aut}{Logical value indicating whether a suitable number of bins on the y-axis has to be identified automatically. Default value is \code{TRUE}}
+\item{ny.aut}{Logical value indicating whether a suitable number of bins on the y-axis has to be identified automatically. Default value is \code{TRUE}.}
+
+\item{local.cut}{Logical value indicating whether the localized cut function has to be used (see references). Default value is \code{FALSE}.}
 
 \item{match}{Logical value indicating whether results from kinetic and dynamic annotation have to be either matched or merged.}
 
@@ -22,9 +24,11 @@ basins_recognition(file, nx = 500, ny.aut = TRUE, match = TRUE,
      \item "\code{SG}" for savitzkyGolay filter
 }}
 
-\item{plot}{A logical value indicating whether to plot results or not. Default value if \code{FALSE}}
+\item{plot}{A logical value indicating whether to plot results or not. Default value if \code{FALSE}.}
 
 \item{...}{\itemize{
+  \item "\code{time.series}" File name. If specified, it substitutes the time series of the PROGIDX_<..> file with the one provided by the file.
+  \item "\code{only.kin}" Logical value indicating whether it should be performed only the analysis of the kinetic annotation, thus disregarding completely the dynamic trace.  
   \item "\code{ny}" Number of bins on the y-axis of the 2-D histogram if \code{ny.aut=FALSE}. Default value is nx.
   \item "\code{pol.degree}" degree of the Savitzky-Golay filter
 }}
