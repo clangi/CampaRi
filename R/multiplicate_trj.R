@@ -44,7 +44,7 @@ multiplicate_trj <- function(trj, window = NULL, overlapping_reduction = NULL){
 
   # Control check on the unfeasibility of certain windows
   if(window >= ncol(trj))
-    stop('The constructed dimensionality (n-plication of the dimentions) has encountered a value that is really high (>dim^2). It could be slow.')
+    warning('The constructed dimensionality (n-plication of the dimentions) has encountered a value that is really high (>dim^2). It could be slow.')
 
   # Main transformation
   for(i in 1:dim(trj)[1]){

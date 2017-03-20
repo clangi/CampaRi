@@ -88,8 +88,10 @@ generate_network <- function(trj, window = NULL, overlapping_reduction = NULL, .
   
   if(any(is.na(trj_out))){
     n_na_trj <- sum(is.na(trj_out))
-    warning('Attention: NA generated. They will substituted with 0. Probably it is due to too short window of time used. Fraction of NA: ', 
+    warning('Attention: NA generated. Probably it is due to too short window of time used. Fraction of NA: ', 
             (n_na_trj*100/(nrow(trj_out)*ncol(trj_out))), ' %')
+    if((n_na_trj*100/(nrow(trj_out)*ncol(trj_out))) > 5) stop('The generated NA overcame the threshold of 5%. Please consider alternative methods and vars.')
+    else message('Assigning 0 to the generated NA.')
     trj_out[is.na(trj_out)] <- 0 
   }
   

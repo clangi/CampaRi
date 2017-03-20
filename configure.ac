@@ -12,7 +12,7 @@ define(SECTION_TITLE,
 
 dnl Writing the version to screen
 SECTION_TITLE([CampaRi package, AC_PACKAGE_VERSION])
-AC_LANG(Fortran)
+#AC_LANG(Fortran)
 AC_PROG_FC
 
 dnl include m4 macro for netcdf4 check
@@ -50,7 +50,8 @@ if test "$with_netcdf4_fortran" = "yes"; then
 	AC_DEFINE(HAVE_NETCDF4)
 	options="$options netcdf4"
 else
-	AC_MSG_ERROR([Unable to find NetCDF4 (version >=4.4.0), we need NetCDF4 for Fortran (nf-config).])
+	AC_MSG_ERROR([Unable to find NetCDF4 (version >=4.4.0), we need NetCDF4 specifically for Fortran.
+	Please be sure that command nf-config exists and it is not competing with previous versions (nc-config must have NO fortran bindings).])
 fi
 
 

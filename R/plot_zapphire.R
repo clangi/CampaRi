@@ -61,8 +61,15 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
   else stop("Sapphire table needed in input. Check the documentation")
   dp <- dim(pin)
   ann_tr <- array("NA",dim = dp[1])
-  if(!is.logical(ann_trace)&&is.numeric(ann_trace)&&length(ann_trace)!=1)
-    nrow_an_tr <- nrow(ann_trace)
+  already_in_input <- FALSE
+  if(!is.logical(ann_trace)&&length(ann_trace)!=1)
+    if(is.null(nrow(ann_trace))){
+      nrow_an_tr <- 1
+      if(length(ann_trace)==dp[1])
+        already_in_input <- TRUE
+    }else{
+      nrow_an_tr <- nrow(ann_trace)
+    }
   else if(length(ann_trace)!=dp[1])
     nrow_an_tr <- 1
   else
@@ -73,8 +80,9 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
     stop("The annotation trace must be eighter a number vector (or matrix) with length = input trj eighter
          a single value (1-10,T/F). ")
   
-  if(!is.null(ann_trace)&&!is.logical(ann_trace)&&(any(!sapply(ann_trace,is.numeric)) ||
-                                                   max(ann_trace)>10)) stop("For manual insertion of the trace use numbers 1-10 for each value (also more than one row)")
+  if(!is.null(ann_trace)&&!is.logical(ann_trace)&&is.numeric(ann_trace)&&(any(!sapply(ann_trace,is.numeric)) ||
+                                                   max(ann_trace)>10)) 
+    stop("For manual insertion of the trace use numbers 1-10 for each value (also more than one row)")
   if(!is.null(nrow_an_tr)) max_an_tr <- max(ann_trace)
   
   
@@ -97,9 +105,10 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
                                      & ann_tr == "NA"] <- paste0("gray",floor(100/ann_trace)*i)
     nrow_an_tr <- 1
   }else if(nrow_an_tr==1){
-    ann_tr <- sapply(ann_trace,FUN = function(x){
-      paste0("gray",floor(100/max_an_tr)*x)
-    })
+    if(already_in_input)
+      ann_tr <- ann_trace[pin[,3]]
+    else
+      ann_tr <- sapply(ann_trace,FUN = function(x){ paste0("gray",floor(100/max_an_tr)*x) })
   }else if(nrow_an_tr>1){
     ann_tr <- array("NA", dim = dim(ann_trace))
     for(i in 1:nrow_an_tr){
@@ -127,7 +136,7 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
   # theme_bw() +
   # theme(panel.grid.minor = element_line(colour="gray80"))
   
-  #Trace height from the top. This is the 0-16 parts out of ymax
+  # Trace height from the top. This is the 0-16 parts out of ymax
   if(!is.null(background_height)&&is.numeric(background_height)&&length(background_height)==1){
     if(background_height>14||background_height<0){
       warning("Inserted background height too small or too big.")
@@ -150,9 +159,9 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
   }
   # plotting the trace and the timeline
   if(!is.logical(ann_trace)&&nrow_an_tr==1||(is.logical(ann_trace)&&ann_trace)){
-    gg <- gg + geom_segment(aes(xx, y = rep(ymax*3/4,length(xx)),
-                                xend = xx, yend = rep(ymax*3/4+ymax/8, length(xx))),
-                            col = ann_tr)
+    gg <- gg + geom_segment(aes(xx, y = rep(ymax*3/4, length(xx)),
+                                xend = xx, yend = rep(ymax*3/4 + ymax/8, length(xx))),
+                            col = ann_tr, size = 1)
   } else if(!is.logical(ann_trace)){
     for(i in 0:(nrow_an_tr-1))
       gg <- gg + geom_segment(x=xx, y = rep(ymax*((tr_init+((i*(16-tr_init))/nrow_an_tr))/16),length(xx)),
@@ -177,7 +186,7 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
   }
   
   
-  #timeline at the bottom
+  # timeline at the bottom
   if(timeline&&!is.logical(ann_trace)&&nrow_an_tr==1) 
     gg <- gg + geom_point(aes(x=xx,y=(pin[,3]*1.0*ymax*1/6)/dp[1]), col=ann_tr, size=0.01) + 
     annotate("text", label = "0%", x = -dp[1]/100, y = 0, size = 3, angle = 90) +
