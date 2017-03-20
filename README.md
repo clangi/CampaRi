@@ -6,7 +6,8 @@
 [![bioc](http://bioconductor.org/shields/availability/devel/TCGAbiolinks.svg)](http://bioconductor.org/packages/TCGAbiolinks/)
 
 -->
-[![Build Status](https://travis-ci.org/Melkiades/CampaRi.svg?branch=master)](https://travis-ci.org/Melkiades/CampaRi)
+[![Travis-CI Build Status](https://travis-ci.org/Melkiades/CampaRi.svg?branch=master)](https://travis-ci.org/Melkiades/CampaRi)
+
 ------------------------------------------------------------------------
 # CampaRi - An R wrapper for fast trajectory analysis
 
