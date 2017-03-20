@@ -10,6 +10,8 @@ os:
 
 #dist: xenial #not working because only trusty is supported
 
+dist: trusty 
+
 addons:
   apt:
     packages:
