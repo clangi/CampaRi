@@ -4102,9 +4102,9 @@ $as_echo "yes (version $NETCDF_FVERSION)" >&6; }
             if test "$NETCDF4_FC" = "ccache"; then
                 NETCDF4_FC=$(eval $NF_CONFIG --fc | $AWK '{print $2}')
             fi
-                        NETCDF4_FFLAGS=$(eval $NC_CONFIG --fflags)
+                        NETCDF4_FFLAGS=$(eval $NF_CONFIG --fflags)
 
-                        NETCDF4_tmp_flibs=$(eval $NC_CONFIG --flibs)
+                        NETCDF4_tmp_flibs=$(eval $NF_CONFIG --flibs)
 
                         for arg in $NETCDF4_tmp_flibs ; do
               case "$arg" in
@@ -4147,7 +4147,8 @@ if test "$with_netcdf4_fortran" = "yes"; then
 
 	options="$options netcdf4"
 else
-	as_fn_error $? "Unable to find NetCDF4 (version >=4.4.0), we need NetCDF4 for Fortran (nf-config)." "$LINENO" 5
+	as_fn_error $? "Unable to find NetCDF4 (version >=4.4.0), we need NetCDF4 specifically for Fortran.
+	Please be sure that command nf-config exists and it is not competing with previous versions (nc-config must have NO fortran bindings)." "$LINENO" 5
 fi
 
 
