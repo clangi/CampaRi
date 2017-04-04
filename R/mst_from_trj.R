@@ -4,10 +4,9 @@
 #'      between pairwise snapshots.
 #'
 #' @param trj Input trajectory (variables on the columns and equal-time spaced snpashots on the row). It must be a \code{matrix} or a \code{data.frame} of numeric.
-#' @param distance_method Distance metric between snapshots. This value can be set 1 (dihedral angles) or 5 (root mean square deviation) or 11 (balistic distance)
-#' or 12 (network construction, see \code{window var}).
-#' @param distance_weights Vector of weights to be applied in order to compute averaged weighted distance using multiple \code{distance_method}. 
-#' Each value must be between 0 and 1. This option works only if \code{birch_clu=F}.
+#' @param distance_method Distance metric between snapshots. This value can be set 1 (dihedral angles) or 5 (root mean square deviation) or 11 (balistic distance).
+#' @param distance_weights Vector of weights to be applied in order to compute averaged weighted distance using multiple \code{distance_method}.
+#' Each value must be between 0 and 1. This option works only if \code{birch_clu=F} and is highly NOT reccomended.
 #' @param clu_radius This numeric argument is used in the clustering step in order to make clusters of the same radius at the base level.
 #' @param clu_hardcut This option is used only with \code{birch_clu=F} and defines the inter-clusters distance threshold.
 #' @param normalize_d A logical that indicates whether the distances must be normalized or not. Usually used with averaging.
@@ -42,7 +41,7 @@
 #' tree_height = 5, n_search_attempts = 50)
 #' }
 #'
-#' 
+#'
 #' @importFrom bio3d rmsd
 #' @export mst_from_trj
 #' @import parallel
@@ -53,23 +52,23 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL, clu_ra
                        cores = NULL, logging = FALSE, ...){ #misc
   # Checking additional inputs
   input_args <- list(...)
-  avail_extra_argoments <- c('pre_process', 'window', 'overlapping_reduction', 
+  avail_extra_argoments <- c('pre_process', 'window', 'overlapping_reduction',
                              # specific wgcna vars
                              'wgcna_type', 'wgcna_power', 'wgcna_corOp',
                              # feature selection
                              'feature_selection', 'n_princ_comp')
-  if(any(!(names(input_args) %in% avail_extra_argoments))) 
+  if(any(!(names(input_args) %in% avail_extra_argoments)))
     warning('There is a probable mispelling in one of the inserted variables. Please check the available extra input arguments.')
-  
+
   # wgcna and multiplication pre-processing
   if(!('pre_process' %in% names(input_args))) pre_process <- NULL else pre_process <- input_args[['pre_process']]
   if(!('window' %in% names(input_args))) window <- NULL else window <- input_args[['window']]
   if(!('overlapping_reduction' %in% names(input_args))) overlapping_reduction <- NULL else overlapping_reduction <- input_args[['overlapping_reduction']]
-  
+
   # feature selection
   if(!('feature_selection' %in% names(input_args))) feature_selection <- NULL else feature_selection <- input_args[['feature_selection']]
   if(!('n_princ_comp' %in% names(input_args))) n_princ_comp <- NULL else n_princ_comp <- input_args[['n_princ_comp']]
-  
+
   # checking trajectory input
   if(!is.matrix(trj)){
     if(!is.data.frame(trj)) stop('trj input must be a matrix or a data.frame')
@@ -94,17 +93,17 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL, clu_ra
   #Input setting
   n_snaps <- nrow(trj)
   n_xyz <- ncol(trj)
-  
-  
-  
+
+
+
   # -----------------------------------------------------------------------
-  # Preprocessing 
+  # Preprocessing
   #
   # Available options: 'wgcna' 'multiplication'
   #
   #
   #
-  
+
   preprocessing_opts <- c('wgcna', 'multiplication')
   if(!is.null(pre_process) && (length(pre_process)!=1 || !is.character(pre_process) || !(pre_process %in% preprocessing_opts)))
     stop('Inserted preprocessing method (string) not valid.')
@@ -116,7 +115,7 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL, clu_ra
     if((!is.null(overlapping_reduction) && (length(overlapping_reduction) != 1 ||!is.numeric(overlapping_reduction) ||
                                             overlapping_reduction <= 0 || overlapping_reduction > 1)))
       stop('The used overlapping_reduction is not correctly defined. It must be a number between 0 and 1.')
-    
+
     # setting standard window size
     if(is.null(window)) window <- nrow(trj)/100
     cat('A network will be generated using the WGCNA correlation algorithm and using a sliding window of', window, 'snapshots.\n')
@@ -127,19 +126,19 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL, clu_ra
   if(!is.null(pre_process) && pre_process == 'multiplication'){
     cat('A multiplication will be generated copy-pasting dimensionalities from a sliding window of', window, 'snapshots.\n')
     # Calling multiplicate_trj (the )
-    trj <- multiplicate_trj(trj, window, overlapping_reduction) 
+    trj <- multiplicate_trj(trj, window, overlapping_reduction)
     n_xyz <- ncol(trj)
   }
-  
-  
+
+
   # -----------------------------------------------------------------------
   # Feature selection
   #
   # This method has been implemented after the common pre-processing analysis
-  # function because this step of feature selection coul be performed only 
+  # function because this step of feature selection coul be performed only
   # internally while the a priori feature selection was passible also outside
   # this function.
-  # 
+  #
   # Supported algorithms: 'pca'
   #
   if(!is.null(feature_selection)){
@@ -147,8 +146,8 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL, clu_ra
     trj <- select_features(trj, feature_selection = feature_selection, n_princ_comp = n_princ_comp)
     n_xyz <- ncol(trj)
   }
-  
-  
+
+
   # -----------------------------------------------------------------------
   # -----------------------------------------------------------------------
   # Normal mode (R).
@@ -199,14 +198,14 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL, clu_ra
     # --------------
     # Default vars
     # --------------
-    
+
     # Distance value
     max_supported_dist <- 11
     sup_dist <- c(1, 5, 11)
     tmp_dis <- distance_method
     if(!birch_clu){
       # The multiple distance insertion (and weights) are available only with MST
-      if(!is.numeric(tmp_dis) || 
+      if(!is.numeric(tmp_dis) ||
          (!all(tmp_dis %in% sup_dist)) || length(tmp_dis)>max_supported_dist)
         stop("The distance values that have been inserted are not supported. The supported values can be checked in the documentation.")
       if(length(tmp_dis) > 1) cat("More than one distance selected. They will be averaged (this feature is available only for MST).")
@@ -216,7 +215,7 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL, clu_ra
     }
     distance_method <- rep(0, max_supported_dist)
     distance_method[1:length(tmp_dis)] <- tmp_dis
-    
+
     # Distance weights
     if(!is.null(distance_weights)){
       tmp_dis_w <- distance_weights
@@ -227,7 +226,7 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL, clu_ra
     }else{
       distance_weights <- rep(1,max_supported_dist)
     }
-    
+
     # Thresholds for radius and inter radius values. This is MST leader clustering
     if(is.null(clu_radius) || clu_radius <= 0){
       clu_radius <- 214748364
@@ -260,17 +259,17 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL, clu_ra
         rootmax_rad <- max(trj)*2
       else if(!is.numeric(rootmax_rad) || length(rootmax_rad)!=1)
         stop('rootmax_rad must be a numeric of length 1.')
-      
+
       if(is.null(tree_height) || (is.numeric(tree_height) && length(tree_height)==1 && tree_height<2))
         tree_height <- 5
       else if(!is.numeric(tree_height) || length(tree_height)!=1)
         stop('tree_heigth must be a numeric of length 1.')
-      
+
       if(is.null(n_search_attempts))
         n_search_attempts <- ceiling(nrow(trj)/10)
       else if(!is.numeric(n_search_attempts) || length(n_search_attempts)!=1)
         stop('n_search_attempts must be a numeric of length 1.')
-      
+
       if(is.null(clu_radius) || clu_radius==214748364)
         clu_radius <- rootmax_rad/tree_height
     }else{
@@ -278,7 +277,7 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL, clu_ra
       tree_height <- 0
       n_search_attempts <- 0
     }
-    
+
     # ------------------------------------------------------------------------------
     # Main functions for internal calling of Fortran code
     #
