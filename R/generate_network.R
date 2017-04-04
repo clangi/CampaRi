@@ -23,6 +23,7 @@
 #'
 #' @export generate_network
 #' @importFrom WGCNA adjacency
+#' @importFrom data.table transpose
 
 generate_network <- function(trj, window = NULL, overlapping_reduction = NULL, transpose_trj = FALSE,... ){
  
@@ -72,19 +73,23 @@ generate_network <- function(trj, window = NULL, overlapping_reduction = NULL, t
     
   
   # initialising the variables
-  trj_out <- matrix(NA, nrow = nrow(trj), ncol = ((ncol(trj)-1)*ncol(trj)/2)) 
+  if(transpose_trj)
+    trj_out <- matrix(NA, nrow = nrow(trj), ncol = ((window*(window-1))/2)) 
+  else
+    trj_out <- matrix(NA, nrow = nrow(trj), ncol = ((ncol(trj)-1)*ncol(trj)/2)) 
   
   # Main transformation
   message('Network construction started.')
   for(i in 1:dim(trj)[1]){
-    if((i - window_l) <= 0)
+    if((i - window_l) <= 0) {
       tmp_trj <- trj[1:(i+window_r),]
-
-    else if((window_r + i) > nrow(trj))
+      if(transpose_trj) tmp_trj <- rbind(tmp_trj, tmp_trj)
+    }else if((window_r + i) > nrow(trj)){
       tmp_trj <- trj[(i-window_l):dim(trj)[1],]
-  
-    else
+      if(transpose_trj) tmp_trj <- rbind(tmp_trj, tmp_trj)
+    }else{
       tmp_trj <- trj[(i-window_l):(i+window_r),]
+    } 
     
     if(transpose_trj)
       tmp_trj <- transpose(tmp_trj)
