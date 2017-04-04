@@ -6,6 +6,7 @@
 #' @param trj Input trajectory (variables on the columns and equal-time spaced snpashots on the row). It must be a \code{matrix} or a \code{data.frame} of numeric.
 #' @param window Number of snapshots taken before and after the considered snapshot. 
 #' @param overlapping_reduction Not yet supported (It will if a great number of snapshots will be considered in this analysis - snapshot selection)
+#' @param transpose_trj Defaults to F. If set T the junk of trj (i.e. with a specific window) is transposed so to infer a network with dimensions window*(window-1)/2
 #' @param ... Various variables. Possible values are \code{c('wgcna_type', 'wgcna_power', 'wgcna_corOp')}.
 #' 
 #' @details From WGCNA::adjacency: Correlation and distance are transformed as follows: for type = "unsigned", 
@@ -23,7 +24,7 @@
 #' @export generate_network
 #' @importFrom WGCNA adjacency
 
-generate_network <- function(trj, window = NULL, overlapping_reduction = NULL, ... ){
+generate_network <- function(trj, window = NULL, overlapping_reduction = NULL, transpose_trj = FALSE,... ){
  
   # checking additional variable
   input_args <- list(...)
@@ -48,7 +49,9 @@ generate_network <- function(trj, window = NULL, overlapping_reduction = NULL, .
   if((!is.null(overlapping_reduction) && (length(overlapping_reduction) != 1 ||!is.numeric(overlapping_reduction) ||
                                           overlapping_reduction <= 0 || overlapping_reduction > 1)))
     stop('The used overlapping_reduction is not correctly defined. It must be a number between 0 and 1.')
-
+  if(!is.logical(transpose_trj))
+    stop('transpose_trj must be a logical value.')
+  
   # Long calculation warning
   if(dim(trj)[1] > 20000) warning('The network generation can be really long. Please consider multi-threads options of the WGCNA package.')
   if(dim(trj)[2] > 50) warning('The network generation can create an exagerated number of variables')
@@ -67,6 +70,7 @@ generate_network <- function(trj, window = NULL, overlapping_reduction = NULL, .
   # Check for NA
   if(any(is.na(trj))) stop('There are NA values in the input trajectory')
     
+  
   # initialising the variables
   trj_out <- matrix(NA, nrow = nrow(trj), ncol = ((ncol(trj)-1)*ncol(trj)/2)) 
   
@@ -74,15 +78,20 @@ generate_network <- function(trj, window = NULL, overlapping_reduction = NULL, .
   message('Network construction started.')
   for(i in 1:dim(trj)[1]){
     if((i - window_l) <= 0)
-      built_net <- WGCNA::adjacency(trj[1:(i+window_r),], type = wgcna_type, corFnc = 'cor', power = wgcna_power, 
-                                    corOptions = wgcna_corOp)
+      tmp_trj <- trj[1:(i+window_r),]
+
     else if((window_r + i) > nrow(trj))
-      built_net <- WGCNA::adjacency(trj[(i-window_l):dim(trj)[1],], type = wgcna_type, corFnc = 'cor', power = wgcna_power, 
-                                    corOptions = wgcna_corOp)
+      tmp_trj <- trj[(i-window_l):dim(trj)[1],]
+  
     else
-      built_net <- WGCNA::adjacency(trj[(i-window_l):(i+window_r),], type = wgcna_type, corFnc = 'cor', power = wgcna_power, 
+      tmp_trj <- trj[(i-window_l):(i+window_r),]
+    
+    if(transpose_trj)
+      tmp_trj <- transpose(tmp_trj)
+    
+    built_net <- WGCNA::adjacency(tmp_trj, type = wgcna_type, corFnc = 'cor', power = wgcna_power, 
                                     corOptions = wgcna_corOp)
-      
+    # Taking only the upper.tri  
     trj_out[i,] <- built_net[upper.tri(built_net)]
   }
   
