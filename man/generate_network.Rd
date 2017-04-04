@@ -4,7 +4,8 @@
 \alias{generate_network}
 \title{Create a network for each snapshots}
 \usage{
-generate_network(trj, window = NULL, overlapping_reduction = NULL, ...)
+generate_network(trj, window = NULL, overlapping_reduction = NULL,
+  transpose_trj = FALSE, ...)
 }
 \arguments{
 \item{trj}{Input trajectory (variables on the columns and equal-time spaced snpashots on the row). It must be a \code{matrix} or a \code{data.frame} of numeric.}
@@ -12,6 +13,8 @@ generate_network(trj, window = NULL, overlapping_reduction = NULL, ...)
 \item{window}{Number of snapshots taken before and after the considered snapshot.}
 
 \item{overlapping_reduction}{Not yet supported (It will if a great number of snapshots will be considered in this analysis - snapshot selection)}
+
+\item{transpose_trj}{Defaults to F. If set T the junk of trj (i.e. with a specific window) is transposed so to infer a network with dimensions window*(window-1)/2}
 
 \item{...}{Various variables. Possible values are \code{c('wgcna_type', 'wgcna_power', 'wgcna_corOp')}.}
 }

@@ -13,11 +13,10 @@ mst_from_trj(trj, distance_method = 5, distance_weights = NULL,
 \arguments{
 \item{trj}{Input trajectory (variables on the columns and equal-time spaced snpashots on the row). It must be a \code{matrix} or a \code{data.frame} of numeric.}
 
-\item{distance_method}{Distance metric between snapshots. This value can be set 1 (dihedral angles) or 5 (root mean square deviation) or 11 (balistic distance)
-or 12 (network construction, see \code{window var}).}
+\item{distance_method}{Distance metric between snapshots. This value can be set 1 (dihedral angles) or 5 (root mean square deviation) or 11 (balistic distance).}
 
-\item{distance_weights}{Vector of weights to be applied in order to compute averaged weighted distance using multiple \code{distance_method}. 
-Each value must be between 0 and 1. This option works only if \code{birch_clu=F}.}
+\item{distance_weights}{Vector of weights to be applied in order to compute averaged weighted distance using multiple \code{distance_method}.
+Each value must be between 0 and 1. This option works only if \code{birch_clu=F} and is highly NOT reccomended.}
 
 \item{clu_radius}{This numeric argument is used in the clustering step in order to make clusters of the same radius at the base level.}
 

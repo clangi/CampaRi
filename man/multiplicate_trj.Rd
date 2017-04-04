@@ -4,14 +4,17 @@
 \alias{multiplicate_trj}
 \title{Multiplicate the trajectory variables}
 \usage{
-multiplicate_trj(trj, window = NULL, overlapping_reduction = NULL)
+multiplicate_trj(trj, window = NULL, overlapping_reduction = NULL,
+  method = NULL)
 }
 \arguments{
 \item{trj}{Input trajectory (variables on the columns and equal-time spaced snpashots on the row). It must be a \code{matrix} or a \code{data.frame} of numeric.}
 
-\item{window}{Number of snapshots taken before and after the considered snapshot.}
+\item{window}{Number of snapshots taken before and after the considered snapshot. Defaults to 1.}
 
 \item{overlapping_reduction}{Not yet supported (It will if a great number of snapshots will be considered in this analysis - snapshot selection)}
+
+\item{method}{If "sincos" is supplied a preprocessing step with sin cos multiplication is applied to each snapshot.}
 }
 \value{
 It will return a modified trajectory matrix.

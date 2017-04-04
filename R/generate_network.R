@@ -83,10 +83,10 @@ generate_network <- function(trj, window = NULL, overlapping_reduction = NULL, t
   for(i in 1:dim(trj)[1]){
     if((i - window_l) <= 0) {
       tmp_trj <- trj[1:(i+window_r),]
-      if(transpose_trj) tmp_trj <- rbind(tmp_trj, tmp_trj)
+      if(transpose_trj) tmp_trj <- rbind(tmp_trj, tmp_trj[1:(window_l-i + 1),])
     }else if((window_r + i) > nrow(trj)){
       tmp_trj <- trj[(i-window_l):dim(trj)[1],]
-      if(transpose_trj) tmp_trj <- rbind(tmp_trj, tmp_trj)
+      if(transpose_trj) tmp_trj <- rbind(tmp_trj, tmp_trj[(dim(trj)[1] - (window - nrow(tmp_trj)) + 1):dim(trj)[1],])
     }else{
       tmp_trj <- trj[(i-window_l):(i+window_r),]
     } 
