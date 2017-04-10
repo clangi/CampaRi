@@ -5,7 +5,7 @@
 \title{Identifying basins in the SAPPHIRE plot}
 \usage{
 basins_recognition(file, nx = 500, ny.aut = TRUE, local.cut = FALSE,
-  match = TRUE, avg.opt = "movav", plot = FALSE, ...)
+  match = FALSE, avg.opt = c("movav", "SG"), plot = FALSE, ...)
 }
 \arguments{
 \item{file}{Name of the PROGIDX_<...>.dat file.}
@@ -34,7 +34,7 @@ basins_recognition(file, nx = 500, ny.aut = TRUE, local.cut = FALSE,
 }}
 }
 \value{
-None
+Data frame containing the boundaries of each state and his length
 }
 \description{
 \code{basins_recognition} uses the information provided by the SAPPHIRE plot in order to identify free energy basins, 

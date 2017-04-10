@@ -26,7 +26,7 @@
 #'        \item "\code{pol.degree}" degree of the Savitzky-Golay filter
 #'      }
 #'      
-#' @return None
+#' @return Data frame containing the boundaries of each state and his length
 #' 
 #' @examples
 #' 
@@ -48,6 +48,7 @@
 #' @importFrom grDevices dev.new
 #' @importFrom sfsmisc is.whole 
 #' @importFrom distr DiscreteDistribution
+#' @importFrom data.table fread fwrite
 #' @export basins_recognition
 
 ## library(distrEx) #HellingerDist
@@ -56,12 +57,14 @@
 ## library(RcppArmadillo) #loading required package
 ## library(prospectr) #movav, savitzkyGolay
 ## library(splus2R) #peaks 
+## library(data.table) #fread, fwrite
 
 ## file <- "/home/fcocina/Desktop/Campari/GitHub/feature_selection/BPTIdata/PROGIDXSAMPLE_000000020521.dat"
-## ## file <- "/home/fcocina/Desktop/Campari/GitHub/feature_selection/Otherdata/PROGIDXmbacci_000000563727.dat"
+## file <- "/home/fcocina/Desktop/Campari/GitHub/feature_selection/Otherdata/PROGIDXmbacci_000000563727.dat"
+## filetime1 <- "/home/fcocina/Desktop/Campari/GitHub/feature_selection/Otherdata/timetrace_yshif.dat"
 ## ptm <- proc.time()
 
-basins_recognition <- function(file, nx=500, ny.aut=TRUE, local.cut=FALSE, match=TRUE, avg.opt="movav", plot=FALSE, ...) {
+basins_recognition <- function(file, nx=500, ny.aut=TRUE, local.cut=FALSE, match=FALSE, avg.opt=c("movav", "SG") , plot=FALSE, ...) {
 
     if(!is.character(file)) stop("file must be a string")
     if(!grepl("PROGIDX", file)) stop("Please provide a file name starting with 'PROGIDX'" )
@@ -70,7 +73,7 @@ basins_recognition <- function(file, nx=500, ny.aut=TRUE, local.cut=FALSE, match
     if(!is.logical(match)) stop("match must be a logical value")
     if(!is.logical(plot)) stop("plot must be a logical value")
     avg.opt.arg <- c("movav", "SG")
-    if(!(avg.opt %in% avg.opt.arg)) stop("Average option not valid")
+    if(!(avg.opt[1] %in% avg.opt.arg)) stop("Average option not valid")
 
     input.args <- list(...)
     avail.extra.arg <- c("pol.degree","ny","only.kin","time.series")
@@ -86,7 +89,7 @@ basins_recognition <- function(file, nx=500, ny.aut=TRUE, local.cut=FALSE, match
             ny <- nx
         } else ny <- input.args$ny
     }
-    if(avg.opt=="SG") {
+    if(avg.opt[1]=="SG") {
         if(!("pol.degree" %in% names(input.args))) {
             print("SG but pol.degree not specified, set to default value 2")
             pol.degree <- 2
@@ -97,19 +100,18 @@ basins_recognition <- function(file, nx=500, ny.aut=TRUE, local.cut=FALSE, match
     }
 
     ## TO BE REMOVED
-    ## nx <- 500
-    ## ny <- 10000
+    ## nx <- 2000
+    ## ny <- 2000
     ## plot <- TRUE
     ## match <- FALSE
-    ## avg.opt <- "movav"
-    ## ny.aut <- TRUE
+    ## avg.opt[1] <- "movav"
+    ## ny.aut <- FALSE
     ## local.cut <- FALSE
     ## only.kin <- FALSE
-    ## ## input.args <- list(time.series=filetime1)
-
+    ## input.args <- list(time.series=filetime1)
     ## print(nx)
     ## print(plot)
-    ## print(avg.opt)
+    ## print(avg.opt[1])
     ## if(any("pol.degree" %in% ls())) print(pol.degree)
 
     as.real <- function(x) {
@@ -161,16 +163,16 @@ basins_recognition <- function(file, nx=500, ny.aut=TRUE, local.cut=FALSE, match
     ## INPUT FILE 
     print("Reading PROGIDX file...")
     if(!local.cut) {
-        progind <- read.table(file)[, c(1, 3, 4)]
+        progind <- data.frame(fread(file, showProgress=FALSE)[, c(1, 3, 4)])
         colnames(progind) <- c("PI", "Time", "Cut")
     } else {
-        foo <- read.table(file)[, c(1, 3, 10, 12)]
+        foo <- data.frame(fread(file, showProgress=FALSE)[, c(1, 3, 10, 12)])
         progind <- data.frame(PI=foo[[1]], Time=foo[[2]], Cut=(foo[[3]]+foo[[4]])/2)
         rm(foo)
     }
     if("time.series" %in% names(input.args)){
         time.series <- input.args$time.series
-        progind$Time <- read.table(time.series)[,1]
+        progind$Time <- as.vector(unlist(fread(time.series, showProgress=FALSE)[,1]))
         print(paste("Time series given by", time.series))
     }
 
@@ -182,7 +184,7 @@ basins_recognition <- function(file, nx=500, ny.aut=TRUE, local.cut=FALSE, match
     K <- 2 ## Parameter of the Haat wavelet
     dpeaks.dyn <- 3 ## Parameter of the maximum search algorithm (window size)
     nsample <- 50 ## Number of samples in the distribution of reshuffled Hellinger distances 
-    cutjoin <- 15 ## Number of null joining attempts required to quit the procedure 
+    cutjoin <- 50 ## Number of null joining attempts required to quit the procedure 
     conf.lev <- 0.005 ## Cut on pvalues of the Grubb Test
     ## Kinetic parameters
     wsize <- round(2*cstored/nx) + ((round(2*cstored/nx)+1) %% 2)  ## To make it odd
@@ -197,9 +199,10 @@ basins_recognition <- function(file, nx=500, ny.aut=TRUE, local.cut=FALSE, match
 #########&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&###############
 ############################&&&&&& DYNAMICS &&&&&&&###############################
 #########&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&###############
+
     if(!only.kin) {
+
         print("Analysis of the dynamic trace")
-        datap <- matrix(c(progind[,1],progind[,2]), ncol=2, nrow=cstored)
 
 ##################################################################################
         ## NBIN Y IDENTIFICATION
@@ -272,7 +275,7 @@ basins_recognition <- function(file, nx=500, ny.aut=TRUE, local.cut=FALSE, match
 ##################################################################################
 
         print(paste("Nbins on y is", ny))
-        hist <- hist2d(datap, nbins=c(nx,ny), show=FALSE)
+        hist <- hist2d(matrix(c(progind[,1],progind[,2]), ncol=2, nrow=cstored), nbins=c(nx,ny), show=FALSE)
 
 ##################################################################################
         ## STRETCHES CREATION
@@ -295,8 +298,6 @@ basins_recognition <- function(file, nx=500, ny.aut=TRUE, local.cut=FALSE, match
 ####################################################################################
         ## FILL RAWSET
 ###############################################################################
-        ps <- 1
-        wth.pos <- c(approx(c(1,floor(cstored/2)),c(1,ps),xout=c(1:floor(cstored/2)))$y,approx(c((floor(cstored/2)+1),cstored),c(ps,1),xout=c((floor(cstored/2)+1):cstored))$y)
         rawset <- data.frame(min=rep(0,ny), max=rep(0,ny), center=rep(0,ny), wth1=rep(0,ny), wth2=rep(0,ny))
         for (j in 1:ny) {
             temp <- which(joinx[,j]==1)
@@ -304,13 +305,14 @@ basins_recognition <- function(file, nx=500, ny.aut=TRUE, local.cut=FALSE, match
             minr <- temp[1]
             maxr <- temp[length(temp)]+1
             if((maxr-minr)<= 3) rawset[j,c(1:3)] <- 0
-            else  rawset[j,c(1:3)] <- c(hist$x[minr], hist$x[maxr], sum(hist$counts[c(minr:maxr),j]*hist$x[minr:maxr])/sum(hist$counts[c(minr:maxr),j]))
+            else  rawset[j,c(1:3)] <- c(hist$x[minr], hist$x[maxr], weighted.mean(hist$x[minr:maxr], hist$counts[c(minr:maxr),j]))
         }
-        dum <- data.frame(x1=rawset$max-rawset$center, x2=rawset$center-rawset$min)
-        rawset$wth1 <- (pmin(dum$x1,dum$x2)/pmax(dum$x1,dum$x2))*(1-((rawset$max-rawset$min)/cstored))*wth.pos[rawset$center+1]
-        rawset$wth2 <- (pmin(dum$x1,dum$x2)/pmax(dum$x1,dum$x2)) / (rawset$max-rawset$min)
+        dum <- cbind(rawset$max-rawset$center, rawset$center-rawset$min)
+        rawset$wth1 <- (apply(dum, 1, min)/apply(dum, 1, max))*(1-((rawset$max-rawset$min)/cstored))
+        rawset$wth2 <- (apply(dum, 1, min)/apply(dum ,1, max)) / (rawset$max-rawset$min)
         rawset$wth1[which(is.na(rawset$wth1))] <- 0
         rawset$wth2[which(is.na(rawset$wth2))] <- 0
+        if(any(!is.finite(unlist(rawset)))) stop("Error in rawset")
         rawsetsort <- rawset[order(rawset$center),]
 
 #################################################################################
@@ -326,13 +328,13 @@ basins_recognition <- function(file, nx=500, ny.aut=TRUE, local.cut=FALSE, match
             if (meanopt=="center") rawmean <- rawsetsort$center
             if (wthopt==1) rawwth <- rawsetsort$wth1
             if (wthopt==2) rawwth <- rawsetsort$wth2
-            idrs <- match(FALSE,rawsetsort$center==0)
+            idrs <- match(FALSE, rawsetsort$center==0)
             if (is.na(idrs)) idrs <- 1
             sm <- NULL
             for (i in 1:nx) {
                 idxlist <- which(rawfirst[idrs:ny] < hist$x.breaks[i+1]) + idrs - 1 
                 if(length(idxlist)==0) sm[i] <- 0
-                else sm[i] <- sum(rawwth[idxlist]*rawmean[idxlist])/sum(rawwth[idxlist])
+                else sm[i] <- sum(rawwth[idxlist])
             }
             return(sm)
         }
@@ -354,7 +356,7 @@ basins_recognition <- function(file, nx=500, ny.aut=TRUE, local.cut=FALSE, match
             for (i in nx:1) {
                 idxlist <- which(rawfirst[idrs:ny] > hist$x.breaks[i]) + idrs - 1
                 if(length(idxlist)==0) sm[i] <- 0
-                else sm[i] <- sum(rawwth[idxlist]*(cstored-rawmean[idxlist]))/sum(rawwth[idxlist])
+                else sm[i] <- sum(rawwth[idxlist])
             }
             return(sm)
         }
@@ -362,12 +364,12 @@ basins_recognition <- function(file, nx=500, ny.aut=TRUE, local.cut=FALSE, match
 #########################################################################################
         ##FILTER SECTION
 ########################################################################################
-        matchfilt <- c(rep(1,K),1,rep(-1,K))
+        Haarfilt <- c(rep(1,K),1,rep(-1,K))
 
 #################################################################################
         ## Forward Filter with Haar wavelet
         MaxHaar <- function(first,meanopt,wthopt) {
-            filt <- filter(as.ts(sumwr(first,meanopt,wthopt)), matchfilt, method="convolution", sides=2)
+            filt <- filter(as.ts(sumwr(first,meanopt,wthopt)), Haarfilt, method="convolution", sides=2)
             filt <- c(rep(0,K),filt[c((K+1):(length(filt)-K))],rep(0,K))  #Filt with 0 instead of NA
             xbr <- hist$x[which(peaks(filt,dpeaks.dyn))]
             return(c(1,xbr,cstored))
@@ -375,7 +377,7 @@ basins_recognition <- function(file, nx=500, ny.aut=TRUE, local.cut=FALSE, match
 #################################################################################
         ## Backward Filter with Haar wavelet
         BackMaxHaar <- function(first,meanopt,wthopt) {
-            filt <- filter(as.ts(rev(backsumwr(first,meanopt,wthopt))), matchfilt, method="convolution", sides=2)
+            filt <- filter(as.ts(rev(backsumwr(first,meanopt,wthopt))), Haarfilt, method="convolution", sides=2)
             filt <- c(rep(0,K),filt[c((K+1):(length(filt)-K))],rep(0,K))  #Filt with 0 instead of NA
             xbr <- hist$x[which(rev(peaks(filt, dpeaks.dyn)))]
             return(c(1,xbr,cstored))
@@ -386,7 +388,7 @@ basins_recognition <- function(file, nx=500, ny.aut=TRUE, local.cut=FALSE, match
 #################################################################################
         breaks.max <- MaxHaar("max","min",1) 
         breaks.min <- BackMaxHaar("min","max",1)
-
+       
 ###############################################################################
         ##HARD BREAKS: Joining selected breaks.min and breaks.max with res
 ###############################################################################
@@ -509,12 +511,8 @@ basins_recognition <- function(file, nx=500, ny.aut=TRUE, local.cut=FALSE, match
                 part2 <- DiscreteDistribution(supp = c(1:ny) , prob=dens2)
                 sampleHell.tot[idx] <- HellingerDist(part1,part2)
             }
-            ## print(paste("Empty rows are ", length(which(ncounts==0)), ", that is",length(which(ncounts==0))/length(ncounts)  ) )
             grubbsHell.tot <- grubbs.test(c(sampleHell.tot,distHell.tot[i]), type=10)
             foo <- c(sampleHell.tot,distHell.tot[i])
-            ## print(paste(distHell.tot[i], mean(foo), abs(distHell.tot[i]-mean(foo))/sd(foo), abs(min(foo)-mean(foo))/sd(foo)))
-            ## print(paste(grubbsHell.tot$statistic))
-            ## print(paste("p-value is ", grubbsHell.tot$p.value))
             if (distHell.tot[i] < max(sampleHell.tot) | grubbsHell.tot$p.value>conf.lev) {
                 print(paste("Joining partitions"))
                 flagbreak <- 0
@@ -529,6 +527,7 @@ basins_recognition <- function(file, nx=500, ny.aut=TRUE, local.cut=FALSE, match
             brk.dyn <- sort(breaks.tot[-match(discbreaks.tot, breaks.tot)])
         } else brk.dyn <- sort(breaks.tot)
         print("End of the dynamic analysis")
+
     }
 
 
@@ -544,9 +543,13 @@ basins_recognition <- function(file, nx=500, ny.aut=TRUE, local.cut=FALSE, match
     kin <- -log(cutf / cstored)-parabol.log
 
 ### SMOOTHING Section
-    if(avg.opt=="SG") {
+    if(avg.opt[1]=="SG") {
+        print(paste("Savitzky Golay smoothing filter with degree", pol.degree))
         kin.mv <- savitzkyGolay(kin, p=pol.degree, w=wsize, m=0)
-    } else kin.mv <- movav(kin, w=wsize)
+    } else {
+        print("Moving average smoothing filter")
+        kin.mv <- movav(kin, w=wsize)
+    }
     kin.mv <- c(kin[c(1:((wsize-1)/2))], kin.mv, tail(kin,(wsize-1)/2))
 
 ### MAXIMA search Section
@@ -655,7 +658,7 @@ basins_recognition <- function(file, nx=500, ny.aut=TRUE, local.cut=FALSE, match
 ######################################################################
     ## OUTPUT section
 #####################################################################
-    print("Breaks are ")
+    print(paste("Number of states is", length(breaks)+1))
     print(breaks)
 
     vec <- sort(breaks)
@@ -670,8 +673,9 @@ basins_recognition <- function(file, nx=500, ny.aut=TRUE, local.cut=FALSE, match
     }
     output.match <- data.frame(PI=progind$PI, Time=progind$Time, State=state)
     print(paste("Writing", gsub("PROGIDX", "BASINS", strsplit(file,"/",fixed=T)[[1]][length(strsplit(file,"/",fixed=T)[[1]])]), "..."))
-    write.table(output.match, file=gsub("PROGIDX", "BASINS", file), row.names=FALSE, quote=FALSE)
-
+    fwrite(output.match, file=gsub("PROGIDX", "BASINS", file), sep='\t', row.names=FALSE, col.names=FALSE)
+    
+    
 ####################################################################
     ## PLOT Section
 ####################################################################
@@ -719,8 +723,52 @@ basins_recognition <- function(file, nx=500, ny.aut=TRUE, local.cut=FALSE, match
         } else abline(v=breaks, lwd=0.7, col="black")
     }
 
-    ## print(proc.time()-ptm)
 
+
+## ## Auxiliary plot
+## cx <- 2.1
+## dev.new(width=10, height=12) 
+## par(mgp=c(0, 0.8, 0)) #labels, tick mark labels, tick
+## par(ps=6)
+## layout(matrix(c(1:2), 2, 1, byrow = TRUE), heights=c(1,0.3))
+## par(mar = c(2.5, 0, 0, 0), oma = c(2, 6, 2, 2))
+
+## ## Main graph
+## xr <- c(1,cstored)
+## yr <- c(1,cstored)
+## plot(progind[,1], progind[,2], xlim=xr, ylim=yr, xlab="", ylab="", axes=FALSE, pch=16,  col="white")
+## axis(1, at=breaks.max, label=as.character(round(breaks.max)), cex.axis=cx, tck=.01)
+## axis(1, at=c(1,cstored), tck=.01, labels=FALSE)
+## axis(2, at=seq(from=1, to=cstored, length.out=(ny/100)), label=floor(seq(from=1, to=cstored, length.out=(ny/100))), tck=.01, cex.axis=cx, las=2)
+## mtext("Time Sequence", side=2, line=3.9, cex=cx/1.3, at=cstored/2 )
+## ## axis(3, at=breaks.min, label=as.character(round(breaks.min)), cex.axis=cx, tck=-.01)
+## ## axis(3, at=breaks.min, label=rep("", length(breaks.min)), cex.axis=cx, tck=.01)
+## minwth <- min(rawset[which(rawset$center!=0),"wth1"])
+## maxwth <- max(rawset[which(rawset$center!=0),"wth1"])
+## points(rawset$min[which(rawset$center!=0)], hist$y[which(rawset$center!=0)], pch=4, cex=0.6, col="red")
+## points(rawset$center[which(rawset$center!=0)], hist$y[which(rawset$center!=0)], pch=4, cex=0.6, col="darkorchid1")
+## points(rawset$max[which(rawset$center!=0)], hist$y[which(rawset$center!=0)], pch=4, cex=0.6, col="blue")
+
+## points(progind[,1], progind[,2],pch=16,cex=0.1, col='black')
+## lines(hist$x, scale(sumwr("max","min",1)), lwd=2,col="blue",type="l")
+## lines(hist$x, scale(backsumwr("min","max",1)), lwd=2,col="red",type="l")
+## abline(v=breaks.tot, lwd=1.2, lty=2, col="orange")
+## abline(v=brk.dyn, lwd=1.5, col="black")
+
+## ## Auxiliary graph 1: Max of the filter of the stepwise function
+## filt.max <- filter(as.ts(sumwr("max","min",1)), Haarfilt, method="convolution", sides=2)
+## filt.max <- c(rep(0,K),filt.max[c((K+1):(length(filt.max)-K))],rep(0,K))  
+## filt.min <- filter(as.ts(rev(backsumwr("min","max",1))), Haarfilt, method="convolution", sides=2)
+## filt.min <- c(rep(0,K),filt.min[c((K+1):(length(filt.min)-K))],rep(0,K)) 
+## plot(hist$x, rep(0,length(hist$x)), xlim=xr, ylim=range(c(filt.max)), ylab="", xlab="", type="n",lwd=1, frame.plot=FALSE, cex.axis=cx)
+## mtext("Progress Index", at=cstored/2, side=1, line=2.6, cex=cx/1.2)
+## lines(hist$x, filt.max, type="l",lwd=1, col="blue")
+## points(hist$x[which(peaks(filt.max,dpeaks.dyn))],filt.max[which(peaks(filt.max,dpeaks.dyn))] ,pch=4, cex=1.6, col="blue")
+## lines(hist$x, rev(filt.min), type="l",lwd=1, col="red")
+## points(hist$x[which(rev(peaks(filt.min,dpeaks.dyn)))], rev(filt.min[which(peaks(filt.min,dpeaks.dyn))]) ,pch=4, cex=1.6, col="red")
+
+    
+    return(data.frame(n=c(1:(length(breaks)+1)), start=c(1,vec+1), end=c(vec, cstored), length=diff(c(0,vec, cstored))))
+    
 }
-
 
