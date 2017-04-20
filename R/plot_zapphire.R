@@ -15,11 +15,14 @@
 #' that follows a split in half of the original timeline. If only an integer have been inserted the time line will be split in that number of splits.
 #' Instead if a matrix have been inserted it will be a plotted as it is on the top of the plot mapping the range of numbers in order to
 #' produce a gray scale horizontal annotation.
-#' @param ann_trace_ret If \code{TRUE} the annotation vector is returned.
+#' @param return_plot if \code{TRUE} it returns the plot object (ggplot).
+#' @param annotate_snap_dist if \code{TRUE} the distance between snapshots will be added on the top of the plot
+#' @param sub_sampling_factor if a number is inserted the annotation will be subsampled by that factor.
+#' @param return_ann_trace If \code{TRUE} the annotation vector is returned.
 #' @param background_height Defines the height on which to put the annotation (integer between 1 and 14).
 #' @param ann_names_L Vector of characther strings indicating, from top on the left, the names of the annotation horizontal bars.
 #' @param ann_names_R Vector of characther strings indicating, from top on the right, the names of the annotation horizontal bars.
-#' @param title Title of the plot
+#' @param title Title of the plot (default "")
 #'
 #' @details For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
 #'
@@ -41,18 +44,31 @@
 #' @export sapphire_plot
 #' @import ggplot2
 sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot = "plots/",
-                        timeline = T, local_cut = T,
-                        ann_trace = F, ann_trace_ret = F, background_height = NULL,
-                        ann_names_L = NULL,ann_names_R = NULL,
-                        title = "no title"){
+                        timeline = T, local_cut = T, return_plot = F, annotate_snap_dist = F, sub_sampling_factor = NULL,
+                        ann_trace = F, return_ann_trace = F, background_height = NULL,
+                        ann_names_L = NULL, ann_names_R = NULL,
+                        title = ""){
   # check on title
   if(!is.character(title)) stop("title var must be a string")
   # check on output folder
   if(file.exists(folderPlot)&&write) print(paste0(folderPlot," already exixts. Posting plots there."))
   else if(write){
     dir.create(folderPlot)
-    cat(paste0(folderPlot," created in order to contain my plots."))
+    cat(paste0(folderPlot," created in order to contain new plots."))
   }
+  # checking the logicals
+  if(!is.logical(return_plot))
+    stop('return_plot must be a logical.')
+  if(!is.logical(return_ann_trace))
+    stop('return_ann_trace must be a logical.')
+  if(!is.logical(timeline))
+    stop('timeline must be a logical.')
+  if(!is.logical(local_cut))
+    stop('local_cut must be a logical.')
+  if(!is.logical(write))
+    stop('write must be a logical.')
+  if(!is.logical(annotate_snap_dist))
+    stop('annotate_snap_dist must be a logical.')
   
   # loading data - sapphire table
   # the coercion to data.frame is made for retrocompatibili with non-data.table code
@@ -60,78 +76,155 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
   else if(is.null(sap_file)&&!is.null(sap_table)) pin <- sap_table
   else stop("Sapphire table needed in input. Check the documentation")
   dp <- dim(pin)
-  ann_tr <- array("NA",dim = dp[1])
-  already_in_input <- FALSE
-  if(!is.logical(ann_trace)&&length(ann_trace)!=1)
-    if(is.null(nrow(ann_trace))){
-      nrow_an_tr <- 1
-      if(length(ann_trace)==dp[1])
-        already_in_input <- TRUE
-    }else{
-      nrow_an_tr <- nrow(ann_trace)
-    }
-  else if(length(ann_trace)!=dp[1])
-    nrow_an_tr <- 1
-  else
-    nrow_an_tr <- NULL
   
-  #checking the trace input
-  if(is.null(nrow_an_tr)&&length(ann_trace)!=dp[1]&&length(ann_trace)!=1&&!is.null(ann_trace)&&!is.logical(ann_trace))
-    stop("The annotation trace must be eighter a number vector (or matrix) with length = input trj eighter
-         a single value (1-10,T/F). ")
-  
-  if(!is.null(ann_trace)&&!is.logical(ann_trace)&&is.numeric(ann_trace)&&(any(!sapply(ann_trace,is.numeric)) ||
-                                                   max(ann_trace)>10)) 
-    stop("For manual insertion of the trace use numbers 1-10 for each value (also more than one row)")
-  if(!is.null(nrow_an_tr)) max_an_tr <- max(ann_trace)
-  
-  
-  #Main ann_trace constructor
-  if(is.null(ann_trace)||
-     (is.logical(ann_trace)&&ann_trace)||
-     (is.numeric(ann_trace)&&length(ann_trace)==1&&ann_trace==2)){
-    message("Annotation trace not selected (or 2). It will be considered bepartite along the timeline.")
-    cat("Half random mode selected for the trace annotation. First half will be light grey")
-    ann_tr[pin[,3]>=dp[1]/2 & ann_tr == "NA"]<-"gray75"
-    ann_tr[pin[,3] < dp[1]/2 & ann_tr == "NA"] <- "gray30"
-    nrow_an_tr <- 1
-  }else if(is.numeric(ann_trace)&&length(ann_trace)==1){
-    message("Only 10 shades of grey are possible for the 'number' option of ann_trace.
-            If you inserted more than 10 it will be truncated. Please consider manual color insertion.")
-    if(ann_trace>10) ann_trace = 10
-    ann_tr[pin[,3]<dp[1]/ann_trace] <- "gray1"
-    for(i in 1:(ann_trace-1)) ann_tr[pin[,3]<dp[1]*(i+1)/ann_trace
-                                     & pin[,3]>=dp[1]*(i)/ann_trace
-                                     & ann_tr == "NA"] <- paste0("gray",floor(100/ann_trace)*i)
-    nrow_an_tr <- 1
-  }else if(nrow_an_tr==1){
-    if(already_in_input)
-      ann_tr <- ann_trace[pin[,3]]
-    else
-      ann_tr <- sapply(ann_trace,FUN = function(x){ paste0("gray",floor(100/max_an_tr)*x) })
-  }else if(nrow_an_tr>1){
-    ann_tr <- array("NA", dim = dim(ann_trace))
-    for(i in 1:nrow_an_tr){
-      ann_tr[i,] <- sapply(ann_trace[i,],FUN = function(x){
-        paste0("gray",floor(100/max_an_tr)*x)
-      })
-    }
-  }else if(!ann_trace){
-    warning("ann_trace = F silenced the annotation trace.")
+  # checking single numbers 
+  if(!is.null(sub_sampling_factor) && (!is.numeric(sub_sampling_factor) || length(sub_sampling_factor) != 1 || (dp[1]%%sub_sampling_factor != 0))){
+    stop('Wrong sub_sampling_factor insertion. It must be a number divisible by the number of snapshots.')
+  }else if(!is.null(sub_sampling_factor)){
+    do_subsam_ann <- TRUE
   }else{
-    stop("check the input of ann_trace or read the documentation. It is neither a number nor a color array")
+    do_subsan_ann <- FALSE
+    sub_sampling_factor <- 1
+  }
+  
+  # logic std
+  no_trace <- FALSE
+  automatic_trace_half <- FALSE
+  # manual insertion std
+  one_line_trace <- FALSE
+  multi_line_trace <- FALSE
+  numeric_trace <- FALSE
+  character_trace <- FALSE
+  n_partitions_trace <- FALSE
+  
+  
+  # checking ann_trace input
+  if(is.logical(ann_trace) && ann_trace){
+    automatic_trace_half <- TRUE 
+    one_line_trace <- TRUE
+  }else if(is.logical(ann_trace) && !ann_trace){
+    no_trace <- TRUE
+  # if not logical
+  }else{
+    # one line 
+    if(is.null(dim(ann_trace)) || length(dim(ann_trace)) == 1){
+      one_line_trace <- TRUE
+      # correct length
+      if(length(ann_trace) == dp[1]){
+        # is numeric?
+        if(is.numeric(ann_trace)){
+          ann_trace <- as.integer(ann_trace)
+          numeric_trace <- TRUE
+        # is character?
+        }else if(is.character(ann_trace)){
+          character_trace <- TRUE
+        }else{
+          warning('The single line annotation trace must be an integer vector or a charachter vector. Annotation deactivated.')
+          no_trace <- TRUE
+        }
+      # one line different length < n_snaps
+      }else if(length(ann_trace) < dp[1]){
+        # case one number -> number of partitions to do
+        if(length(ann_trace) == 1){
+          n_partitions_trace <- TRUE
+        }else{
+          warning('If you use single line annotation, you can use a whole line (length identical to the number of snapshots) 
+                  or a single number with the partitions. None of those found, therefore annotation has been deactivated.')
+          no_trace <- TRUE
+        }
+      }else{
+        warning('The single line annotation trace must have length identical to the number of snapshots. Annotation deactivated.')
+        no_trace <- TRUE
+      }
+      
+    # multiple lines
+    }else if(length(dim(ann_trace)) == 2){
+      multi_line_trace <- TRUE
+      n_lines_annotation <- dim(ann_trace)[1]
+      if(is.numeric(ann_trace)){
+        for(i in 1:n_lines_annotation)
+          ann_trace[i,] <- as.integer(ann_trace[i,])
+        numeric_trace <- TRUE
+        # is character?
+      }else if(is.character(ann_trace)){
+        character_trace <- TRUE
+      }else{
+        warning('The multiple line annotation trace must be an integer vector or a charachter vector. Annotation deactivated.')
+        no_trace <- TRUE
+      }
+    # boh, deactivated
+    }else{
+      warning('Found strange annotation values. Please check them (annotation function deactivated)')
+      no_trace <- TRUE
+    }
+  } 
+  
+  if(!no_trace){
+    # Main ann_trace constructor
+    ann_tr <- array("NA", dim = dp[1])
+    # ann_trace == TRUE
+    if(automatic_trace_half){
+      message("Annotation trace set to automatic. It will be considered bipartite along the timeline.")
+      cat("Half random mode selected for the trace annotation. First half will be light grey")
+      ann_tr[pin[,3]>=dp[1]/2 & ann_tr == "NA"]<-"gray75"
+      ann_tr[pin[,3] < dp[1]/2 & ann_tr == "NA"] <- "gray30"
+    }
+    # ann_trace == number of partitions
+    if(n_partitions_trace){
+      message("Only 10 shades of grey are possible for the 'number' option of ann_trace.
+              If you inserted more than 10 it will be truncated. Please consider manual color insertion.")
+      if(ann_trace>10) {
+        warning('inserted more than 10 possible division of the timeline. It has been truncated to 10.')
+        ann_trace = 10
+      }
+      ann_tr[pin[,3]<dp[1]/ann_trace] <- "gray1"
+      for(i in 1:(ann_trace-1)) ann_tr[pin[,3]<dp[1]*(i+1)/ann_trace
+                                       & pin[,3]>=dp[1]*(i)/ann_trace
+                                       & ann_tr == "NA"] <- paste0("gray",floor(100/ann_trace)*i)
+    }
+    # ann_trace == exactly the ann_trace
+    if(!automatic_trace_half && one_line_trace){
+      # in form of character
+      if(character_trace){
+        ann_tr <- ann_trace[pin[,3]]
+      # as numeric
+      }else if(numeric_trace){
+        max_value_ann_trace <- max(ann_trace)
+        ann_tr <- sapply(ann_trace, FUN = function(x){ paste0("gray",floor(100/max_value_ann_trace)*x) })
+      }
+    }
+    # ann_trace == multi-lines annotation
+    if(multi_line_trace){
+      ann_tr <- array("NA", dim = dim(ann_trace))
+      # as character input
+      if(character_trace){
+        for(i in 1:n_lines_annotation)
+        ann_tr[i,] <- ann_trace[i, pin[,3]]
+      # as numeric input
+      }else if(numeric_trace){
+        for(i in 1:n_lines_annotation){
+          max_value_ann_trace <- max(ann_trace[i,])
+          ann_tr[i,] <- sapply(ann_trace[i,],FUN = function(x){paste0("gray",floor(100/max_value_ann_trace)*x)})
+        }
+        max_value_ann_trace <- max(ann_trace)
+      }
+    }
+  }else{
+    warning("Annotation trace option not used.")
   }
   
   # Set range of x and y values for the plot:
   Nsnap<-dp[1]
   xx = seq(from=1, by=1, to=Nsnap)
   ymin = 0
-  ymax = -log(pin[,4]/Nsnap)
-  ymax = ymax[!is.infinite(ymax)&!is.na(ymax)]
-  ymax = max(ymax)
+  ymax_cut = -log(pin[,4]/Nsnap)
+  ymax_local_cut = 2.5 - (1./3.)*log((pin[,10] + pin[,12]) / Nsnap)
+  ymax_cut = ymax_cut[!is.infinite(ymax_cut)&!is.na(ymax_cut)]
+  ymax_local_cut = ymax_local_cut[!is.infinite(ymax_local_cut)&!is.na(ymax_local_cut)]
+  ymax = max(ymax_cut, ymax_local_cut)
   
   # initial creation of the plot
-  gg <- ggplot(data = pin, mapping = aes(x = xx, y = -log((pin[,4]/Nsnap)))) +
+  gg <- ggplot() +
     xlab("Progress Index") + ylab("Annotation")
   # theme_bw() +
   # theme(panel.grid.minor = element_line(colour="gray80"))
@@ -157,50 +250,78 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
     tr_init <- 12
     main_col<-"darkblue"
   }
-  # plotting the trace and the timeline
-  if(!is.logical(ann_trace)&&nrow_an_tr==1||(is.logical(ann_trace)&&ann_trace)){
-    gg <- gg + geom_segment(aes(xx, y = rep(ymax*3/4, length(xx)),
-                                xend = xx, yend = rep(ymax*3/4 + ymax/8, length(xx))),
-                            col = ann_tr, size = 1)
-  } else if(!is.logical(ann_trace)){
-    for(i in 0:(nrow_an_tr-1))
-      gg <- gg + geom_segment(x=xx, y = rep(ymax*((tr_init+((i*(16-tr_init))/nrow_an_tr))/16),length(xx)),
-                              xend = xx, yend = rep(ymax*((tr_init+(((i+1)*(16-tr_init))/nrow_an_tr))/16), length(xx)),
-                              col = ann_tr[(i+1),])
+  # plotting the trace 
+  if(!no_trace && one_line_trace && !annotate_snap_dist){
+    gg <- gg + geom_segment(aes(xx[seq(1, dp[1], sub_sampling_factor)], 
+                                y = rep(ymax*3/4, length(xx))[seq(1, dp[1], sub_sampling_factor)],
+                                xend = xx[seq(1, dp[1], sub_sampling_factor)], 
+                                yend = rep(ymax*3/4 + ymax/8, length(xx))[seq(1, dp[1], sub_sampling_factor)]),
+                            col = ann_tr[seq(1, dp[1], sub_sampling_factor)],
+                            size = 1)
+  } else if(!no_trace && multi_line_trace && !annotate_snap_dist){
+    for(i in 0:(n_lines_annotation-1))
+      gg <- gg + geom_segment(x=xx[seq(1, dp[1], sub_sampling_factor)], 
+                              y = rep(ymax*((tr_init+((i*(16-tr_init))/n_lines_annotation))/16),length(xx))[seq(1, dp[1], sub_sampling_factor)],
+                              xend = xx[seq(1, dp[1], sub_sampling_factor)], 
+                              yend = rep(ymax*((tr_init+(((i+1)*(16-tr_init))/n_lines_annotation))/16), length(xx))[seq(1, dp[1], sub_sampling_factor)],
+                              col = ann_tr[(i+1),][seq(1, dp[1], sub_sampling_factor)],
+                              size = 1)
   }
+  
+  
+  
   # annotation names LEFT
-  if(!is.null(ann_names_L)&&is.character(ann_names_L)&&length(ann_names_L)==nrow_an_tr){
-    for(i in 0:(nrow_an_tr-1))
+  if(!is.null(ann_names_L)&&is.character(ann_names_L)&&length(ann_names_L)==n_lines_annotation){
+    for(i in 0:(n_lines_annotation-1))
       gg <- gg + annotate("text",x = -(length(xx)/24)*nchar(ann_names_L[i+1])/2,
-                          y = ymax*((tr_init + (((i+0.5)*(16-tr_init))/nrow_an_tr))/16), label = ann_names_L[i+1])
+                          y = ymax*((tr_init + (((i+0.5)*(16-tr_init))/n_lines_annotation))/16), label = ann_names_L[i+1])
   }else if(!is.null(ann_names_L)){
     stop('The annotation names have not been inserted correctly')
   }
   # annotation names RIGHT
-  if(!is.null(ann_names_R)&&is.character(ann_names_R)&&length(ann_names_R)==nrow_an_tr){
-    for(i in 0:(nrow_an_tr-1))
+  if(!is.null(ann_names_R)&&is.character(ann_names_R)&&length(ann_names_R)==n_lines_annotation){
+    for(i in 0:(n_lines_annotation-1))
       gg <- gg + annotate("text",x = length(xx)+(length(xx)/24)*nchar(ann_names_R[i+1])/2,
-                          y = ymax*((tr_init + (((i+0.5)*(16-tr_init))/nrow_an_tr))/16), label = ann_names_R[i+1])
+                          y = ymax*((tr_init + (((i+0.5)*(16-tr_init))/n_lines_annotation))/16), label = ann_names_R[i+1])
   }else if(!is.null(ann_names_R)){
     stop('The annotation names have not been inserted correctly')
   }
   
+  # annotation preparation for timeline and annotation of snap distance
+  if(timeline || annotate_snap_dist){
+    single_line_general_ann <- array("gray1", dim = dp[1])
+    if(one_line_trace){
+      single_line_general_ann <- ann_tr
+    }else if(multi_line_trace){
+      single_line_general_ann <- ann_tr[1,]
+      warning('timeline color kept as first line in annotation trace inserted (it is multiple lines).')
+    }
+  }
   
   # timeline at the bottom
-  if(timeline&&!is.logical(ann_trace)&&nrow_an_tr==1) 
-    gg <- gg + geom_point(aes(x=xx,y=(pin[,3]*1.0*ymax*1/6)/dp[1]), col=ann_tr, size=0.01) + 
-    annotate("text", label = "0%", x = -dp[1]/100, y = 0, size = 3, angle = 90) +
-    annotate("text", label = "100%", x = -dp[1]/100, y = 1.0*ymax*1/6, size = 3, angle = 90)
+  if(timeline){
+    gg <- gg + geom_point(aes(x=xx[seq(1, dp[1], sub_sampling_factor)],
+                              y = ((pin[,3]*1.0*ymax*1/6)/dp[1])[seq(1, dp[1], sub_sampling_factor)]), 
+                          col=single_line_general_ann[seq(1, dp[1], sub_sampling_factor)],
+                          size=0.01) + 
+      annotate("text", label = "0%", x = -dp[1]/100, y = 0, size = 3, angle = 90) +
+      annotate("text", label = "100%", x = -dp[1]/100, y = 1.0*ymax*1/6, size = 3, angle = 90)
+  }
+  # plotting the distance between snapshots (on top of everything)
+  if(annotate_snap_dist){
+    max_snap_dist <- max(pin[,5])
+    gg <- gg + geom_segment(aes(xx[seq(1, dp[1], sub_sampling_factor)],
+                                y = rep(ymax*3/4 , length(xx))[seq(1, dp[1], sub_sampling_factor)],
+                                xend = xx[seq(1, dp[1], sub_sampling_factor)], 
+                                yend = ((pin[,5]*((ymax)/4) + (3*ymax)/4))[seq(1, dp[1], sub_sampling_factor)]),
+                            col = single_line_general_ann[seq(1, dp[1], sub_sampling_factor)],
+                            size = 0.1)
+  }
   
-  # geom_text(data = NULL, x = 0, y = 0, label = "0%", angle = 90) +
-  # geom_text(data = NULL, x = 0, y = 1.0*ymax*1/5, label = "100%", angle = 90) 
-  # }else if(timeline&&!is.logical(ann_trace)){
-  #   gg <- gg + geom_point(aes(x=xx,y=(pin[,3]*1.0*ymax*1/5)/dp[1]-1/10),col=rep("black",length(xx)),size=0.01)
-  # } 
+  # basic annotation (principal cut)
+  gg <- gg + geom_line(aes(x = xx, y = -log((pin[,4]/Nsnap))), color=main_col, size=0.2)
   
-  #basic annotation
-  gg <- gg + geom_line(color=main_col,size=0.2)
-  #local cut
+  # local cut
   if(local_cut) gg <- gg + 
     geom_point(mapping = aes(x=xx,y=2.5 - (1./3.)*log((pin[,10] + pin[,12]) / Nsnap)), 
                color="red3", size=0.1) 
@@ -216,9 +337,7 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
   #   gg <- gg + ggtitle(bquote(atop(.(title), atop(italic(.(subtitle)), ""))))
   # else
   gg <- gg + ggtitle(title)
-  if(!write) {
-    plot(gg)
-  }else{
+  if(write) {
     jpeg_file <- 'rplot.jpg'
     jpeg_file_tm <- 0
     while(T){
@@ -232,7 +351,12 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
     plot(gg)
     dev.off()
   }
-
-
-  if(ann_trace_ret) invisible(ann_tr)
+  # returning and/or plotting
+  if(return_plot){
+    if(return_ann_trace) warning('No returning of ann_trace is possible if return_plot option is activated')
+    invisible(gg)
+  }else{
+    plot(gg)
+    if(return_ann_trace) invisible(ann_tr)
+  }
 }
