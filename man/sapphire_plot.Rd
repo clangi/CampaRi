@@ -5,9 +5,10 @@
 \title{Sapphire plot - plotting annotation and progrex index}
 \usage{
 sapphire_plot(sap_file = NULL, sap_table = NULL, write = F,
-  folderPlot = "plots/", timeline = T, local_cut = T, ann_trace = F,
-  ann_trace_ret = F, background_height = NULL, ann_names_L = NULL,
-  ann_names_R = NULL, title = "no title")
+  folderPlot = "plots/", timeline = T, local_cut = T, return_plot = F,
+  annotate_snap_dist = F, sub_sampling_factor = NULL, ann_trace = F,
+  return_ann_trace = F, background_height = NULL, ann_names_L = NULL,
+  ann_names_R = NULL, title = "")
 }
 \arguments{
 \item{sap_file}{Annotated progrex index file. This can be left unused if \code{sap_table} is used instead.
@@ -24,12 +25,18 @@ Also in this case the format of the table must be the file output of \code{gen_a
 
 \item{local_cut}{A logical that, if \code{TRUE} plots the local cut annotation function (see \code{gen_annotation}).}
 
+\item{return_plot}{if \code{TRUE} it returns the plot object (ggplot).}
+
+\item{annotate_snap_dist}{if \code{TRUE} the distance between snapshots will be added on the top of the plot}
+
+\item{sub_sampling_factor}{if a number is inserted the annotation will be subsampled by that factor.}
+
 \item{ann_trace}{This argument can be set to logical, an integer or a matrix of integers. If logical, the annotation will be a horizontal thick line
 that follows a split in half of the original timeline. If only an integer have been inserted the time line will be split in that number of splits.
 Instead if a matrix have been inserted it will be a plotted as it is on the top of the plot mapping the range of numbers in order to
 produce a gray scale horizontal annotation.}
 
-\item{ann_trace_ret}{If \code{TRUE} the annotation vector is returned.}
+\item{return_ann_trace}{If \code{TRUE} the annotation vector is returned.}
 
 \item{background_height}{Defines the height on which to put the annotation (integer between 1 and 14).}
 
@@ -37,7 +44,7 @@ produce a gray scale horizontal annotation.}
 
 \item{ann_names_R}{Vector of characther strings indicating, from top on the right, the names of the annotation horizontal bars.}
 
-\item{title}{Title of the plot}
+\item{title}{Title of the plot (default "")}
 }
 \value{
 If \code{ann_trace_ret} is active it will return the annotation trace used for the plot.

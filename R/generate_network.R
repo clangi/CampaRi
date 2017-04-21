@@ -81,18 +81,19 @@ generate_network <- function(trj, window = NULL, overlapping_reduction = NULL, t
   # Main transformation
   message('Network construction started.')
   for(i in 1:dim(trj)[1]){
+    .print_consecutio( if(i==1) 0 else i, dim(trj)[1], 70)
     if((i - window_l) <= 0) {
       tmp_trj <- trj[1:(i+window_r),]
-      if(transpose_trj) tmp_trj <- rbind(tmp_trj, tmp_trj[1:(window_l-i + 1),])
+      if(transpose_trj) tmp_trj <- rbind(tmp_trj, tmp_trj[1:(window - nrow(tmp_trj)),])
     }else if((window_r + i) > nrow(trj)){
       tmp_trj <- trj[(i-window_l):dim(trj)[1],]
-      if(transpose_trj) tmp_trj <- rbind(tmp_trj, tmp_trj[(dim(trj)[1] - (window - nrow(tmp_trj)) + 1):dim(trj)[1],])
+      if(transpose_trj) tmp_trj <- rbind(tmp_trj, tmp_trj[1:(window - nrow(tmp_trj)),])
     }else{
       tmp_trj <- trj[(i-window_l):(i+window_r),]
     } 
     
     if(transpose_trj)
-      tmp_trj <- transpose(tmp_trj)
+      tmp_trj <- suppressWarnings(transpose(data.frame(tmp_trj))) # I suppress the warnings for lost names
     
     built_net <- WGCNA::adjacency(tmp_trj, type = wgcna_type, corFnc = 'cor', power = wgcna_power, 
                                     corOptions = wgcna_corOp)
@@ -104,7 +105,7 @@ generate_network <- function(trj, window = NULL, overlapping_reduction = NULL, t
     n_na_trj <- sum(is.na(trj_out))
     warning('Attention: NA generated. Probably it is due to too short window of time used. Fraction of NA: ', 
             (n_na_trj*100/(nrow(trj_out)*ncol(trj_out))), ' %')
-    if((n_na_trj*100/(nrow(trj_out)*ncol(trj_out))) > 5) 
+  if((n_na_trj*100/(nrow(trj_out)*ncol(trj_out))) > 5) 
       warning('ATTENTION!!! The generated NA overcame the threshold of 5%. Please consider alternative methods and vars.')
     else message('Assigning 0 to the generated NA.')
     trj_out[is.na(trj_out)] <- 0 
@@ -112,4 +113,22 @@ generate_network <- function(trj, window = NULL, overlapping_reduction = NULL, t
   
   message('Network construction completed.')
   return(trj_out)
+}
+
+.print_consecutio <- function(itering, total_to_iter, tot_to_print = 10){
+  state_to_print <- ((itering*1.0)/total_to_iter)*tot_to_print
+  white_not_to_print <- tot_to_print - state_to_print
+  if(state_to_print%%1 == 0){
+  string_to_print <- "\r|"
+    if(state_to_print != 0){
+      for(eq in 1:state_to_print)
+        string_to_print <- paste0(string_to_print, "=")
+    }
+    if(state_to_print != tot_to_print){
+      for(emp in 1:white_not_to_print)
+        string_to_print <- paste0(string_to_print, " ")
+    }
+    string_to_print <- paste0(string_to_print,"| ", (state_to_print*100)/tot_to_print, "%")
+    cat(string_to_print, sep = "")
+  } 
 }
