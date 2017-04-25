@@ -14,12 +14,25 @@ dnl Writing the version to screen
 SECTION_TITLE([CampaRi package, AC_PACKAGE_VERSION])
 #AC_LANG(Fortran)
 AC_PROG_FC
-
+AC_PATH_PROG(WHICH, which)
+AC_PATH_PROG(BASH, bash)
+AC_PATH_PROG(RM, rm)
+AC_PATH_PROG(MV, mv)
+AC_PATH_PROG(MAKE, make)
+AC_PATH_PROG(CD, cd)
+if test "$CD" = "no" -o "$CD" = ""; then
+  CD="cd"
+fi
+AC_PATH_PROG(TAR, tar)
+AC_PATH_PROG(MKDIR, mkdir)
+AC_PATH_PROG(PWD, pwd)
+AC_PATH_PROG(DIRNAME, dirname)
+AC_PATH_PROG(PKG_CONFIG, pkg-config)
 dnl include m4 macro for netcdf4 check
-m4_include([m4/ax_lib_netcdf4.m4])
+m4_include([tools/m4/ax_lib_netcdf4.m4])
 
 dnl list of all possible optional components
-all_options="netcdf4"
+all_options="netcdf4 campari"
 
 dnl When a component is found, append it here
 options=
@@ -56,21 +69,6 @@ fi
 
 
 
-dnl Now process the options strings. Essentially, we want two lists
-dnl one for the options present (which we have) and one for the options
-dnl missing (which we don't)
-
-SECTION_TITLE([Configuration results])
-
-echo "Options:" >& AS_MESSAGE_FD
-echo "$options" >& AS_MESSAGE_FD
-echo >& AS_MESSAGE_FD
-
-echo "Missing options:" >& AS_MESSAGE_FD
-echo "$options" "$all_options" | tr ' ' '\n' | sort | uniq -u | tr '\n' ' ' >& AS_MESSAGE_FD
-
-
-
 dnl This part will be used to establish R variables
 
 dnl Now find the compiler and compiler flags to use
@@ -91,6 +89,143 @@ FLIBS=`"${R_HOME}/bin/R" CMD config FLIBS`
 BLAS_LIBS=`"${R_HOME}/bin/R" CMD config BLAS_LIBS`
 LAPACK_LIBS=`"${R_HOME}/bin/R" CMD config LAPACK_LIBS`
 SAFE_FFLAGS=`"${R_HOME}/bin/R" CMD config SAFE_FFLAGS`
+
+R_PACKAGE_DIR=$PWD # TO DELETE
+CAMPARI_HOME="${R_PACKAGE_DIR}/inst/campari_lib"
+AC_MSG_CHECKING([if original version of CAMPARI must be installed])
+AC_ARG_WITH(campari,
+	[AS_HELP_STRING([--with-campari=yes/<dir>],
+     [install original campari in <dir>. If yes <dir> is defaulted to ${R_PACKAGE_DIR}/inst/campari_lib])],,
+  [with_campari=no])
+AC_MSG_RESULT([${with_campari}])
+if test "${with_campari}" != "no"; then
+	if test "${with_campari}" = "yes"; then
+		if test ! -d "${CAMPARI_HOME}" -o -z "${CAMPARI_HOME}"; then
+			AC_MSG_ERROR([Impossible to set automatically CAMPARI_HOME. please consider inserting it manually (--with-campari).])
+		fi
+	else
+	  case $with_campari in
+	    */)
+	    if test -d "$with_campari"; then
+	      CAMPARI_HOME="$with_campari"
+	    else
+	      AC_MSG_ERROR([campari directory specified not present.])
+	    fi
+	    ;;
+	    *) AC_MSG_ERROR([bad value $with_campari for --with_campari (remember to use / as last char).]);;
+	  esac
+	fi
+fi
+
+# ---------------------------
+#    CAMPARI to install
+# ---------------------------
+if test "${with_campari}" != "no"; then
+	campari_installed="0"
+	SECTION_TITLE([Original campari library installing...])
+	AC_MSG_CHECKING([which folder will be used for CAMPARI_HOME])
+	AC_MSG_RESULT([$CAMPARI_HOME])
+	# test if files are in the right place
+	if test -f "${CAMPARI_HOME}/source/chainsaw.f90" -a -d "${CAMPARI_HOME}/bin/" -a -d "${CAMPARI_HOME}/lib/" -a -d "${CAMPARI_HOME}/params/"; then
+		AC_MSG_NOTICE([
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Installing Original Campari
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+])
+		CONFIG_TO_RUN="${CAMPARI_HOME}/source/configure --with-campari-home=${CAMPARI_HOME}"
+		AC_MSG_NOTICE([running the configuration file of campari using:
+${CONFIG_TO_RUN}])
+		# configuration script run
+		if AC_TRY_EVAL(CONFIG_TO_RUN); then
+			AC_MSG_NOTICE([
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Configuration completed succesfully
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+])
+			AC_MSG_NOTICE([using make to install campari.])
+			AC_MSG_NOTICE([or multi-threaded and mpi installation, please check campari configuration file.])
+		  to_go_back_dir=$PWD
+			AC_MSG_CHECKING([whether $to_go_back_dir is source])
+		  if test "$to_go_back_dir" != "${CAMPARI_HOME}/source"; then
+		    AC_MSG_RESULT([no])
+		    doit="$CD ${CAMPARI_HOME}/source"
+		    AC_MSG_NOTICE([Changing directory using:
+		$doit])
+		    if AC_TRY_EVAL(doit); then
+		      AC_MSG_NOTICE([directory sucessfully changed in ${CAMPARI_HOME}/source/.])
+		      AC_MSG_NOTICE([previous directory will be reset after configuration.])
+		    else
+		      AC_MSG_ERROR([Something went wrong during directory changing.])
+		    fi
+		  else
+		    AC_MSG_RESULT([yes])
+		  fi
+			doit="$MAKE campari"
+			AC_MSG_NOTICE([running make in this shape:
+$doit
+])
+		if AC_TRY_EVAL($doit); then
+			campari_installed=1
+			options="$options campari"
+			echo "FREAKING DONE"
+		else
+			campari_installed=0
+		fi
+		if test "$to_go_back_dir" != "${CAMPARI_HOME}/source/"; then
+			AC_MSG_NOTICE([setting back original directory])
+		  doit="$CD ${to_go_back_dir}"
+		  if AC_TRY_EVAL(doit); then
+		    AC_MSG_NOTICE([directory sucessfully changed to previous value: ${to_go_back_dir}.])
+		  fi
+		fi
+		# unsuccessful configuration
+		else
+			campari_installed=0
+		fi
+		if test "${campari_installed}" = "0"; then
+			AC_MSG_WARN([
+
+--------------------------------------------------------
+WARNING!! Installation of original campari did not end
+well. If you want full functionality, consider to
+install it separately and link it easily using the R
+functions within the package CampaRi.
+--------------------------------------------------------
+
+])
+			AC_MSG_NOTICE([the installation of the package will continue without this feature.
+])
+		fi
+	# impossible to find the structure and source directory.
+	else
+		AC_MSG_ERROR([
+Campari source files and structure not found in $CAMPARI_HOME.
+Please copy them from inst/campari_lib.
+])
+	fi
+fi
+
+
+
+
+
+dnl Now process the options strings. Essentially, we want two lists
+dnl one for the options present (which we have) and one for the options
+dnl missing (which we don't)
+
+SECTION_TITLE([Configuration results])
+
+echo "Options:" >& AS_MESSAGE_FD
+echo "$options" >& AS_MESSAGE_FD
+echo >& AS_MESSAGE_FD
+
+echo "Missing options:" >& AS_MESSAGE_FD
+echo "$options" "$all_options" | tr ' ' '\n' | sort | uniq -u | tr '\n' ' ' >& AS_MESSAGE_FD
+
+
+
 
 
 
@@ -113,8 +248,13 @@ if test "$with_netcdf4_fortran" = "yes"; then
 	echo "FLIBS=$FLIBS" >& AS_MESSAGE_FD
 	echo "BLAS_LIBS=$BLAS_LIBS" >& AS_MESSAGE_FD
 	echo "LAPACK_LIBS=$LAPACK_LIBS" >& AS_MESSAGE_FD
+	echo "R_PACKAGE_DIR=$R_PACKAGE_DIR" >& AS_MESSAGE_FD
+	echo "R_LIBRARY_DIR=$R_LIBRARY_DIR" >& AS_MESSAGE_FD
+	echo "R_PACKAGE_NAME=$R_PACKAGE_NAME" >& AS_MESSAGE_FD
 	echo "" >& AS_MESSAGE_FD
 fi
+
+
 
 dnl Process Makevars.in to make Makevars
 AC_OUTPUT(src/Makevars)

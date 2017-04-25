@@ -642,6 +642,17 @@ NC_CONFIG
 GREP
 AWK
 SED
+PKG_CONFIG
+DIRNAME
+PWD
+MKDIR
+TAR
+CD
+MAKE
+MV
+RM
+BASH
+WHICH
 OBJEXT
 EXEEXT
 ac_ct_FC
@@ -691,6 +702,7 @@ ac_subst_files=''
 ac_user_opts='
 enable_option_checking
 with_netcdf4
+with_campari
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1324,6 +1336,9 @@ Optional Packages:
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-netcdf4=yes/no/PATH
                           base directory of NetCDF4 installation
+  --with-campari=yes/<dir>
+                          install original campari in <dir>. If yes <dir> is
+                          defaulted to ${R_PACKAGE_DIR}/inst/campari_lib
 
 Some influential environment variables:
   FC          Fortran compiler command
@@ -2544,6 +2559,448 @@ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
+# Extract the first word of "which", so it can be a program name with args.
+set dummy which; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_WHICH+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $WHICH in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_WHICH="$WHICH" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_WHICH="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+WHICH=$ac_cv_path_WHICH
+if test -n "$WHICH"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $WHICH" >&5
+$as_echo "$WHICH" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+# Extract the first word of "bash", so it can be a program name with args.
+set dummy bash; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_BASH+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $BASH in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_BASH="$BASH" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_BASH="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+BASH=$ac_cv_path_BASH
+if test -n "$BASH"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $BASH" >&5
+$as_echo "$BASH" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+# Extract the first word of "rm", so it can be a program name with args.
+set dummy rm; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_RM+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $RM in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_RM="$RM" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_RM="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+RM=$ac_cv_path_RM
+if test -n "$RM"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $RM" >&5
+$as_echo "$RM" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+# Extract the first word of "mv", so it can be a program name with args.
+set dummy mv; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_MV+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $MV in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_MV="$MV" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_MV="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+MV=$ac_cv_path_MV
+if test -n "$MV"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $MV" >&5
+$as_echo "$MV" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+# Extract the first word of "make", so it can be a program name with args.
+set dummy make; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_MAKE+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $MAKE in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_MAKE="$MAKE" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_MAKE="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+MAKE=$ac_cv_path_MAKE
+if test -n "$MAKE"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $MAKE" >&5
+$as_echo "$MAKE" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+# Extract the first word of "cd", so it can be a program name with args.
+set dummy cd; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_CD+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $CD in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_CD="$CD" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_CD="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+CD=$ac_cv_path_CD
+if test -n "$CD"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $CD" >&5
+$as_echo "$CD" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+if test "$CD" = "no" -o "$CD" = ""; then
+  CD="cd"
+fi
+# Extract the first word of "tar", so it can be a program name with args.
+set dummy tar; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_TAR+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $TAR in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_TAR="$TAR" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_TAR="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+TAR=$ac_cv_path_TAR
+if test -n "$TAR"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $TAR" >&5
+$as_echo "$TAR" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+# Extract the first word of "mkdir", so it can be a program name with args.
+set dummy mkdir; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_MKDIR+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $MKDIR in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_MKDIR="$MKDIR" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_MKDIR="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+MKDIR=$ac_cv_path_MKDIR
+if test -n "$MKDIR"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $MKDIR" >&5
+$as_echo "$MKDIR" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+# Extract the first word of "pwd", so it can be a program name with args.
+set dummy pwd; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_PWD+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $PWD in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PWD="$PWD" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_PWD="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+PWD=$ac_cv_path_PWD
+if test -n "$PWD"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PWD" >&5
+$as_echo "$PWD" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+# Extract the first word of "dirname", so it can be a program name with args.
+set dummy dirname; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_DIRNAME+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $DIRNAME in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_DIRNAME="$DIRNAME" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_DIRNAME="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+DIRNAME=$ac_cv_path_DIRNAME
+if test -n "$DIRNAME"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $DIRNAME" >&5
+$as_echo "$DIRNAME" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+# Extract the first word of "pkg-config", so it can be a program name with args.
+set dummy pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_PKG_CONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $PKG_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PKG_CONFIG="$PKG_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+PKG_CONFIG=$ac_cv_path_PKG_CONFIG
+if test -n "$PKG_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PKG_CONFIG" >&5
+$as_echo "$PKG_CONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
 
 # ===========================================================================
 #      https://www.gnu.org/software/autoconf-archive/ax_lib_netcdf4.html
@@ -2641,7 +3098,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
-all_options="netcdf4"
+all_options="netcdf4 campari"
 
 options=
 
@@ -4154,22 +4611,6 @@ fi
 
 
 
-
-		echo '   Configuration results   ' | sed -e's/./-/g' >&6
-	echo '   Configuration results' >& 6
-	echo '   Configuration results   ' | sed -e's/./-/g' >&6
-
-
-echo "Options:" >& 6
-echo "$options" >& 6
-echo >& 6
-
-echo "Missing options:" >& 6
-echo "$options" "$all_options" | tr ' ' '\n' | sort | uniq -u | tr '\n' ' ' >& 6
-
-
-
-
 : ${R_HOME=`R RHOME`}
 if test -z "${R_HOME}"; then
   echo "could not determine R_HOME"
@@ -4187,6 +4628,212 @@ FLIBS=`"${R_HOME}/bin/R" CMD config FLIBS`
 BLAS_LIBS=`"${R_HOME}/bin/R" CMD config BLAS_LIBS`
 LAPACK_LIBS=`"${R_HOME}/bin/R" CMD config LAPACK_LIBS`
 SAFE_FFLAGS=`"${R_HOME}/bin/R" CMD config SAFE_FFLAGS`
+
+R_PACKAGE_DIR=$PWD # TO DELETE
+CAMPARI_HOME="${R_PACKAGE_DIR}/inst/campari_lib"
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking if original version of CAMPARI must be installed" >&5
+$as_echo_n "checking if original version of CAMPARI must be installed... " >&6; }
+
+# Check whether --with-campari was given.
+if test "${with_campari+set}" = set; then :
+  withval=$with_campari;
+else
+  with_campari=no
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: ${with_campari}" >&5
+$as_echo "${with_campari}" >&6; }
+if test "${with_campari}" != "no"; then
+	if test "${with_campari}" = "yes"; then
+		if test ! -d "${CAMPARI_HOME}" -o -z "${CAMPARI_HOME}"; then
+			as_fn_error $? "Impossible to set automatically CAMPARI_HOME. please consider inserting it manually (--with-campari)." "$LINENO" 5
+		fi
+	else
+	  case $with_campari in
+	    */)
+	    if test -d "$with_campari"; then
+	      CAMPARI_HOME="$with_campari"
+	    else
+	      as_fn_error $? "campari directory specified not present." "$LINENO" 5
+	    fi
+	    ;;
+	    *) as_fn_error $? "bad value $with_campari for --with_campari (remember to use / as last char)." "$LINENO" 5;;
+	  esac
+	fi
+fi
+
+# ---------------------------
+#    CAMPARI to install
+# ---------------------------
+if test "${with_campari}" != "no"; then
+	campari_installed="0"
+
+		echo '   Original campari library installing...   ' | sed -e's/./-/g' >&6
+	echo '   Original campari library installing...' >& 6
+	echo '   Original campari library installing...   ' | sed -e's/./-/g' >&6
+
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking which folder will be used for CAMPARI_HOME" >&5
+$as_echo_n "checking which folder will be used for CAMPARI_HOME... " >&6; }
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $CAMPARI_HOME" >&5
+$as_echo "$CAMPARI_HOME" >&6; }
+	# test if files are in the right place
+	if test -f "${CAMPARI_HOME}/source/chainsaw.f90" -a -d "${CAMPARI_HOME}/bin/" -a -d "${CAMPARI_HOME}/lib/" -a -d "${CAMPARI_HOME}/params/"; then
+		{ $as_echo "$as_me:${as_lineno-$LINENO}:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Installing Original Campari
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+" >&5
+$as_echo "$as_me:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Installing Original Campari
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+" >&6;}
+		CONFIG_TO_RUN="${CAMPARI_HOME}/source/configure --with-campari-home=${CAMPARI_HOME}"
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: running the configuration file of campari using:
+${CONFIG_TO_RUN}" >&5
+$as_echo "$as_me: running the configuration file of campari using:
+${CONFIG_TO_RUN}" >&6;}
+		# configuration script run
+		if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$CONFIG_TO_RUN\""; } >&5
+  (eval $CONFIG_TO_RUN) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+			{ $as_echo "$as_me:${as_lineno-$LINENO}:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Configuration completed succesfully
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+" >&5
+$as_echo "$as_me:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Configuration completed succesfully
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+" >&6;}
+			{ $as_echo "$as_me:${as_lineno-$LINENO}: using make to install campari." >&5
+$as_echo "$as_me: using make to install campari." >&6;}
+			{ $as_echo "$as_me:${as_lineno-$LINENO}: or multi-threaded and mpi installation, please check campari configuration file." >&5
+$as_echo "$as_me: or multi-threaded and mpi installation, please check campari configuration file." >&6;}
+		  to_go_back_dir=$PWD
+			{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $to_go_back_dir is source" >&5
+$as_echo_n "checking whether $to_go_back_dir is source... " >&6; }
+		  if test "$to_go_back_dir" != "${CAMPARI_HOME}/source"; then
+		    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+		    doit="$CD ${CAMPARI_HOME}/source"
+		    { $as_echo "$as_me:${as_lineno-$LINENO}: Changing directory using:
+		$doit" >&5
+$as_echo "$as_me: Changing directory using:
+		$doit" >&6;}
+		    if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$doit\""; } >&5
+  (eval $doit) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+		      { $as_echo "$as_me:${as_lineno-$LINENO}: directory sucessfully changed in ${CAMPARI_HOME}/source/." >&5
+$as_echo "$as_me: directory sucessfully changed in ${CAMPARI_HOME}/source/." >&6;}
+		      { $as_echo "$as_me:${as_lineno-$LINENO}: previous directory will be reset after configuration." >&5
+$as_echo "$as_me: previous directory will be reset after configuration." >&6;}
+		    else
+		      as_fn_error $? "Something went wrong during directory changing." "$LINENO" 5
+		    fi
+		  else
+		    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+		  fi
+			doit="$MAKE campari"
+			{ $as_echo "$as_me:${as_lineno-$LINENO}: running make in this shape:
+$doit
+" >&5
+$as_echo "$as_me: running make in this shape:
+$doit
+" >&6;}
+		if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$$doit\""; } >&5
+  (eval $$doit) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+			campari_installed=1
+			options="$options campari"
+			echo "FREAKING DONE"
+		else
+			campari_installed=0
+		fi
+		if test "$to_go_back_dir" != "${CAMPARI_HOME}/source/"; then
+			{ $as_echo "$as_me:${as_lineno-$LINENO}: setting back original directory" >&5
+$as_echo "$as_me: setting back original directory" >&6;}
+		  doit="$CD ${to_go_back_dir}"
+		  if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$doit\""; } >&5
+  (eval $doit) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+		    { $as_echo "$as_me:${as_lineno-$LINENO}: directory sucessfully changed to previous value: ${to_go_back_dir}." >&5
+$as_echo "$as_me: directory sucessfully changed to previous value: ${to_go_back_dir}." >&6;}
+		  fi
+		fi
+		# unsuccessful configuration
+		else
+			campari_installed=0
+		fi
+		if test "${campari_installed}" = "0"; then
+			{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING:
+
+--------------------------------------------------------
+WARNING!! Installation of original campari did not end
+well. If you want full functionality, consider to
+install it separately and link it easily using the R
+functions within the package CampaRi.
+--------------------------------------------------------
+
+" >&5
+$as_echo "$as_me: WARNING:
+
+--------------------------------------------------------
+WARNING!! Installation of original campari did not end
+well. If you want full functionality, consider to
+install it separately and link it easily using the R
+functions within the package CampaRi.
+--------------------------------------------------------
+
+" >&2;}
+			{ $as_echo "$as_me:${as_lineno-$LINENO}: the installation of the package will continue without this feature.
+" >&5
+$as_echo "$as_me: the installation of the package will continue without this feature.
+" >&6;}
+		fi
+	# impossible to find the structure and source directory.
+	else
+		as_fn_error $? "
+Campari source files and structure not found in $CAMPARI_HOME.
+Please copy them from inst/campari_lib.
+" "$LINENO" 5
+	fi
+fi
+
+
+
+
+
+
+
+		echo '   Configuration results   ' | sed -e's/./-/g' >&6
+	echo '   Configuration results' >& 6
+	echo '   Configuration results   ' | sed -e's/./-/g' >&6
+
+
+echo "Options:" >& 6
+echo "$options" >& 6
+echo >& 6
+
+echo "Missing options:" >& 6
+echo "$options" "$all_options" | tr ' ' '\n' | sort | uniq -u | tr '\n' ' ' >& 6
+
+
+
 
 
 
@@ -4213,8 +4860,13 @@ if test "$with_netcdf4_fortran" = "yes"; then
 	echo "FLIBS=$FLIBS" >& 6
 	echo "BLAS_LIBS=$BLAS_LIBS" >& 6
 	echo "LAPACK_LIBS=$LAPACK_LIBS" >& 6
+	echo "R_PACKAGE_DIR=$R_PACKAGE_DIR" >& 6
+	echo "R_LIBRARY_DIR=$R_LIBRARY_DIR" >& 6
+	echo "R_PACKAGE_NAME=$R_PACKAGE_NAME" >& 6
 	echo "" >& 6
 fi
+
+
 
 ac_config_files="$ac_config_files src/Makevars"
 

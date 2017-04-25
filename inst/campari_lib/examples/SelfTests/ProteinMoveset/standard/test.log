@@ -1,0 +1,302 @@
+ 
+ --- Overview of sequence ---
+ 
+Molecule type   1 has     56 residues.
+The first example molecule is #      1 (residues      1-    56).
+There are     1 molecules of this type.
+ Polymer analysis is turned on for this molecule type.
+ Turns/angular statistics are turned on for this molecule type.
+ Torsional analysis is turned on for this molecule type.
+ 
+Molecule type   2 has      1 residues.
+The first example molecule is #      2 (residues     57-    57).
+There are     9 molecules of this type.
+ Polymer analysis is turned off for this molecule type.
+ Turns/angular statistics are turned off for this molecule type.
+ Torsional analysis is turned off for this molecule type.
+ 
+Molecule type   3 has      1 residues.
+The first example molecule is #     11 (residues     66-    66).
+There are    13 molecules of this type.
+ Polymer analysis is turned off for this molecule type.
+ Turns/angular statistics are turned off for this molecule type.
+ Torsional analysis is turned off for this molecule type.
+ 
+ Automatic dipole group detection chokes on residue     43 (TRP).
+ Forming a single group out of the remaining            5  polar atoms.
+ 
+ 
+ --- SUMMARY OF CALCULATION ---
+ 
+ **IMPORTANT FILES:
+ Parameter file used   :  /packages/absinth/params/abs3.2_opls.prm
+ Sequence file used    :  gprot.in
+ BB-segment file used  :  /packages/absinth/data/bbseg2.dat
+ Basename for output   :  GPROTF
+ Input file for PDB    :  gprot.pdb
+ Reading mode          :            1
+ Hydrogen code         :            1
+ 
+ **GENERAL PARAMETERS:
+ Number of steps     :          250
+ Equilibration steps :          100
+ A soft-wall residue-based boundary condition (SWBC) is used.
+ Force constant      :            1.0000
+ The simulation system is a sphere.
+ Sphere center (A)   :    0.0000   0.0000   0.0000
+ Sphere radius (A)   :   75.0000
+ Simulation uses pure Monte Carlo sampling (see TECHNICAL SETTINGS below).
+ Simulation is performed in the isochoric-isothermal ensemble (NVT).
+ Desired temperature :          260.0000
+ 
+ **ENERGY TERMS:
+ Scale for inverse power potential :      1.000
+ Exponent for IPP                  :     12.000
+ Scale factor for atomic radii     :      1.000
+ Sigma combination rule code       :          1
+ Epsilon combination rule code     :          2
+ Scale for struct. correction terms:      1.000
+ Scale for attractive Lennard-Jones:      1.000
+ Scale for implicit solvent poten. :      1.000
+ Diameter of water molecule (SAV)  :      5.000
+ Dielectric of implicit solvent    :     78.200
+ Sigmoidal decay constant (F.o.S.) :      0.250
+ Rel. center of sigm. fxn (F.o.S.) :      0.100
+ Purely atom-based dielectric screening is used.
+ Sigmoidal decay constant (q-Scr.) :      0.500
+ Rel. center of sigm. fxn (q-Scr.) :      0.900
+ SAV-response compressibility      :      0.000
+ SEV-response compressibility      :      0.000
+ Scale for polar interaction term  :      1.000
+ Scale factor for 1-4 interactions :      1.000
+ Mode for 1-4 interactions         :          2
+ Scale for WCA potential           :      0.000
+ Scale for torsional terms (bias)  :      0.000
+ Scale for polymeric terms (bias)  :      0.000
+ Scale for global 2-structure term :      0.000
+ Scale for tabulated pot. term     :      0.000
+ Scale for distance restraint term :      0.000
+ Scale for LCT pot. term           :      0.000
+ 
+ **TECHNICAL SETTINGS:
+ Frequency of rigid-body moves :            0.050
+ RB rotation and translation are coupled.
+ Fraction of full randomization
+ attempts amongst RB moves     :            0.250
+ Translational step size (in A):            2.500
+ Rotational step size (in deg.):           25.000
+ Fraction of torsional moves
+ amongst total moves           :            0.950
+ Frequency of sidechain moves  :            0.150
+ Frequency of dihedral moves 
+ amongst sidechain moves       :            1.000
+ Number of eligible residues   :           46
+ Number of chi-moves per cycle :            5
+ Number of chi-angles in move  :            2
+ Fraction of full randomization
+ attempts amongst chi moves    :            0.400
+ Step size for local chi moves :           30.000
+ Chain alignment mode          :            4
+ Fraction of concerted rotation
+ moves amongst backbone moves  :            0.050
+ Implementation mode           :            1
+ Distribution width (rad)      :            0.100
+ Number of torsions used       :            8
+ Number of biasing restraints  :            9
+ Bias scaling factor           :           10.000
+ Fraction of omega moves amongst
+ backbone pivot moves          :            0.150
+ Fraction of full randomization
+ attempts amongst omega moves  :            0.150
+ Step sz. for local omega moves:            5.000
+ Fraction of nucleic acid moves amongst 
+ remaining backbone moves      :            0.000
+ Fraction of regular (uncoupled) phi/psi-
+ moves amongst bb pivot moves  :            1.000
+ Fraction of full randomization
+ attempts amongst pivot moves  :            0.300
+ Step size for local pivot m.  :           10.000
+ 
+ **OUTPUT AND ANALYSIS PARAMETERS:
+ Restart file output interval       :        10000
+ Structures only written in pdb-format.
+ Structures output interval         :       100000
+ Torsions output interval           :   2147483647
+ Angular distribution calc. interval:           50
+ Resolution in deg.      :          6.0000
+ BB-segment distrib. calc. interval :          100
+ Center of alpha-basin    :    -60.000  -50.000
+ Radius of alpha-basin    :     35.000
+ Steepness of alpha-basin :      0.002
+ Center of beta-basin     :   -155.000  160.000
+ Radius of beta-basin     :     35.000
+ Steepness of beta-basin  :      0.002
+ Sys. polymer stat. output interval :        10000
+ Polymer stat. calculation interval :          100
+ Bin-size for Rg-axis of histogram  :          0.2000
+ Hydrodynamic radius calc. interval :         1000
+ Pair correlation calc. interval    :         1000
+ Bin-size in Angstrom    :          0.1000
+ Number of unique PCs    :            0
+ Energy output interval             :        10000
+ Acceptance output interval         :        20000
+ Contact analysis calc. interval    :         1000
+ Dipole analysis calc. interval     :          100
+ LC of torsions calc. interval      :    300000000
+ Covariance analysis calc. interval :   2147483647
+ Solvent-acc. volume calc. interval :        20000
+ Scattering calculation interval    :           10
+ Hole analysis calculation interval :   2147483647
+ Diffraction calculation interval   :   2147483647
+ 
+ This is a single-CPU (non-MPI) calculation.
+ 
+ **MONTE CARLO CUTOFF SETTINGS:
+ Residue-based cutoff (IPP/LJ) :             10.000
+ Residue-based cutoff (EL/TAB) :             12.000
+ Long-range electrostatics treatment :            1
+ 
+ 
+ 14-Interactions included in energy calculation.
+ 
+ Reduced (sane) group-based electrostatic model used (only full charge groups in
+ teract (fully, fully fudged or not at all) as determined by automatic charge gr
+ oup finder).
+ 
+ Polymer chains (if any) are linear and non-cyclic.
+ 
+ System geometry is read from PDB-file (see above).
+ 
+ 
+ SUMMARY OF DEGREES OF FREEDOM IN SYSTEM:
+ Torsional degrees of freedom    :        277
+ Rigid-body degrees of freedom   :         72
+ SUMMARY OF ATOM-ATOM INTERACTIONS IN SYSTEM:
+ Intra-residue                   :       4172
+ Neighboring residues            :      12381
+ Remaining residue pairs         :     364609
+ Total number                    :     381162
+ Initial energy (accurate)       :    24929.40    
+ Initial energy (cutoffs)        :    24935.08    
+ Energy reset interval           :       5000
+ 
+ --- END OF SUMMARY ---
+ 
+ 
+ Initialized PRNG with Seed of       113173
+ 
+ 
+ Residue-resolved acceptance counts (int. moves):
+ 
+          SIDECHAIN  CON. ROT.      OMEGA      PIVOT
+MET:   1          0          0          0          1
+THR:   2          1          0          0          1
+TYR:   3          2          0          1          1
+LYS:   4          2          0          0          2
+LEU:   5          1          0          0          0
+ILE:   6          1          0          0          0
+LEU:   7          1          0          0          0
+ASN:   8          0          0          1          0
+GLY:   9          0          0          0          0
+LYS:  10          1          0          0          0
+THR:  11          1          0          0          1
+LEU:  12          1          0          0          0
+LYS:  13          2          0          0          0
+GLY:  14          0          0          0          0
+GLU:  15          1          0          0          0
+THR:  16          2          0          0          0
+THR:  17          1          0          0          0
+THR:  18          0          0          0          1
+GLU:  19          1          0          0          0
+ALA:  20          0          0          0          0
+VAL:  21          2          0          0          0
+ASP:  22          2          0          0          0
+ALA:  23          0          0          0          0
+ALA:  24          0          0          0          0
+THR:  25          3          0          0          0
+ALA:  26          0          0          0          0
+GLU:  27          0          0          0          0
+LYS:  28          2          0          0          0
+VAL:  29          2          0          0          0
+PHE:  30          0          0          0          0
+LYS:  31          2          0          1          0
+GLN:  32          0          0          1          0
+TYR:  33          0          0          1          0
+ALA:  34          0          0          2          0
+ASN:  35          4          0          0          0
+ASP:  36          1          0          0          0
+ASN:  37          2          0          0          0
+GLY:  38          0          0          0          0
+VAL:  39          3          0          0          0
+ASP:  40          0          0          0          0
+GLY:  41          0          0          0          0
+GLU:  42          1          0          0          1
+TRP:  43          0          0          0          1
+THR:  44          2          0          0          0
+TYR:  45          1          0          0          0
+ASP:  46          1          0          0          0
+ASP:  47          1          0          0          0
+ALA:  48          0          0          0          0
+THR:  49          2          0          2          0
+LYS:  50          1          0          0          0
+THR:  51          0          0          2          0
+PHE:  52          1          0          0          0
+THR:  53          1          0          0          0
+VAL:  54          0          0          0          1
+THR:  55          0          0          1          2
+GLU:  56          0          0          1          1
+CL-:  57          0          0          0          0
+CL-:  58          0          0          0          0
+CL-:  59          0          0          0          0
+CL-:  60          0          0          0          0
+CL-:  61          0          0          0          0
+CL-:  62          0          0          0          0
+CL-:  63          0          0          0          0
+CL-:  64          0          0          0          0
+CL-:  65          0          0          0          0
+NA+:  66          0          0          0          0
+NA+:  67          0          0          0          0
+NA+:  68          0          0          0          0
+NA+:  69          0          0          0          0
+NA+:  70          0          0          0          0
+NA+:  71          0          0          0          0
+NA+:  72          0          0          0          0
+NA+:  73          0          0          0          0
+NA+:  74          0          0          0          0
+NA+:  75          0          0          0          0
+NA+:  76          0          0          0          0
+NA+:  77          0          0          0          0
+NA+:  78          0          0          0          0
+ 
+ Molecule-resolved acceptance counts (RB moves):
+   1: Res.    1-  56          1
+   2: Res.   57-  57          0
+   3: Res.   58-  58          0
+   4: Res.   59-  59          1
+   5: Res.   60-  60          0
+   6: Res.   61-  61          0
+   7: Res.   62-  62          0
+   8: Res.   63-  63          0
+   9: Res.   64-  64          0
+  10: Res.   65-  65          0
+  11: Res.   66-  66          0
+  12: Res.   67-  67          0
+  13: Res.   68-  68          0
+  14: Res.   69-  69          0
+  15: Res.   70-  70          1
+  16: Res.   71-  71          2
+  17: Res.   72-  72          0
+  18: Res.   73-  73          0
+  19: Res.   74-  74          0
+  20: Res.   75-  75          0
+  21: Res.   76-  76          0
+  22: Res.   77-  77          0
+  23: Res.   78-  78          0
+ 
+ Total CPU time elapsed [s]     :    26.2540090000000     
+ Fraction for energy functions  :    98.5604255715770      %
+ Fraction for analysis routines :   0.167570598456036      %
+ Fraction for initial setup     :   0.514131003764035      %
+ Fraction of remainder          :   0.757872826202970      %
+ 
+ Execution ended at 14:01 on 05/06/2008.

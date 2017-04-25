@@ -1,0 +1,16 @@
+This is how to use this script for now:
+
+Place the script "typeglobals_html.py" in the absinth source directory and run:
+
+$ python typeglobals_html.py
+
+This makes a new directory in the absinth/source/ folder simply called "globals_doc/" which contains the .html files for each source and module file. Content in this folder is overwritten when you run the script for the next time.
+
+Note that the script is not necessarily accurate for at least the following:
+- Modifications to global variables by subroutines may not be reported accurately
+- Nested custom types may not be fully resolved
+- Comment annotations are picked up automatically, but may not refer to the variable in question
+- Subroutines passing global variables to other routines may erroneously add subroutines as targets for the variable in question
+
+The point of this script is to provide a rough idea of the data interdependency (modules and subroutines).
+

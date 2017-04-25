@@ -1,0 +1,502 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!--
+############################################################################
+# LICENSE INFO:                                                            #
+############################################################################
+#    This file is part of CAMPARI.                                         #
+#                                                                          #
+#    Version 2.0                                                           #
+#                                                                          #
+#    Copyright (C) 2014, The CAMPARI development team (current and former  #
+#                        contributors)                                     #
+#                        Andreas Vitalis, Adam Steffen, Rohit Pappu, Hoang #
+#                        Tran, Albert Mao, Xiaoling Wang, Jose Pulido,     #
+#                        Nicholas Lyle, Nicolas Bloechliger                #
+#                                                                          #
+#    Website: http://sourceforge.net/projects/campari/                     #
+#                                                                          #
+#    CAMPARI is free software: you can redistribute it and/or modify       #
+#    it under the terms of the GNU General Public License as published by  #
+#    the Free Software Foundation, either version 3 of the License, or     #
+#    (at your option) any later version.                                   #
+#                                                                          #
+#    CAMPARI is distributed in the hope that it will be useful,            #
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of        #
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         #
+#    GNU General Public License for more details.                          #
+#                                                                          #
+#    You should have received a copy of the GNU General Public License     #
+#    along with CAMPARI.  If not, see <http://www.gnu.org/licenses/>.      #
+############################################################################
+# AUTHORSHIP INFO:                                                         #
+############################################################################
+#                                                                          #
+# MAIN AUTHOR:   Andreas Vitalis                                           #
+# CONTRIBUTIONS: Adam Steffen                                              #
+#                                                                          #
+############################################################################
+-->
+<html xml:lang="en" dir="ltr" xmlns="http://www.w3.org/1999/xhtml" lang="en-US">
+<head>
+<!--
+    Designed by CAMPARI Development Group
+    Base template (without user's data) checked by http://validator.w3.org : "This page is valid XHTML 1.0 Transitional"
+    -->
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></meta>
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge"></meta>
+  <title>CAMPARI Tutorial 3</title>
+  <link rel="stylesheet" href="style_red.css" type="text/css" media="screen"></link>
+</head>
+<body>
+<div id="art-page-background-simple-gradient"></div>
+<div id="art-main"><!-- Header -->
+<div class="art-Sheet2"><!-- Banner Art -->
+<div class="art-Header">
+<div class="art-Header-png"></div>
+</div>
+<!-- Top Navigation Bar -->
+<div class="art-nav">
+<div class="l"></div>
+<div class="r"></div>
+<ul class="art-menu">
+  <li><a href="index.html"><span class="l"></span><span class="r"></span><span
+ class="t">Home</span></a></li>
+  <li><a href="documentation.html" class=" active"><span class="l"></span><span
+ class="r"></span><span class="t">Documentation</span></a></li>
+  <li><a href="references.html"><span class="l"></span><span class="r"></span><span
+ class="t">References</span></a></li>
+  <li><a href="contact.html"><span class="l"></span><span class="r"></span><span
+ class="t">Support</span></a></li>
+  <li><a href="download.html"><span class="l"></span><span class="r"></span><span
+ class="t">Download</span></a></li>
+</ul>
+</div>
+<!-- Top Sub Navigation Bar -->
+<div class="nav-menu">
+<ul class="navlist">
+  <li><a href="documentation.html">Overview</a></li>
+  <li><a href="install.html">Install</a></li>
+  <li><a href="tutorials.html" class=" active">Tutorials</a></li>
+  <li><a href="inputfiles.html">Inputfiles</a></li>
+  <li><a href="keywords.html">Keywords</a></li>
+  <li><a href="outputfiles.html">Outputfiles</a></li>
+  <li><a href="parameters.html">Parameters</a></li>
+  <li><a href="development.html">Development</a></li>
+  <li><br/>
+  </li>
+</ul>
+</div>
+</div>
+<!-- Main Page Contents -->
+<div class="art-Sheet">
+<div class="art-Sheet-bl"></div>
+<div class="art-Sheet-br"></div>
+<div class="art-Sheet-bc"></div>
+<div class="art-Sheet-cl"></div>
+<div class="art-Sheet-cr"></div>
+<div class="art-Sheet-cc"></div>
+<div class="art-Sheet-body">
+<div class="art-contentLayout"><!-- Page Contents -->
+<div class="art-content">
+<div class="art-Post">
+<div class="art-Post-body">
+<div class="art-PostContent">
+<br/>
+<h2>Tutorial 3: An Advanced Monte Carlo Example - The Helix-Coil Transition in the FS-peptide and the Utilization of Replica Exchange</h2>
+<h3>Preface:</h3>
+In previous tutorials we have seen how to use Monte Carlo (MC) sampling within CAMPARI to study
+homopolypeptides under conditions such that the peptides were intrinsically disordered. Here,
+we extend this approach to a system that undergoes a well-defined order-to-disorder transition, <i>viz.</i>
+the &alpha;-helical FS-peptide, an alanine-rich peptide doted with three arginine residues.
+The control parameter to scan the transition will be temperature, as there are experimental data
+available (circular dichroism for instance) that are directly comparable.<br/>
+Within this tutorial, you will be familiarized with two different new concepts. The first is a sampling tool, specifically
+the use of the replica-exchange (RE) technique. In RE, we set up - for the same topology/sequence - a set
+of simulations in parallel which differ in one or more system parameters. These individual simulations (replicas) exchange
+information while they are running, thereby effectively creating a multicanonical ensemble. Movement within this multicanonical
+approach is governed by trials that are accepted or rejected based on a Metropolis acceptance criterion very similar to
+what happens in a normal Metropolis Monte Carlo simulation. It is extremely
+common to do the following:<br/>
+<ol>
+<li>The ways in which information exchange can occur are usually restricted to neighboring conditions, <i>i.e.</i>, those replicas
+which are most similar to each other. This is done for several reasons that are not elaborated upon here.</li>
+<li>By far the most common exchange parameter is temperature.</li>
+<li>Exchanges (swaps) are attempted with some fixed and large enough interval.</li> 
+</ol>
+The resultant parallel simulation needs multiple processors, but very limited communication bandwidth.
+If CAMPARI is compiled with MPI support, it offers wide support for RE calculations. The reader is referred to 
+the <a href="keywords.html#MPI_settings">documentation</a> for details.<br/>
+The second aspect is to use on-the-fly analysis of polypeptide secondary structure. This allows us
+to define measures of overall helicity as a function of the control parameter (temperature) that can be directly compared
+to experimental data. We will use the ABSINTH implicit solvation model to describe the effects of water.  
+We have shown previously that the temperature-dependent helix-coil transition for this peptide is well-described
+by the model (<a href="references.html#ref19_1">reference</a>).
+In that reference, we perform a rigorous 
+assessment of sampling quality by testing for hysteresis when simulations are started from either the "folded" (fully helical)
+or "unfolded" (coil-like) states. This tutorial focuses on the latter, and we leave it as a possible extension to the user to introduce
+the appropriate modifications to test for hysteresis.<br/>
+<br/>
+<h3>Step-by-Step:</h3>
+<big style="font-style: italic; text-decoration: underline;">Step 1 - Set up system</big><br/>
+<br/>
+To have a more faithful mimicking of experimental conditions, we will simulate the FS-peptide in the presence of
+explicitly represented ions that neutralize the peptide's net charge and also constitute an electrolyte bath at a
+given concentration (here around 150mM).
+The corresponding <a href="../examples/tutorial3/tutorial3.seq">sequence input file</a> can be found in the example directory.
+For such a scenario, the droplet boundary condition is perfect:<br/>
+<tt>
+<br/>
+<a href="keywords.html#SEQFILE">FMCSC_SEQFILE</a> &lt;full path to CAMPARI directory&gt;/examples/tutorial3/tutorial3.seq<br/>
+<a href="keywords.html#BOUNDARY">FMCSC_BOUNDARY</a> 4<br/>
+<a href="keywords.html#SHAPE">FMCSC_SHAPE</a> 2<br/>
+<a href="keywords.html#SIZE">FMCSC_SIZE</a> 40.0<br/>
+<a href="keywords.html#RANDOMIZE">FMCSC_RANDOMIZE</a> 1<br/>
+<br/>
+</tt>
+The resultant concentration cannot be set explicitly, but rather emerges implicitly from the combination
+of volume and particle numbers. There is a little tool in the tools-directory ("<a href="../tools/box2conc.m">box2conc.m</a>") to help with this (if you have
+access to Matlab). We will also set an appropriate length for the simulations:<br/>
+ <tt>
+<br/>
+<a href="keywords.html#NRSTEPS">FMCSC_NRSTEPS</a> 40000000<br/>
+<a href="keywords.html#EQUIL">FMCSC_EQUIL</a> 10000000<br/>
+<br/>
+</tt>
+Note that it is the default to use Monte Carlo sampling in the NVT ensemble in rigid-body/torsional space when working
+with CAMPARI. We therefore - just like in the previous tutorials - do not need to specify this explicitly (check
+later tutorials for examples where sampling deviates from these defaults). Note as well that there are no 
+<i>a priori</i> rules one can use to set an appropriate overall length and equilibration period for a given simulation.
+The above numbers can be called appropriate <i>only</i> in light of i) the complexity of analysis we wish to perform, and ii)
+prior experience with this very system under these very conditions. This caveat holds not only for most tutorials presented here but 
+indeed for any unbiased simulation attempting to compute ensemble averages (and even for most biased sampling methods).<br/>
+<br/><big style="font-style: italic; text-decoration: underline;">Step 2 - Set up interaction parameters</big><br/>
+<br/>
+We want to use the published ABSINTH implicit solvent model. The first requirement is to turn on the necessary energy terms:<br/>
+<br/>
+<tt>
+<a href="keywords.html#SC_ATTLJ">FMCSC_SC_ATTLJ</a> 1.0     # enables dispersive interactions<br/>
+<a href="keywords.html#SC_POLAR">FMCSC_SC_POLAR</a> 1.0     # enables (partial) charge interactions<br/>
+<a href="keywords.html#SC_IMPSOLV">FMCSC_SC_IMPSOLV</a> 1.0 # enables direct mean-field interactions and charge screening<br/>
+</tt>
+<br/>
+The remainder of the settings that make the implicit solvent model exactly the published one can be taken straight from the
+documentation, although it is of course recommended that users approximately understand each of the following keywords:<br/>
+<br/>
+<tt>
+<a href="keywords.html#PARAMETERS">PARAMETERS</a> &lt;full path to CAMPARI directory&gt;/params/<a href="keywords.html#abs32_opls_prm">abs3.2_opls.prm</a><br/>
+<a href="keywords.html#UAMODEL">FMCSC_UAMODEL</a> 0<br/>
+<a href="keywords.html#INTERMODEL">FMCSC_INTERMODEL</a> 1<br/>
+<a href="keywords.html#ELECMODEL">FMCSC_ELECMODEL</a> 2<br/>
+<a href="keywords.html#MODE_14">FMCSC_MODE_14</a> 1<br/>
+<a href="keywords.html#FUDGE_EL_14">FMCSC_FUDGE_EL_14</a> 1.0<br/>
+<a href="keywords.html#FUDGE_ST_14">FMCSC_FUDGE_ST_14</a> 1.0<br/>
+<a href="keywords.html#EPSRULE">FMCSC_EPSRULE</a> 2<br/>
+<a href="keywords.html#SIGRULE">FMCSC_SIGRULE</a> 1<br/>
+<a href="keywords.html#SC_BONDED_B">FMCSC_SC_BONDED_B</a> 0.0<br/>
+<a href="keywords.html#SC_BONDED_A">FMCSC_SC_BONDED_A</a> 0.0<br/>
+<a href="keywords.html#SC_BONDED_T">FMCSC_SC_BONDED_T</a> 1.0<br/>
+<a href="keywords.html#SC_BONDED_I">FMCSC_SC_BONDED_I</a> 0.0<br/>
+<a href="keywords.html#SC_EXTRA">FMCSC_SC_EXTRA</a> 0.0<br/>
+<a href="keywords.html#FOSMID">FMCSC_FOSMID</a> 0.1<br/>
+<a href="keywords.html#FOSTAU">FMCSC_FOSTAU</a> 0.25<br/>
+<a href="keywords.html#SCRMID">FMCSC_SCRMID</a> 0.9<br/>
+<a href="keywords.html#SCRTAU">FMCSC_SCRTAU</a> 0.5<br/>
+<a href="keywords.html#SAVPROBE">FMCSC_SAVPROBE</a> 2.5<br/>
+<a href="keywords.html#IMPDIEL">FMCSC_IMPDIEL</a> 78.2<br/>
+<a href="keywords.html#SCRMODEL">FMCSC_SCRMODEL</a> 2<br/>
+</tt>
+<br/>
+Additional keywords are required to specify the exact nature of the truncation scheme used for interactions (cutoffs):<br/>
+<br/>
+<tt>
+<a href="keywords.html#CUTOFFMODE">FMCSC_CUTOFFMODE</a> 4<br/>
+<a href="keywords.html#NBCUTOFF">FMCSC_NBCUTOFF</a> 10.0<br/>
+<a href="keywords.html#ELCUTOFF">FMCSC_ELCUTOFF</a> 14.0<br/>
+<a href="keywords.html#LREL_MC">FMCSC_LREL_MC</a> 3<br/>
+</tt>
+<br/>
+In an effort to speed up the simulations, we use 
+ a trick to simplify the treatment of long-range ionic interactions between the arginine sidechains and the explicit
+salt ions which constitute a background electrolyte solution (see <a href="keywords.html#LREL_MC">elsewhere</a> for details).<br/>
+<br/><big style="font-style: italic; text-decoration: underline;">Step 3 - Pick an appropriate move set</big><br/>
+<br/>
+The efficiency of any MC simulations relies on its move set. Fortunately, the FS-peptide is a relatively
+simple system ("smooth" energy landscape) and is well-sampled even when using a very simple move set as follows:<br/>
+<br/>
+<tt>
+<a href="keywords.html#RIGIDFREQ">FMCSC_RIGIDFREQ</a> 0.2<br/>
+<a href="keywords.html#RIGIDRDFREQ">FMCSC_RIGIDRDFREQ</a> 0.4<br/>
+<a href="keywords.html#CHIFREQ">FMCSC_CHIFREQ</a> 0.05<br/>
+<a href="keywords.html#CHIRDFREQ">FMCSC_CHIRDFREQ</a> 0.4<br/>
+<a href="keywords.html#CHISTEPSZ">FMCSC_CHISTEPSZ</a> 20.0<br/>
+<a href="keywords.html#OMEGAFREQ">FMCSC_OMEGAFREQ</a> 0.1<br/>
+<a href="keywords.html#OMEGARDFREQ">FMCSC_OMEGARDFREQ</a> 0.1<br/>
+<a href="keywords.html#PIVOTRDFREQ">FMCSC_PIVOTRDFREQ</a> 0.2<br/>
+<a href="keywords.html#PIVOTSTEPSZ">FMCSC_PIVOTSTEPSZ</a> 10.0<br/>
+</tt>
+<br/>
+All other move set-relevant settings are implied as their defaults. We use infrequent sampling of sidechain
+dihedral angles, as there are only the three arginine sidechains to worry about. Unlike the polyglutamine example, here
+we need sampling of rigid-body degrees of freedom to be able to equilibrate the relative positions of the ions
+and the peptide amongst and to each other. We choose 20% of our moves as rigid-body moves, keeping in mind that 
+the dilute ionic bath will equilibrate in almost barrier-less fashion. Sampling of the &omega;-angle is
+needed but covers only a small volume in phase space due to the tight rotational barriers around
+the C-N bond. The setting for <a href="keywords.html#OMEGARDFREQ">FMCSC_OMEGARDFREQ</a> is crucial
+to allow for <i>cis/trans</i>-isomerization of the &omega;-bond. The bulk of our sampling will be in &phi;/&psi;-moves
+of the pivot variety since the flexible dihedral angles on the peptide backbone are what describes peptide conformation,
+and ultimately the helix-coil transition.<br/>
+<br/><big style="font-style: italic; text-decoration: underline;">Step 4 - Instruct CAMPARI to collect only those data we need</big><br/>
+<br/>
+We are specifically interested here to investigate the helix-coil transition, so we will disable most other analyses:<br/>
+<br/>
+<tt>
+<a href="keywords.html#SEGCALC">FMCSC_SEGCALC</a> 50<br/>
+<a href="keywords.html#BBSEGFILE">FMCSC_BBSEGFILE</a> &lt;full path to CAMPARI directory&gt;/data/bbseg2.dat<br/>
+<a href="keywords.html#DSSPCALC">FMCSC_DSSPCALC</a> 50<br/>
+<a href="keywords.html#INSTDSSP">FMCSC_INSTDSSP</a> 0<br/>
+<a href="keywords.html#ANGCALC">FMCSC_ANGCALC</a> 50<br/>
+<a href="keywords.html#CONTACTCALC">FMCSC_CONTACTCALC</a> 200000000<br/>
+<a href="keywords.html#POLCALC">FMCSC_POLCALC</a> 200000000<br/>
+<a href="keywords.html#DIPCALC">FMCSC_DIPCALC</a> 200000000<br/>
+<a href="keywords.html#DIFFRCALC">FMCSC_DIFFRCALC</a> 200000000<br/>
+<a href="keywords.html#SAVCALC">FMCSC_SAVCALC</a> 200000000<br/>
+<a href="keywords.html#COVCALC">FMCSC_COVCALC</a> 200000000<br/>
+<a href="keywords.html#PCCALC">FMCSC_PCCALC</a> 200000000<br/>
+<a href="keywords.html#HOLESCALC">FMCSC_HOLESCALC</a> 200000000<br/>
+<a href="keywords.html#INTCALC">FMCSC_INTCALC</a> 200000000<br/>
+<a href="keywords.html#TOROUT">FMCSC_TOROUT</a> 200000000<br/>
+<a href="keywords.html#POLOUT">FMCSC_POLOUT</a> 200000000<br/>
+<a href="keywords.html#ENSOUT">FMCSC_ENSOUT</a> 200000000<br/>
+<a href="keywords.html#ENOUT">FMCSC_ENOUT</a> 10000<br/>
+<a href="keywords.html#ACCOUT">FMCSC_ACCOUT</a> 10000<br/>
+<a href="keywords.html#XYZOUT">FMCSC_XYZOUT</a> 2000<br/>
+<a href="keywords.html#XYZMODE">FMCSC_XYZMODE</a> 2<br/>
+<a href="keywords.html#XYZPDB">FMCSC_XYZPDB</a> 3<br/>
+<a href="keywords.html#RSTOUT">FMCSC_RSTOUT</a> 1000000<br/>
+</tt>
+<br/>
+The above keywords instruct CAMPARI to collect the segment statistics we are using for the helix-coil-analysis every
+50 elementary steps. In addition, Ramachandran data are also collected every 50 steps, and trajectory data are written
+out every 2000 steps. The latter will enable us to reanalyze the simulation later, in case the on-the-fly analyses
+are deemed insufficient. Lastly, more running output is produced to be able to easily track simulation progress and sanity.<br/>
+<br/><big style="font-style: italic; text-decoration: underline;">Step 5 - Setup up replica-exchange Monte Carlo (REMC)</big><br/>
+<br/>
+The last section to our key-file we need is the one defining that we wish to perform a REMC calculation. The details of such a 
+run are mostly controlled through a <a href="inputfiles.html#FMCSC_REFILE">dedicated input file</a>. Here, we specify the
+values for the exchange parameters for each condition (such as temperature):<br/> 
+<br/>
+<tt>
+<a href="inputfiles.html#FMCSC_REFILE">FMCSC_REFILE</a> &lt;full path to CAMPARI directory&gt;/examples/tutorial3/tutorial3.rex<br/>
+<a href="keywords.html#REPLICAS">FMCSC_REPLICAS</a> 16<br/>
+<a href="keywords.html#REDIM">FMCSC_REDIM</a> 1<br/>
+<a href="keywords.html#REMC">FMCSC_REMC</a> 1<br/>
+<a href="keywords.html#RESWAPS">FMCSC_RESWAPS</a> 15<br/>
+<a href="keywords.html#RENBMODE">FMCSC_RENBMODE</a> 2<br/>
+<a href="keywords.html#REFREQ">FMCSC_REFREQ</a> 2000<br/>
+</tt>
+<br/>
+This will implement a temperature REMC calculation attempting swaps between neighboring conditions every 2000
+elementary MC Steps. There are 16 different conditions ranging in the only RE parameter (dimension), <i>viz.</i>, temperature,
+from 250K to 420K (see <a href="../examples/tutorial3/tutorial3.rex">input file</a>). In each swap cycle, 15 pairs are 
+randomly picked and their structures are attempted to be exchanged. It is perfectly possible for two such swaps to be 
+exactly compensating at finite temperature meaning that the total impact of such a random scheme is less than that of
+the more typical scheme in which neighbor pairs are systematically suggested for exchange. You may wonder what temperatures
+outside of the liquid range of water mean. The answer is manifold, but here it suffices to say that no simulation force field,
+in particular not implicit solvent models are parameterized in temperature-dependent fashion. Simulation temperatures that deviate
+substantially from 300K are therefore almost always approximations and would have to be remapped to a more realistic range (unfortunately,
+such a quantitative remapping is not usually possible).<br/>
+Note that conceptually
+speaking it is irrelevant whether the system parameter is exchanged between two simulations or whether the current structures
+are exchanged. In CAMPARI, RE calculations are organized such that each node always remains associated with a fixed condition
+(<i>i.e.</i>, in the present example, the very first node always corresponds to the condition of 240K). This simplifies
+analysis since we can approximate the correctly re-weighted multicanonical simulation average at any temperature by the
+pseudo-canonical average obtained by taking data from just a single condition (here: temperature). The latter are what 
+is automatically provided by CAMPARI (as if the replicas where independent). As an additional remark, it should be pointed out that
+trajectory data will therefore include structure "jumps" upon successful RE swaps.<br/>
+Combine all the key-file sections mentioned thus far and create a file called "fspep.key" in an empty directory.<br/>
+<br/><big style="font-style: italic; text-decoration: underline;">Step 6 - Run the simulation</big><br/>
+<br/>
+In the execution directory, you should now be able to run:<br/>
+<br/>
+<tt>
+mpirun -np 16 campari_mpi -k fspep.key &gt;&amp; mpilog<br/>
+</tt>
+<br/>
+This assumes that you compiled CAMPARI with MPI-support (see <a href="install.html">installation instructions</a>) and
+that you are using OpenMPI or a similar MPI implementation. Otherwise, the MPI syntax may be different. In certain
+cases, additional flags may have to be provided to OpenMPI as well, but those issues are not related to CAMPARI.<br/>
+<br/><big style="font-style: italic; text-decoration: underline;">Step 7 - Analyze the results</big><br/>
+<br/>
+The first recommended thing to do is to pick a temperature in the transition regime and visually inspect
+the simulation. You can for example use <a href="references.html#ref23_9">VMD</a>
+and the <a href="outputfiles.html#basename_VIS.vmd">automatic scripts</a> CAMPARI provides for this purpose.
+ You should be seeing that the FS-peptide adopts different &alpha;-helical states throughout the simulation and 
+that the ion bath remains relatively inert. Typically, the C-terminal portion will have a higher likelihood of being
+in coil-like states than the N-terminal portion. The single rod-like helix is favored over bundle-like conformations
+with two shorter stretches of helix.<br/>
+After this visual inspection, proceed to analyze the system quantitatively. If you have access to the free
+statistical package R, you can use the <a href="../examples/tutorial3/tutorial3.R">script</a> provided in the examples directory after copying it to the working directory
+(holding all the output files):<br/>
+<br/>
+<tt>
+doread &lt;- TRUE<br/>
+docalc &lt;- TRUE<br/>
+source("tutorial3.R")<br/>
+</tt>
+<br/>
+This takes a while due to the employed MC search used to determine helix-coil parameters in the <a href="references.html#ref23_14">Lifson-Roig formalism</a>.
+The latter is not explained further in this tutorial, and the reader is referred to the <a href="references.html#ref24_11">recent literature</a> for an analysis of the difficulties associated with this formalism when applied to simulation data.
+If everything works, this will create plots of various metrics of the helicity as a function of temperature according
+to two independent structural determinants - backbone torsional residency in the &alpha;-basin (via <a href="outputfiles.html#BB_SEGMENTS.dat">BB_SEGMENTS.dat</a>)
+and formation of <i>i&rarr;i+4</i> hydrogen bonds (via <a href="outputfiles.html#DSSP.dat">DSSP.dat</a>). You should
+observe a well-defined transition from helix-rich states to helix-poor states in the first three plots. Both data sets
+should agree relatively well, although DSSP-based data will show fewer helical segments than the torsional-based estimate.
+Differences arise because DSSP measures &alpha;-helical H-bonds directly rather than having to infer them from torsional statistics 
+(it is possible both for DSSP-continuous segments to be interrupted according to torsional statistics, and vice versa).
+Moreover, DSSP cannot report segments shorter than a certain minimum length (of six consecutive residues involving two 
+<i>i&rarr;i+4</i> hydrogen bonds, the central four form the shortest possible &alpha;-helix segment according to DSSP). This
+is technically inconsistent with the Lifson-Roig model, and several corrections would have to be applied in order to 
+make the data directly applicable. This is left to the user to explore/research if so desired. As a direct consequence,
+the helix nucleation and propagation parameters reported based on DSSP assignment are to be treated as qualitative/speculative
+in nature.<br/>
+Feel free to inspect and modify the script and input files. The system is simple enough such that meaningful sampling
+can be achieved, and it is therefore possible to design meaningful derivatives of this tutorial. Note lastly that
+the settings in the script may not always be/remain 100% identical to the settings used in published work, so that results are not going
+to necessarily be exactly comparable (this can always be fixed, though, by simple modifications to the <a href="../examples/tutorial3/tutorial3.R">R-script</a>).<br/>
+<br/>
+</div>
+</div>
+</div>
+</div>
+<!-- Side Navigation Bar --><!--<div class="art-sidebar1">--><!-- Contributors Block --><!--<div class="art-Block">
+                    <div class="art-Block-tl"></div>
+                    <div class="art-Block-tr"></div>
+                    <div class="art-Block-bl"></div>
+                    <div class="art-Block-br"></div>
+                    <div class="art-Block-tc"></div>
+                    <div class="art-Block-bc"></div>
+                    <div class="art-Block-cl"></div>
+                    <div class="art-Block-cr"></div>
+                    <div class="art-Block-cc"></div>
+                    <div class="art-Block-body">
+                        <div class="art-BlockHeader">
+                            <div class="l"></div>
+                            <div class="r"></div>
+                            <div class="art-header-tag-icon">
+                                <div class="t">Contributors - Links</div>
+                            </div>
+                        </div><div class="art-BlockContent">
+                            <div class="art-BlockContent-body">
+                                <div>
+                                <b>Pappu Lab</b><br />
+                                Washington University in St. Louis, MO<br />
+                                Website: <a href="lima.wustl.edu">lima.wustl.edu</a><br />
+                                Phone: (999) 999-9999 <br/>
+                                <br/>
+                                <b>Andreas Vitalis</b><br />
+                                Unistat de Zurich<br />
+                                Website: <a href="papajohns.com">vitalis.net</a><br />
+                                Phone: (111) 999-9999 <br/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>--><!-- Search Block --><!--
+                <div class="art-Block">
+                    <div class="art-Block-tl"></div>
+                    <div class="art-Block-tr"></div>
+                    <div class="art-Block-bl"></div>
+                    <div class="art-Block-br"></div>
+                    <div class="art-Block-tc"></div>
+                    <div class="art-Block-bc"></div>
+                    <div class="art-Block-cl"></div>
+                    <div class="art-Block-cr"></div>
+                    <div class="art-Block-cc"></div>
+                    <div class="art-Block-body">
+                        <div class="art-BlockHeader">
+                            <div class="l"></div>
+                            <div class="r"></div>
+                            <div class="art-header-tag-icon">
+                                <div class="t">Find Text</div>
+                            </div>
+                        </div><div class="art-BlockContent">
+                            <div class="art-BlockContent-body">
+                                <div><form method="get" id="newsletterform" action="javascript:void(0)">
+                                <input type="text" value="" name="email" id="s" style="width: 95%;" />
+                                <span class="art-button-wrapper">
+                                    <span class="l"> </span>
+                                    <span class="r"> </span>
+                                    <input class="art-button" type="submit" name="search" value="Search"/>
+                                </span>
+                                </form></div>
+                            </div>
+                        </div>
+                    </div>
+                </div> 
+                --><!-- News/Updates Block --><!--
+                <div class="art-Block">
+                    <div class="art-Block-tl"></div>
+                    <div class="art-Block-tr"></div>
+                    <div class="art-Block-bl"></div>
+                    <div class="art-Block-br"></div>
+                    <div class="art-Block-tc"></div>
+                    <div class="art-Block-bc"></div>
+                    <div class="art-Block-cl"></div>
+                    <div class="art-Block-cr"></div>
+                    <div class="art-Block-cc"></div>
+                    <div class="art-Block-body">
+                        <div class="art-BlockHeader">
+                            <div class="l"></div>
+                            <div class="r"></div>
+                            <div class="art-header-tag-icon">
+                                <div class="t">Recent News</div>
+                            </div>
+                        </div><div class="art-BlockContent">
+                            <div class="art-BlockContent-body">
+                                <div>
+                                    <p><b>Jun 14, 2008</b><br/>
+                                    Aliquam sit amet felis. Mauris semper, 
+                                    velit semper laoreet dictum, quam 
+                                    diam dictum urna, nec placerat elit 
+                                    nisl in quam. Etiam augue pede, 
+                                    molestie eget, rhoncus at, convallis 
+                                    ut, eros. Aliquam pharetra.<br/>
+                                    <a href="javascript:void(0)">Read more...</a></p>
+                                                          
+                                    <p><b>Aug 24, 2008</b><br/>
+                                    Aliquam sit amet felis. Mauris semper, 
+                                    velit semper laoreet dictum, quam 
+                                    diam dictum urna, nec placerat elit 
+                                    nisl in quam. Etiam augue pede, 
+                                    molestie eget, rhoncus at, convallis 
+                                    ut, eros. Aliquam pharetra.<br/>
+                                    <a href="javascript:void(0)">Read more...</a></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> --><!-- End Sidebar --> </div>
+</div>
+</div>
+<!-- End main page contents --><!-- Footer -->
+<div class="art-Footer">
+<div class="art-Footer-background">
+<div class="art-Footer-inner"> <a href="#" class="art-rss-tag-icon"
+ title="RSS"></a>
+<div class="art-Footer-text">
+<p><a href="#">Contact Us</a> | <a href="#">Terms of Use</a> | <a
+ href="#">Lincense Information</a><br/>
+Copyright © 2010 . All Rights Reserved.</p>
+</div>
+</div>
+</div>
+</div>
+<p class="art-page-footer">XHTML and CSS valid. Powered by <a
+ href="http://www.flashmint.com/">FlashMint</a> - flash templates
+provider.</p>
+<div style="text-align: center; font-size: 0.75em;">Design downloaded
+from <a href="http://www.freewebtemplates.com/">free website templates</a>.</div>
+</div>
+</body>
+</html>

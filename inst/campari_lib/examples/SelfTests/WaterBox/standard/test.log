@@ -1,0 +1,1270 @@
+ 
+ --- Overview of sequence ---
+ 
+Molecule type   1 has      1 residues.
+The first example molecule is #      1 (residues      1-     1).
+There are   375 molecules of this type.
+ Polymer analysis is turned off for this molecule type.
+ Turns/angular statistics are turned off for this molecule type.
+ Torsional analysis is turned off for this molecule type.
+ 
+ 
+ Initialized PRNG with Seed of       113173
+ 
+ 
+ --- Summary of grid occupation ---
+ 
+Gridpoint      1 has    1 residues.
+#    1 (T3P): Ref. at   0.000   0.000   0.000
+Gridpoint      3 has    1 residues.
+#  122 (T3P): Ref. at   0.730   0.227   2.325
+Gridpoint     11 has    1 residues.
+#  279 (T3P): Ref. at   0.499   0.286  11.363
+Gridpoint     18 has    1 residues.
+#  216 (T3P): Ref. at   0.788   0.217  19.707
+Gridpoint     43 has    1 residues.
+#  261 (T3P): Ref. at   0.600   3.206   2.637
+Gridpoint     47 has    1 residues.
+#   19 (T3P): Ref. at   0.135   2.748   7.745
+Gridpoint     72 has    1 residues.
+#  293 (T3P): Ref. at   0.339   3.990  13.255
+Gridpoint    112 has    1 residues.
+#   41 (T3P): Ref. at   0.747   5.652  12.540
+Gridpoint    186 has    1 residues.
+#   16 (T3P): Ref. at   0.733  11.136   5.779
+Gridpoint    194 has    1 residues.
+#  211 (T3P): Ref. at   0.221  10.996  15.072
+Gridpoint    198 has    1 residues.
+#  354 (T3P): Ref. at   0.754  10.624  19.638
+Gridpoint    203 has    1 residues.
+#  187 (T3P): Ref. at  22.649  12.265   3.092
+Gridpoint    230 has    1 residues.
+#   49 (T3P): Ref. at   0.907  12.544  10.811
+Gridpoint    245 has    1 residues.
+#  329 (T3P): Ref. at   0.532  14.190   5.588
+Gridpoint    287 has    1 residues.
+#  254 (T3P): Ref. at   0.356  16.211   7.685
+Gridpoint    313 has    1 residues.
+#  167 (T3P): Ref. at   0.515  17.181  13.581
+Gridpoint    321 has    1 residues.
+#   61 (T3P): Ref. at   0.535  18.140   0.034
+Gridpoint    357 has    1 residues.
+#  151 (T3P): Ref. at   0.692  19.815  18.693
+Gridpoint    359 has    1 residues.
+#  240 (T3P): Ref. at   0.647  19.463  21.094
+Gridpoint    362 has    1 residues.
+#  304 (T3P): Ref. at   0.419  20.766   1.499
+Gridpoint    364 has    1 residues.
+#   47 (T3P): Ref. at   0.962  20.452   3.960
+Gridpoint    389 has    1 residues.
+#  116 (T3P): Ref. at   0.749  22.239   9.990
+Gridpoint    452 has    1 residues.
+#  328 (T3P): Ref. at   1.657   2.410  13.451
+Gridpoint    482 has    1 residues.
+#  271 (T3P): Ref. at   2.139   5.244   1.876
+Gridpoint    508 has    1 residues.
+#  258 (T3P): Ref. at   1.895   6.540   8.844
+Gridpoint    577 has    1 residues.
+#   57 (T3P): Ref. at   1.925   9.000  18.850
+Gridpoint    613 has    1 residues.
+#  275 (T3P): Ref. at   1.437  11.920  14.541
+Gridpoint    619 has    1 residues.
+#  320 (T3P): Ref. at   1.889  11.425  20.762
+Gridpoint    624 has    1 residues.
+#  280 (T3P): Ref. at   2.209  13.217   3.687
+Gridpoint    675 has    1 residues.
+#  310 (T3P): Ref. at   2.113  14.912  16.601
+Gridpoint    677 has    1 residues.
+#   33 (T3P): Ref. at   2.106  14.909  18.322
+Gridpoint    681 has    1 residues.
+#   68 (T3P): Ref. at   1.737  16.239   0.642
+Gridpoint    722 has    1 residues.
+#  111 (T3P): Ref. at   1.327  18.266   1.289
+Gridpoint    747 has    1 residues.
+#  177 (T3P): Ref. at   2.122  19.999   7.166
+Gridpoint    761 has    1 residues.
+#  156 (T3P): Ref. at   1.430  20.368   0.025
+Gridpoint    824 has    1 residues.
+#  373 (T3P): Ref. at   2.697   1.714   4.367
+Gridpoint    835 has    1 residues.
+#  214 (T3P): Ref. at   3.308   1.138  16.748
+Gridpoint    878 has    1 residues.
+#  218 (T3P): Ref. at   3.116   4.009  20.009
+Gridpoint    884 has    1 residues.
+#  193 (T3P): Ref. at   3.049   4.673   3.391
+Gridpoint    886 has    1 residues.
+#  331 (T3P): Ref. at   2.416   5.445   6.013
+Gridpoint    942 has    1 residues.
+#  249 (T3P): Ref. at   3.108   8.217   2.147
+Gridpoint    983 has    1 residues.
+#   42 (T3P): Ref. at   3.191  11.163   2.429
+Gridpoint    993 has    1 residues.
+#  242 (T3P): Ref. at   2.378  10.298  13.687
+Gridpoint    998 has    1 residues.
+#  347 (T3P): Ref. at   3.172  11.007  19.871
+Gridpoint   1016 has    1 residues.
+#  204 (T3P): Ref. at   2.248  12.219  16.953
+Gridpoint   1029 has    1 residues.
+#  346 (T3P): Ref. at   3.109  12.879   9.909
+Gridpoint   1117 has    1 residues.
+#  250 (T3P): Ref. at   3.329  17.019  18.415
+Gridpoint   1124 has    1 residues.
+#   59 (T3P): Ref. at   3.010  18.851   3.817
+Gridpoint   1140 has    1 residues.
+#  284 (T3P): Ref. at   2.360  18.458  21.372
+Gridpoint   1181 has    1 residues.
+#   81 (T3P): Ref. at   2.983  22.362   0.250
+Gridpoint   1209 has    1 residues.
+#   44 (T3P): Ref. at   4.368   0.442   9.200
+Gridpoint   1259 has    1 residues.
+#  262 (T3P): Ref. at   3.846   3.095  21.218
+Gridpoint   1264 has    1 residues.
+#  164 (T3P): Ref. at   3.467   3.367   4.415
+Gridpoint   1305 has    1 residues.
+#  277 (T3P): Ref. at   3.434   6.713   4.837
+Gridpoint   1334 has    1 residues.
+#  327 (T3P): Ref. at   4.436   7.691  14.644
+Gridpoint   1339 has    1 residues.
+#  352 (T3P): Ref. at   3.627   7.276  20.818
+Gridpoint   1340 has    1 residues.
+#   93 (T3P): Ref. at   4.226   6.975  21.823
+Gridpoint   1357 has    1 residues.
+#  325 (T3P): Ref. at   3.859   7.945  18.922
+Gridpoint   1375 has    1 residues.
+#   18 (T3P): Ref. at   3.602   9.861  16.548
+Gridpoint   1390 has    1 residues.
+#  185 (T3P): Ref. at   4.052  10.992  10.738
+Gridpoint   1392 has    1 residues.
+#  112 (T3P): Ref. at   4.271  11.155  13.151
+Gridpoint   1434 has    1 residues.
+#  124 (T3P): Ref. at   4.131  13.406  15.005
+Gridpoint   1450 has    1 residues.
+#  108 (T3P): Ref. at   3.923  13.738  10.656
+Gridpoint   1460 has    1 residues.
+#  192 (T3P): Ref. at   4.316  14.217  21.560
+Gridpoint   1461 has    1 residues.
+#  171 (T3P): Ref. at   4.128  14.982   0.534
+Gridpoint   1464 has    1 residues.
+#    3 (T3P): Ref. at   3.780  14.837   4.393
+Gridpoint   1472 has    1 residues.
+#  232 (T3P): Ref. at   4.024  15.370  12.924
+Gridpoint   1513 has    1 residues.
+#  183 (T3P): Ref. at   4.442  17.630  14.008
+Gridpoint   1518 has    1 residues.
+#  255 (T3P): Ref. at   3.565  17.633  19.647
+Gridpoint   1528 has    1 residues.
+#  335 (T3P): Ref. at   3.943  18.601   8.761
+Gridpoint   1534 has    1 residues.
+#  166 (T3P): Ref. at   4.410  18.528  15.075
+Gridpoint   1537 has    1 residues.
+#  145 (T3P): Ref. at   3.935  18.761  18.734
+Gridpoint   1572 has    1 residues.
+#  339 (T3P): Ref. at   3.639  20.720  12.378
+Gridpoint   1591 has    1 residues.
+#  259 (T3P): Ref. at   3.583  21.924  11.911
+Gridpoint   1604 has    1 residues.
+#  245 (T3P): Ref. at   5.333  22.644   4.360
+Gridpoint   1624 has    1 residues.
+#   43 (T3P): Ref. at   5.155   1.359   3.402
+Gridpoint   1638 has    1 residues.
+#  313 (T3P): Ref. at   5.152   2.085  19.281
+Gridpoint   1663 has    1 residues.
+#   91 (T3P): Ref. at   4.540   3.493   2.959
+Gridpoint   1669 has    1 residues.
+#  366 (T3P): Ref. at   4.966   4.298   9.138
+Gridpoint   1683 has    1 residues.
+#   21 (T3P): Ref. at   5.055   4.871   2.383
+Gridpoint   1704 has    1 residues.
+#  170 (T3P): Ref. at   4.893   6.515   4.015
+Gridpoint   1744 has    1 residues.
+#  226 (T3P): Ref. at   4.763   8.807   3.583
+Gridpoint   1769 has    1 residues.
+#  372 (T3P): Ref. at   4.494   9.717   9.866
+Gridpoint   1776 has    1 residues.
+#  153 (T3P): Ref. at   5.480   9.706  17.184
+Gridpoint   1782 has    1 residues.
+#  359 (T3P): Ref. at   5.536  10.907   1.868
+Gridpoint   1784 has    1 residues.
+#  264 (T3P): Ref. at   5.057  10.787   3.952
+Gridpoint   1788 has    1 residues.
+#    6 (T3P): Ref. at   4.828  10.472   8.926
+Gridpoint   1814 has    1 residues.
+#  188 (T3P): Ref. at   5.148  12.019  14.648
+Gridpoint   1831 has    1 residues.
+#  161 (T3P): Ref. at   5.216  13.043  11.512
+Gridpoint   1857 has    1 residues.
+#  234 (T3P): Ref. at   4.932  14.029  17.942
+Gridpoint   1887 has    1 residues.
+#  371 (T3P): Ref. at   4.562  15.723   7.830
+Gridpoint   1898 has    1 residues.
+#  118 (T3P): Ref. at   4.682  16.694  19.487
+Gridpoint   1901 has    1 residues.
+#   22 (T3P): Ref. at   4.879  16.973   0.950
+Gridpoint   1909 has    1 residues.
+#  251 (T3P): Ref. at   5.412  17.013   9.944
+Gridpoint   1931 has    1 residues.
+#    5 (T3P): Ref. at   4.712  18.380  11.591
+Gridpoint   1939 has    1 residues.
+#  314 (T3P): Ref. at   5.531  18.979  20.488
+Gridpoint   1960 has    1 residues.
+#  172 (T3P): Ref. at   5.286  19.674  21.522
+Gridpoint   2120 has    1 residues.
+#  160 (T3P): Ref. at   6.485   6.351  22.108
+Gridpoint   2124 has    1 residues.
+#  180 (T3P): Ref. at   5.909   7.839   3.422
+Gridpoint   2150 has    1 residues.
+#  270 (T3P): Ref. at   5.901   7.955  10.726
+Gridpoint   2153 has    1 residues.
+#  340 (T3P): Ref. at   6.052   8.453  13.661
+Gridpoint   2155 has    1 residues.
+#  276 (T3P): Ref. at   6.246   8.312  16.380
+Gridpoint   2161 has    1 residues.
+#  229 (T3P): Ref. at   6.286   9.128  22.461
+Gridpoint   2174 has    1 residues.
+#  199 (T3P): Ref. at   6.410   9.850  14.678
+Gridpoint   2187 has    1 residues.
+#   35 (T3P): Ref. at   6.315  10.261   7.431
+Gridpoint   2221 has    1 residues.
+#  247 (T3P): Ref. at   6.444  12.799   0.706
+Gridpoint   2231 has    1 residues.
+#  109 (T3P): Ref. at   6.126  12.511  12.191
+Gridpoint   2243 has    1 residues.
+#  158 (T3P): Ref. at   5.854  13.749   2.666
+Gridpoint   2328 has    1 residues.
+#  323 (T3P): Ref. at   6.339  18.575   8.714
+Gridpoint   2367 has    1 residues.
+#  358 (T3P): Ref. at   6.173  20.234   7.718
+Gridpoint   2371 has    1 residues.
+#  207 (T3P): Ref. at   6.538  20.850  11.800
+Gridpoint   2373 has    1 residues.
+#   20 (T3P): Ref. at   6.203  21.274  13.688
+Gridpoint   2395 has    1 residues.
+#  357 (T3P): Ref. at   6.398  21.547  15.960
+Gridpoint   2420 has    1 residues.
+#  362 (T3P): Ref. at   7.751   0.031  21.553
+Gridpoint   2475 has    1 residues.
+#  253 (T3P): Ref. at   6.974   4.328  15.966
+Gridpoint   2512 has    1 residues.
+#  266 (T3P): Ref. at   7.419   6.588  12.543
+Gridpoint   2519 has    1 residues.
+#  169 (T3P): Ref. at   7.180   6.476  21.131
+Gridpoint   2521 has    1 residues.
+#  163 (T3P): Ref. at   7.336   7.440   0.644
+Gridpoint   2550 has    1 residues.
+#  184 (T3P): Ref. at   7.535   8.446  10.940
+Gridpoint   2599 has    1 residues.
+#  351 (T3P): Ref. at   7.731  10.706  20.367
+Gridpoint   2603 has    1 residues.
+#  142 (T3P): Ref. at   7.140  11.521   2.563
+Gridpoint   2608 has    1 residues.
+#  182 (T3P): Ref. at   6.864  12.194   8.352
+Gridpoint   2688 has    1 residues.
+#  272 (T3P): Ref. at   7.616  16.637   8.258
+Gridpoint   2720 has    1 residues.
+#   53 (T3P): Ref. at   7.388  17.914  21.398
+Gridpoint   2733 has    1 residues.
+#  322 (T3P): Ref. at   7.100  18.653  14.539
+Gridpoint   2736 has    1 residues.
+#   26 (T3P): Ref. at   7.642  19.036  17.451
+Gridpoint   2762 has    1 residues.
+#  217 (T3P): Ref. at   7.525  20.307   2.011
+Gridpoint   2772 has    1 residues.
+#  348 (T3P): Ref. at   7.676  20.679  12.650
+Gridpoint   2779 has    1 residues.
+#  106 (T3P): Ref. at   6.744  20.816  20.248
+Gridpoint   2783 has    1 residues.
+#  162 (T3P): Ref. at   7.507  22.015   3.068
+Gridpoint   2843 has    1 residues.
+#  332 (T3P): Ref. at   8.220   2.835   3.292
+Gridpoint   2855 has    1 residues.
+#  219 (T3P): Ref. at   8.881   2.726  15.709
+Gridpoint   2905 has    1 residues.
+#   66 (T3P): Ref. at   8.168   5.738   4.534
+Gridpoint   2914 has    1 residues.
+#  143 (T3P): Ref. at   7.884   5.875  14.942
+Gridpoint   2930 has    1 residues.
+#   46 (T3P): Ref. at   7.929   7.253  10.266
+Gridpoint   2970 has    1 residues.
+#   64 (T3P): Ref. at   8.255   9.614  10.213
+Gridpoint   3034 has    1 residues.
+#   54 (T3P): Ref. at   8.621  12.418  15.251
+Gridpoint   3080 has    1 residues.
+#   84 (T3P): Ref. at   8.615  15.175  -0.072
+Gridpoint   3087 has    1 residues.
+#   70 (T3P): Ref. at   8.904  16.556   6.870
+Gridpoint   3096 has    1 residues.
+#   96 (T3P): Ref. at   8.362  16.129  17.793
+Gridpoint   3107 has    1 residues.
+#  369 (T3P): Ref. at   7.918  17.731   7.443
+Gridpoint   3209 has    1 residues.
+#   15 (T3P): Ref. at   9.892   0.346   9.283
+Gridpoint   3232 has    1 residues.
+#  355 (T3P): Ref. at   8.999   1.478  12.634
+Gridpoint   3250 has    1 residues.
+#   55 (T3P): Ref. at  10.009   2.667  10.457
+Gridpoint   3266 has    1 residues.
+#  196 (T3P): Ref. at   9.493   3.957   6.244
+Gridpoint   3270 has    1 residues.
+#  224 (T3P): Ref. at   9.886   4.238  11.038
+Gridpoint   3287 has    1 residues.
+#  370 (T3P): Ref. at   9.579   4.718   7.641
+Gridpoint   3300 has    1 residues.
+#   72 (T3P): Ref. at   9.842   4.800  21.762
+Gridpoint   3311 has    1 residues.
+#  256 (T3P): Ref. at   9.043   5.897  11.464
+Gridpoint   3319 has    1 residues.
+#  302 (T3P): Ref. at   9.804   5.639  20.354
+Gridpoint   3340 has    1 residues.
+#  360 (T3P): Ref. at   9.308   7.251  21.769
+Gridpoint   3348 has    1 residues.
+#  130 (T3P): Ref. at   9.907   7.989   8.089
+Gridpoint   3373 has    1 residues.
+#  246 (T3P): Ref. at   9.344   9.651  14.414
+Gridpoint   3388 has    1 residues.
+#  344 (T3P): Ref. at   9.181  11.078   8.960
+Gridpoint   3407 has    1 residues.
+#   17 (T3P): Ref. at   9.855  11.516   6.919
+Gridpoint   3492 has    1 residues.
+#  152 (T3P): Ref. at   9.520  16.804  12.792
+Gridpoint   3496 has    1 residues.
+#  278 (T3P): Ref. at   9.470  16.226  17.383
+Gridpoint   3499 has    1 residues.
+#  175 (T3P): Ref. at   9.538  16.353  21.012
+Gridpoint   3508 has    1 residues.
+#  131 (T3P): Ref. at   9.538  17.255   8.051
+Gridpoint   3525 has    1 residues.
+#  341 (T3P): Ref. at   9.076  18.587   4.840
+Gridpoint   3526 has    1 residues.
+#   78 (T3P): Ref. at   9.402  18.922   6.220
+Gridpoint   3531 has    1 residues.
+#  101 (T3P): Ref. at   9.839  18.449  12.117
+Gridpoint   3557 has    1 residues.
+#  176 (T3P): Ref. at   9.587  19.211  19.056
+Gridpoint   3634 has    1 residues.
+#  210 (T3P): Ref. at  10.358   1.870  15.360
+Gridpoint   3691 has    1 residues.
+#  115 (T3P): Ref. at  10.887   4.562  11.615
+Gridpoint   3692 has    1 residues.
+#  202 (T3P): Ref. at  10.563   4.563  13.388
+Gridpoint   3694 has    1 residues.
+#  356 (T3P): Ref. at  10.708   4.515  14.866
+Gridpoint   3734 has    1 residues.
+#   97 (T3P): Ref. at  10.569   6.877  15.422
+Gridpoint   3768 has    1 residues.
+#  154 (T3P): Ref. at  10.851  10.066   8.318
+Gridpoint   3776 has    1 residues.
+#   51 (T3P): Ref. at  10.406   9.414  17.614
+Gridpoint   3797 has    1 residues.
+#    4 (T3P): Ref. at  10.713  11.166  18.508
+Gridpoint   3825 has    1 residues.
+#   40 (T3P): Ref. at  10.743  12.570   4.564
+Gridpoint   3833 has    1 residues.
+#  281 (T3P): Ref. at  10.356  12.569  13.667
+Gridpoint   3870 has    1 residues.
+#  103 (T3P): Ref. at  10.569  15.488  10.867
+Gridpoint   3881 has    1 residues.
+#  289 (T3P): Ref. at  11.158  16.325   0.899
+Gridpoint   3888 has    1 residues.
+#  237 (T3P): Ref. at  11.040  16.516   8.532
+Gridpoint   3891 has    1 residues.
+#  306 (T3P): Ref. at  10.203  15.933  11.929
+Gridpoint   3909 has    1 residues.
+#  168 (T3P): Ref. at  10.181  17.699   9.536
+Gridpoint   3917 has    1 residues.
+#  144 (T3P): Ref. at  10.431  17.865  18.269
+Gridpoint   3944 has    1 residues.
+#  127 (T3P): Ref. at  10.986  19.975   3.831
+Gridpoint   3947 has    1 residues.
+#  233 (T3P): Ref. at  10.615  19.126   6.929
+Gridpoint   3974 has    1 residues.
+#  178 (T3P): Ref. at  10.407  21.160  14.729
+Gridpoint   4008 has    1 residues.
+#  222 (T3P): Ref. at  11.990   0.730   8.162
+Gridpoint   4016 has    1 residues.
+#  173 (T3P): Ref. at  12.152   0.200  17.100
+Gridpoint   4034 has    1 residues.
+#  257 (T3P): Ref. at  11.907   1.606  15.669
+Gridpoint   4078 has    1 residues.
+#   73 (T3P): Ref. at  11.753   4.062  20.146
+Gridpoint   4193 has    1 residues.
+#   98 (T3P): Ref. at  11.583  10.576  14.275
+Gridpoint   4211 has    1 residues.
+#  298 (T3P): Ref. at  11.960  11.923  11.953
+Gridpoint   4215 has    1 residues.
+#  241 (T3P): Ref. at  11.477  11.315  16.213
+Gridpoint   4221 has    1 residues.
+#  248 (T3P): Ref. at  11.345  12.573   0.645
+Gridpoint   4239 has    1 residues.
+#  135 (T3P): Ref. at  11.317  12.386  20.925
+Gridpoint   4251 has    1 residues.
+#  326 (T3P): Ref. at  11.298  13.979  12.169
+Gridpoint   4267 has    1 residues.
+#  197 (T3P): Ref. at  11.224  14.619   7.273
+Gridpoint   4283 has    1 residues.
+#    8 (T3P): Ref. at  11.263  15.932   2.473
+Gridpoint   4345 has    1 residues.
+#  294 (T3P): Ref. at  12.151  19.401   5.236
+Gridpoint   4350 has    1 residues.
+#  123 (T3P): Ref. at  11.944  19.408  10.468
+Gridpoint   4434 has    1 residues.
+#  269 (T3P): Ref. at  13.363   2.210  15.137
+Gridpoint   4452 has    1 residues.
+#   80 (T3P): Ref. at  12.700   2.294  13.376
+Gridpoint   4458 has    1 residues.
+#  138 (T3P): Ref. at  12.967   2.388  19.123
+Gridpoint   4503 has    1 residues.
+#  319 (T3P): Ref. at  13.058   6.132   3.263
+Gridpoint   4505 has    1 residues.
+#   94 (T3P): Ref. at  13.424   6.655   5.558
+Gridpoint   4507 has    1 residues.
+#  336 (T3P): Ref. at  13.316   5.903   7.334
+Gridpoint   4569 has    1 residues.
+#   39 (T3P): Ref. at  12.374   9.661   9.968
+Gridpoint   4579 has    1 residues.
+#  337 (T3P): Ref. at  12.588   9.209  20.794
+Gridpoint   4603 has    1 residues.
+#  288 (T3P): Ref. at  13.411  11.467   3.324
+Gridpoint   4617 has    1 residues.
+#   99 (T3P): Ref. at  13.098  11.756  18.786
+Gridpoint   4622 has    1 residues.
+#   25 (T3P): Ref. at  12.732  13.324   1.577
+Gridpoint   4633 has    1 residues.
+#  318 (T3P): Ref. at  12.446  13.442  14.346
+Gridpoint   4634 has    1 residues.
+#  194 (T3P): Ref. at  12.523  12.459  15.283
+Gridpoint   4658 has    1 residues.
+#   52 (T3P): Ref. at  12.482  14.104  19.618
+Gridpoint   4691 has    1 residues.
+#  307 (T3P): Ref. at  12.517  15.785  11.397
+Gridpoint   4693 has    1 residues.
+#    9 (T3P): Ref. at  13.388  15.935  14.401
+Gridpoint   4716 has    1 residues.
+#  324 (T3P): Ref. at  13.080  17.068  16.980
+Gridpoint   4766 has    1 residues.
+#  292 (T3P): Ref. at  12.487  20.531   5.735
+Gridpoint   4769 has    1 residues.
+#  244 (T3P): Ref. at  12.389  20.636   9.112
+Gridpoint   4793 has    1 residues.
+#  221 (T3P): Ref. at  12.750  21.374  13.883
+Gridpoint   4819 has    1 residues.
+#  364 (T3P): Ref. at  13.570   0.466  21.135
+Gridpoint   4841 has    1 residues.
+#  334 (T3P): Ref. at  13.670   2.438   0.666
+Gridpoint   4856 has    1 residues.
+#  368 (T3P): Ref. at  13.973   2.604  17.739
+Gridpoint   4875 has    1 residues.
+#  311 (T3P): Ref. at  14.136   3.999  16.571
+Gridpoint   4882 has    1 residues.
+#  274 (T3P): Ref. at  13.972   5.445   1.745
+Gridpoint   4936 has    1 residues.
+#  191 (T3P): Ref. at  13.698   6.929  17.540
+Gridpoint   4943 has    1 residues.
+#  107 (T3P): Ref. at  14.558   8.474   3.144
+Gridpoint   4959 has    1 residues.
+#  140 (T3P): Ref. at  14.064   8.561  21.021
+Gridpoint   5029 has    1 residues.
+#   38 (T3P): Ref. at  14.333  12.482   9.167
+Gridpoint   5039 has    1 residues.
+#  206 (T3P): Ref. at  14.516  13.360  21.272
+Gridpoint   5071 has    1 residues.
+#   92 (T3P): Ref. at  13.910  15.553  12.059
+Gridpoint   5082 has    1 residues.
+#  367 (T3P): Ref. at  13.645  16.438   2.093
+Gridpoint   5087 has    1 residues.
+#  321 (T3P): Ref. at  13.658  16.290   7.051
+Gridpoint   5092 has    1 residues.
+#  267 (T3P): Ref. at  14.007  16.313  13.424
+Gridpoint   5094 has    1 residues.
+#   83 (T3P): Ref. at  14.304  16.408  15.294
+Gridpoint   5098 has    1 residues.
+#  363 (T3P): Ref. at  13.918  15.983  19.905
+Gridpoint   5120 has    1 residues.
+#  105 (T3P): Ref. at  14.100  17.198  22.015
+Gridpoint   5127 has    1 residues.
+#   67 (T3P): Ref. at  13.569  18.091   7.629
+Gridpoint   5186 has    1 residues.
+#  155 (T3P): Ref. at  14.013  21.788   6.559
+Gridpoint   5196 has    1 residues.
+#   77 (T3P): Ref. at  14.335  21.360  17.822
+Gridpoint   5236 has    1 residues.
+#  342 (T3P): Ref. at  14.692   1.765  16.958
+Gridpoint   5238 has    1 residues.
+#  349 (T3P): Ref. at  15.692   2.058  20.119
+Gridpoint   5287 has    1 residues.
+#  195 (T3P): Ref. at  15.254   5.427   7.224
+Gridpoint   5346 has    1 residues.
+#  132 (T3P): Ref. at  14.764   8.185   5.974
+Gridpoint   5380 has    1 residues.
+#   86 (T3P): Ref. at  14.634   9.565  -0.089
+Gridpoint   5418 has    1 residues.
+#   82 (T3P): Ref. at  14.632  12.294  19.611
+Gridpoint   5423 has    1 residues.
+#  215 (T3P): Ref. at  14.668  13.450   3.251
+Gridpoint   5451 has    1 residues.
+#  290 (T3P): Ref. at  14.721  13.461  11.585
+Gridpoint   5466 has    1 residues.
+#  165 (T3P): Ref. at  14.602  14.734   6.682
+Gridpoint   5468 has    1 residues.
+#  201 (T3P): Ref. at  14.590  15.053   7.971
+Gridpoint   5511 has    1 residues.
+#   30 (T3P): Ref. at  14.920  17.260  11.425
+Gridpoint   5523 has    1 residues.
+#  365 (T3P): Ref. at  14.706  18.635   2.425
+Gridpoint   5596 has    1 residues.
+#  227 (T3P): Ref. at  15.170  21.950  16.879
+Gridpoint   5622 has    1 residues.
+#  243 (T3P): Ref. at  16.047   1.670   1.719
+Gridpoint   5630 has    1 residues.
+#   12 (T3P): Ref. at  16.590   1.840  10.630
+Gridpoint   5672 has    1 residues.
+#  225 (T3P): Ref. at  16.500   3.568  12.650
+Gridpoint   5697 has    1 residues.
+#  286 (T3P): Ref. at  16.485   5.347  18.928
+Gridpoint   5713 has    1 residues.
+#  186 (T3P): Ref. at  15.784   6.632  13.496
+Gridpoint   5715 has    1 residues.
+#  133 (T3P): Ref. at  15.721   5.955  16.016
+Gridpoint   5755 has    1 residues.
+#  209 (T3P): Ref. at  16.149   7.970  16.427
+Gridpoint   5768 has    1 residues.
+#   34 (T3P): Ref. at  16.717   9.989   7.869
+Gridpoint   5782 has    1 residues.
+#  147 (T3P): Ref. at  16.291  10.256   2.158
+Gridpoint   5819 has    1 residues.
+#  345 (T3P): Ref. at  16.008  11.621  20.728
+Gridpoint   5835 has    1 residues.
+#  200 (T3P): Ref. at  15.717  13.390  16.467
+Gridpoint   5844 has    1 residues.
+#  125 (T3P): Ref. at  16.156  14.430   3.524
+Gridpoint   5851 has    1 residues.
+#  330 (T3P): Ref. at  16.295  14.362  11.522
+Gridpoint   5866 has    1 residues.
+#   27 (T3P): Ref. at  16.014  15.058   6.696
+Gridpoint   5881 has    1 residues.
+#   95 (T3P): Ref. at  16.604  16.409   0.553
+Gridpoint   5885 has    1 residues.
+#   88 (T3P): Ref. at  16.053  16.671   5.367
+Gridpoint   5917 has    1 residues.
+#  309 (T3P): Ref. at  16.447  17.724  18.682
+Gridpoint   5919 has    1 residues.
+#  149 (T3P): Ref. at  15.809  16.986  20.732
+Gridpoint   5944 has    1 residues.
+#   14 (T3P): Ref. at  16.319  20.037   4.447
+Gridpoint   5953 has    1 residues.
+#  285 (T3P): Ref. at  16.182  19.855  13.688
+Gridpoint   5968 has    1 residues.
+#  113 (T3P): Ref. at  16.680  20.563   8.339
+Gridpoint   6017 has    1 residues.
+#   63 (T3P): Ref. at  17.402   0.901  18.294
+Gridpoint   6030 has    1 residues.
+#   76 (T3P): Ref. at  17.928   1.244  11.055
+Gridpoint   6044 has    1 residues.
+#  139 (T3P): Ref. at  17.171   3.099   3.957
+Gridpoint   6067 has    1 residues.
+#   75 (T3P): Ref. at  17.338   3.955   7.647
+Gridpoint   6073 has    1 residues.
+#  121 (T3P): Ref. at  16.997   3.588  14.016
+Gridpoint   6089 has    1 residues.
+#  374 (T3P): Ref. at  17.792   4.962   9.315
+Gridpoint   6100 has    1 residues.
+#   62 (T3P): Ref. at  17.682   5.050  21.785
+Gridpoint   6110 has    1 residues.
+#   65 (T3P): Ref. at  17.839   6.330  10.636
+Gridpoint   6139 has    1 residues.
+#  300 (T3P): Ref. at  17.880   6.756  20.501
+Gridpoint   6159 has    1 residues.
+#  198 (T3P): Ref. at  17.597   8.123  20.751
+Gridpoint   6173 has    1 residues.
+#  287 (T3P): Ref. at  17.500   9.582  14.482
+Gridpoint   6184 has    1 residues.
+#   11 (T3P): Ref. at  16.854  10.673   3.459
+Gridpoint   6256 has    1 residues.
+#  174 (T3P): Ref. at  17.887  14.522  17.793
+Gridpoint   6294 has    1 residues.
+#  350 (T3P): Ref. at  17.042  16.613  15.425
+Gridpoint   6306 has    1 residues.
+#  235 (T3P): Ref. at  17.245  17.399   5.632
+Gridpoint   6312 has    1 residues.
+#   45 (T3P): Ref. at  17.170  16.906  13.337
+Gridpoint   6347 has    1 residues.
+#  128 (T3P): Ref. at  17.124  19.807   6.858
+Gridpoint   6358 has    1 residues.
+#  333 (T3P): Ref. at  17.147  19.116  19.359
+Gridpoint   6385 has    1 residues.
+#  252 (T3P): Ref. at  17.591  22.061   5.561
+Gridpoint   6467 has    1 residues.
+#  213 (T3P): Ref. at  18.493   3.738   6.898
+Gridpoint   6503 has    1 residues.
+#   32 (T3P): Ref. at  18.319   5.791   3.079
+Gridpoint   6507 has    1 residues.
+#  301 (T3P): Ref. at  18.874   6.398   6.965
+Gridpoint   6512 has    1 residues.
+#  317 (T3P): Ref. at  18.524   6.367  12.711
+Gridpoint   6520 has    1 residues.
+#  179 (T3P): Ref. at  18.074   6.435  21.911
+Gridpoint   6564 has    1 residues.
+#  120 (T3P): Ref. at  18.926   9.036   4.206
+Gridpoint   6566 has    1 residues.
+#  189 (T3P): Ref. at  18.437   9.736   6.402
+Gridpoint   6597 has    1 residues.
+#   69 (T3P): Ref. at  18.945  10.527  17.986
+Gridpoint   6611 has    1 residues.
+#   71 (T3P): Ref. at  18.066  12.130  11.267
+Gridpoint   6628 has    1 residues.
+#   36 (T3P): Ref. at  18.839  12.754   8.322
+Gridpoint   6639 has    1 residues.
+#  126 (T3P): Ref. at  18.330  12.791  20.841
+Gridpoint   6669 has    1 residues.
+#  299 (T3P): Ref. at  18.419  15.384   9.131
+Gridpoint   6686 has    1 residues.
+#  114 (T3P): Ref. at  18.268  16.698   5.929
+Gridpoint   6689 has    1 residues.
+#  102 (T3P): Ref. at  17.993  16.727   9.358
+Gridpoint   6694 has    1 residues.
+#  220 (T3P): Ref. at  18.615  16.572  15.462
+Gridpoint   6703 has    1 residues.
+#  119 (T3P): Ref. at  18.087  17.100   2.632
+Gridpoint   6704 has    1 residues.
+#  238 (T3P): Ref. at  19.042  17.279   3.795
+Gridpoint   6722 has    1 residues.
+#   74 (T3P): Ref. at  17.970  18.368   1.584
+Gridpoint   6733 has    1 residues.
+#  260 (T3P): Ref. at  18.897  18.314  14.029
+Gridpoint   6751 has    1 residues.
+#  291 (T3P): Ref. at  18.691  19.205  11.942
+Gridpoint   6764 has    1 residues.
+#  228 (T3P): Ref. at  18.073  20.739   3.662
+Gridpoint   6808 has    1 residues.
+#   13 (T3P): Ref. at  19.900   0.565   8.188
+Gridpoint   6811 has    2 residues.
+#  141 (T3P): Ref. at  19.896   0.183  12.280
+#  263 (T3P): Ref. at  19.204   0.267  11.341
+Gridpoint   6828 has    1 residues.
+#  296 (T3P): Ref. at  19.165   2.125   8.664
+Gridpoint   6864 has    1 residues.
+#   58 (T3P): Ref. at  19.893   4.148   3.715
+Gridpoint   6870 has    1 residues.
+#  273 (T3P): Ref. at  19.175   3.894  11.173
+Gridpoint   6892 has    1 residues.
+#  338 (T3P): Ref. at  19.762   5.072  13.263
+Gridpoint   6897 has    1 residues.
+#  312 (T3P): Ref. at  19.383   5.536  19.002
+Gridpoint   6905 has    1 residues.
+#  137 (T3P): Ref. at  19.203   6.175   5.083
+Gridpoint   6934 has    1 residues.
+#  134 (T3P): Ref. at  19.504   6.798  14.746
+Gridpoint   6942 has    1 residues.
+#  305 (T3P): Ref. at  20.094   8.163   1.532
+Gridpoint   6948 has    1 residues.
+#   37 (T3P): Ref. at  19.298   8.662   8.205
+Gridpoint   6950 has    1 residues.
+#    2 (T3P): Ref. at  19.507   8.562  10.708
+Gridpoint   6953 has    1 residues.
+#  104 (T3P): Ref. at  19.304   8.915  14.403
+Gridpoint   6956 has    1 residues.
+#  146 (T3P): Ref. at  20.000   7.957  17.021
+Gridpoint   6959 has    1 residues.
+#   29 (T3P): Ref. at  19.311   8.721  21.125
+Gridpoint   6963 has    1 residues.
+#  231 (T3P): Ref. at  19.694   9.777   2.757
+Gridpoint   6977 has    1 residues.
+#  343 (T3P): Ref. at  19.871   9.002  18.688
+Gridpoint   7000 has    1 residues.
+#    7 (T3P): Ref. at  19.102  10.848  21.328
+Gridpoint   7012 has    1 residues.
+#  268 (T3P): Ref. at  20.065  11.254  13.437
+Gridpoint   7016 has    1 residues.
+#  361 (T3P): Ref. at  19.351  12.154  17.194
+Gridpoint   7035 has    1 residues.
+#  157 (T3P): Ref. at  19.282  13.006  15.983
+Gridpoint   7041 has    1 residues.
+#   79 (T3P): Ref. at  20.107  13.794   0.735
+Gridpoint   7071 has    1 residues.
+#  212 (T3P): Ref. at  19.991  14.881  11.806
+Gridpoint   7099 has    1 residues.
+#  315 (T3P): Ref. at  19.669  15.887  20.697
+Gridpoint   7125 has    1 residues.
+#  190 (T3P): Ref. at  19.870  18.420   5.052
+Gridpoint   7149 has    1 residues.
+#  265 (T3P): Ref. at  19.710  19.503  10.082
+Gridpoint   7158 has    1 residues.
+#  150 (T3P): Ref. at  19.079  19.502  19.170
+Gridpoint   7162 has    1 residues.
+#   87 (T3P): Ref. at  19.981  20.906   2.081
+Gridpoint   7189 has    1 residues.
+#   56 (T3P): Ref. at  19.073  -0.026   9.928
+Gridpoint   7206 has    1 residues.
+#  203 (T3P): Ref. at  20.972   0.628   5.635
+Gridpoint   7234 has    1 residues.
+#   50 (T3P): Ref. at  20.272   1.610  15.257
+Gridpoint   7245 has    1 residues.
+#  375 (T3P): Ref. at  20.269   2.809   5.172
+Gridpoint   7261 has    1 residues.
+#   10 (T3P): Ref. at  21.025   3.563   0.162
+Gridpoint   7302 has    1 residues.
+#  117 (T3P): Ref. at  20.191   6.185   1.259
+Gridpoint   7365 has    1 residues.
+#   90 (T3P): Ref. at  20.888   9.818   5.504
+Gridpoint   7374 has    1 residues.
+#  208 (T3P): Ref. at  20.747  10.067  15.647
+Gridpoint   7390 has    1 residues.
+#  283 (T3P): Ref. at  20.635  10.656  10.194
+Gridpoint   7456 has    1 residues.
+#  282 (T3P): Ref. at  21.157  13.971  17.091
+Gridpoint   7457 has    1 residues.
+#  308 (T3P): Ref. at  21.082  14.506  18.129
+Gridpoint   7458 has    1 residues.
+#  100 (T3P): Ref. at  20.381  13.707  19.329
+Gridpoint   7473 has    1 residues.
+#  295 (T3P): Ref. at  20.769  15.447  14.482
+Gridpoint   7509 has    1 residues.
+#  316 (T3P): Ref. at  20.341  17.481   9.724
+Gridpoint   7513 has    1 residues.
+#  136 (T3P): Ref. at  20.313  17.290  13.600
+Gridpoint   7525 has    1 residues.
+#  230 (T3P): Ref. at  21.095  18.538   5.175
+Gridpoint   7612 has    1 residues.
+#   24 (T3P): Ref. at  21.850   0.734  13.369
+Gridpoint   7636 has    1 residues.
+#  223 (T3P): Ref. at  21.540   1.242  16.948
+Gridpoint   7637 has    1 residues.
+#  236 (T3P): Ref. at  21.578   1.221  18.239
+Gridpoint   7646 has    1 residues.
+#   89 (T3P): Ref. at  22.152   2.316   5.818
+Gridpoint   7664 has    1 residues.
+#  239 (T3P): Ref. at  21.391   3.774   4.283
+Gridpoint   7672 has    1 residues.
+#  205 (T3P): Ref. at  21.305   4.301  12.869
+Gridpoint   7699 has    1 residues.
+#   23 (T3P): Ref. at  21.572   5.136  20.193
+Gridpoint   7738 has    1 residues.
+#  353 (T3P): Ref. at  22.330   6.955  19.325
+Gridpoint   7852 has    1 residues.
+#   85 (T3P): Ref. at  21.824  13.736  12.708
+Gridpoint   7863 has    1 residues.
+#   60 (T3P): Ref. at  21.983  15.114   2.967
+Gridpoint   7870 has    1 residues.
+#   48 (T3P): Ref. at  21.779  14.762  10.331
+Gridpoint   7875 has    1 residues.
+#  159 (T3P): Ref. at  22.013  15.439  16.790
+Gridpoint   7883 has    1 residues.
+#  148 (T3P): Ref. at  21.746  16.533   3.011
+Gridpoint   7897 has    1 residues.
+#  303 (T3P): Ref. at  22.126  16.164  18.205
+Gridpoint   7923 has    1 residues.
+#  297 (T3P): Ref. at  22.199  18.114   2.532
+Gridpoint   7953 has    1 residues.
+#   31 (T3P): Ref. at  21.379  19.063  14.302
+Gridpoint   7959 has    1 residues.
+#  110 (T3P): Ref. at  21.592  19.870  20.896
+Gridpoint   7962 has    1 residues.
+#   28 (T3P): Ref. at  21.684  20.752   1.440
+Gridpoint   7987 has    1 residues.
+#  181 (T3P): Ref. at  21.747  21.334   6.985
+Gridpoint   7995 has    1 residues.
+#  129 (T3P): Ref. at  21.822  21.551  15.802
+There are    375 residues on the grid.
+ 
+ WARNING: No molecule type with internal degrees of freedom. Turning off all typ
+ e-resolved analysis.
+ WARNING: No molecule type with peptide-like torsional degrees of freedom. Turni
+ ng off all dependent analysis.
+ 
+ 
+ --- SUMMARY OF CALCULATION ---
+ 
+ **IMPORTANT FILES:
+ Parameter file used   :  /packages/absinth/params/oplsaa.prm
+ Sequence file used    :  t3p.in
+ BB-segment file used  :  /packages/absinth/data/bbseg2.dat
+ Basename for output   :  TEST
+ 
+ **GENERAL PARAMETERS:
+ Number of steps     :           50
+ Equilibration steps :           10
+ Periodic boundary conditions (PBC) are used.
+ The simulation system is a cubic box.
+ Box lengths (A)      :   22.4233  22.4233  22.4233
+ Box origin (A)       :    0.0000   0.0000   0.0000
+ Simulation uses pure Monte Carlo sampling (see TECHNICAL SETTINGS below).
+ Simulation is performed in the isochoric-isothermal ensemble (NVT).
+ Desired temperature :          298.0000
+ 
+ **ENERGY TERMS:
+ Scale for inverse power potential :      1.000
+ Exponent for IPP                  :     12.000
+ Scale factor for atomic radii     :      1.000
+ Sigma combination rule code       :          2
+ Epsilon combination rule code     :          2
+ Scale for struct. correction terms:      1.000
+ Scale for attractive Lennard-Jones:      1.000
+ Scale for implicit solvent poten. :      0.000
+ Scale for polar interaction term  :      1.000
+ Scale factor for 1-4 interactions :      1.000
+ Mode for 1-4 interactions         :          1
+ Scale for WCA potential           :      0.000
+ Scale for torsional terms (bias)  :      0.000
+ Scale for polymeric terms (bias)  :      0.000
+ Scale for global 2-structure term :      0.000
+ Scale for tabulated pot. term     :      0.000
+ Scale for distance restraint term :      0.000
+ Scale for LCT pot. term           :      0.000
+ 
+ **TECHNICAL SETTINGS:
+ Frequency of rigid-body moves :            1.000
+ RB rotation and translation are coupled.
+ Fraction of full randomization
+ attempts amongst RB moves     :            0.050
+ Translational step size (in A):            0.500
+ Rotational step size (in deg.):            5.000
+ 
+ **OUTPUT AND ANALYSIS PARAMETERS:
+ Restart file output interval       :        10000
+ Structures only written in pdb-format.
+ Structures output interval         :      9999999
+ Torsions output interval           :           51
+ Angular distribution calc. interval:           51
+ Resolution in deg.      :          6.0000
+ BB-segment distrib. calc. interval :           51
+ Center of alpha-basin    :    -60.000  -50.000
+ Radius of alpha-basin    :     35.000
+ Steepness of alpha-basin :      0.002
+ Center of beta-basin     :   -155.000  160.000
+ Radius of beta-basin     :     35.000
+ Steepness of beta-basin  :      0.002
+ Sys. polymer stat. output interval :      9999999
+ Polymer stat. calculation interval :           51
+ Bin-size for Rg-axis of histogram  :          0.1000
+ Hydrodynamic radius calc. interval :           51
+ Pair correlation calc. interval    :      9999999
+ Bin-size in Angstrom    :          0.2000
+ Number of unique PCs    :            0
+ Energy output interval             :            1
+ Acceptance output interval         :           10
+ Contact analysis calc. interval    :      9999999
+ Dipole analysis calc. interval     :      9999999
+ LC of torsions calc. interval      :           51
+ Covariance analysis calc. interval :           51
+ Solvent-acc. volume calc. interval :      9999999
+ Scattering calculation interval    :      9999999
+ Hole analysis calculation interval :           51
+ Diffraction calculation interval   :      9999999
+ 
+ This is a single-CPU (non-MPI) calculation.
+ 
+ **CUTOFF SETTINGS:
+ Grid-based cutoff (IPP/LJ) :       10.000
+ Grid-based cutoff (EL/TAB) :       10.000
+ Grid origin     :     0.000 ,     0.000 ,     0.000
+ Grid dimensions :   20 x   20 x   20
+ Grid spacings   :     1.121 ,     1.121 ,     1.121
+ 
+ 14-Interactions included in energy calculation.
+ 
+ Standard MMFF electrostatics model used (all point charges separated by at leas
+ t one rotatable bond interact). Fudging of 14-interactions applies.
+ 
+ Polymer chains (if any) are linear and non-cyclic.
+ 
+ System was initially IPP-randomized.
+ 
+ 
+ SUMMARY OF DEGREES OF FREEDOM IN SYSTEM:
+ Torsional degrees of freedom    :          0
+ Rigid-body degrees of freedom   :       2250
+ SUMMARY OF ATOM-ATOM INTERACTIONS IN SYSTEM:
+ Intra-residue                   :          0
+ Neighboring residues            :       3366
+ Remaining residue pairs         :     627759
+ Total number                    :     631125
+ Initial energy (accurate)       :    1305851.    
+ Initial energy (cutoffs)        :    1305860.    
+ Energy reset interval           :     100000
+ 
+ --- END OF SUMMARY ---
+ 
+ 
+ Molecule-resolved acceptance counts (RB moves):
+   1: Res.    1-   1          0
+   2: Res.    2-   2          0
+   3: Res.    3-   3          0
+   4: Res.    4-   4          0
+   5: Res.    5-   5          0
+   6: Res.    6-   6          0
+   7: Res.    7-   7          0
+   8: Res.    8-   8          0
+   9: Res.    9-   9          0
+  10: Res.   10-  10          0
+  11: Res.   11-  11          0
+  12: Res.   12-  12          1
+  13: Res.   13-  13          1
+  14: Res.   14-  14          0
+  15: Res.   15-  15          0
+  16: Res.   16-  16          0
+  17: Res.   17-  17          0
+  18: Res.   18-  18          0
+  19: Res.   19-  19          0
+  20: Res.   20-  20          0
+  21: Res.   21-  21          0
+  22: Res.   22-  22          0
+  23: Res.   23-  23          0
+  24: Res.   24-  24          0
+  25: Res.   25-  25          0
+  26: Res.   26-  26          0
+  27: Res.   27-  27          0
+  28: Res.   28-  28          0
+  29: Res.   29-  29          0
+  30: Res.   30-  30          0
+  31: Res.   31-  31          0
+  32: Res.   32-  32          0
+  33: Res.   33-  33          0
+  34: Res.   34-  34          0
+  35: Res.   35-  35          1
+  36: Res.   36-  36          0
+  37: Res.   37-  37          0
+  38: Res.   38-  38          0
+  39: Res.   39-  39          0
+  40: Res.   40-  40          0
+  41: Res.   41-  41          0
+  42: Res.   42-  42          0
+  43: Res.   43-  43          0
+  44: Res.   44-  44          0
+  45: Res.   45-  45          0
+  46: Res.   46-  46          0
+  47: Res.   47-  47          0
+  48: Res.   48-  48          0
+  49: Res.   49-  49          0
+  50: Res.   50-  50          0
+  51: Res.   51-  51          0
+  52: Res.   52-  52          0
+  53: Res.   53-  53          0
+  54: Res.   54-  54          0
+  55: Res.   55-  55          0
+  56: Res.   56-  56          0
+  57: Res.   57-  57          0
+  58: Res.   58-  58          0
+  59: Res.   59-  59          1
+  60: Res.   60-  60          0
+  61: Res.   61-  61          0
+  62: Res.   62-  62          0
+  63: Res.   63-  63          0
+  64: Res.   64-  64          0
+  65: Res.   65-  65          0
+  66: Res.   66-  66          1
+  67: Res.   67-  67          0
+  68: Res.   68-  68          0
+  69: Res.   69-  69          0
+  70: Res.   70-  70          0
+  71: Res.   71-  71          0
+  72: Res.   72-  72          0
+  73: Res.   73-  73          0
+  74: Res.   74-  74          0
+  75: Res.   75-  75          0
+  76: Res.   76-  76          0
+  77: Res.   77-  77          0
+  78: Res.   78-  78          0
+  79: Res.   79-  79          0
+  80: Res.   80-  80          0
+  81: Res.   81-  81          1
+  82: Res.   82-  82          0
+  83: Res.   83-  83          0
+  84: Res.   84-  84          0
+  85: Res.   85-  85          0
+  86: Res.   86-  86          0
+  87: Res.   87-  87          0
+  88: Res.   88-  88          0
+  89: Res.   89-  89          0
+  90: Res.   90-  90          0
+  91: Res.   91-  91          0
+  92: Res.   92-  92          0
+  93: Res.   93-  93          0
+  94: Res.   94-  94          0
+  95: Res.   95-  95          0
+  96: Res.   96-  96          0
+  97: Res.   97-  97          0
+  98: Res.   98-  98          0
+  99: Res.   99-  99          1
+ 100: Res.  100- 100          0
+ 101: Res.  101- 101          0
+ 102: Res.  102- 102          1
+ 103: Res.  103- 103          0
+ 104: Res.  104- 104          0
+ 105: Res.  105- 105          0
+ 106: Res.  106- 106          0
+ 107: Res.  107- 107          0
+ 108: Res.  108- 108          0
+ 109: Res.  109- 109          0
+ 110: Res.  110- 110          0
+ 111: Res.  111- 111          0
+ 112: Res.  112- 112          0
+ 113: Res.  113- 113          0
+ 114: Res.  114- 114          0
+ 115: Res.  115- 115          0
+ 116: Res.  116- 116          0
+ 117: Res.  117- 117          0
+ 118: Res.  118- 118          0
+ 119: Res.  119- 119          0
+ 120: Res.  120- 120          0
+ 121: Res.  121- 121          0
+ 122: Res.  122- 122          0
+ 123: Res.  123- 123          0
+ 124: Res.  124- 124          0
+ 125: Res.  125- 125          0
+ 126: Res.  126- 126          0
+ 127: Res.  127- 127          0
+ 128: Res.  128- 128          0
+ 129: Res.  129- 129          0
+ 130: Res.  130- 130          0
+ 131: Res.  131- 131          0
+ 132: Res.  132- 132          0
+ 133: Res.  133- 133          0
+ 134: Res.  134- 134          0
+ 135: Res.  135- 135          0
+ 136: Res.  136- 136          0
+ 137: Res.  137- 137          0
+ 138: Res.  138- 138          0
+ 139: Res.  139- 139          0
+ 140: Res.  140- 140          0
+ 141: Res.  141- 141          1
+ 142: Res.  142- 142          0
+ 143: Res.  143- 143          0
+ 144: Res.  144- 144          0
+ 145: Res.  145- 145          0
+ 146: Res.  146- 146          0
+ 147: Res.  147- 147          0
+ 148: Res.  148- 148          0
+ 149: Res.  149- 149          0
+ 150: Res.  150- 150          0
+ 151: Res.  151- 151          0
+ 152: Res.  152- 152          0
+ 153: Res.  153- 153          0
+ 154: Res.  154- 154          0
+ 155: Res.  155- 155          0
+ 156: Res.  156- 156          0
+ 157: Res.  157- 157          0
+ 158: Res.  158- 158          0
+ 159: Res.  159- 159          0
+ 160: Res.  160- 160          0
+ 161: Res.  161- 161          0
+ 162: Res.  162- 162          0
+ 163: Res.  163- 163          0
+ 164: Res.  164- 164          0
+ 165: Res.  165- 165          0
+ 166: Res.  166- 166          0
+ 167: Res.  167- 167          0
+ 168: Res.  168- 168          0
+ 169: Res.  169- 169          0
+ 170: Res.  170- 170          0
+ 171: Res.  171- 171          0
+ 172: Res.  172- 172          0
+ 173: Res.  173- 173          0
+ 174: Res.  174- 174          0
+ 175: Res.  175- 175          0
+ 176: Res.  176- 176          0
+ 177: Res.  177- 177          0
+ 178: Res.  178- 178          0
+ 179: Res.  179- 179          0
+ 180: Res.  180- 180          0
+ 181: Res.  181- 181          0
+ 182: Res.  182- 182          0
+ 183: Res.  183- 183          0
+ 184: Res.  184- 184          0
+ 185: Res.  185- 185          0
+ 186: Res.  186- 186          0
+ 187: Res.  187- 187          0
+ 188: Res.  188- 188          0
+ 189: Res.  189- 189          0
+ 190: Res.  190- 190          0
+ 191: Res.  191- 191          0
+ 192: Res.  192- 192          0
+ 193: Res.  193- 193          0
+ 194: Res.  194- 194          0
+ 195: Res.  195- 195          0
+ 196: Res.  196- 196          0
+ 197: Res.  197- 197          0
+ 198: Res.  198- 198          0
+ 199: Res.  199- 199          1
+ 200: Res.  200- 200          0
+ 201: Res.  201- 201          0
+ 202: Res.  202- 202          0
+ 203: Res.  203- 203          0
+ 204: Res.  204- 204          0
+ 205: Res.  205- 205          0
+ 206: Res.  206- 206          0
+ 207: Res.  207- 207          0
+ 208: Res.  208- 208          0
+ 209: Res.  209- 209          0
+ 210: Res.  210- 210          0
+ 211: Res.  211- 211          0
+ 212: Res.  212- 212          0
+ 213: Res.  213- 213          0
+ 214: Res.  214- 214          0
+ 215: Res.  215- 215          0
+ 216: Res.  216- 216          0
+ 217: Res.  217- 217          0
+ 218: Res.  218- 218          0
+ 219: Res.  219- 219          0
+ 220: Res.  220- 220          0
+ 221: Res.  221- 221          0
+ 222: Res.  222- 222          0
+ 223: Res.  223- 223          0
+ 224: Res.  224- 224          0
+ 225: Res.  225- 225          0
+ 226: Res.  226- 226          0
+ 227: Res.  227- 227          0
+ 228: Res.  228- 228          0
+ 229: Res.  229- 229          0
+ 230: Res.  230- 230          0
+ 231: Res.  231- 231          0
+ 232: Res.  232- 232          0
+ 233: Res.  233- 233          0
+ 234: Res.  234- 234          0
+ 235: Res.  235- 235          0
+ 236: Res.  236- 236          0
+ 237: Res.  237- 237          0
+ 238: Res.  238- 238          0
+ 239: Res.  239- 239          0
+ 240: Res.  240- 240          0
+ 241: Res.  241- 241          0
+ 242: Res.  242- 242          0
+ 243: Res.  243- 243          0
+ 244: Res.  244- 244          0
+ 245: Res.  245- 245          0
+ 246: Res.  246- 246          0
+ 247: Res.  247- 247          0
+ 248: Res.  248- 248          0
+ 249: Res.  249- 249          0
+ 250: Res.  250- 250          0
+ 251: Res.  251- 251          0
+ 252: Res.  252- 252          0
+ 253: Res.  253- 253          0
+ 254: Res.  254- 254          1
+ 255: Res.  255- 255          0
+ 256: Res.  256- 256          0
+ 257: Res.  257- 257          0
+ 258: Res.  258- 258          0
+ 259: Res.  259- 259          0
+ 260: Res.  260- 260          0
+ 261: Res.  261- 261          0
+ 262: Res.  262- 262          0
+ 263: Res.  263- 263          0
+ 264: Res.  264- 264          0
+ 265: Res.  265- 265          0
+ 266: Res.  266- 266          0
+ 267: Res.  267- 267          0
+ 268: Res.  268- 268          0
+ 269: Res.  269- 269          1
+ 270: Res.  270- 270          0
+ 271: Res.  271- 271          0
+ 272: Res.  272- 272          0
+ 273: Res.  273- 273          0
+ 274: Res.  274- 274          0
+ 275: Res.  275- 275          0
+ 276: Res.  276- 276          0
+ 277: Res.  277- 277          0
+ 278: Res.  278- 278          0
+ 279: Res.  279- 279          0
+ 280: Res.  280- 280          0
+ 281: Res.  281- 281          0
+ 282: Res.  282- 282          0
+ 283: Res.  283- 283          0
+ 284: Res.  284- 284          0
+ 285: Res.  285- 285          1
+ 286: Res.  286- 286          0
+ 287: Res.  287- 287          0
+ 288: Res.  288- 288          0
+ 289: Res.  289- 289          0
+ 290: Res.  290- 290          0
+ 291: Res.  291- 291          0
+ 292: Res.  292- 292          0
+ 293: Res.  293- 293          0
+ 294: Res.  294- 294          0
+ 295: Res.  295- 295          0
+ 296: Res.  296- 296          0
+ 297: Res.  297- 297          0
+ 298: Res.  298- 298          0
+ 299: Res.  299- 299          0
+ 300: Res.  300- 300          0
+ 301: Res.  301- 301          0
+ 302: Res.  302- 302          0
+ 303: Res.  303- 303          0
+ 304: Res.  304- 304          0
+ 305: Res.  305- 305          0
+ 306: Res.  306- 306          0
+ 307: Res.  307- 307          0
+ 308: Res.  308- 308          0
+ 309: Res.  309- 309          0
+ 310: Res.  310- 310          0
+ 311: Res.  311- 311          0
+ 312: Res.  312- 312          0
+ 313: Res.  313- 313          0
+ 314: Res.  314- 314          1
+ 315: Res.  315- 315          0
+ 316: Res.  316- 316          0
+ 317: Res.  317- 317          0
+ 318: Res.  318- 318          0
+ 319: Res.  319- 319          0
+ 320: Res.  320- 320          0
+ 321: Res.  321- 321          0
+ 322: Res.  322- 322          0
+ 323: Res.  323- 323          0
+ 324: Res.  324- 324          0
+ 325: Res.  325- 325          0
+ 326: Res.  326- 326          0
+ 327: Res.  327- 327          1
+ 328: Res.  328- 328          0
+ 329: Res.  329- 329          0
+ 330: Res.  330- 330          0
+ 331: Res.  331- 331          0
+ 332: Res.  332- 332          0
+ 333: Res.  333- 333          0
+ 334: Res.  334- 334          0
+ 335: Res.  335- 335          0
+ 336: Res.  336- 336          0
+ 337: Res.  337- 337          0
+ 338: Res.  338- 338          0
+ 339: Res.  339- 339          0
+ 340: Res.  340- 340          0
+ 341: Res.  341- 341          0
+ 342: Res.  342- 342          0
+ 343: Res.  343- 343          0
+ 344: Res.  344- 344          0
+ 345: Res.  345- 345          0
+ 346: Res.  346- 346          0
+ 347: Res.  347- 347          0
+ 348: Res.  348- 348          0
+ 349: Res.  349- 349          0
+ 350: Res.  350- 350          0
+ 351: Res.  351- 351          1
+ 352: Res.  352- 352          0
+ 353: Res.  353- 353          0
+ 354: Res.  354- 354          0
+ 355: Res.  355- 355          1
+ 356: Res.  356- 356          0
+ 357: Res.  357- 357          1
+ 358: Res.  358- 358          0
+ 359: Res.  359- 359          0
+ 360: Res.  360- 360          0
+ 361: Res.  361- 361          0
+ 362: Res.  362- 362          1
+ 363: Res.  363- 363          0
+ 364: Res.  364- 364          0
+ 365: Res.  365- 365          0
+ 366: Res.  366- 366          0
+ 367: Res.  367- 367          0
+ 368: Res.  368- 368          0
+ 369: Res.  369- 369          0
+ 370: Res.  370- 370          0
+ 371: Res.  371- 371          0
+ 372: Res.  372- 372          0
+ 373: Res.  373- 373          0
+ 374: Res.  374- 374          0
+ 375: Res.  375- 375          0
+ 
+ Total CPU time elapsed [s]     :   0.474928000000000     
+ Fraction for energy functions  :    69.4736886433313      %
+ Fraction for analysis routines :   0.842022369706561      %
+ Fraction for initial setup     :    22.1052454266752      %
+ Fraction of remainder          :    7.57904356028699      %
+ 
+ Execution ended at 16:34 on 04/17/2008.

@@ -1,3 +1,17 @@
+#!/bin/sh
+
 if [ -e src/Makevars ]; then
 	rm -f src/Makevars
+fi
+if [ -e src/*.o ]; then
+	rm -f src/*.o
+fi
+if [ -e src/*.mod ]; then
+	rm -f src/*.mod
+fi
+if [ -e config.log ]; then
+	rm -f config.log
+fi
+if [ -e config.status ]; then
+	rm -f config.status
 fi

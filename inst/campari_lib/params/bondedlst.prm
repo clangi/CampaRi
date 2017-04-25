@@ -1,0 +1,3439 @@
+#--------------------------------------------------------------------------#
+# LICENSE INFO:                                                            #
+#--------------------------------------------------------------------------#
+#    This file is part of CAMPARI.                                         #
+#                                                                          #
+#    Version 2.0                                                           #
+#                                                                          #
+#    Copyright (C) 2014, The CAMPARI development team (current and former  #
+#                        contributors)                                     #
+#                        Andreas Vitalis, Adam Steffen, Rohit Pappu, Hoang #
+#                        Tran, Albert Mao, Xiaoling Wang, Jose Pulido,     #
+#                        Nicholas Lyle, Nicolas Bloechliger                #
+#                                                                          #
+#    Website: http://sourceforge.net/projects/campari/                     #
+#                                                                          #
+#    CAMPARI is free software: you can redistribute it and/or modify       #
+#    it under the terms of the GNU General Public License as published by  #
+#    the Free Software Foundation, either version 3 of the License, or     #
+#    (at your option) any later version.                                   #
+#                                                                          #
+#    CAMPARI is distributed in the hope that it will be useful,            #
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of        #
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         #
+#    GNU General Public License for more details.                          #
+#                                                                          #
+#    You should have received a copy of the GNU General Public License     #
+#    along with CAMPARI.  If not, see <http://www.gnu.org/licenses/>.      #
+#--------------------------------------------------------------------------#
+# AUTHORSHIP INFO:                                                         #
+#--------------------------------------------------------------------------#
+#                                                                          #
+# MAIN AUTHOR:   Andreas Vitalis                                           #
+# CONTRIBUTIONS: Adam Steffen                                              #
+#                                                                          #
+#--------------------------------------------------------------------------#
+
+####################################################
+#                                                  #
+#  This file is an illustration of the use of      #
+#  bonded types. Ignore force field-specific       #
+#  comments: This example is self-contained and    #
+#  only uses the assignment of bonded types to     #
+#  biotypes consistent with "template.prm"         #
+#  These files are meant to show how local chemical#
+#  equivalence should guide the use of bonded      #
+#  types and the assignment of bonded potentials.  #
+#                                                  #
+####################################################
+
+####################################################
+#                                                  #
+#  The following is a list of bond length stretch  #
+#  potentials in OPLSAA/L.                         #
+#                                                  #
+####################################################
+
+# # aliphatic carbon-carbon
+bonded_type_bond     35    35     1
+bonded_type_bond     35    36     1
+bonded_type_bond     35    37     1
+bonded_type_bond     35    44     1
+bonded_type_bond     35    47     1
+bonded_type_bond     35    49     1
+bonded_type_bond     35    51     1
+bonded_type_bond     35    67     1
+bonded_type_bond     36    36     1
+bonded_type_bond     36    37     1
+bonded_type_bond     36    44     1
+bonded_type_bond     36    48     1
+bonded_type_bond     36    49     1
+bonded_type_bond     36    54     1
+bonded_type_bond     36    61     1
+bonded_type_bond     36    62     1
+bonded_type_bond     36    63     1
+bonded_type_bond     36    64     1
+bonded_type_bond     36    65     1
+bonded_type_bond     36    66     1
+bonded_type_bond     36    68     1
+bonded_type_bond     36    69     1
+bonded_type_bond     36    70     1
+bonded_type_bond     36    71     1
+bonded_type_bond     36    72     1
+bonded_type_bond     36   155     1
+bonded_type_bond     37    37     1
+bonded_type_bond     37    44     1
+bonded_type_bond     37    46     1
+bonded_type_bond     37    47     1
+bonded_type_bond     37    48     1
+bonded_type_bond     37    49     1
+bonded_type_bond     37    50     1
+bonded_type_bond     37    51     1
+bonded_type_bond     37    52     1
+bonded_type_bond     37    53     1
+bonded_type_bond     37    54     1
+bonded_type_bond     37    55     1
+bonded_type_bond     37    56     1
+bonded_type_bond     37    57     1
+bonded_type_bond     37    58     1
+bonded_type_bond     37    59     1
+bonded_type_bond     37    60     1
+bonded_type_bond     37    61     1
+bonded_type_bond     37    62     1
+bonded_type_bond     37    63     1
+bonded_type_bond     37    64     1
+bonded_type_bond     37    65     1
+bonded_type_bond     37    66     1
+bonded_type_bond     37    67     1
+bonded_type_bond     37    68     1
+bonded_type_bond     37    69     1
+bonded_type_bond     37    70     1
+bonded_type_bond     37    71     1
+bonded_type_bond     37    72     1
+bonded_type_bond     44    44     1
+bonded_type_bond     44    46     1
+# # aliphatic carbon-hydrogen
+bonded_type_bond     34    14     2
+bonded_type_bond     35    15     2
+bonded_type_bond     36    16     2
+bonded_type_bond     37    17     2
+bonded_type_bond     46    15     2
+bonded_type_bond     47    17     2
+bonded_type_bond     48    16     2
+bonded_type_bond     49    17     2
+bonded_type_bond     50    16     2
+bonded_type_bond     51    17     2
+bonded_type_bond     52    16     2
+bonded_type_bond     53    16     2
+bonded_type_bond     54    16     2
+bonded_type_bond     55    16     2
+bonded_type_bond     56    16     2
+bonded_type_bond     57    16     2
+bonded_type_bond     58    16     2
+bonded_type_bond     59    16     2
+bonded_type_bond     60    16     2
+bonded_type_bond     61    16     2
+bonded_type_bond     62    16     2
+bonded_type_bond     63    16     2
+bonded_type_bond     64    16     2
+bonded_type_bond     65    16     2
+bonded_type_bond     66    16     2
+bonded_type_bond     67    16     2
+bonded_type_bond     68    16     2
+bonded_type_bond     69    16     2
+bonded_type_bond     70    16     2
+bonded_type_bond     71    16     2
+bonded_type_bond     72    16     2
+bonded_type_bond    155    16     2
+# # aldehyde carbon-hydrogen
+bonded_type_bond     45    89     2
+# # aliphatic-aromatic carbon-carbon
+bonded_type_bond     35    41     3
+bonded_type_bond     36    41     3
+bonded_type_bond     37    41     3
+bonded_type_bond     41    55     3
+bonded_type_bond     41    56     3
+# # alcoholic carbon-oxygen
+bonded_type_bond     35    29     4
+bonded_type_bond     36    29     4
+bonded_type_bond     37    29     4
+bonded_type_bond     50    29     4
+bonded_type_bond     51    29     4
+# # thiolic or thioether or sulfide carbon-sulfur
+bonded_type_bond     35    79     5
+bonded_type_bond     35    80     5
+bonded_type_bond     35    81     5
+bonded_type_bond     36    79     5
+bonded_type_bond     36    80     5
+bonded_type_bond     36    81     5
+bonded_type_bond     37    79     5
+bonded_type_bond     37    80     5
+bonded_type_bond     37    81     5
+bonded_type_bond     52    79     5
+bonded_type_bond     53    81     5
+# # aliphatic amide carbon-carbon
+bonded_type_bond     35    38     6
+bonded_type_bond     36    38     6
+bonded_type_bond     37    38     6
+bonded_type_bond     44    38     6
+bonded_type_bond     60    38     6
+# # substituted amide carbon-nitrogen
+bonded_type_bond     35    19     7
+bonded_type_bond     36    19     7
+bonded_type_bond     37    19     7
+bonded_type_bond     44    19     7
+bonded_type_bond     35    20     7
+bonded_type_bond     36    20     7
+bonded_type_bond     37    20     7
+bonded_type_bond     44    20     7
+bonded_type_bond    155    20     7
+# # aliphatic carboxylic acid carbon-carbon
+bonded_type_bond     35    39     7
+bonded_type_bond     36    39     7
+bonded_type_bond     37    39     7
+bonded_type_bond     44    39     7
+bonded_type_bond     39    59     7
+# # substituted ammonium carbon-nitrogen
+bonded_type_bond     35    22     8
+bonded_type_bond     36    22     8
+bonded_type_bond     37    22     8
+bonded_type_bond     44    22     8
+bonded_type_bond     35    23     8
+bonded_type_bond     36    23     8
+bonded_type_bond     37    23     8
+bonded_type_bond     44    23     8
+bonded_type_bond    155    23     8
+# # guanidinium
+bonded_type_bond     43    26    33
+bonded_type_bond     26     1    31
+# # substituted guanidinium carbon-nitrogen
+bonded_type_bond     35    26     9
+bonded_type_bond     36    26     9
+bonded_type_bond     37    26     9
+# # disulfide sulfur-sulfur
+bonded_type_bond     81    81    12
+# # aromatic carbon-carbon
+bonded_type_bond     40    40    14
+bonded_type_bond     40    41    14
+bonded_type_bond     40    42    14
+bonded_type_bond     41    41    14
+bonded_type_bond     41    42    14
+# # aromatic carbon-hydrogen
+bonded_type_bond     40     2    15
+# # phenolic carbon-oxygen
+bonded_type_bond     42    31    16
+# # phenolic or alcoholic oxygen-hydrogen
+bonded_type_bond     29     3    24
+bonded_type_bond     29     4    24
+bonded_type_bond     29     5    24
+bonded_type_bond     31    12    24
+# # thiolic sulfur-hydrogen
+bonded_type_bond     79    11    27
+# # carboxylate carbon-oxygen
+bonded_type_bond     39    28    32
+# # amide carbon-oxygen
+bonded_type_bond     38    27    29
+# # aldehyde carbon-oxygen
+bonded_type_bond     45    33    29
+# # (substituted) (form)amide carbonyl carbon-nitrogen
+bonded_type_bond     38    18    30
+bonded_type_bond     38    19    30
+bonded_type_bond     38    20    30
+bonded_type_bond     45    18    30
+bonded_type_bond     45    19    30
+bonded_type_bond     45    20    30
+# # (substituted) amide nitrogen-hydrogen
+bonded_type_bond     18     6    31
+bonded_type_bond     19     7    31
+# # (substituted) ammonium nitrogen-hydrogen
+bonded_type_bond     21     8    31
+bonded_type_bond     22     9    31
+bonded_type_bond     23    10    31
+# # aromatic nitrogen-hydrogen
+bonded_type_bond     24    13    31
+# # the rest are specific parameters for non-generalized systems
+# # TRP exceptions
+# # CB-CG
+bonded_type_bond     57    73    10
+# # CG-CD1
+bonded_type_bond     73    40    17
+# # CE2-NE1
+bonded_type_bond     91    24    18
+# # CG-CD2
+bonded_type_bond     73    90    21
+# # CD2-CE3
+bonded_type_bond     90    40    14
+# # CE2-CZx
+bonded_type_bond     91    40    14
+# # CD2-CE2
+bonded_type_bond     90    91    20
+# # CD1-NE1
+bonded_type_bond     40    24    22
+# # HIX exceptions
+# # HIX CE1-N(H)
+bonded_type_bond     75    24    19
+bonded_type_bond     77    24    19
+# # HID/E XC(C-N)CH
+bonded_type_bond     74    24    22
+bonded_type_bond    154    24    22
+bonded_type_bond     78    24    22
+bonded_type_bond     92    24    22
+# # HID/E CE1-NCC
+bonded_type_bond     75    25    23
+# # HIX CG-CD2
+bonded_type_bond     74    76    25
+bonded_type_bond     74    78    25
+bonded_type_bond    154    92    25
+# # HID/E HC(C-N)CC
+bonded_type_bond     74    25    28
+bonded_type_bond     76    25    28
+# # HIX CB-CG
+bonded_type_bond     58    74    11
+bonded_type_bond     58   154    11
+# # hydrogens
+bonded_type_bond     75     2    15
+bonded_type_bond     76     2    15
+bonded_type_bond     77     2    15
+bonded_type_bond     78     2    15
+bonded_type_bond     92     2    15
+# # other exceptions
+# # SPC water oxygen-hydrogen
+bonded_type_bond     82    83    13
+# # T3P water oxygen-hydrogen
+bonded_type_bond     84    85    26
+# # urea
+bonded_type_bond    153    27    29
+bonded_type_bond    153    18    30
+
+
+####################################################
+#                                                  #
+#  The following is a list of bond angle bending   #
+#  potentials in OPLSAA/L.                         #
+#                                                  #
+####################################################
+
+# # aliphatic carbon-carbon-carbon
+bonded_type_angle    35    36    35     1
+bonded_type_angle    35    36    36     1
+bonded_type_angle    35    36    37     1
+bonded_type_angle    35    36    44     1
+bonded_type_angle    35    37    35     1
+bonded_type_angle    35    37    36     1
+bonded_type_angle    35    37    37     1
+bonded_type_angle    35    37    44     1
+bonded_type_angle    35    44    35     1
+bonded_type_angle    35    44    36     1
+bonded_type_angle    35    44    37     1
+bonded_type_angle    35    44    44     1
+bonded_type_angle    35    47    35     1
+bonded_type_angle    35    49    36     1
+bonded_type_angle    36    36    36     1
+bonded_type_angle    36    36    37     1
+bonded_type_angle    36    36    44     1
+bonded_type_angle    36    37    36     1
+bonded_type_angle    36    37    37     1
+bonded_type_angle    36    37    44     1
+bonded_type_angle    36    44    36     1
+bonded_type_angle    36    44    37     1
+bonded_type_angle    36    44    44     1
+bonded_type_angle    37    36    37     1
+bonded_type_angle    37    36    44     1
+bonded_type_angle    37    37    37     1
+bonded_type_angle    37    37    44     1
+bonded_type_angle    37    44    37     1
+bonded_type_angle    37    44    44     1
+bonded_type_angle    44    36    44     1
+bonded_type_angle    44    37    44     1
+bonded_type_angle    44    44    44     1
+bonded_type_angle    37    47    35     1
+bonded_type_angle    37    48    37     1
+bonded_type_angle    37    49    35     1
+bonded_type_angle    37    49    36     1
+bonded_type_angle    37    51    35     1
+bonded_type_angle    37    54    36     1
+bonded_type_angle    37    61    36     1
+bonded_type_angle    37    62    36     1
+bonded_type_angle    37    63    36     1
+bonded_type_angle    37    64    36     1
+bonded_type_angle    37    65    36     1
+bonded_type_angle    37    66    36     1
+bonded_type_angle    37    67    35     1
+bonded_type_angle    37    68    36     1
+bonded_type_angle    37    69    36     1
+bonded_type_angle    37    70    36     1
+bonded_type_angle    37    71    36     1
+bonded_type_angle    37    72    37     1
+bonded_type_angle    46    44    46     1
+bonded_type_angle    48    37    35     1
+bonded_type_angle    49    36    35     1
+bonded_type_angle    54    36    36     1
+bonded_type_angle    64    36    36     1
+bonded_type_angle    65    36    36     1
+bonded_type_angle    66    36    36     1
+bonded_type_angle    68    36    35     1
+bonded_type_angle    69    36    36     1
+bonded_type_angle    72    37    36     1
+bonded_type_angle   155    36    54     1
+# aliphatic carbon-carbon-hydrogen
+bonded_type_angle    35    35    15     2
+bonded_type_angle    35    36    16     2
+bonded_type_angle    35    37    17     2
+bonded_type_angle    35    47    17     2
+bonded_type_angle    35    49    17     2
+bonded_type_angle    35    51    17     2
+bonded_type_angle    35    67    16     2
+bonded_type_angle    36    35    15     2
+bonded_type_angle    36    36    16     2
+bonded_type_angle    36    37    17     2
+bonded_type_angle    36    49    17     2
+bonded_type_angle    36    54    16     2
+bonded_type_angle    36    61    16     2
+bonded_type_angle    36    62    16     2
+bonded_type_angle    36    63    16     2
+bonded_type_angle    36    64    16     2
+bonded_type_angle    36    65    16     2
+bonded_type_angle    36    66    16     2
+bonded_type_angle    36    68    16     2
+bonded_type_angle    36    69    16     2
+bonded_type_angle    36    70    16     2
+bonded_type_angle    36    71    16     2
+bonded_type_angle    36   155    16     2
+bonded_type_angle    37    35    15     2
+bonded_type_angle    37    36    16     2
+bonded_type_angle    37    37    17     2
+bonded_type_angle    37    46    15     2
+bonded_type_angle    37    47    17     2
+bonded_type_angle    37    48    16     2
+bonded_type_angle    37    49    17     2
+bonded_type_angle    37    50    16     2
+bonded_type_angle    37    51    17     2
+bonded_type_angle    37    52    16     2
+bonded_type_angle    37    53    16     2
+bonded_type_angle    37    54    16     2
+bonded_type_angle    37    55    16     2
+bonded_type_angle    37    56    16     2
+bonded_type_angle    37    57    16     2
+bonded_type_angle    37    58    16     2
+bonded_type_angle    37    59    16     2
+bonded_type_angle    37    60    16     2
+bonded_type_angle    37    61    16     2
+bonded_type_angle    37    62    16     2
+bonded_type_angle    37    63    16     2
+bonded_type_angle    37    64    16     2
+bonded_type_angle    37    65    16     2
+bonded_type_angle    37    66    16     2
+bonded_type_angle    37    67    16     2
+bonded_type_angle    37    68    16     2
+bonded_type_angle    37    69    16     2
+bonded_type_angle    37    70    16     2
+bonded_type_angle    37    71    16     2
+bonded_type_angle    37    72    16     2
+bonded_type_angle    44    35    15     2
+bonded_type_angle    44    36    16     2
+bonded_type_angle    44    37    17     2
+bonded_type_angle    44    46    15     2
+bonded_type_angle    46    37    17     2
+bonded_type_angle    47    35    15     2
+bonded_type_angle    47    37    17     2
+bonded_type_angle    48    37    17     2
+bonded_type_angle    49    35    15     2
+bonded_type_angle    49    36    16     2
+bonded_type_angle    49    37    17     2
+bonded_type_angle    50    37    17     2
+bonded_type_angle    51    35    15     2
+bonded_type_angle    51    37    17     2
+bonded_type_angle    52    37    17     2
+bonded_type_angle    53    37    17     2
+bonded_type_angle    54    36    16     2
+bonded_type_angle    54    37    17     2
+bonded_type_angle    55    37    17     2
+bonded_type_angle    56    37    17     2
+bonded_type_angle    57    37    17     2
+bonded_type_angle    58    37    17     2
+bonded_type_angle    59    37    17     2
+bonded_type_angle    60    37    17     2
+bonded_type_angle    61    36    16     2
+bonded_type_angle    61    37    17     2
+bonded_type_angle    62    36    16     2
+bonded_type_angle    62    37    17     2
+bonded_type_angle    63    36    16     2
+bonded_type_angle    63    37    17     2
+bonded_type_angle    64    36    16     2
+bonded_type_angle    64    37    17     2
+bonded_type_angle    65    36    16     2
+bonded_type_angle    65    37    17     2
+bonded_type_angle    66    36    16     2
+bonded_type_angle    66    37    17     2
+bonded_type_angle    67    35    15     2
+bonded_type_angle    67    37    17     2
+bonded_type_angle    68    36    16     2
+bonded_type_angle    68    37    17     2
+bonded_type_angle    69    36    16     2
+bonded_type_angle    69    37    17     2
+bonded_type_angle    70    36    16     2
+bonded_type_angle    70    37    17     2
+bonded_type_angle    71    36    16     2
+bonded_type_angle    71    37    17     2
+bonded_type_angle    72    37    17     2
+bonded_type_angle   155    36    16     2
+# # aliphatic hydrogen-carbon-hydrogen
+bonded_type_angle    14    34    14    12
+bonded_type_angle    15    35    15    12
+bonded_type_angle    16    36    16    12
+bonded_type_angle    15    46    15    12
+bonded_type_angle    16    48    16    12
+bonded_type_angle    16    50    16    12
+bonded_type_angle    16    52    16    12
+bonded_type_angle    16    53    16    12
+bonded_type_angle    16    54    16    12
+bonded_type_angle    16    55    16    12
+bonded_type_angle    16    56    16    12
+bonded_type_angle    16    57    16    12
+bonded_type_angle    16    58    16    12
+bonded_type_angle    16    59    16    12
+bonded_type_angle    16    60    16    12
+bonded_type_angle    16    61    16    12
+bonded_type_angle    16    62    16    12
+bonded_type_angle    16    63    16    12
+bonded_type_angle    16    64    16    12
+bonded_type_angle    16    65    16    12
+bonded_type_angle    16    66    16    12
+bonded_type_angle    16    67    16    12
+bonded_type_angle    16    68    16    12
+bonded_type_angle    16    69    16    12
+bonded_type_angle    16    70    16    12
+bonded_type_angle    16    71    16    12
+bonded_type_angle    16    72    16    12
+bonded_type_angle    16   155    16    12
+# # Cal-Cal-Car
+bonded_type_angle    37    55    41     3
+bonded_type_angle    37    56    41     3
+# # Cal-Car-Car
+bonded_type_angle    35    41    40    15
+bonded_type_angle    35    41    41    15
+bonded_type_angle    36    41    40    15
+bonded_type_angle    36    41    41    15
+bonded_type_angle    37    41    40    15
+bonded_type_angle    37    41    41    15
+bonded_type_angle    44    41    40    15
+bonded_type_angle    44    41    41    15
+bonded_type_angle    55    41    40    15
+bonded_type_angle    56    41    40    15
+# # Car-Car-Car
+bonded_type_angle    40    40    40    16
+bonded_type_angle    40    40    41    16
+bonded_type_angle    40    40    42    16
+bonded_type_angle    40    41    40    16
+bonded_type_angle    40    41    41    16
+bonded_type_angle    40    41    42    16
+bonded_type_angle    40    42    40    16
+bonded_type_angle    40    42    41    16
+bonded_type_angle    41    40    41    16
+bonded_type_angle    41    40    42    16
+bonded_type_angle    41    41    41    16
+bonded_type_angle    41    41    42    16
+bonded_type_angle    41    42    41    16
+# # Har-Car-Car
+bonded_type_angle     2    40    40    17
+bonded_type_angle     2    40    41    17
+bonded_type_angle     2    40    42    17
+# # H-Cal-Car
+bonded_type_angle    15    35    41    13
+bonded_type_angle    16    36    41    13
+bonded_type_angle    17    37    41    13
+bonded_type_angle    16    55    41    13
+bonded_type_angle    16    56    41    13
+# # Cal-Cal-Ccarbonyl (amide, ketone, aldehyde)
+bonded_type_angle    35    36    38     7
+bonded_type_angle    36    36    38     7
+bonded_type_angle    37    36    38     7
+bonded_type_angle    44    36    38     7
+bonded_type_angle    35    37    38     7
+bonded_type_angle    36    37    38     7
+bonded_type_angle    37    37    38     7
+bonded_type_angle    44    37    38     7
+bonded_type_angle    37    60    38     7
+bonded_type_angle    62    36    38     7
+bonded_type_angle    46    37    38     7
+bonded_type_angle    46    44    38     7
+bonded_type_angle    47    37    38     7
+bonded_type_angle    48    37    38     7
+bonded_type_angle    49    37    38     7
+bonded_type_angle    50    37    38     7
+bonded_type_angle    51    37    38     7
+bonded_type_angle    52    37    38     7
+bonded_type_angle    53    37    38     7
+bonded_type_angle    54    37    38     7
+bonded_type_angle    55    37    38     7
+bonded_type_angle    56    37    38     7
+bonded_type_angle    57    37    38     7
+bonded_type_angle    58    37    38     7
+bonded_type_angle    59    37    38     7
+bonded_type_angle    60    37    38     7
+bonded_type_angle    61    37    38     7
+bonded_type_angle    62    37    38     7
+bonded_type_angle    63    37    38     7
+bonded_type_angle    64    37    38     7
+bonded_type_angle    65    37    38     7
+bonded_type_angle    66    37    38     7
+bonded_type_angle    67    37    38     7
+bonded_type_angle    68    37    38     7
+bonded_type_angle    69    37    38     7
+bonded_type_angle    70    37    38     7
+bonded_type_angle    71    37    38     7
+bonded_type_angle    72    37    38     7
+bonded_type_angle    35    36    45     7
+bonded_type_angle    36    36    45     7
+bonded_type_angle    37    36    45     7
+bonded_type_angle    44    36    45     7
+bonded_type_angle    35    37    45     7
+bonded_type_angle    36    37    45     7
+bonded_type_angle    37    37    45     7
+bonded_type_angle    44    37    45     7
+# # H-Cal-Ccarbonyl (amide, ketone, aldehyde)
+bonded_type_angle    15    35    38    13
+bonded_type_angle    16    36    38    13
+bonded_type_angle    17    37    38    13
+bonded_type_angle    16    60    38    13
+bonded_type_angle    15    35    45    13
+bonded_type_angle    16    36    45    13
+bonded_type_angle    17    37    45    13
+# # Cal-Ccarbonyl-Ocarbonyl (amide, ketone, aldehyde)
+bonded_type_angle    35    38    27    26
+bonded_type_angle    36    38    27    26
+bonded_type_angle    37    38    27    26
+bonded_type_angle    44    38    27    26
+bonded_type_angle    60    38    27    26
+bonded_type_angle    35    45    33    26
+bonded_type_angle    36    45    33    26
+bonded_type_angle    37    45    33    26
+bonded_type_angle    44    45    33    26
+# # Cal-Cal-Ccarboxylate
+bonded_type_angle    35    36    39     7
+bonded_type_angle    36    36    39     7
+bonded_type_angle    37    36    39     7
+bonded_type_angle    44    36    39     7
+bonded_type_angle    35    37    39     7
+bonded_type_angle    36    37    39     7
+bonded_type_angle    37    37    39     7
+bonded_type_angle    44    37    39     7
+bonded_type_angle    37    59    39     7
+bonded_type_angle    61    36    39     7
+bonded_type_angle    46    37    39     7
+bonded_type_angle    46    44    39     7
+bonded_type_angle    47    37    39     7
+bonded_type_angle    48    37    39     7
+bonded_type_angle    49    37    39     7
+bonded_type_angle    50    37    39     7
+bonded_type_angle    51    37    39     7
+bonded_type_angle    52    37    39     7
+bonded_type_angle    53    37    39     7
+bonded_type_angle    54    37    39     7
+bonded_type_angle    55    37    39     7
+bonded_type_angle    56    37    39     7
+bonded_type_angle    57    37    39     7
+bonded_type_angle    58    37    39     7
+bonded_type_angle    59    37    39     7
+bonded_type_angle    60    37    39     7
+bonded_type_angle    61    37    39     7
+bonded_type_angle    62    37    39     7
+bonded_type_angle    63    37    39     7
+bonded_type_angle    64    37    39     7
+bonded_type_angle    65    37    39     7
+bonded_type_angle    66    37    39     7
+bonded_type_angle    67    37    39     7
+bonded_type_angle    68    37    39     7
+bonded_type_angle    69    37    39     7
+bonded_type_angle    70    37    39     7
+bonded_type_angle    71    37    39     7
+bonded_type_angle    72    37    39     7
+# # H-Cal-Ccarboxylate
+bonded_type_angle    15    35    39    13
+bonded_type_angle    16    36    39    13
+bonded_type_angle    17    37    39    13
+bonded_type_angle    16    59    39    13
+# # Cal-Ccarboxylate-Ocarboxylate
+bonded_type_angle    35    39    28    35
+bonded_type_angle    36    39    28    35
+bonded_type_angle    37    39    28    35
+bonded_type_angle    44    39    28    35
+bonded_type_angle    59    39    28    35
+# # Ocarboxylate-Ccarboxylate-Ocarboxylate
+bonded_type_angle    28    39    28    36
+# # Cal-Cal-Namide
+bonded_type_angle    35    36    19     8
+bonded_type_angle    36    36    19     8
+bonded_type_angle    37    36    19     8
+bonded_type_angle    44    36    19     8
+bonded_type_angle    35    37    19     8
+bonded_type_angle    36    37    19     8
+bonded_type_angle    37    37    19     8
+bonded_type_angle    44    37    19     8
+bonded_type_angle    35    36    20     8
+bonded_type_angle    36    36    20     8
+bonded_type_angle    37    36    20     8
+bonded_type_angle    44    36    20     8
+bonded_type_angle    35    37    20     8
+bonded_type_angle    36    37    20     8
+bonded_type_angle    37    37    20     8
+bonded_type_angle    44    37    20     8
+bonded_type_angle    46    37    19     8
+bonded_type_angle    46    44    19     8
+bonded_type_angle    47    37    19     8
+bonded_type_angle    48    37    19     8
+bonded_type_angle    49    37    19     8
+bonded_type_angle    50    37    19     8
+bonded_type_angle    51    37    19     8
+bonded_type_angle    52    37    19     8
+bonded_type_angle    53    37    19     8
+bonded_type_angle    54    37    20     8
+bonded_type_angle    55    37    19     8
+bonded_type_angle    56    37    19     8
+bonded_type_angle    57    37    19     8
+bonded_type_angle    58    37    19     8
+bonded_type_angle    59    37    19     8
+bonded_type_angle    60    37    19     8
+bonded_type_angle    61    37    19     8
+bonded_type_angle    62    37    19     8
+bonded_type_angle    63    37    19     8
+bonded_type_angle    64    37    19     8
+bonded_type_angle    65    37    19     8
+bonded_type_angle    66    37    19     8
+bonded_type_angle    67    37    19     8
+bonded_type_angle    68    37    19     8
+bonded_type_angle    69    37    19     8
+bonded_type_angle    70    37    19     8
+bonded_type_angle    71    37    20     8
+bonded_type_angle    72    37    20     8
+bonded_type_angle    36   155    20     8
+# # H-Cal-Namide
+bonded_type_angle    15    35    19    13
+bonded_type_angle    16    36    19    13
+bonded_type_angle    17    37    19    13
+bonded_type_angle    15    35    20    13
+bonded_type_angle    16    36    20    13
+bonded_type_angle    17    37    20    13
+bonded_type_angle    16   155    20    13
+# # Cal-Ccarbonyl-Namide
+bonded_type_angle    35    38    18    27
+bonded_type_angle    36    38    18    27
+bonded_type_angle    37    38    18    27
+bonded_type_angle    44    38    18    27
+bonded_type_angle    35    38    19    27
+bonded_type_angle    36    38    19    27
+bonded_type_angle    37    38    19    27
+bonded_type_angle    44    38    19    27
+bonded_type_angle    35    38    20    27
+bonded_type_angle    36    38    20    27
+bonded_type_angle    37    38    20    27
+bonded_type_angle    44    38    20    27
+bonded_type_angle    60    38    18    27
+# # Ocarbonyl-Ccarbonyl-Namide
+bonded_type_angle    27    38    18    28
+bonded_type_angle    27    38    19    28
+bonded_type_angle    27    38    20    28
+bonded_type_angle    33    45    18    28
+bonded_type_angle    33    45    19    28
+bonded_type_angle    33    45    20    28
+# # Ccarbonyl-Cal-Namide
+bonded_type_angle    38    36    18    14
+bonded_type_angle    38    37    18    14
+bonded_type_angle    38    44    18    14
+bonded_type_angle    38    36    19    14
+bonded_type_angle    38    37    19    14
+bonded_type_angle    38    44    19    14
+bonded_type_angle    38    36    20    14
+bonded_type_angle    38    37    20    14
+bonded_type_angle    38    44    20    14
+# # Ccarboxylate-Cal-Namide
+bonded_type_angle    39    36    19    14
+bonded_type_angle    39    37    19    14
+bonded_type_angle    39    44    19    14
+bonded_type_angle    39    36    20    14
+bonded_type_angle    39    37    20    14
+bonded_type_angle    39    44    20    14
+# # Cal-Namide-Cal
+bonded_type_angle    35    20    35    31
+bonded_type_angle    35    20    36    31
+bonded_type_angle    35    20    37    31
+bonded_type_angle    35    20    44    31
+bonded_type_angle    36    20    36    31
+bonded_type_angle    36    20    37    31
+bonded_type_angle    36    20    44    31
+bonded_type_angle    37    20    37    31
+bonded_type_angle    37    20    44    31
+bonded_type_angle    44    20    44    31
+bonded_type_angle   155    20    37    31
+# # Ccarbonyl-Namide-Cal
+bonded_type_angle    38    19    35    32
+bonded_type_angle    38    19    36    32
+bonded_type_angle    38    19    37    32
+bonded_type_angle    38    19    44    32
+bonded_type_angle    38    20    35    32
+bonded_type_angle    38    20    36    32
+bonded_type_angle    38    20    37    32
+bonded_type_angle    38    20    44    32
+bonded_type_angle    38    20   155    32
+bonded_type_angle    45    19    35    32
+bonded_type_angle    45    19    36    32
+bonded_type_angle    45    19    37    32
+bonded_type_angle    45    19    44    32
+bonded_type_angle    45    20    35    32
+bonded_type_angle    45    20    36    32
+bonded_type_angle    45    20    37    32
+bonded_type_angle    45    20    44    32
+bonded_type_angle    45    20   155    32
+# # Ccarbonyl-Namide-H
+bonded_type_angle    38    18     6    34
+bonded_type_angle    38    19     7    34
+bonded_type_angle    45    18     6    34
+bonded_type_angle    45    19     7    34
+# # Cal-Namide-H
+bonded_type_angle    35    19     7    33
+bonded_type_angle    36    19     7    33
+bonded_type_angle    37    19     7    33
+bonded_type_angle    44    19     7    33
+# # H-Namide-H
+bonded_type_angle     6    18     6    17
+# # OCH (aldehyde)
+bonded_type_angle    33    45    89    17
+# # NCH ((subst.) formaldehyde)
+bonded_type_angle    18    45    89    30
+bonded_type_angle    19    45    89    30
+bonded_type_angle    20    45    89    30
+# # Cal-Cal-Nammonium
+bonded_type_angle    35    36    22     9
+bonded_type_angle    36    36    22     9
+bonded_type_angle    37    36    22     9
+bonded_type_angle    44    36    22     9
+bonded_type_angle    35    37    22     9
+bonded_type_angle    36    37    22     9
+bonded_type_angle    37    37    22     9
+bonded_type_angle    44    37    22     9
+bonded_type_angle    35    36    23     9
+bonded_type_angle    36    36    23     9
+bonded_type_angle    37    36    23     9
+bonded_type_angle    44    36    23     9
+bonded_type_angle    35    37    23     9
+bonded_type_angle    36    37    23     9
+bonded_type_angle    37    37    23     9
+bonded_type_angle    44    37    23     9
+bonded_type_angle    46    37    22     9
+bonded_type_angle    46    44    22     9
+bonded_type_angle    47    37    22     9
+bonded_type_angle    48    37    22     9
+bonded_type_angle    49    37    22     9
+bonded_type_angle    50    37    22     9
+bonded_type_angle    51    37    22     9
+bonded_type_angle    52    37    22     9
+bonded_type_angle    53    37    22     9
+bonded_type_angle    54    37    23     9
+bonded_type_angle    55    37    22     9
+bonded_type_angle    56    37    22     9
+bonded_type_angle    57    37    22     9
+bonded_type_angle    58    37    22     9
+bonded_type_angle    59    37    22     9
+bonded_type_angle    60    37    22     9
+bonded_type_angle    61    37    22     9
+bonded_type_angle    62    37    22     9
+bonded_type_angle    63    37    22     9
+bonded_type_angle    64    37    22     9
+bonded_type_angle    65    37    22     9
+bonded_type_angle    66    37    22     9
+bonded_type_angle    67    37    22     9
+bonded_type_angle    68    37    22     9
+bonded_type_angle    69    37    22     9
+bonded_type_angle    70    36    22     9
+bonded_type_angle    70    37    22     9
+bonded_type_angle    71    37    23     9
+bonded_type_angle    72    37    23     9
+bonded_type_angle    36   155    23     9
+# # Ccarbonyl-Cal-Nammonium
+bonded_type_angle    38    36    22     9
+bonded_type_angle    38    37    22     9
+bonded_type_angle    38    44    22     9
+bonded_type_angle    38    36    23     9
+bonded_type_angle    38    37    23     9
+bonded_type_angle    38    44    23     9
+# # Ccarboxylate-Cal-Nammonium
+bonded_type_angle    39    36    22     9
+bonded_type_angle    39    37    22     9
+bonded_type_angle    39    44    22     9
+bonded_type_angle    39    36    23     9
+bonded_type_angle    39    37    23     9
+bonded_type_angle    39    44    23     9
+# # H-Cal-Nammonium
+bonded_type_angle    15    35    22    13
+bonded_type_angle    16    36    22    13
+bonded_type_angle    17    37    22    13
+bonded_type_angle    15    35    23    13
+bonded_type_angle    16    36    23    13
+bonded_type_angle    17    37    23    13
+bonded_type_angle    16   155    23    13
+# # Cal-Nammonium-Cal
+bonded_type_angle    35    23    35    37
+bonded_type_angle    35    23    36    37
+bonded_type_angle    35    23    37    37
+bonded_type_angle    35    23    44    37
+bonded_type_angle    36    23    36    37
+bonded_type_angle    36    23    37    37
+bonded_type_angle    36    23    44    37
+bonded_type_angle    37    23    37    37
+bonded_type_angle    37    23    44    37
+bonded_type_angle    44    23    44    37
+bonded_type_angle    37    23   155    37
+# # Cal-Nammonium-H
+bonded_type_angle    35    22     9    13
+bonded_type_angle    35    23    10    13
+bonded_type_angle    36    22     9    13
+bonded_type_angle    36    23    10    13
+bonded_type_angle    37    22     9    13
+bonded_type_angle    37    23    10    13
+bonded_type_angle    44    22     9    13
+bonded_type_angle    44    23    10    13
+bonded_type_angle   155    23    10    13
+# # H-Nammonium-H
+bonded_type_angle     8    21     8    13
+bonded_type_angle     9    22     9    13
+bonded_type_angle    10    23    10    13
+# # Cal-Cal-Ngdn
+bonded_type_angle    35    36    26     9
+bonded_type_angle    36    36    26     9
+bonded_type_angle    37    36    26     9
+bonded_type_angle    44    36    26     9
+bonded_type_angle    35    37    26     9
+bonded_type_angle    36    37    26     9
+bonded_type_angle    37    37    26     9
+bonded_type_angle    44    37    26     9
+# # H-Cal-Ngdn
+bonded_type_angle    15    35    26    13
+bonded_type_angle    16    36    26    13
+bonded_type_angle    17    37    26    13
+# # Cal-Ngdn-Hgdn
+bonded_type_angle    35    26     1    38
+bonded_type_angle    36    26     1    38
+bonded_type_angle    37    26     1    38
+bonded_type_angle    44    26     1    38
+# # Cal-Ngdn-Cgdn
+bonded_type_angle    35    26    43    39
+bonded_type_angle    36    26    43    39
+bonded_type_angle    37    26    43    39
+bonded_type_angle    44    26    43    39
+# # Hgdn-Ngdn-Hgdn
+bonded_type_angle     1    26     1    17
+# # Cgdn-Ngdn-Hgdn
+bonded_type_angle    43    26     1    17
+# # Ngdn-Cgdn-Ngdn
+bonded_type_angle    26    43    26    15
+# # Cal-Cal-Oalc
+bonded_type_angle    35    36    29     4
+bonded_type_angle    36    36    29     4
+bonded_type_angle    37    36    29     4
+bonded_type_angle    44    36    29     4
+bonded_type_angle    35    37    29     4
+bonded_type_angle    36    37    29     4
+bonded_type_angle    37    37    29     4
+bonded_type_angle    44    37    29     4
+bonded_type_angle    37    50    29     4
+bonded_type_angle    35    51    29     4
+bonded_type_angle    37    51    29     4
+# # H-Cal-Oalc
+bonded_type_angle    15    35    29    13
+bonded_type_angle    16    36    29    13
+bonded_type_angle    17    37    29    13
+bonded_type_angle    16    50    29    13
+bonded_type_angle    17    51    29    13
+# # Cal-Oalc-Halc
+bonded_type_angle    35    29     3    21
+bonded_type_angle    36    29     4    21
+bonded_type_angle    37    29     5    21
+bonded_type_angle    50    29     4    21
+bonded_type_angle    51    29     5    21
+# # Car-Car-Ophenol
+bonded_type_angle    40    42    31    15
+bonded_type_angle    41    42    31    15
+# # Car-Ophenol-Hphenol
+bonded_type_angle    42    31    12    22
+# # Cal-Cal-Sthiol
+bonded_type_angle    35    36    79     5
+bonded_type_angle    36    36    79     5
+bonded_type_angle    37    36    79     5
+bonded_type_angle    44    36    79     5
+bonded_type_angle    35    37    79     5
+bonded_type_angle    36    37    79     5
+bonded_type_angle    37    37    79     5
+bonded_type_angle    44    37    79     5
+bonded_type_angle    37    52    79     5
+# # H-Cal-Sthiol
+bonded_type_angle    15    35    79    13
+bonded_type_angle    16    36    79    13
+bonded_type_angle    17    37    79    13
+bonded_type_angle    16    52    79    13
+# # Cal-Sthiol-Hthiol
+bonded_type_angle    35    79    11    23
+bonded_type_angle    36    79    11    23
+bonded_type_angle    37    79    11    23
+bonded_type_angle    52    79    11    23
+# # Cal-Cal-S(di)sulfide
+bonded_type_angle    35    36    80     6
+bonded_type_angle    36    36    80     6
+bonded_type_angle    37    36    80     6
+bonded_type_angle    44    36    80     6
+bonded_type_angle    35    37    80     6
+bonded_type_angle    36    37    80     6
+bonded_type_angle    37    37    80     6
+bonded_type_angle    44    37    80     6
+bonded_type_angle    63    36    80     6
+bonded_type_angle    35    36    81     6
+bonded_type_angle    36    36    81     6
+bonded_type_angle    37    36    81     6
+bonded_type_angle    44    36    81     6
+bonded_type_angle    35    37    81     6
+bonded_type_angle    36    37    81     6
+bonded_type_angle    37    37    81     6
+bonded_type_angle    44    37    81     6
+bonded_type_angle    37    53    81     6
+# # H-Cal-S(di)sulfide
+bonded_type_angle    15    35    80    13
+bonded_type_angle    16    36    80    13
+bonded_type_angle    17    37    80    13
+bonded_type_angle    15    35    81    13
+bonded_type_angle    16    36    81    13
+bonded_type_angle    17    37    81    13
+bonded_type_angle    16    53    81    13
+# # Cal-S-Cal
+bonded_type_angle    35    80    35    24
+bonded_type_angle    35    80    36    24
+bonded_type_angle    35    80    37    24
+bonded_type_angle    35    80    44    24
+bonded_type_angle    36    80    36    24
+bonded_type_angle    36    80    37    24
+bonded_type_angle    36    80    44    24
+bonded_type_angle    37    80    37    24
+bonded_type_angle    37    80    44    24
+bonded_type_angle    44    80    44    24
+# # Cal-S-S
+bonded_type_angle    35    81    81    25
+bonded_type_angle    36    81    81    25
+bonded_type_angle    37    81    81    25
+bonded_type_angle    44    81    81    25
+bonded_type_angle    53    81    81    25
+# # H-Car-Nar (indole)
+bonded_type_angle     2    40    24    19
+bonded_type_angle    40    24    13    17
+# # TRP special cases (note that for these heteroaromatic systems
+# # some of the angle sets are incompatible with planarity. in conjunction
+# # with planar restraints through dihedrals this generates a spurious baseline
+# # tension)
+bonded_type_angle    37    57    73    10
+bonded_type_angle    16    57    73    13
+bonded_type_angle    40    40    90    16
+bonded_type_angle    40    40    91    18
+bonded_type_angle     2    40    90    17
+bonded_type_angle     2    40    91    17
+bonded_type_angle     2    40    73    17
+bonded_type_angle    73    40    24    20
+bonded_type_angle    57    73    40    40
+bonded_type_angle    57    73    90    41
+bonded_type_angle    40    73    90    42
+bonded_type_angle    40    90    73    43
+bonded_type_angle    40    90    91    44
+bonded_type_angle    73    90    91    45
+bonded_type_angle    40    91    90    46
+bonded_type_angle    40    91    24    47
+bonded_type_angle    24    91    90    48
+bonded_type_angle    40    24    91    49
+bonded_type_angle    91    24    13    50
+# # HID/E/P special cases
+bonded_type_angle    37    58    74    11
+bonded_type_angle    16    58    74    13
+bonded_type_angle    37    58   154    11
+bonded_type_angle    16    58   154    13
+bonded_type_angle    74    24    13    51
+bonded_type_angle    75    24    13    51
+bonded_type_angle    77    24    13    51
+bonded_type_angle    78    24    13    51
+bonded_type_angle    92    24    13    51
+bonded_type_angle   154    24    13    51
+bonded_type_angle    75    24    74    52
+bonded_type_angle    75    24    78    52
+bonded_type_angle    77    24   154    52
+bonded_type_angle    77    24    92    52
+bonded_type_angle     2    75    24    17
+bonded_type_angle     2    75    25    17
+bonded_type_angle     2    77    24    17
+bonded_type_angle    24    75    25    49
+bonded_type_angle    24    77    24    53
+bonded_type_angle    58    74    76    54
+bonded_type_angle    58    74    78    54
+bonded_type_angle    58   154    92    54
+bonded_type_angle    58    74    25    55
+bonded_type_angle     2    76    74    56
+bonded_type_angle     2    76    25    17
+bonded_type_angle    25    76    74    57
+bonded_type_angle    25    74    78    57
+bonded_type_angle    24    74    76    20
+bonded_type_angle    58    74    24    58
+bonded_type_angle    58   154    24    58
+bonded_type_angle     2    78    24    19
+bonded_type_angle     2    78    74    59
+bonded_type_angle     2    92    24    19
+bonded_type_angle     2    92   154    59
+bonded_type_angle    24    78    74    20
+bonded_type_angle    24    92   154    60
+bonded_type_angle    24   154    92    60
+bonded_type_angle    75    25    74    61
+bonded_type_angle    75    25    76    61
+# # water special cases
+bonded_type_angle    83    82    83    29
+bonded_type_angle    85    84    85    62
+# # urea special cases
+bonded_type_angle    18   153    18    63
+bonded_type_angle    18   153    27    64
+bonded_type_angle   153    18     6    17
+
+
+####################################################
+#                                                  #
+#  The following is a list of improper dihedral    #
+#  potentials in OPLSAA/L, i.e., potentials        #
+#  maintaining planarity for a trigonal center.    #
+#                                                  #
+####################################################
+
+# # planarity at aromatic centers
+bonded_type_imptors   40     2    40    40   101
+bonded_type_imptors   40     2    40    41   101
+bonded_type_imptors   40     2    40    42   101
+bonded_type_imptors   40     2    41    41   101
+bonded_type_imptors   40     2    41    42   101
+bonded_type_imptors   40     2    42    42   101
+bonded_type_imptors   41    35    40    40   101
+bonded_type_imptors   41    35    40    41   101
+bonded_type_imptors   41    35    40    42   101
+bonded_type_imptors   41    35    41    41   101
+bonded_type_imptors   41    35    41    42   101
+bonded_type_imptors   41    35    42    42   101
+bonded_type_imptors   41    36    40    40   101
+bonded_type_imptors   41    36    40    41   101
+bonded_type_imptors   41    36    40    42   101
+bonded_type_imptors   41    36    41    41   101
+bonded_type_imptors   41    36    41    42   101
+bonded_type_imptors   41    36    42    42   101
+bonded_type_imptors   41    37    40    40   101
+bonded_type_imptors   41    37    40    41   101
+bonded_type_imptors   41    37    40    42   101
+bonded_type_imptors   41    37    41    41   101
+bonded_type_imptors   41    37    41    42   101
+bonded_type_imptors   41    37    42    42   101
+bonded_type_imptors   41    55    40    40   101
+bonded_type_imptors   41    56    40    40   101
+bonded_type_imptors   42    31    40    40   101
+bonded_type_imptors   42    31    40    41   101
+bonded_type_imptors   42    31    40    42   101
+bonded_type_imptors   42    31    41    41   101
+bonded_type_imptors   42    31    41    42   101
+bonded_type_imptors   42    31    42    42   101
+# # planarity at amide centers
+bonded_type_imptors   38    27    18    35   103
+bonded_type_imptors   38    27    18    36   103
+bonded_type_imptors   38    27    18    37   103
+bonded_type_imptors   38    27    18    44   103
+bonded_type_imptors   38    27    18    60   103
+bonded_type_imptors   38    27    19    35   103
+bonded_type_imptors   38    27    19    36   103
+bonded_type_imptors   38    27    19    37   103
+bonded_type_imptors   38    27    19    44   103
+bonded_type_imptors   38    27    20    35   103
+bonded_type_imptors   38    27    20    36   103
+bonded_type_imptors   38    27    20    37   103
+bonded_type_imptors   38    27    20    44   103
+bonded_type_imptors   45    33    18    89   103
+bonded_type_imptors   45    33    19    89   103
+bonded_type_imptors   45    33    20    89   103
+bonded_type_imptors   18    38     6     6   102
+bonded_type_imptors   18    45     6     6   102
+bonded_type_imptors   19     7    38    35   102
+bonded_type_imptors   19     7    38    36   102
+bonded_type_imptors   19     7    38    37   102
+bonded_type_imptors   19     7    38    44   102
+bonded_type_imptors   19     7    45    35   102
+bonded_type_imptors   19     7    45    36   102
+bonded_type_imptors   19     7    45    37   102
+bonded_type_imptors   19     7    45    44   102
+bonded_type_imptors   20    38    35    35   102
+bonded_type_imptors   20    38    35    36   102
+bonded_type_imptors   20    38    35    37   102
+bonded_type_imptors   20    38    36    36   102
+bonded_type_imptors   20    38    36    37   102
+bonded_type_imptors   20    38    37    37   102
+bonded_type_imptors   20    38    37   155   102
+bonded_type_imptors   20    35    38    35   102
+bonded_type_imptors   20    35    38    36   102
+bonded_type_imptors   20    35    38    37   102
+bonded_type_imptors   20    36    38    35   102
+bonded_type_imptors   20    36    38    36   102
+bonded_type_imptors   20    36    38    37   102
+bonded_type_imptors   20    37    38    35   102
+bonded_type_imptors   20    37    38    36   102
+bonded_type_imptors   20    37    38    37   102
+bonded_type_imptors   20   155    38    37   102
+# # planarity at guanidinium centers
+bonded_type_imptors   26    43     1     1   102
+bonded_type_imptors   26     1    43    35   102
+bonded_type_imptors   26     1    43    36   102
+bonded_type_imptors   26     1    43    37   102
+bonded_type_imptors   26     1    43    44   102
+bonded_type_imptors   43    26    26    26   103
+# # planarity at carboxylates
+bonded_type_imptors   39    35    28    28   103
+bonded_type_imptors   39    36    28    28   103
+bonded_type_imptors   39    37    28    28   103
+bonded_type_imptors   39    44    28    28   103
+bonded_type_imptors   39    59    28    28   103
+# # specific planarity for TRP
+bonded_type_imptors   73    57    40    90   101
+bonded_type_imptors   73    40    57    90   101
+bonded_type_imptors   73    90    40    57   101
+bonded_type_imptors   90    91    40    73   101
+bonded_type_imptors   90    40    73    91   101
+bonded_type_imptors   90    73    40    91   101
+bonded_type_imptors   91    24    40    90   101
+bonded_type_imptors   24    13    40    91   102
+bonded_type_imptors   40    24     2    73   101
+bonded_type_imptors   40     2    40    90   101
+bonded_type_imptors   40     2    40    91   101
+# # specific planarity for HIX
+bonded_type_imptors   74    24    58    76   101
+bonded_type_imptors  154    24    58    92   101
+bonded_type_imptors   74    25    58    78   101
+bonded_type_imptors   76    25     2    74   101
+bonded_type_imptors   78    24     2    74   101
+bonded_type_imptors   92    24     2   154   101
+bonded_type_imptors   75     2    24    25   101
+bonded_type_imptors   77     2    24    24   101
+bonded_type_imptors   24    13   154    77   102
+bonded_type_imptors   24    13    77    92   102
+bonded_type_imptors   24    13    74    75   102
+bonded_type_imptors   24    13    75    78   102
+# # specific planarity for URE
+bonded_type_imptors  153    27    18    18   103
+bonded_type_imptors   18   153     6     6   103
+
+
+####################################################
+#                                                  #
+#  The following is a list of the "essential"      #
+#  torsional potentials in OPLSAA/L, i.e., those   #
+#  prescribing quasi-rigid rotational barriers.    #
+#                                                  #
+####################################################
+
+# # planarity in aromatic rings (CCCC)
+bonded_type_torsion   40    40    40    40    76
+bonded_type_torsion   40    40    40    41    76
+bonded_type_torsion   40    40    40    42    76
+bonded_type_torsion   41    40    40    41    76
+bonded_type_torsion   41    40    40    42    76
+bonded_type_torsion   40    40    41    40    76
+bonded_type_torsion   40    40    41    41    76
+bonded_type_torsion   40    40    41    42    76
+bonded_type_torsion   41    40    41    41    76
+bonded_type_torsion   41    40    41    42    76
+bonded_type_torsion   40    40    42    40    76
+bonded_type_torsion   40    40    42    41    76
+bonded_type_torsion   40    40    42    42    76
+bonded_type_torsion   41    40    42    41    76
+bonded_type_torsion   41    40    42    42    76
+bonded_type_torsion   40    41    41    40    76
+bonded_type_torsion   40    41    41    41    76
+bonded_type_torsion   40    41    41    42    76
+bonded_type_torsion   41    41    41    41    76
+bonded_type_torsion   41    41    41    42    76
+# # planarity in aromatic rings (CCCH)
+bonded_type_torsion    2    40    40    40    76
+bonded_type_torsion    2    40    40    41    76
+bonded_type_torsion    2    40    40    42    76
+bonded_type_torsion    2    40    41    40    76
+bonded_type_torsion    2    40    41    41    76
+bonded_type_torsion    2    40    41    42    76
+bonded_type_torsion    2    40    42    40    76
+bonded_type_torsion    2    40    42    41    76
+bonded_type_torsion    2    40    42    42    76
+# # planarity in aromatic rings (HCCH)
+bonded_type_torsion    2    40    40     2    76
+# # planarity in (substituted) amides (XNCX)
+bonded_type_torsion    6    18    38    27    84
+bonded_type_torsion    6    18    45    33    84
+bonded_type_torsion    6    18    45    89    84
+bonded_type_torsion    6    18    38    35    84
+bonded_type_torsion    6    18    38    36    84
+bonded_type_torsion    6    18    38    37    84
+bonded_type_torsion    6    18    38    44    84
+bonded_type_torsion    6    18    38    60    84
+bonded_type_torsion    7    19    38    27    84
+bonded_type_torsion    7    19    45    33    84
+bonded_type_torsion    7    19    45    89    84
+bonded_type_torsion    7    19    38    35    84
+bonded_type_torsion    7    19    38    36    84
+bonded_type_torsion    7    19    38    37    84
+bonded_type_torsion    7    19    38    44    84
+bonded_type_torsion   35    19    38    27    85
+bonded_type_torsion   35    19    45    33    85
+bonded_type_torsion   35    19    45    89    85
+bonded_type_torsion   35    19    38    35    83
+bonded_type_torsion   35    19    38    36    83
+bonded_type_torsion   35    19    38    37    83
+bonded_type_torsion   35    19    38    44    83
+bonded_type_torsion   36    19    38    27    85
+bonded_type_torsion   36    19    45    33    85
+bonded_type_torsion   36    19    45    89    85
+bonded_type_torsion   36    19    38    35    83
+bonded_type_torsion   36    19    38    36    83
+bonded_type_torsion   36    19    38    37    83
+bonded_type_torsion   36    19    38    44    83
+bonded_type_torsion   37    19    38    27    85
+bonded_type_torsion   37    19    45    33    85
+bonded_type_torsion   37    19    45    89    85
+bonded_type_torsion   37    19    38    35    83
+bonded_type_torsion   37    19    38    36    83
+bonded_type_torsion   37    19    38    37    83
+bonded_type_torsion   37    19    38    44    83
+bonded_type_torsion   44    19    38    27    85
+bonded_type_torsion   44    19    45    33    85
+bonded_type_torsion   44    19    45    89    85
+bonded_type_torsion   44    19    38    35    83
+bonded_type_torsion   44    19    38    36    83
+bonded_type_torsion   44    19    38    37    83
+bonded_type_torsion   44    19    38    44    83
+bonded_type_torsion   35    20    38    27    85
+bonded_type_torsion   35    20    45    33    85
+bonded_type_torsion   35    20    45    89    85
+bonded_type_torsion   35    20    38    35    83
+bonded_type_torsion   35    20    38    36    83
+bonded_type_torsion   35    20    38    37    83
+bonded_type_torsion   35    20    38    44    83
+bonded_type_torsion   36    20    38    27    85
+bonded_type_torsion   36    20    45    33    85
+bonded_type_torsion   36    20    45    89    85
+bonded_type_torsion   36    20    38    35    83
+bonded_type_torsion   36    20    38    36    83
+bonded_type_torsion   36    20    38    37    83
+bonded_type_torsion   36    20    38    44    83
+bonded_type_torsion   37    20    38    27    85
+bonded_type_torsion   37    20    45    33    85
+bonded_type_torsion   37    20    45    89    85
+bonded_type_torsion   37    20    38    35    83
+bonded_type_torsion   37    20    38    36    83
+bonded_type_torsion   37    20    38    37    83
+bonded_type_torsion   37    20    38    44    83
+bonded_type_torsion   44    20    38    27    85
+bonded_type_torsion   44    20    45    33    85
+bonded_type_torsion   44    20    45    89    85
+bonded_type_torsion   44    20    38    35    83
+bonded_type_torsion   44    20    38    36    83
+bonded_type_torsion   44    20    38    37    83
+bonded_type_torsion   44    20    38    44    83
+bonded_type_torsion  155    20    38    27    85
+bonded_type_torsion  155    20    38    35    83
+bonded_type_torsion  155    20    38    36    83
+bonded_type_torsion  155    20    38    37    83
+bonded_type_torsion  155    20    38    44    83
+bonded_type_torsion  155    20    45    33    85
+bonded_type_torsion  155    20    45    89    85
+# # planarity in (substituted) guanidinium ions
+bonded_type_torsion    1    26    43    26    90
+bonded_type_torsion   35    26    43    26    89
+bonded_type_torsion   36    26    43    26    89
+bonded_type_torsion   37    26    43    26    89
+bonded_type_torsion   44    26    43    26    89
+# # planarity in phenols
+bonded_type_torsion   31    42    40    40    76
+bonded_type_torsion   31    42    40    41    76
+bonded_type_torsion   31    42    41    41    76
+bonded_type_torsion   31    42    40     2    76
+bonded_type_torsion   40    42    31    12    77
+bonded_type_torsion   41    42    31    12    77
+# # planarity in toluene (and derivates)
+bonded_type_torsion   40    40    41    35    76
+bonded_type_torsion   40    40    41    36    76
+bonded_type_torsion   40    40    41    37    76
+bonded_type_torsion   40    40    41    44    76
+bonded_type_torsion   40    41    41    35    76
+bonded_type_torsion   40    41    41    36    76
+bonded_type_torsion   40    41    41    37    76
+bonded_type_torsion   40    41    41    44    76
+bonded_type_torsion   41    40    41    35    76
+bonded_type_torsion   41    40    41    36    76
+bonded_type_torsion   41    40    41    37    76
+bonded_type_torsion   41    40    41    44    76
+bonded_type_torsion   41    41    41    35    76
+bonded_type_torsion   41    41    41    36    76
+bonded_type_torsion   41    41    41    37    76
+bonded_type_torsion   41    41    41    44    76
+bonded_type_torsion   40    40    41    55    76
+bonded_type_torsion   40    40    41    56    76
+bonded_type_torsion    2    40    41    35    76
+bonded_type_torsion    2    40    41    36    76
+bonded_type_torsion    2    40    41    37    76
+bonded_type_torsion    2    40    41    44    76
+bonded_type_torsion    2    40    41    55    76
+bonded_type_torsion    2    40    41    56    76
+# # planarity in TRP
+bonded_type_torsion   24    40    73    57    78
+bonded_type_torsion   24    40    73    90    78
+bonded_type_torsion    2    40    73    57    78
+bonded_type_torsion    2    40    73    90    78
+bonded_type_torsion   13    24    40     2    80
+bonded_type_torsion   13    24    40    73    80
+bonded_type_torsion   91    24    40     2    80
+bonded_type_torsion   91    24    40    73    80
+bonded_type_torsion   13    24    91    90    93
+bonded_type_torsion   13    24    91    40    93
+bonded_type_torsion   40    24    91    90    93
+bonded_type_torsion   40    24    91    40    93
+bonded_type_torsion   40    90    91    24    92
+bonded_type_torsion   40    90    91    40    92
+bonded_type_torsion   73    90    91    24    92
+bonded_type_torsion   73    90    91    40    92
+bonded_type_torsion    2    40    90    73    79
+bonded_type_torsion    2    40    90    91    79
+bonded_type_torsion   40    40    90    73    79
+bonded_type_torsion   40    40    90    91    79
+bonded_type_torsion    2    40    91    24    76
+bonded_type_torsion    2    40    91    90    76
+bonded_type_torsion   40    40    91    24    76
+bonded_type_torsion   40    40    91    90    76
+bonded_type_torsion   40    73    90    40    91
+bonded_type_torsion   40    73    90    91    91
+bonded_type_torsion   57    73    90    40    91
+bonded_type_torsion   57    73    90    91    91
+bonded_type_torsion    2    40    40    90    76
+bonded_type_torsion    2    40    40    91    76
+bonded_type_torsion   40    40    40    90    76
+bonded_type_torsion   40    40    40    91    76
+# # planarity in HIX
+bonded_type_torsion   13    24    74    58    95
+bonded_type_torsion   13    24   154    58    95
+bonded_type_torsion   13    24   154    92    95
+bonded_type_torsion   77    24   154    58    95
+bonded_type_torsion   77    24   154    92    95
+bonded_type_torsion   13    24    74    76    95
+bonded_type_torsion   75    24    74    58    95
+bonded_type_torsion   75    24    74    76    95
+bonded_type_torsion   75    25    74    58    99
+bonded_type_torsion   75    25    74    78    99
+bonded_type_torsion   24    74    76     2    98
+bonded_type_torsion   58    74    76     2    98
+bonded_type_torsion   24    74    76    25    98
+bonded_type_torsion   58    74    76    25    98
+bonded_type_torsion   25    74    78     2    98
+bonded_type_torsion   58    74    78     2    98
+bonded_type_torsion   25    74    78    24    98
+bonded_type_torsion   58    74    78    24    98
+bonded_type_torsion   24   154    92     2    98
+bonded_type_torsion   58   154    92     2    98
+bonded_type_torsion   24   154    92    24    98
+bonded_type_torsion   58   154    92    24    98
+bonded_type_torsion   75    25    76     2    99
+bonded_type_torsion   75    25    76    74    99
+bonded_type_torsion   13    24    78     2    96
+bonded_type_torsion   13    24    78    74    95
+bonded_type_torsion   75    24    78     2    96
+bonded_type_torsion   75    24    78    74    95
+bonded_type_torsion   13    24    92     2    96
+bonded_type_torsion   13    24    92   154    95
+bonded_type_torsion   77    24    92     2    96
+bonded_type_torsion   77    24    92   154    95
+bonded_type_torsion   76    25    75     2    97
+bonded_type_torsion   76    25    75    24    97
+bonded_type_torsion   13    24    75     2    94
+bonded_type_torsion   13    24    75    25    94
+bonded_type_torsion   78    24    75     2    94
+bonded_type_torsion   78    24    75    25    94
+bonded_type_torsion   13    24    77     2    94
+bonded_type_torsion   13    24    77    24    94
+bonded_type_torsion   92    24    77     2    94
+bonded_type_torsion   92    24    77    24    94
+bonded_type_torsion   74    24    75     2    94
+bonded_type_torsion   74    24    75    25    94
+bonded_type_torsion   74    25    75     2    97
+bonded_type_torsion   74    25    75    24    97
+bonded_type_torsion  154    24    77     2    94
+bonded_type_torsion  154    24    77    24    94
+# # residue-specific mandatory torsions
+# # PRO
+bonded_type_torsion   37    20   155    36    87
+bonded_type_torsion   38    20   155    36    88
+bonded_type_torsion  155    20    37    54    37
+bonded_type_torsion  155    20    37    38    39
+bonded_type_torsion  155    20    37    39    39
+# # planarity in urea
+bonded_type_torsion    6    18   153    18    84
+bonded_type_torsion    6    18   153    27    84
+
+
+####################################################
+#                                                  #
+#  The following is a list of the "non-essential"  #
+#  torsional potentials in OPLSAA/L, i.e., those   #
+#  prescribing kT-size rotational barriers.        #
+#                                                  #
+####################################################
+
+# # aliphatic C-C-C-C
+bonded_type_torsion   35    36    36    35     1
+bonded_type_torsion   35    36    36    36     1
+bonded_type_torsion   36    36    36    36     1
+bonded_type_torsion   35    36    36    37     1
+bonded_type_torsion   36    36    36    37     1
+bonded_type_torsion   37    36    36    37     1
+bonded_type_torsion   35    36    36    44     1
+bonded_type_torsion   36    36    36    44     1
+bonded_type_torsion   37    36    36    44     1
+bonded_type_torsion   44    36    36    44     1
+bonded_type_torsion   35    36    37    35     1
+bonded_type_torsion   35    36    37    36     1
+bonded_type_torsion   35    36    37    37     1
+bonded_type_torsion   35    36    37    44     1
+bonded_type_torsion   36    36    37    35     1
+bonded_type_torsion   36    36    37    36     1
+bonded_type_torsion   36    36    37    37     1
+bonded_type_torsion   36    36    37    44     1
+bonded_type_torsion   37    36    37    35     1
+bonded_type_torsion   37    36    37    36     1
+bonded_type_torsion   37    36    37    37     1
+bonded_type_torsion   37    36    37    44     1
+bonded_type_torsion   44    36    37    35     1
+bonded_type_torsion   44    36    37    36     1
+bonded_type_torsion   44    36    37    37     1
+bonded_type_torsion   44    36    37    44     1
+bonded_type_torsion   35    36    44    35     1
+bonded_type_torsion   35    36    44    36     1
+bonded_type_torsion   35    36    44    37     1
+bonded_type_torsion   35    36    44    44     1
+bonded_type_torsion   36    36    44    35     1
+bonded_type_torsion   36    36    44    36     1
+bonded_type_torsion   36    36    44    37     1
+bonded_type_torsion   36    36    44    44     1
+bonded_type_torsion   37    36    44    35     1
+bonded_type_torsion   37    36    44    36     1
+bonded_type_torsion   37    36    44    37     1
+bonded_type_torsion   37    36    44    44     1
+bonded_type_torsion   44    36    44    35     1
+bonded_type_torsion   44    36    44    36     1
+bonded_type_torsion   44    36    44    37     1
+bonded_type_torsion   44    36    44    44     1
+bonded_type_torsion   35    37    37    35     1
+bonded_type_torsion   35    37    37    36     1
+bonded_type_torsion   36    37    37    36     1
+bonded_type_torsion   35    37    37    37     1
+bonded_type_torsion   36    37    37    37     1
+bonded_type_torsion   37    37    37    37     1
+bonded_type_torsion   35    37    37    44     1
+bonded_type_torsion   36    37    37    44     1
+bonded_type_torsion   37    37    37    44     1
+bonded_type_torsion   44    37    37    44     1
+bonded_type_torsion   35    37    44    35     1
+bonded_type_torsion   35    37    44    36     1
+bonded_type_torsion   35    37    44    37     1
+bonded_type_torsion   35    37    44    44     1
+bonded_type_torsion   36    37    44    35     1
+bonded_type_torsion   36    37    44    36     1
+bonded_type_torsion   36    37    44    37     1
+bonded_type_torsion   36    37    44    44     1
+bonded_type_torsion   37    37    44    35     1
+bonded_type_torsion   37    37    44    36     1
+bonded_type_torsion   37    37    44    37     1
+bonded_type_torsion   37    37    44    44     1
+bonded_type_torsion   44    37    44    35     1
+bonded_type_torsion   44    37    44    36     1
+bonded_type_torsion   44    37    44    37     1
+bonded_type_torsion   44    37    44    44     1
+bonded_type_torsion   35    44    44    35     1
+bonded_type_torsion   35    44    44    36     1
+bonded_type_torsion   36    44    44    36     1
+bonded_type_torsion   35    44    44    37     1
+bonded_type_torsion   36    44    44    37     1
+bonded_type_torsion   37    44    44    37     1
+bonded_type_torsion   35    44    44    44     1
+bonded_type_torsion   36    44    44    44     1
+bonded_type_torsion   37    44    44    44     1
+bonded_type_torsion   44    44    44    44     1
+bonded_type_torsion   37    48    37    35     1
+bonded_type_torsion   35    49    36    35     1
+bonded_type_torsion   37    49    36    35     1
+bonded_type_torsion   37    54    36   155     1
+bonded_type_torsion   37    64    36    36     1
+bonded_type_torsion   37    65    36    36     1
+bonded_type_torsion   37    66    36    36     1
+bonded_type_torsion   37    68    36    35     1
+bonded_type_torsion   37    69    36    36     1
+bonded_type_torsion   37    72    37    36     1
+bonded_type_torsion   64    36    36    36     1
+bonded_type_torsion   69    36    36    35     1
+# # aliphatic C-C-C-H
+bonded_type_torsion   35    36    35    15     2
+bonded_type_torsion   35    37    35    15     2
+bonded_type_torsion   35    44    35    15     2
+bonded_type_torsion   36    36    35    15     2
+bonded_type_torsion   36    37    35    15     2
+bonded_type_torsion   36    44    35    15     2
+bonded_type_torsion   37    36    35    15     2
+bonded_type_torsion   37    37    35    15     2
+bonded_type_torsion   37    44    35    15     2
+bonded_type_torsion   44    36    35    15     2
+bonded_type_torsion   44    37    35    15     2
+bonded_type_torsion   44    44    35    15     2
+bonded_type_torsion   35    36    36    16     2
+bonded_type_torsion   35    37    36    16     2
+bonded_type_torsion   35    44    36    16     2
+bonded_type_torsion   36    36    36    16     2
+bonded_type_torsion   36    37    36    16     2
+bonded_type_torsion   36    44    36    16     2
+bonded_type_torsion   37    36    36    16     2
+bonded_type_torsion   37    37    36    16     2
+bonded_type_torsion   37    44    36    16     2
+bonded_type_torsion   44    36    36    16     2
+bonded_type_torsion   44    37    36    16     2
+bonded_type_torsion   44    44    36    16     2
+bonded_type_torsion   35    36    37    17     2
+bonded_type_torsion   35    37    37    17     2
+bonded_type_torsion   35    44    37    17     2
+bonded_type_torsion   36    36    37    17     2
+bonded_type_torsion   36    37    37    17     2
+bonded_type_torsion   36    44    37    17     2
+bonded_type_torsion   37    36    37    17     2
+bonded_type_torsion   37    37    37    17     2
+bonded_type_torsion   37    44    37    17     2
+bonded_type_torsion   44    36    37    17     2
+bonded_type_torsion   44    37    37    17     2
+bonded_type_torsion   44    44    37    17     2
+bonded_type_torsion   35    47    35    15     2
+bonded_type_torsion   35    47    37    17     2
+bonded_type_torsion   37    48    37    17     2
+bonded_type_torsion   35    49    36    16     2
+bonded_type_torsion   35    49    37    17     2
+bonded_type_torsion   36    49    35    15     2
+bonded_type_torsion   36    49    37    17     2
+bonded_type_torsion   35    51    37    17     2
+bonded_type_torsion   36    54    37    17     2
+bonded_type_torsion   36    61    37    17     2
+bonded_type_torsion   36    62    37    17     2
+bonded_type_torsion   36    63    37    17     2
+bonded_type_torsion   36    64    37    17     2
+bonded_type_torsion   36    65    37    17     2
+bonded_type_torsion   36    66    37    17     2
+bonded_type_torsion   35    67    37    17     2
+bonded_type_torsion   36    68    37    17     2
+bonded_type_torsion   36    69    37    17     2
+bonded_type_torsion   36    70    37    17     2
+bonded_type_torsion   36    71    37    17     2
+bonded_type_torsion   37    72    37    17     2
+bonded_type_torsion   37    47    35    15     2
+bonded_type_torsion   37    49    35    15     2
+bonded_type_torsion   37    49    36    16     2
+bonded_type_torsion   37    51    35    15     2
+bonded_type_torsion   37    54    36    16     2
+bonded_type_torsion   37    61    36    16     2
+bonded_type_torsion   37    62    36    16     2
+bonded_type_torsion   37    63    36    16     2
+bonded_type_torsion   37    64    36    16     2
+bonded_type_torsion   37    65    36    16     2
+bonded_type_torsion   37    66    36    16     2
+bonded_type_torsion   37    67    35    15     2
+bonded_type_torsion   37    68    36    16     2
+bonded_type_torsion   37    69    36    16     2
+bonded_type_torsion   37    70    36    16     2
+bonded_type_torsion   37    71    36    16     2
+bonded_type_torsion   46    44    46    15     2
+bonded_type_torsion   48    37    35    15     2
+bonded_type_torsion   49    36    35    15     2
+bonded_type_torsion   49    37    36    16     2
+bonded_type_torsion   54    36   155    16     2
+bonded_type_torsion   64    36    36    16     2
+bonded_type_torsion   65    36    36    16     2
+bonded_type_torsion   66    36    36    16     2
+bonded_type_torsion   68    36    35    15     2
+bonded_type_torsion   69    36    36    16     2
+bonded_type_torsion   35    37    48    16     2
+bonded_type_torsion   35    36    49    17     2
+bonded_type_torsion  155    36    54    16     2
+bonded_type_torsion   36    36    64    16     2
+bonded_type_torsion   36    36    65    16     2
+bonded_type_torsion   36    36    66    16     2
+bonded_type_torsion   35    36    68    16     2
+bonded_type_torsion   36    36    69    16     2
+bonded_type_torsion   36    37    72    16     2
+# # aliphatic H-C-C-H
+bonded_type_torsion   15    35    35    15     9
+bonded_type_torsion   15    35    36    16     9
+bonded_type_torsion   15    35    37    17     9
+bonded_type_torsion   16    36    36    16     9
+bonded_type_torsion   16    36    37    17     9
+bonded_type_torsion   17    37    37    17     9
+bonded_type_torsion   17    37    46    15     9
+bonded_type_torsion   17    37    47    17     9
+bonded_type_torsion   17    37    48    16     9
+bonded_type_torsion   17    37    49    17     9
+bonded_type_torsion   17    37    50    16     9
+bonded_type_torsion   17    37    51    17     9
+bonded_type_torsion   17    37    52    16     9
+bonded_type_torsion   17    37    53    16     9
+bonded_type_torsion   17    37    54    16     9
+bonded_type_torsion   17    37    55    16     9
+bonded_type_torsion   17    37    56    16     9
+bonded_type_torsion   17    37    57    16     9
+bonded_type_torsion   17    37    58    16     9
+bonded_type_torsion   17    37    59    16     9
+bonded_type_torsion   17    37    60    16     9
+bonded_type_torsion   17    37    61    16     9
+bonded_type_torsion   17    37    62    16     9
+bonded_type_torsion   17    37    63    16     9
+bonded_type_torsion   17    37    64    16     9
+bonded_type_torsion   17    37    65    16     9
+bonded_type_torsion   17    37    66    16     9
+bonded_type_torsion   17    37    67    16     9
+bonded_type_torsion   17    37    68    16     9
+bonded_type_torsion   17    37    69    16     9
+bonded_type_torsion   17    37    70    16     9
+bonded_type_torsion   17    37    71    16     9
+bonded_type_torsion   17    37    72    16     9
+bonded_type_torsion   15    35    47    17     9
+bonded_type_torsion   15    35    49    17     9
+bonded_type_torsion   16    36    49    17     9
+bonded_type_torsion   15    35    51    17     9
+bonded_type_torsion   16    36    54    16     9
+bonded_type_torsion   16    36    61    16     9
+bonded_type_torsion   16    36    62    16     9
+bonded_type_torsion   16    36    63    16     9
+bonded_type_torsion   16    36    64    16     9
+bonded_type_torsion   16    36    65    16     9
+bonded_type_torsion   16    36    66    16     9
+bonded_type_torsion   15    35    67    16     9
+bonded_type_torsion   16    36    68    16     9
+bonded_type_torsion   16    36    69    16     9
+bonded_type_torsion   16    36    70    16     9
+bonded_type_torsion   16    36    71    16     9
+bonded_type_torsion   16    36    72    16     9
+bonded_type_torsion   16    36   155    16     9
+# # mixed Cal-Cal-Cal-Car
+# # missing
+# # mixed H-Cal-Cal-Car
+bonded_type_torsion   15    35    36    41    10
+bonded_type_torsion   15    35    37    41    10
+bonded_type_torsion   15    35    44    41    10
+bonded_type_torsion   16    36    36    41    10
+bonded_type_torsion   16    36    37    41    10
+bonded_type_torsion   16    36    44    41    10
+bonded_type_torsion   17    37    36    41    10
+bonded_type_torsion   17    37    37    41    10
+bonded_type_torsion   17    37    44    41    10
+bonded_type_torsion   17    37    55    41    10
+bonded_type_torsion   17    37    56    41    10
+bonded_type_torsion   17    37    57    73    10
+bonded_type_torsion   17    37    58    74    10
+bonded_type_torsion   17    37    58   154    10
+# # mixed Cal-Cal-Car-Car
+# # this are empty for OPLS
+# # mixed Hal-Cal-Car-Car
+# # this are empty for OPLS
+# # aliphatic carbonyl (amide, aldehyde, ketone) Cal-Cal-Cal-C
+bonded_type_torsion   35    36    36    38     4
+bonded_type_torsion   36    36    36    38     4
+bonded_type_torsion   37    36    36    38     4
+bonded_type_torsion   44    36    36    38     4
+bonded_type_torsion   35    36    37    38     4
+bonded_type_torsion   36    36    37    38     4
+bonded_type_torsion   37    36    37    38     4
+bonded_type_torsion   44    36    37    38     4
+bonded_type_torsion   35    36    44    38     4
+bonded_type_torsion   36    36    44    38     4
+bonded_type_torsion   37    36    44    38     4
+bonded_type_torsion   44    36    44    38     4
+bonded_type_torsion   35    37    36    38     4
+bonded_type_torsion   36    37    36    38     4
+bonded_type_torsion   37    37    36    38     4
+bonded_type_torsion   44    37    36    38     4
+bonded_type_torsion   35    37    37    38     4
+bonded_type_torsion   36    37    37    38     4
+bonded_type_torsion   37    37    37    38     4
+bonded_type_torsion   44    37    37    38     4
+bonded_type_torsion   35    37    44    38     4
+bonded_type_torsion   36    37    44    38     4
+bonded_type_torsion   37    37    44    38     4
+bonded_type_torsion   44    37    44    38     4
+bonded_type_torsion   35    44    44    38     4
+bonded_type_torsion   36    44    44    38     4
+bonded_type_torsion   37    44    44    38     4
+bonded_type_torsion   44    44    44    38     4
+bonded_type_torsion   37    62    36    38     4
+bonded_type_torsion   35    51    37    38     4
+bonded_type_torsion   36    54    37    38     4
+# # aliphatic carbonyl (amide, aldehyde, ketone) H-Cal-Cal-C
+bonded_type_torsion   15    35    36    38    13
+bonded_type_torsion   15    35    37    38    13
+bonded_type_torsion   15    35    44    38    13
+bonded_type_torsion   16    36    36    38    13
+bonded_type_torsion   16    36    37    38    13
+bonded_type_torsion   16    36    44    38    13
+bonded_type_torsion   17    37    36    38    13
+bonded_type_torsion   17    37    37    38    13
+bonded_type_torsion   17    37    44    38    13
+bonded_type_torsion   15    46    37    38    13
+bonded_type_torsion   15    46    44    38    13
+bonded_type_torsion   17    47    37    38    13
+bonded_type_torsion   16    48    37    38    13
+bonded_type_torsion   17    49    37    38    13
+bonded_type_torsion   16    50    37    38    13
+bonded_type_torsion   17    51    37    38    13
+bonded_type_torsion   16    52    37    38    13
+bonded_type_torsion   16    53    37    38    13
+bonded_type_torsion   16    54    37    38    13
+bonded_type_torsion   16    55    37    38    13
+bonded_type_torsion   16    56    37    38    13
+bonded_type_torsion   16    57    37    38    13
+bonded_type_torsion   16    58    37    38    13
+bonded_type_torsion   16    59    37    38    13
+bonded_type_torsion   16    60    37    38    13
+bonded_type_torsion   16    61    37    38    13
+bonded_type_torsion   16    62    37    38    13
+bonded_type_torsion   16    63    37    38    13
+bonded_type_torsion   16    64    37    38    13
+bonded_type_torsion   16    65    37    38    13
+bonded_type_torsion   16    66    37    38    13
+bonded_type_torsion   16    67    37    38    13
+bonded_type_torsion   16    68    37    38    13
+bonded_type_torsion   16    69    37    38    13
+bonded_type_torsion   16    70    37    38    13
+bonded_type_torsion   16    71    37    38    13
+bonded_type_torsion   16    72    37    38    13
+bonded_type_torsion   17    37    60    38    13
+bonded_type_torsion   16    62    36    38    13
+# # phenylated aliphatic carbonyl (amide, aldehyde, ketone) Car-Cal-Cal-C
+bonded_type_torsion   41    36    36    38     4
+bonded_type_torsion   41    36    37    38     4
+bonded_type_torsion   41    36    44    38     4
+bonded_type_torsion   41    37    36    38     4
+bonded_type_torsion   41    37    37    38     4
+bonded_type_torsion   41    37    44    38     4
+bonded_type_torsion   41    44    36    38     4
+bonded_type_torsion   41    44    37    38     4
+bonded_type_torsion   41    44    44    38     4
+bonded_type_torsion   41    55    37    38     4
+bonded_type_torsion   41    56    37    38     4
+# # hydroxylated aliphatic carbonyl (amide, aldehyde, ketone) Oalc-Cal-Cal-C
+bonded_type_torsion   29    36    36    38    17
+bonded_type_torsion   29    36    37    38    17
+bonded_type_torsion   29    36    44    38    17
+bonded_type_torsion   29    37    36    38    17
+bonded_type_torsion   29    37    37    38    17
+bonded_type_torsion   29    37    44    38    17
+bonded_type_torsion   29    44    36    38    17
+bonded_type_torsion   29    44    37    38    17
+bonded_type_torsion   29    44    44    38    17
+bonded_type_torsion   29    51    37    38    17
+# # thiolated/sulfidated aliphatic carbonyl (amide, aldehyde, ketone) S-Cal-Cal-C
+bonded_type_torsion   79    36    36    38    19
+bonded_type_torsion   79    36    37    38    19
+bonded_type_torsion   79    36    44    38    19
+bonded_type_torsion   79    37    36    38    19
+bonded_type_torsion   79    37    37    38    19
+bonded_type_torsion   79    37    44    38    19
+bonded_type_torsion   79    44    36    38    19
+bonded_type_torsion   79    44    37    38    19
+bonded_type_torsion   79    44    44    38    19
+bonded_type_torsion   80    36    36    38    19
+bonded_type_torsion   80    36    37    38    19
+bonded_type_torsion   80    36    44    38    19
+bonded_type_torsion   80    37    36    38    19
+bonded_type_torsion   80    37    37    38    19
+bonded_type_torsion   80    37    44    38    19
+bonded_type_torsion   80    44    36    38    19
+bonded_type_torsion   80    44    37    38    19
+bonded_type_torsion   80    44    44    38    19
+# # aldehyde/amide/keto aliphatic carbonyl (amide, aldehyde, ketone) C-Cal-Cal-C
+bonded_type_torsion   38    36    36    38     4
+bonded_type_torsion   38    36    37    38     4
+bonded_type_torsion   38    36    44    38     4
+bonded_type_torsion   38    37    37    38     4
+bonded_type_torsion   38    37    44    38     4
+bonded_type_torsion   38    44    44    38     4
+# # aliphatic carbonyl X-Cal-C-O
+# # this is empty in OPLS
+# # aliphatical. subst. amide Cal-Cal-Cal-N
+bonded_type_torsion   35    36    36    19     5
+bonded_type_torsion   36    36    36    19     5
+bonded_type_torsion   37    36    36    19     5
+bonded_type_torsion   44    36    36    19     5
+bonded_type_torsion   35    36    37    19     5
+bonded_type_torsion   36    36    37    19     5
+bonded_type_torsion   37    36    37    19     5
+bonded_type_torsion   44    36    37    19     5
+bonded_type_torsion   35    36    44    19     5
+bonded_type_torsion   36    36    44    19     5
+bonded_type_torsion   37    36    44    19     5
+bonded_type_torsion   44    36    44    19     5
+bonded_type_torsion   35    37    36    19     5
+bonded_type_torsion   36    37    36    19     5
+bonded_type_torsion   37    37    36    19     5
+bonded_type_torsion   44    37    36    19     5
+bonded_type_torsion   35    37    37    19     5
+bonded_type_torsion   36    37    37    19     5
+bonded_type_torsion   37    37    37    19     5
+bonded_type_torsion   44    37    37    19     5
+bonded_type_torsion   35    37    44    19     5
+bonded_type_torsion   36    37    44    19     5
+bonded_type_torsion   37    37    44    19     5
+bonded_type_torsion   44    37    44    19     5
+bonded_type_torsion   35    44    44    19     5
+bonded_type_torsion   36    44    44    19     5
+bonded_type_torsion   37    44    44    19     5
+bonded_type_torsion   44    44    44    19     5
+bonded_type_torsion   35    36    36    20     5
+bonded_type_torsion   36    36    36    20     5
+bonded_type_torsion   37    36    36    20     5
+bonded_type_torsion   44    36    36    20     5
+bonded_type_torsion   35    36    37    20     5
+bonded_type_torsion   36    36    37    20     5
+bonded_type_torsion   37    36    37    20     5
+bonded_type_torsion   44    36    37    20     5
+bonded_type_torsion   35    36    44    20     5
+bonded_type_torsion   36    36    44    20     5
+bonded_type_torsion   37    36    44    20     5
+bonded_type_torsion   44    36    44    20     5
+bonded_type_torsion   35    37    36    20     5
+bonded_type_torsion   36    37    36    20     5
+bonded_type_torsion   37    37    36    20     5
+bonded_type_torsion   44    37    36    20     5
+bonded_type_torsion   35    37    37    20     5
+bonded_type_torsion   36    37    37    20     5
+bonded_type_torsion   37    37    37    20     5
+bonded_type_torsion   44    37    37    20     5
+bonded_type_torsion   35    37    44    20     5
+bonded_type_torsion   36    37    44    20     5
+bonded_type_torsion   37    37    44    20     5
+bonded_type_torsion   44    37    44    20     5
+bonded_type_torsion   35    44    44    20     5
+bonded_type_torsion   36    44    44    20     5
+bonded_type_torsion   37    44    44    20     5
+bonded_type_torsion   44    44    44    20     5
+bonded_type_torsion   35    51    37    19     5
+bonded_type_torsion   36    54    37    20     5
+bonded_type_torsion   54    36   155    20     5
+# # aliphatical. subst. amide H-Cal-Cal-N
+bonded_type_torsion   15    35    36    19    14
+bonded_type_torsion   15    35    37    19    14
+bonded_type_torsion   15    35    44    19    14
+bonded_type_torsion   16    36    36    19    14
+bonded_type_torsion   16    36    37    19    14
+bonded_type_torsion   16    36    44    19    14
+bonded_type_torsion   17    37    36    19    14
+bonded_type_torsion   17    37    37    19    14
+bonded_type_torsion   17    37    44    19    14
+bonded_type_torsion   15    35    36    20    14
+bonded_type_torsion   15    35    37    20    14
+bonded_type_torsion   15    35    44    20    14
+bonded_type_torsion   16    36    36    20    14
+bonded_type_torsion   16    36    37    20    14
+bonded_type_torsion   16    36    44    20    14
+bonded_type_torsion   17    37    36    20    14
+bonded_type_torsion   17    37    37    20    14
+bonded_type_torsion   17    37    44    20    14
+bonded_type_torsion   15    46    37    19    14
+bonded_type_torsion   15    46    44    19    14
+bonded_type_torsion   17    47    37    19    14
+bonded_type_torsion   16    48    37    19    14
+bonded_type_torsion   17    49    37    19    14
+bonded_type_torsion   16    50    37    19    14
+bonded_type_torsion   17    51    37    19    14
+bonded_type_torsion   16    52    37    19    14
+bonded_type_torsion   16    53    37    19    14
+bonded_type_torsion   16    54    37    20    14
+bonded_type_torsion   16    55    37    19    14
+bonded_type_torsion   16    56    37    19    14
+bonded_type_torsion   16    57    37    19    14
+bonded_type_torsion   16    58    37    19    14
+bonded_type_torsion   16    59    37    19    14
+bonded_type_torsion   16    60    37    19    14
+bonded_type_torsion   16    61    37    19    14
+bonded_type_torsion   16    62    37    19    14
+bonded_type_torsion   16    63    37    19    14
+bonded_type_torsion   16    64    37    19    14
+bonded_type_torsion   16    65    37    19    14
+bonded_type_torsion   16    66    37    19    14
+bonded_type_torsion   16    67    37    19    14
+bonded_type_torsion   16    68    37    19    14
+bonded_type_torsion   16    69    37    19    14
+bonded_type_torsion   16    70    37    19    14
+bonded_type_torsion   16    71    37    20    14
+bonded_type_torsion   16    72    37    20    14
+bonded_type_torsion   16    36   155    20    14
+# # phenylated aliphatic subst. amide Car-Cal-Cal-N
+bonded_type_torsion   41    36    36    19     5
+bonded_type_torsion   41    36    37    19     5
+bonded_type_torsion   41    36    44    19     5
+bonded_type_torsion   41    37    36    19     5
+bonded_type_torsion   41    37    37    19     5
+bonded_type_torsion   41    37    44    19     5
+bonded_type_torsion   41    44    36    19     5
+bonded_type_torsion   41    44    37    19     5
+bonded_type_torsion   41    44    44    19     5
+bonded_type_torsion   41    36    36    20     5
+bonded_type_torsion   41    36    37    20     5
+bonded_type_torsion   41    36    44    20     5
+bonded_type_torsion   41    37    36    20     5
+bonded_type_torsion   41    37    37    20     5
+bonded_type_torsion   41    37    44    20     5
+bonded_type_torsion   41    44    36    20     5
+bonded_type_torsion   41    44    37    20     5
+bonded_type_torsion   41    44    44    20     5
+bonded_type_torsion   41    55    37    19     5
+bonded_type_torsion   41    56    37    19     5
+# # hydroxycarbon subst. amide Oalc-Cal-Cal-N
+bonded_type_torsion   29    36    36    19    18
+bonded_type_torsion   29    36    37    19    18
+bonded_type_torsion   29    36    44    19    18
+bonded_type_torsion   29    37    36    19    18
+bonded_type_torsion   29    37    37    19    18
+bonded_type_torsion   29    37    44    19    18
+bonded_type_torsion   29    44    36    19    18
+bonded_type_torsion   29    44    37    19    18
+bonded_type_torsion   29    44    44    19    18
+bonded_type_torsion   29    36    36    20    18
+bonded_type_torsion   29    36    37    20    18
+bonded_type_torsion   29    36    44    20    18
+bonded_type_torsion   29    37    36    20    18
+bonded_type_torsion   29    37    37    20    18
+bonded_type_torsion   29    37    44    20    18
+bonded_type_torsion   29    44    36    20    18
+bonded_type_torsion   29    44    37    20    18
+bonded_type_torsion   29    44    44    20    18
+bonded_type_torsion   29    51    37    19    18
+# # thiolated subst. amide S-Cal-Cal-N
+bonded_type_torsion   79    36    36    19    20
+bonded_type_torsion   79    36    37    19    20
+bonded_type_torsion   79    36    44    19    20
+bonded_type_torsion   79    37    36    19    20
+bonded_type_torsion   79    37    37    19    20
+bonded_type_torsion   79    37    44    19    20
+bonded_type_torsion   79    44    36    19    20
+bonded_type_torsion   79    44    37    19    20
+bonded_type_torsion   79    44    44    19    20
+bonded_type_torsion   79    36    36    20    20
+bonded_type_torsion   79    36    37    20    20
+bonded_type_torsion   79    36    44    20    20
+bonded_type_torsion   79    37    36    20    20
+bonded_type_torsion   79    37    37    20    20
+bonded_type_torsion   79    37    44    20    20
+bonded_type_torsion   79    44    36    20    20
+bonded_type_torsion   79    44    37    20    20
+bonded_type_torsion   79    44    44    20    20
+bonded_type_torsion   80    36    36    19    20
+bonded_type_torsion   80    36    37    19    20
+bonded_type_torsion   80    36    44    19    20
+bonded_type_torsion   80    37    36    19    20
+bonded_type_torsion   80    37    37    19    20
+bonded_type_torsion   80    37    44    19    20
+bonded_type_torsion   80    44    36    19    20
+bonded_type_torsion   80    44    37    19    20
+bonded_type_torsion   80    44    44    19    20
+bonded_type_torsion   80    36    36    20    20
+bonded_type_torsion   80    36    37    20    20
+bonded_type_torsion   80    36    44    20    20
+bonded_type_torsion   80    37    36    20    20
+bonded_type_torsion   80    37    37    20    20
+bonded_type_torsion   80    37    44    20    20
+bonded_type_torsion   80    44    36    20    20
+bonded_type_torsion   80    44    37    20    20
+bonded_type_torsion   80    44    44    20    20
+# # aldehyde/amide/keto aliphatic subst. amide C-Cal-Cal-N
+bonded_type_torsion   38    36    36    19     5
+bonded_type_torsion   38    36    37    19     5
+bonded_type_torsion   38    36    44    19     5
+bonded_type_torsion   38    37    36    19     5
+bonded_type_torsion   38    37    37    19     5
+bonded_type_torsion   38    37    44    19     5
+bonded_type_torsion   38    44    36    19     5
+bonded_type_torsion   38    44    37    19     5
+bonded_type_torsion   38    44    44    19     5
+bonded_type_torsion   38    36    36    20     5
+bonded_type_torsion   38    36    37    20     5
+bonded_type_torsion   38    36    44    20     5
+bonded_type_torsion   38    37    36    20     5
+bonded_type_torsion   38    37    37    20     5
+bonded_type_torsion   38    37    44    20     5
+bonded_type_torsion   38    44    36    20     5
+bonded_type_torsion   38    44    37    20     5
+bonded_type_torsion   38    44    44    20     5
+# # aliphatic amide Cal-Cal-C-N
+bonded_type_torsion   35    36    38    18    32
+bonded_type_torsion   36    36    38    18    32
+bonded_type_torsion   37    36    38    18    32
+bonded_type_torsion   44    36    38    18    32
+bonded_type_torsion   35    37    38    18    32
+bonded_type_torsion   36    37    38    18    32
+bonded_type_torsion   37    37    38    18    32
+bonded_type_torsion   44    37    38    18    32
+bonded_type_torsion   35    44    38    18    32
+bonded_type_torsion   36    44    38    18    32
+bonded_type_torsion   37    44    38    18    32
+bonded_type_torsion   44    44    38    18    32
+bonded_type_torsion   35    36    38    19    32
+bonded_type_torsion   36    36    38    19    32
+bonded_type_torsion   37    36    38    19    32
+bonded_type_torsion   44    36    38    19    32
+bonded_type_torsion   35    37    38    19    32
+bonded_type_torsion   36    37    38    19    32
+bonded_type_torsion   37    37    38    19    32
+bonded_type_torsion   44    37    38    19    32
+bonded_type_torsion   35    44    38    19    32
+bonded_type_torsion   36    44    38    19    32
+bonded_type_torsion   37    44    38    19    32
+bonded_type_torsion   44    44    38    19    32
+bonded_type_torsion   35    36    38    20    32
+bonded_type_torsion   36    36    38    20    32
+bonded_type_torsion   37    36    38    20    32
+bonded_type_torsion   44    36    38    20    32
+bonded_type_torsion   35    37    38    20    32
+bonded_type_torsion   36    37    38    20    32
+bonded_type_torsion   37    37    38    20    32
+bonded_type_torsion   44    37    38    20    32
+bonded_type_torsion   35    44    38    20    32
+bonded_type_torsion   36    44    38    20    32
+bonded_type_torsion   37    44    38    20    32
+bonded_type_torsion   44    44    38    20    32
+bonded_type_torsion   46    37    38    18    32
+bonded_type_torsion   46    44    38    18    32
+bonded_type_torsion   47    37    38    18    32
+bonded_type_torsion   48    37    38    18    32
+bonded_type_torsion   49    37    38    18    32
+bonded_type_torsion   50    37    38    18    32
+bonded_type_torsion   51    37    38    18    32
+bonded_type_torsion   52    37    38    18    32
+bonded_type_torsion   53    37    38    18    32
+bonded_type_torsion   54    37    38    18    32
+bonded_type_torsion   55    37    38    18    32
+bonded_type_torsion   56    37    38    18    32
+bonded_type_torsion   57    37    38    18    32
+bonded_type_torsion   58    37    38    18    32
+bonded_type_torsion   59    37    38    18    32
+bonded_type_torsion   60    37    38    18    32
+bonded_type_torsion   61    37    38    18    32
+bonded_type_torsion   62    37    38    18    32
+bonded_type_torsion   63    37    38    18    32
+bonded_type_torsion   64    37    38    18    32
+bonded_type_torsion   65    37    38    18    32
+bonded_type_torsion   66    37    38    18    32
+bonded_type_torsion   67    37    38    18    32
+bonded_type_torsion   68    37    38    18    32
+bonded_type_torsion   69    37    38    18    32
+bonded_type_torsion   70    37    38    18    32
+bonded_type_torsion   71    37    38    18    32
+bonded_type_torsion   72    37    38    18    32
+bonded_type_torsion   46    37    38    19    32
+bonded_type_torsion   46    44    38    19    32
+bonded_type_torsion   47    37    38    19    32
+bonded_type_torsion   48    37    38    19    32
+bonded_type_torsion   49    37    38    19    32
+bonded_type_torsion   50    37    38    19    32
+bonded_type_torsion   51    37    38    19    32
+bonded_type_torsion   52    37    38    19    32
+bonded_type_torsion   53    37    38    19    32
+bonded_type_torsion   54    37    38    19    32
+bonded_type_torsion   55    37    38    19    32
+bonded_type_torsion   56    37    38    19    32
+bonded_type_torsion   57    37    38    19    32
+bonded_type_torsion   58    37    38    19    32
+bonded_type_torsion   59    37    38    19    32
+bonded_type_torsion   60    37    38    19    32
+bonded_type_torsion   61    37    38    19    32
+bonded_type_torsion   62    37    38    19    32
+bonded_type_torsion   63    37    38    19    32
+bonded_type_torsion   64    37    38    19    32
+bonded_type_torsion   65    37    38    19    32
+bonded_type_torsion   66    37    38    19    32
+bonded_type_torsion   67    37    38    19    32
+bonded_type_torsion   68    37    38    19    32
+bonded_type_torsion   69    37    38    19    32
+bonded_type_torsion   70    37    38    19    32
+bonded_type_torsion   71    37    38    19    32
+bonded_type_torsion   72    37    38    19    32
+bonded_type_torsion   46    37    38    20    32
+bonded_type_torsion   46    44    38    20    32
+bonded_type_torsion   47    37    38    20    32
+bonded_type_torsion   48    37    38    20    32
+bonded_type_torsion   49    37    38    20    32
+bonded_type_torsion   50    37    38    20    32
+bonded_type_torsion   51    37    38    20    32
+bonded_type_torsion   52    37    38    20    32
+bonded_type_torsion   53    37    38    20    32
+bonded_type_torsion   54    37    38    20    32
+bonded_type_torsion   55    37    38    20    32
+bonded_type_torsion   56    37    38    20    32
+bonded_type_torsion   57    37    38    20    32
+bonded_type_torsion   58    37    38    20    32
+bonded_type_torsion   59    37    38    20    32
+bonded_type_torsion   60    37    38    20    32
+bonded_type_torsion   61    37    38    20    32
+bonded_type_torsion   62    37    38    20    32
+bonded_type_torsion   63    37    38    20    32
+bonded_type_torsion   64    37    38    20    32
+bonded_type_torsion   65    37    38    20    32
+bonded_type_torsion   66    37    38    20    32
+bonded_type_torsion   67    37    38    20    32
+bonded_type_torsion   68    37    38    20    32
+bonded_type_torsion   69    37    38    20    32
+bonded_type_torsion   70    37    38    20    32
+bonded_type_torsion   71    37    38    20    32
+bonded_type_torsion   72    37    38    20    32
+# # aliphatic N-substituted amide Cal-Cal-N-C
+bonded_type_torsion   35    36    19    38    36
+bonded_type_torsion   36    36    19    38    36
+bonded_type_torsion   37    36    19    38    36
+bonded_type_torsion   44    36    19    38    36
+bonded_type_torsion   35    37    19    38    36
+bonded_type_torsion   36    37    19    38    36
+bonded_type_torsion   37    37    19    38    36
+bonded_type_torsion   44    37    19    38    36
+bonded_type_torsion   35    44    19    38    36
+bonded_type_torsion   36    44    19    38    36
+bonded_type_torsion   37    44    19    38    36
+bonded_type_torsion   44    44    19    38    36
+bonded_type_torsion   35    36    20    38    36
+bonded_type_torsion   36    36    20    38    36
+bonded_type_torsion   37    36    20    38    36
+bonded_type_torsion   44    36    20    38    36
+bonded_type_torsion   35    37    20    38    36
+bonded_type_torsion   36    37    20    38    36
+bonded_type_torsion   37    37    20    38    36
+bonded_type_torsion   44    37    20    38    36
+bonded_type_torsion   35    44    20    38    36
+bonded_type_torsion   36    44    20    38    36
+bonded_type_torsion   37    44    20    38    36
+bonded_type_torsion   44    44    20    38    36
+bonded_type_torsion   35    36    19    45    36
+bonded_type_torsion   36    36    19    45    36
+bonded_type_torsion   37    36    19    45    36
+bonded_type_torsion   44    36    19    45    36
+bonded_type_torsion   35    37    19    45    36
+bonded_type_torsion   36    37    19    45    36
+bonded_type_torsion   37    37    19    45    36
+bonded_type_torsion   44    37    19    45    36
+bonded_type_torsion   35    44    19    45    36
+bonded_type_torsion   36    44    19    45    36
+bonded_type_torsion   37    44    19    45    36
+bonded_type_torsion   44    44    19    45    36
+bonded_type_torsion   35    36    20    45    36
+bonded_type_torsion   36    36    20    45    36
+bonded_type_torsion   37    36    20    45    36
+bonded_type_torsion   44    36    20    45    36
+bonded_type_torsion   35    37    20    45    36
+bonded_type_torsion   36    37    20    45    36
+bonded_type_torsion   37    37    20    45    36
+bonded_type_torsion   44    37    20    45    36
+bonded_type_torsion   35    44    20    45    36
+bonded_type_torsion   36    44    20    45    36
+bonded_type_torsion   37    44    20    45    36
+bonded_type_torsion   44    44    20    45    36
+bonded_type_torsion   46    37    19    38    36
+bonded_type_torsion   46    44    19    38    36
+bonded_type_torsion   47    37    19    38    36
+bonded_type_torsion   48    37    19    38    36
+bonded_type_torsion   49    37    19    38    36
+bonded_type_torsion   50    37    19    38    36
+bonded_type_torsion   51    37    19    38    36
+bonded_type_torsion   52    37    19    38    36
+bonded_type_torsion   53    37    19    38    36
+bonded_type_torsion   54    37    20    38    36
+bonded_type_torsion   55    37    19    38    36
+bonded_type_torsion   56    37    19    38    36
+bonded_type_torsion   57    37    19    38    36
+bonded_type_torsion   58    37    19    38    36
+bonded_type_torsion   59    37    19    38    36
+bonded_type_torsion   60    37    19    38    36
+bonded_type_torsion   61    37    19    38    36
+bonded_type_torsion   62    37    19    38    36
+bonded_type_torsion   63    37    19    38    36
+bonded_type_torsion   64    37    19    38    36
+bonded_type_torsion   65    37    19    38    36
+bonded_type_torsion   66    37    19    38    36
+bonded_type_torsion   67    37    19    38    36
+bonded_type_torsion   68    37    19    38    36
+bonded_type_torsion   69    37    19    38    36
+bonded_type_torsion   70    37    19    38    36
+bonded_type_torsion   71    37    20    38    36
+bonded_type_torsion   72    37    20    38    36
+bonded_type_torsion   46    37    19    45    36
+bonded_type_torsion   46    44    19    45    36
+bonded_type_torsion   47    37    19    45    36
+bonded_type_torsion   48    37    19    45    36
+bonded_type_torsion   49    37    19    45    36
+bonded_type_torsion   50    37    19    45    36
+bonded_type_torsion   51    37    19    45    36
+bonded_type_torsion   52    37    19    45    36
+bonded_type_torsion   53    37    19    45    36
+bonded_type_torsion   54    37    20    45    36
+bonded_type_torsion   55    37    19    45    36
+bonded_type_torsion   56    37    19    45    36
+bonded_type_torsion   57    37    19    45    36
+bonded_type_torsion   58    37    19    45    36
+bonded_type_torsion   59    37    19    45    36
+bonded_type_torsion   60    37    19    45    36
+bonded_type_torsion   61    37    19    45    36
+bonded_type_torsion   62    37    19    45    36
+bonded_type_torsion   63    37    19    45    36
+bonded_type_torsion   64    37    19    45    36
+bonded_type_torsion   65    37    19    45    36
+bonded_type_torsion   66    37    19    45    36
+bonded_type_torsion   67    37    19    45    36
+bonded_type_torsion   68    37    19    45    36
+bonded_type_torsion   69    37    19    45    36
+bonded_type_torsion   70    37    19    45    36
+bonded_type_torsion   71    37    20    45    36
+bonded_type_torsion   72    37    20    45    36
+# # aliphatic N-substituted amide Cal-Cal-N-H
+# # this is empty in OPLS
+# # polyamide N-Cal-C-N
+bonded_type_torsion   19    36    38    18    33
+bonded_type_torsion   19    36    38    19    33
+bonded_type_torsion   19    36    38    20    33
+bonded_type_torsion   20    36    38    18    33
+bonded_type_torsion   20    36    38    19    33
+bonded_type_torsion   20    36    38    20    33
+bonded_type_torsion   19    37    38    18    33
+bonded_type_torsion   19    37    38    19    33
+bonded_type_torsion   19    37    38    20    33
+bonded_type_torsion   20    37    38    18    33
+bonded_type_torsion   20    37    38    19    33
+bonded_type_torsion   20    37    38    20    33
+bonded_type_torsion   19    44    38    18    33
+bonded_type_torsion   19    44    38    19    33
+bonded_type_torsion   19    44    38    20    33
+bonded_type_torsion   20    44    38    18    33
+bonded_type_torsion   20    44    38    19    33
+bonded_type_torsion   20    44    38    20    33
+# # polyamide or similar (carbonyl C): C-N-Cal-C
+bonded_type_torsion   38    19    36    38    38
+bonded_type_torsion   38    19    37    38    38
+bonded_type_torsion   38    19    44    38    38
+bonded_type_torsion   38    20    36    38    38
+bonded_type_torsion   38    20    37    38    38
+bonded_type_torsion   38    20    44    38    38
+bonded_type_torsion   45    19    36    38    38
+bonded_type_torsion   45    19    37    38    38
+bonded_type_torsion   45    19    44    38    38
+bonded_type_torsion   45    20    36    38    38
+bonded_type_torsion   45    20    37    38    38
+bonded_type_torsion   45    20    44    38    38
+# # amide-substituted ammonium N(+)-Cal-C-N
+bonded_type_torsion   22    36    38    18    34
+bonded_type_torsion   22    36    38    19    34
+bonded_type_torsion   22    36    38    20    34
+bonded_type_torsion   23    36    38    18    34
+bonded_type_torsion   23    36    38    19    34
+bonded_type_torsion   23    36    38    20    34
+bonded_type_torsion   22    37    38    18    34
+bonded_type_torsion   22    37    38    19    34
+bonded_type_torsion   22    37    38    20    34
+bonded_type_torsion   23    37    38    18    34
+bonded_type_torsion   23    37    38    19    34
+bonded_type_torsion   23    37    38    20    34
+bonded_type_torsion   22    44    38    18    34
+bonded_type_torsion   22    44    38    19    34
+bonded_type_torsion   22    44    38    20    34
+bonded_type_torsion   23    44    38    18    34
+bonded_type_torsion   23    44    38    19    34
+bonded_type_torsion   23    44    38    20    34
+# # aliphatic carboxylate Cal-Cal-Cal-C
+bonded_type_torsion   35    36    36    39     6
+bonded_type_torsion   36    36    36    39     6
+bonded_type_torsion   37    36    36    39     6
+bonded_type_torsion   44    36    36    39     6
+bonded_type_torsion   35    36    37    39     6
+bonded_type_torsion   36    36    37    39     6
+bonded_type_torsion   37    36    37    39     6
+bonded_type_torsion   44    36    37    39     6
+bonded_type_torsion   35    36    44    39     6
+bonded_type_torsion   36    36    44    39     6
+bonded_type_torsion   37    36    44    39     6
+bonded_type_torsion   44    36    44    39     6
+bonded_type_torsion   35    37    36    39     6
+bonded_type_torsion   36    37    36    39     6
+bonded_type_torsion   37    37    36    39     6
+bonded_type_torsion   44    37    36    39     6
+bonded_type_torsion   35    37    37    39     6
+bonded_type_torsion   36    37    37    39     6
+bonded_type_torsion   37    37    37    39     6
+bonded_type_torsion   44    37    37    39     6
+bonded_type_torsion   35    37    44    39     6
+bonded_type_torsion   36    37    44    39     6
+bonded_type_torsion   37    37    44    39     6
+bonded_type_torsion   44    37    44    39     6
+bonded_type_torsion   35    44    44    39     6
+bonded_type_torsion   36    44    44    39     6
+bonded_type_torsion   37    44    44    39     6
+bonded_type_torsion   44    44    44    39     6
+bonded_type_torsion   37    61    36    39     6
+bonded_type_torsion   36    54    37    39     6
+# # aliphatic carboxylate H-Cal-Cal-C
+bonded_type_torsion   15    35    36    39    15
+bonded_type_torsion   15    35    37    39    15
+bonded_type_torsion   15    35    44    39    15
+bonded_type_torsion   16    36    36    39    15
+bonded_type_torsion   16    36    37    39    15
+bonded_type_torsion   16    36    44    39    15
+bonded_type_torsion   17    37    36    39    15
+bonded_type_torsion   17    37    37    39    15
+bonded_type_torsion   17    37    44    39    15
+bonded_type_torsion   15    46    37    39    15
+bonded_type_torsion   15    46    44    39    15
+bonded_type_torsion   17    47    37    39    15
+bonded_type_torsion   16    48    37    39    15
+bonded_type_torsion   17    49    37    39    15
+bonded_type_torsion   16    50    37    39    15
+bonded_type_torsion   17    51    37    39    15
+bonded_type_torsion   16    52    37    39    15
+bonded_type_torsion   16    53    37    39    15
+bonded_type_torsion   16    54    37    39    15
+bonded_type_torsion   16    55    37    39    15
+bonded_type_torsion   16    56    37    39    15
+bonded_type_torsion   16    57    37    39    15
+bonded_type_torsion   16    58    37    39    15
+bonded_type_torsion   16    59    37    39    15
+bonded_type_torsion   16    60    37    39    15
+bonded_type_torsion   16    61    37    39    15
+bonded_type_torsion   16    62    37    39    15
+bonded_type_torsion   16    63    37    39    15
+bonded_type_torsion   16    64    37    39    15
+bonded_type_torsion   16    65    37    39    15
+bonded_type_torsion   16    66    37    39    15
+bonded_type_torsion   16    67    37    39    15
+bonded_type_torsion   16    68    37    39    15
+bonded_type_torsion   16    69    37    39    15
+bonded_type_torsion   16    70    37    39    15
+bonded_type_torsion   16    71    37    39    15
+bonded_type_torsion   16    72    37    39    15
+bonded_type_torsion   17    37    59    39    15
+bonded_type_torsion   16    61    36    39    15
+# # phenylated aliphatic carboxylate Car-Cal-Cal-C
+bonded_type_torsion   41    36    36    39     4
+bonded_type_torsion   41    36    37    39     4
+bonded_type_torsion   41    36    44    39     4
+bonded_type_torsion   41    37    36    39     4
+bonded_type_torsion   41    37    37    39     4
+bonded_type_torsion   41    37    44    39     4
+bonded_type_torsion   41    44    36    39     4
+bonded_type_torsion   41    44    37    39     4
+bonded_type_torsion   41    44    44    39     4
+bonded_type_torsion   41    55    37    39     4
+bonded_type_torsion   41    56    37    39     4
+# # hydroxylated aliphatic carboxylate Oalc-Cal-Cal-C
+bonded_type_torsion   29    36    36    39    17
+bonded_type_torsion   29    36    37    39    17
+bonded_type_torsion   29    36    44    39    17
+bonded_type_torsion   29    37    36    39    17
+bonded_type_torsion   29    37    37    39    17
+bonded_type_torsion   29    37    44    39    17
+bonded_type_torsion   29    44    36    39    17
+bonded_type_torsion   29    44    37    39    17
+bonded_type_torsion   29    44    44    39    17
+bonded_type_torsion   29    51    37    39    17
+# # thiolated/sulfidated aliphatic carboxylate S-Cal-Cal-C
+bonded_type_torsion   79    36    36    39    19
+bonded_type_torsion   79    36    37    39    19
+bonded_type_torsion   79    36    44    39    19
+bonded_type_torsion   79    37    36    39    19
+bonded_type_torsion   79    37    37    39    19
+bonded_type_torsion   79    37    44    39    19
+bonded_type_torsion   79    44    36    39    19
+bonded_type_torsion   79    44    37    39    19
+bonded_type_torsion   79    44    44    39    19
+bonded_type_torsion   80    36    36    39    19
+bonded_type_torsion   80    36    37    39    19
+bonded_type_torsion   80    36    44    39    19
+bonded_type_torsion   80    37    36    39    19
+bonded_type_torsion   80    37    37    39    19
+bonded_type_torsion   80    37    44    39    19
+bonded_type_torsion   80    44    36    39    19
+bonded_type_torsion   80    44    37    39    19
+bonded_type_torsion   80    44    44    39    19
+# # amide/keto/aldehyde aliphatic carboxylate C-Cal-Cal-C
+bonded_type_torsion   38    36    36    39     4
+bonded_type_torsion   38    36    37    39     4
+bonded_type_torsion   38    36    44    39     4
+bonded_type_torsion   38    37    36    39     4
+bonded_type_torsion   38    37    37    39     4
+bonded_type_torsion   38    37    44    39     4
+bonded_type_torsion   38    44    36    39     4
+bonded_type_torsion   38    44    37    39     4
+bonded_type_torsion   38    44    44    39     4
+# # amidated aliphatic carboxylate N-Cal-Cal-C
+bonded_type_torsion   19    36    36    39     5
+bonded_type_torsion   19    36    37    39     5
+bonded_type_torsion   19    36    44    39     5
+bonded_type_torsion   19    37    36    39     5
+bonded_type_torsion   19    37    37    39     5
+bonded_type_torsion   19    37    44    39     5
+bonded_type_torsion   19    44    36    39     5
+bonded_type_torsion   19    44    37    39     5
+bonded_type_torsion   19    44    44    39     5
+bonded_type_torsion   20    36    36    39     5
+bonded_type_torsion   20    36    37    39     5
+bonded_type_torsion   20    36    44    39     5
+bonded_type_torsion   20    37    36    39     5
+bonded_type_torsion   20    37    37    39     5
+bonded_type_torsion   20    37    44    39     5
+bonded_type_torsion   20    44    36    39     5
+bonded_type_torsion   20    44    37    39     5
+bonded_type_torsion   20    44    44    39     5
+# # (form)amide-substituted carboxylate: C-N-Cal-C
+bonded_type_torsion   38    19    36    39    40
+bonded_type_torsion   38    19    37    39    40
+bonded_type_torsion   38    19    44    39    40
+bonded_type_torsion   38    20    36    39    40
+bonded_type_torsion   38    20    37    39    40
+bonded_type_torsion   38    20    44    39    40
+bonded_type_torsion   45    19    36    39    40
+bonded_type_torsion   45    19    37    39    40
+bonded_type_torsion   45    19    44    39    40
+bonded_type_torsion   45    20    36    39    40
+bonded_type_torsion   45    20    37    39    40
+bonded_type_torsion   45    20    44    39    40
+# # aliphatic dicarboxylate C-Cal-Cal-C
+bonded_type_torsion   39    36    36    39     5
+bonded_type_torsion   39    36    37    39     5
+bonded_type_torsion   39    36    44    39     5
+bonded_type_torsion   39    37    37    39     5
+bonded_type_torsion   39    37    44    39     5
+bonded_type_torsion   39    44    44    39     5
+# # aliphatic carboxylates twofold term Cal-Cal-C-O
+bonded_type_torsion   35    36    39    28    41
+bonded_type_torsion   36    36    39    28    41
+bonded_type_torsion   37    36    39    28    41
+bonded_type_torsion   44    36    39    28    41
+bonded_type_torsion   35    37    39    28    41
+bonded_type_torsion   36    37    39    28    41
+bonded_type_torsion   37    37    39    28    41
+bonded_type_torsion   44    37    39    28    41
+bonded_type_torsion   46    37    39    28    41
+bonded_type_torsion   47    37    39    28    41
+bonded_type_torsion   48    37    39    28    41
+bonded_type_torsion   49    37    39    28    41
+bonded_type_torsion   50    37    39    28    41
+bonded_type_torsion   51    37    39    28    41
+bonded_type_torsion   52    37    39    28    41
+bonded_type_torsion   53    37    39    28    41
+bonded_type_torsion   54    37    39    28    41
+bonded_type_torsion   55    37    39    28    41
+bonded_type_torsion   56    37    39    28    41
+bonded_type_torsion   57    37    39    28    41
+bonded_type_torsion   58    37    39    28    41
+bonded_type_torsion   59    37    39    28    41
+bonded_type_torsion   60    37    39    28    41
+bonded_type_torsion   61    37    39    28    41
+bonded_type_torsion   62    37    39    28    41
+bonded_type_torsion   63    37    39    28    41
+bonded_type_torsion   64    37    39    28    41
+bonded_type_torsion   65    37    39    28    41
+bonded_type_torsion   66    37    39    28    41
+bonded_type_torsion   67    37    39    28    41
+bonded_type_torsion   68    37    39    28    41
+bonded_type_torsion   69    37    39    28    41
+bonded_type_torsion   70    37    39    28    41
+bonded_type_torsion   71    37    39    28    41
+bonded_type_torsion   72    37    39    28    41
+bonded_type_torsion   35    44    39    28    41
+bonded_type_torsion   36    44    39    28    41
+bonded_type_torsion   37    44    39    28    41
+bonded_type_torsion   44    44    39    28    41
+bonded_type_torsion   46    44    39    28    41
+bonded_type_torsion   37    59    39    28    41
+# # aliphatic ammonium ion Cal-Cal-Cal-N
+bonded_type_torsion   35    36    36    22     7
+bonded_type_torsion   36    36    36    22     7
+bonded_type_torsion   37    36    36    22     7
+bonded_type_torsion   44    36    36    22     7
+bonded_type_torsion   35    36    37    22     7
+bonded_type_torsion   36    36    37    22     7
+bonded_type_torsion   37    36    37    22     7
+bonded_type_torsion   44    36    37    22     7
+bonded_type_torsion   35    36    44    22     7
+bonded_type_torsion   36    36    44    22     7
+bonded_type_torsion   37    36    44    22     7
+bonded_type_torsion   44    36    44    22     7
+bonded_type_torsion   35    37    36    22     7
+bonded_type_torsion   36    37    36    22     7
+bonded_type_torsion   37    37    36    22     7
+bonded_type_torsion   44    37    36    22     7
+bonded_type_torsion   35    37    37    22     7
+bonded_type_torsion   36    37    37    22     7
+bonded_type_torsion   37    37    37    22     7
+bonded_type_torsion   44    37    37    22     7
+bonded_type_torsion   35    37    44    22     7
+bonded_type_torsion   36    37    44    22     7
+bonded_type_torsion   37    37    44    22     7
+bonded_type_torsion   44    37    44    22     7
+bonded_type_torsion   35    44    44    22     7
+bonded_type_torsion   36    44    44    22     7
+bonded_type_torsion   37    44    44    22     7
+bonded_type_torsion   44    44    44    22     7
+bonded_type_torsion   35    36    36    23     7
+bonded_type_torsion   36    36    36    23     7
+bonded_type_torsion   37    36    36    23     7
+bonded_type_torsion   44    36    36    23     7
+bonded_type_torsion   35    36    37    23     7
+bonded_type_torsion   36    36    37    23     7
+bonded_type_torsion   37    36    37    23     7
+bonded_type_torsion   44    36    37    23     7
+bonded_type_torsion   35    36    44    23     7
+bonded_type_torsion   36    36    44    23     7
+bonded_type_torsion   37    36    44    23     7
+bonded_type_torsion   44    36    44    23     7
+bonded_type_torsion   35    37    36    23     7
+bonded_type_torsion   36    37    36    23     7
+bonded_type_torsion   37    37    36    23     7
+bonded_type_torsion   44    37    36    23     7
+bonded_type_torsion   35    37    37    23     7
+bonded_type_torsion   36    37    37    23     7
+bonded_type_torsion   37    37    37    23     7
+bonded_type_torsion   44    37    37    23     7
+bonded_type_torsion   35    37    44    23     7
+bonded_type_torsion   36    37    44    23     7
+bonded_type_torsion   37    37    44    23     7
+bonded_type_torsion   44    37    44    23     7
+bonded_type_torsion   35    44    44    23     7
+bonded_type_torsion   36    44    44    23     7
+bonded_type_torsion   37    44    44    23     7
+bonded_type_torsion   44    44    44    23     7
+bonded_type_torsion   37    70    36    22     7
+bonded_type_torsion   66    36    36    22     7
+# # aliphatic ammonium ion H-Cal-Cal-N
+bonded_type_torsion   15    35    36    22    16
+bonded_type_torsion   15    35    37    22    16
+bonded_type_torsion   15    35    44    22    16
+bonded_type_torsion   16    36    36    22    16
+bonded_type_torsion   16    36    37    22    16
+bonded_type_torsion   16    36    44    22    16
+bonded_type_torsion   17    37    36    22    16
+bonded_type_torsion   17    37    37    22    16
+bonded_type_torsion   17    37    44    22    16
+bonded_type_torsion   15    35    36    23    16
+bonded_type_torsion   15    35    37    23    16
+bonded_type_torsion   15    35    44    23    16
+bonded_type_torsion   16    36    36    23    16
+bonded_type_torsion   16    36    37    23    16
+bonded_type_torsion   16    36    44    23    16
+bonded_type_torsion   17    37    36    23    16
+bonded_type_torsion   17    37    37    23    16
+bonded_type_torsion   17    37    44    23    16
+bonded_type_torsion   15    46    37    22    16
+bonded_type_torsion   15    46    44    22    16
+bonded_type_torsion   17    47    37    22    16
+bonded_type_torsion   16    48    37    22    16
+bonded_type_torsion   17    49    37    22    16
+bonded_type_torsion   16    50    37    22    16
+bonded_type_torsion   17    51    37    22    16
+bonded_type_torsion   16    52    37    22    16
+bonded_type_torsion   16    53    37    22    16
+bonded_type_torsion   16    54    37    23    16
+bonded_type_torsion   16    55    37    22    16
+bonded_type_torsion   16    56    37    22    16
+bonded_type_torsion   16    57    37    22    16
+bonded_type_torsion   16    58    37    22    16
+bonded_type_torsion   16    59    37    22    16
+bonded_type_torsion   16    60    37    22    16
+bonded_type_torsion   16    61    37    22    16
+bonded_type_torsion   16    62    37    22    16
+bonded_type_torsion   16    63    37    22    16
+bonded_type_torsion   16    64    37    22    16
+bonded_type_torsion   16    65    37    22    16
+bonded_type_torsion   16    66    37    22    16
+bonded_type_torsion   16    67    37    22    16
+bonded_type_torsion   16    68    37    22    16
+bonded_type_torsion   16    69    37    22    16
+bonded_type_torsion   16    70    37    22    16
+bonded_type_torsion   16    70    36    22    16
+bonded_type_torsion   16    71    37    23    16
+bonded_type_torsion   16    72    37    23    16
+# # phenylated aliphatic ammonium ion Car-Cal-Cal-N
+bonded_type_torsion   41    36    36    22     5
+bonded_type_torsion   41    36    37    22     5
+bonded_type_torsion   41    36    44    22     5
+bonded_type_torsion   41    37    36    22     5
+bonded_type_torsion   41    37    37    22     5
+bonded_type_torsion   41    37    44    22     5
+bonded_type_torsion   41    44    36    22     5
+bonded_type_torsion   41    44    37    22     5
+bonded_type_torsion   41    44    44    22     5
+bonded_type_torsion   41    36    36    23     5
+bonded_type_torsion   41    36    37    23     5
+bonded_type_torsion   41    36    44    23     5
+bonded_type_torsion   41    37    36    23     5
+bonded_type_torsion   41    37    37    23     5
+bonded_type_torsion   41    37    44    23     5
+bonded_type_torsion   41    44    36    23     5
+bonded_type_torsion   41    44    37    23     5
+bonded_type_torsion   41    44    44    23     5
+bonded_type_torsion   41    55    37    22     5
+bonded_type_torsion   41    56    37    22     5
+# # keto/aldehyde/amide aliphatic ammonium ion C-Cal-Cal-N
+bonded_type_torsion   38    36    36    22     5
+bonded_type_torsion   38    36    37    22     5
+bonded_type_torsion   38    36    44    22     5
+bonded_type_torsion   38    37    36    22     5
+bonded_type_torsion   38    37    37    22     5
+bonded_type_torsion   38    37    44    22     5
+bonded_type_torsion   38    44    36    22     5
+bonded_type_torsion   38    44    37    22     5
+bonded_type_torsion   38    44    44    22     5
+bonded_type_torsion   38    36    36    23     5
+bonded_type_torsion   38    36    37    23     5
+bonded_type_torsion   38    36    44    23     5
+bonded_type_torsion   38    37    36    23     5
+bonded_type_torsion   38    37    37    23     5
+bonded_type_torsion   38    37    44    23     5
+bonded_type_torsion   38    44    36    23     5
+bonded_type_torsion   38    44    37    23     5
+bonded_type_torsion   38    44    44    23     5
+# # zwitterionic amino acid C-Cal-Cal-N
+bonded_type_torsion   39    36    36    22     5
+bonded_type_torsion   39    36    37    22     5
+bonded_type_torsion   39    36    44    22     5
+bonded_type_torsion   39    37    36    22     5
+bonded_type_torsion   39    37    37    22     5
+bonded_type_torsion   39    37    44    22     5
+bonded_type_torsion   39    44    36    22     5
+bonded_type_torsion   39    44    37    22     5
+bonded_type_torsion   39    44    44    22     5
+bonded_type_torsion   39    36    36    23     5
+bonded_type_torsion   39    36    37    23     5
+bonded_type_torsion   39    36    44    23     5
+bonded_type_torsion   39    37    36    23     5
+bonded_type_torsion   39    37    37    23     5
+bonded_type_torsion   39    37    44    23     5
+bonded_type_torsion   39    44    36    23     5
+bonded_type_torsion   39    44    37    23     5
+bonded_type_torsion   39    44    44    23     5
+# # hydroxycarbon-subst. ammonium ion Oalc-Cal-Cal-N
+bonded_type_torsion   29    36    36    22    18
+bonded_type_torsion   29    36    37    22    18
+bonded_type_torsion   29    36    44    22    18
+bonded_type_torsion   29    37    36    22    18
+bonded_type_torsion   29    37    37    22    18
+bonded_type_torsion   29    37    44    22    18
+bonded_type_torsion   29    44    36    22    18
+bonded_type_torsion   29    44    37    22    18
+bonded_type_torsion   29    44    44    22    18
+bonded_type_torsion   29    36    36    23    18
+bonded_type_torsion   29    36    37    23    18
+bonded_type_torsion   29    36    44    23    18
+bonded_type_torsion   29    37    36    23    18
+bonded_type_torsion   29    37    37    23    18
+bonded_type_torsion   29    37    44    23    18
+bonded_type_torsion   29    44    36    23    18
+bonded_type_torsion   29    44    37    23    18
+bonded_type_torsion   29    44    44    23    18
+bonded_type_torsion   29    51    37    22    18
+# # thiolated subst. ammonium ion S-Cal-Cal-N
+bonded_type_torsion   79    36    36    22    20
+bonded_type_torsion   79    36    37    22    20
+bonded_type_torsion   79    36    44    22    20
+bonded_type_torsion   79    37    36    22    20
+bonded_type_torsion   79    37    37    22    20
+bonded_type_torsion   79    37    44    22    20
+bonded_type_torsion   79    44    36    22    20
+bonded_type_torsion   79    44    37    22    20
+bonded_type_torsion   79    44    44    22    20
+bonded_type_torsion   79    36    36    23    20
+bonded_type_torsion   79    36    37    23    20
+bonded_type_torsion   79    36    44    23    20
+bonded_type_torsion   79    37    36    23    20
+bonded_type_torsion   79    37    37    23    20
+bonded_type_torsion   79    37    44    23    20
+bonded_type_torsion   79    44    36    23    20
+bonded_type_torsion   79    44    37    23    20
+bonded_type_torsion   79    44    44    23    20
+bonded_type_torsion   80    36    36    22    20
+bonded_type_torsion   80    36    37    22    20
+bonded_type_torsion   80    36    44    22    20
+bonded_type_torsion   80    37    36    22    20
+bonded_type_torsion   80    37    37    22    20
+bonded_type_torsion   80    37    44    22    20
+bonded_type_torsion   80    44    36    22    20
+bonded_type_torsion   80    44    37    22    20
+bonded_type_torsion   80    44    44    22    20
+bonded_type_torsion   80    36    36    23    20
+bonded_type_torsion   80    36    37    23    20
+bonded_type_torsion   80    36    44    23    20
+bonded_type_torsion   80    37    36    23    20
+bonded_type_torsion   80    37    37    23    20
+bonded_type_torsion   80    37    44    23    20
+bonded_type_torsion   80    44    36    23    20
+bonded_type_torsion   80    44    37    23    20
+bonded_type_torsion   80    44    44    23    20
+# # aliphatic ammonium ion Cal-Cal-N-H
+bonded_type_torsion   35    36    22     9    42
+bonded_type_torsion   35    37    22     9    42
+bonded_type_torsion   35    44    22     9    42
+bonded_type_torsion   36    36    22     9    42
+bonded_type_torsion   36    37    22     9    42
+bonded_type_torsion   36    44    22     9    42
+bonded_type_torsion   37    36    22     9    42
+bonded_type_torsion   37    37    22     9    42
+bonded_type_torsion   37    44    22     9    42
+bonded_type_torsion   44    36    22     9    42
+bonded_type_torsion   44    37    22     9    42
+bonded_type_torsion   44    44    22     9    42
+bonded_type_torsion   35    36    23    10    42
+bonded_type_torsion   35    37    23    10    42
+bonded_type_torsion   35    44    23    10    42
+bonded_type_torsion   36    36    23    10    42
+bonded_type_torsion   36    37    23    10    42
+bonded_type_torsion   36    44    23    10    42
+bonded_type_torsion   37    36    23    10    42
+bonded_type_torsion   37    37    23    10    42
+bonded_type_torsion   37    44    23    10    42
+bonded_type_torsion   44    36    23    10    42
+bonded_type_torsion   44    37    23    10    42
+bonded_type_torsion   44    44    23    10    42
+bonded_type_torsion   46    37    22     9    42
+bonded_type_torsion   46    44    22     9    42
+bonded_type_torsion   47    37    22     9    42
+bonded_type_torsion   48    37    22     9    42
+bonded_type_torsion   49    37    22     9    42
+bonded_type_torsion   50    37    22     9    42
+bonded_type_torsion   51    37    22     9    42
+bonded_type_torsion   52    37    22     9    42
+bonded_type_torsion   53    37    22     9    42
+bonded_type_torsion   54    37    23    10    42
+bonded_type_torsion   55    37    22     9    42
+bonded_type_torsion   56    37    22     9    42
+bonded_type_torsion   57    37    22     9    42
+bonded_type_torsion   58    37    22     9    42
+bonded_type_torsion   59    37    22     9    42
+bonded_type_torsion   60    37    22     9    42
+bonded_type_torsion   61    37    22     9    42
+bonded_type_torsion   62    37    22     9    42
+bonded_type_torsion   63    37    22     9    42
+bonded_type_torsion   64    37    22     9    42
+bonded_type_torsion   65    37    22     9    42
+bonded_type_torsion   66    37    22     9    42
+bonded_type_torsion   67    37    22     9    42
+bonded_type_torsion   68    37    22     9    42
+bonded_type_torsion   69    37    22     9    42
+bonded_type_torsion   70    37    22     9    42
+bonded_type_torsion   70    36    22     9    42
+bonded_type_torsion   71    37    23    10    42
+bonded_type_torsion   72    37    23    10    42
+# # aliphatic ammonium ion Hal-Cal-N-H
+bonded_type_torsion   15    35    22     9    43
+bonded_type_torsion   16    36    22     9    43
+bonded_type_torsion   17    37    22     9    43
+bonded_type_torsion   15    35    23    10    43
+bonded_type_torsion   16    36    23    10    43
+bonded_type_torsion   17    37    23    10    43
+# # aliphatic ammonium ion Cal-Cal-N(+)-Cal
+bonded_type_torsion   35    36    23    35     1
+bonded_type_torsion   35    36    23    36     1
+bonded_type_torsion   35    36    23    37     1
+bonded_type_torsion   35    36    23    44     1
+bonded_type_torsion   35    37    23    35     1
+bonded_type_torsion   35    37    23    36     1
+bonded_type_torsion   35    37    23    37     1
+bonded_type_torsion   35    37    23    44     1
+bonded_type_torsion   35    44    23    35     1
+bonded_type_torsion   35    44    23    36     1
+bonded_type_torsion   35    44    23    37     1
+bonded_type_torsion   35    44    23    44     1
+bonded_type_torsion   36    36    23    35     1
+bonded_type_torsion   36    36    23    36     1
+bonded_type_torsion   36    36    23    37     1
+bonded_type_torsion   36    36    23    44     1
+bonded_type_torsion   36    37    23    35     1
+bonded_type_torsion   36    37    23    36     1
+bonded_type_torsion   36    37    23    37     1
+bonded_type_torsion   36    37    23    44     1
+bonded_type_torsion   36    44    23    35     1
+bonded_type_torsion   36    44    23    36     1
+bonded_type_torsion   36    44    23    37     1
+bonded_type_torsion   36    44    23    44     1
+bonded_type_torsion   37    36    23    35     1
+bonded_type_torsion   37    36    23    36     1
+bonded_type_torsion   37    36    23    37     1
+bonded_type_torsion   37    36    23    44     1
+bonded_type_torsion   37    37    23    35     1
+bonded_type_torsion   37    37    23    36     1
+bonded_type_torsion   37    37    23    37     1
+bonded_type_torsion   37    37    23    44     1
+bonded_type_torsion   37    44    23    35     1
+bonded_type_torsion   37    44    23    36     1
+bonded_type_torsion   37    44    23    37     1
+bonded_type_torsion   37    44    23    44     1
+bonded_type_torsion   44    36    23    35     1
+bonded_type_torsion   44    36    23    36     1
+bonded_type_torsion   44    36    23    37     1
+bonded_type_torsion   44    36    23    44     1
+bonded_type_torsion   44    37    23    35     1
+bonded_type_torsion   44    37    23    36     1
+bonded_type_torsion   44    37    23    37     1
+bonded_type_torsion   44    37    23    44     1
+bonded_type_torsion   44    44    23    35     1
+bonded_type_torsion   44    44    23    36     1
+bonded_type_torsion   44    44    23    37     1
+bonded_type_torsion   44    44    23    44     1
+bonded_type_torsion   36   155    23    37     1
+# # aliphatic ammonium ion Hal-Cal-N(+)-Cal
+bonded_type_torsion   15    35    23    35     2
+bonded_type_torsion   15    35    23    36     2
+bonded_type_torsion   15    35    23    37     2
+bonded_type_torsion   15    35    23    44     2
+bonded_type_torsion   16    36    23    35     2
+bonded_type_torsion   16    36    23    36     2
+bonded_type_torsion   16    36    23    37     2
+bonded_type_torsion   16    36    23    44     2
+bonded_type_torsion   17    37    23    35     2
+bonded_type_torsion   17    37    23    36     2
+bonded_type_torsion   17    37    23    37     2
+bonded_type_torsion   17    37    23    44     2
+bonded_type_torsion   17    37    23   155     2
+bonded_type_torsion   16   155    23    37     2
+# # keto-substituted ammonium ion C-Cal-N(+)-Cal
+bonded_type_torsion   38    36    23    35     4
+bonded_type_torsion   38    36    23    36     4
+bonded_type_torsion   38    36    23    37     4
+bonded_type_torsion   38    36    23    44     4
+bonded_type_torsion   38    37    23    35     4
+bonded_type_torsion   38    37    23    36     4
+bonded_type_torsion   38    37    23    37     4
+bonded_type_torsion   38    37    23    44     4
+bonded_type_torsion   38    44    23    35     4
+bonded_type_torsion   38    44    23    36     4
+bonded_type_torsion   38    44    23    37     4
+bonded_type_torsion   38    44    23    44     4
+bonded_type_torsion   38    37    23   155     4
+# # keto-substituted ammonium ion C-Cal-N-H
+bonded_type_torsion   38    36    22     9    42
+bonded_type_torsion   38    36    23    10    42
+bonded_type_torsion   38    37    22     9    42
+bonded_type_torsion   38    37    23    10    42
+bonded_type_torsion   38    44    22     9    42
+bonded_type_torsion   38    44    23    10    42
+# # amino acid C-Cal-N-H
+bonded_type_torsion   39    36    22     9    42
+bonded_type_torsion   39    36    23    10    42
+bonded_type_torsion   39    37    22     9    42
+bonded_type_torsion   39    37    23    10    42
+bonded_type_torsion   39    44    22     9    42
+bonded_type_torsion   39    44    23    10    42
+# # amino acid C-Cal-N-Cal (not that this is a guess to support free PRO)
+bonded_type_torsion   39    36    23    35     4
+bonded_type_torsion   39    36    23    36     4
+bonded_type_torsion   39    36    23    37     4
+bonded_type_torsion   39    36    23    44     4
+bonded_type_torsion   39    37    23    35     4
+bonded_type_torsion   39    37    23    36     4
+bonded_type_torsion   39    37    23    37     4
+bonded_type_torsion   39    37    23    44     4
+bonded_type_torsion   39    44    23    35     4
+bonded_type_torsion   39    44    23    36     4
+bonded_type_torsion   39    44    23    37     4
+bonded_type_torsion   39    44    23    44     4
+bonded_type_torsion   39    37    23   155     4
+# # alcoholic Cal-Cal-Cal-Oalc
+# # missing
+# # alcoholic H-Cal-Cal-Oalc
+bonded_type_torsion   15    35    36    29    11
+bonded_type_torsion   15    35    37    29    11
+bonded_type_torsion   16    36    36    29    11
+bonded_type_torsion   16    36    37    29    11
+bonded_type_torsion   17    37    36    29    11
+bonded_type_torsion   17    37    37    29    11
+bonded_type_torsion   17    37    50    29    11
+bonded_type_torsion   17    37    51    29    11
+bonded_type_torsion   15    35    51    29    11
+# # alcoholic Cal-Cal-Oalc-Halc
+bonded_type_torsion   35    36    29     4    24
+bonded_type_torsion   35    37    29     5    24
+bonded_type_torsion   36    36    29     4    24
+bonded_type_torsion   36    37    29     5    24
+bonded_type_torsion   37    36    29     4    24
+bonded_type_torsion   37    37    29     5    24
+bonded_type_torsion   37    51    29     5    24
+bonded_type_torsion   35    51    29     5    24
+# # alcoholic Hal-Cal-Oalc-Halc
+bonded_type_torsion   16    36    29     4    25
+bonded_type_torsion   17    37    29     5    25
+bonded_type_torsion   16    50    29     4    25
+bonded_type_torsion   17    51    29     5    25
+# # sulfidic Cal-Cal-Cal-Sx
+# # missing for thiols/disulfides
+bonded_type_torsion   35    36    36    80     3
+bonded_type_torsion   36    36    36    80     3
+bonded_type_torsion   37    36    36    80     3
+bonded_type_torsion   44    36    36    80     3
+bonded_type_torsion   35    36    37    80     3
+bonded_type_torsion   36    36    37    80     3
+bonded_type_torsion   37    36    37    80     3
+bonded_type_torsion   44    36    37    80     3
+bonded_type_torsion   35    36    44    80     3
+bonded_type_torsion   36    36    44    80     3
+bonded_type_torsion   37    36    44    80     3
+bonded_type_torsion   44    36    44    80     3
+bonded_type_torsion   35    37    36    80     3
+bonded_type_torsion   36    37    36    80     3
+bonded_type_torsion   37    37    36    80     3
+bonded_type_torsion   44    37    36    80     3
+bonded_type_torsion   35    37    37    80     3
+bonded_type_torsion   36    37    37    80     3
+bonded_type_torsion   37    37    37    80     3
+bonded_type_torsion   44    37    37    80     3
+bonded_type_torsion   35    37    44    80     3
+bonded_type_torsion   36    37    44    80     3
+bonded_type_torsion   37    37    44    80     3
+bonded_type_torsion   44    37    44    80     3
+bonded_type_torsion   35    44    44    80     3
+bonded_type_torsion   36    44    44    80     3
+bonded_type_torsion   37    44    44    80     3
+bonded_type_torsion   44    44    44    80     3
+bonded_type_torsion   37    63    36    80     3
+# # thiolic/sulfidic H-Cal-Cal-Sx
+bonded_type_torsion   15    35    36    79    12
+bonded_type_torsion   15    35    37    79    12
+bonded_type_torsion   16    36    36    79    12
+bonded_type_torsion   16    36    37    79    12
+bonded_type_torsion   17    37    36    79    12
+bonded_type_torsion   17    37    37    79    12
+bonded_type_torsion   15    35    36    80    12
+bonded_type_torsion   15    35    37    80    12
+bonded_type_torsion   16    36    36    80    12
+bonded_type_torsion   16    36    37    80    12
+bonded_type_torsion   17    37    36    80    12
+bonded_type_torsion   17    37    37    80    12
+bonded_type_torsion   15    35    36    81    12
+bonded_type_torsion   15    35    37    81    12
+bonded_type_torsion   16    36    36    81    12
+bonded_type_torsion   16    36    37    81    12
+bonded_type_torsion   17    37    36    81    12
+bonded_type_torsion   17    37    37    81    12
+bonded_type_torsion   17    37    52    79    12
+bonded_type_torsion   17    37    53    81    12
+bonded_type_torsion   16    63    36    80    12
+# # thiolic Cal-Cal-S-H
+bonded_type_torsion   35    36    79    11    26
+bonded_type_torsion   35    37    79    11    26
+bonded_type_torsion   36    36    79    11    26
+bonded_type_torsion   36    37    79    11    26
+bonded_type_torsion   37    36    79    11    26
+bonded_type_torsion   37    37    79    11    26
+bonded_type_torsion   37    52    79    11    26
+# # thiolic Hal-Cal-S-H
+bonded_type_torsion   16    36    79    11    27
+bonded_type_torsion   17    37    79    11    27
+bonded_type_torsion   16    52    79    11    27
+# # sulfidic Cal-Cal-S-Cal
+bonded_type_torsion   35    36    80    35    28
+bonded_type_torsion   35    36    80    36    28
+bonded_type_torsion   35    36    80    37    28
+bonded_type_torsion   36    36    80    35    28
+bonded_type_torsion   36    36    80    36    28
+bonded_type_torsion   36    36    80    37    28
+bonded_type_torsion   37    36    80    35    28
+bonded_type_torsion   37    36    80    36    28
+bonded_type_torsion   37    36    80    37    28
+bonded_type_torsion   35    37    80    35    28
+bonded_type_torsion   35    37    80    36    28
+bonded_type_torsion   35    37    80    37    28
+bonded_type_torsion   36    37    80    35    28
+bonded_type_torsion   36    37    80    36    28
+bonded_type_torsion   36    37    80    37    28
+bonded_type_torsion   37    37    80    35    28
+bonded_type_torsion   37    37    80    36    28
+bonded_type_torsion   37    37    80    37    28
+bonded_type_torsion   63    36    80    35    28
+# # sulfidic Hal-Cal-S-Cal
+bonded_type_torsion   15    35    80    35    30
+bonded_type_torsion   15    35    80    36    30
+bonded_type_torsion   15    35    80    37    30
+bonded_type_torsion   16    36    80    35    30
+bonded_type_torsion   16    36    80    36    30
+bonded_type_torsion   16    36    80    37    30
+bonded_type_torsion   17    37    80    35    30
+bonded_type_torsion   17    37    80    36    30
+bonded_type_torsion   17    37    80    37    30
+# # disulfide Cal-Cal-S-S
+bonded_type_torsion   35    36    81    81    29
+bonded_type_torsion   35    37    81    81    29
+bonded_type_torsion   36    36    81    81    29
+bonded_type_torsion   36    37    81    81    29
+bonded_type_torsion   37    36    81    81    29
+bonded_type_torsion   37    37    81    81    29
+# # disulfide Hal-Cal-S-S
+bonded_type_torsion   16    36    81    81    31
+bonded_type_torsion   17    37    81    81    31
+# # disulfide Cal-S-S-Cal
+bonded_type_torsion   35    81    81    35    82
+bonded_type_torsion   35    81    81    36    82
+bonded_type_torsion   35    81    81    37    82
+bonded_type_torsion   35    81    81    44    82
+bonded_type_torsion   36    81    81    36    82
+bonded_type_torsion   36    81    81    37    82
+bonded_type_torsion   36    81    81    44    82
+bonded_type_torsion   37    81    81    37    82
+bonded_type_torsion   37    81    81    44    82
+bonded_type_torsion   44    81    81    44    82
+bonded_type_torsion   53    81    81    53    82
+# # aliphatical. subst. guanidinium Cal-Cal-Cal-N
+bonded_type_torsion   35    36    36    26     8
+bonded_type_torsion   36    36    36    26     8
+bonded_type_torsion   37    36    36    26     8
+bonded_type_torsion   44    36    36    26     8
+bonded_type_torsion   35    36    37    26     8
+bonded_type_torsion   36    36    37    26     8
+bonded_type_torsion   37    36    37    26     8
+bonded_type_torsion   44    36    37    26     8
+bonded_type_torsion   35    36    44    26     8
+bonded_type_torsion   36    36    44    26     8
+bonded_type_torsion   37    36    44    26     8
+bonded_type_torsion   44    36    44    26     8
+bonded_type_torsion   35    37    36    26     8
+bonded_type_torsion   36    37    36    26     8
+bonded_type_torsion   37    37    36    26     8
+bonded_type_torsion   44    37    36    26     8
+bonded_type_torsion   35    37    37    26     8
+bonded_type_torsion   36    37    37    26     8
+bonded_type_torsion   37    37    37    26     8
+bonded_type_torsion   44    37    37    26     8
+bonded_type_torsion   35    37    44    26     8
+bonded_type_torsion   36    37    44    26     8
+bonded_type_torsion   37    37    44    26     8
+bonded_type_torsion   44    37    44    26     8
+bonded_type_torsion   35    44    44    26     8
+bonded_type_torsion   36    44    44    26     8
+bonded_type_torsion   37    44    44    26     8
+bonded_type_torsion   44    44    44    26     8
+bonded_type_torsion   65    36    36    26     8
+# # aliphatical. subst. guanidinium H-Cal-Cal-N
+bonded_type_torsion   15    35    36    26    14
+bonded_type_torsion   15    35    37    26    14
+bonded_type_torsion   15    35    44    26    14
+bonded_type_torsion   16    36    36    26    14
+bonded_type_torsion   16    36    37    26    14
+bonded_type_torsion   16    36    44    26    14
+bonded_type_torsion   17    37    36    26    14
+bonded_type_torsion   17    37    37    26    14
+bonded_type_torsion   17    37    44    26    14
+# # aliphatical. subst. guanidinium Cal-Cal-N-Cgdn
+bonded_type_torsion   35    36    26    43    44
+bonded_type_torsion   35    37    26    43    44
+bonded_type_torsion   36    36    26    43    44
+bonded_type_torsion   36    37    26    43    44
+bonded_type_torsion   37    36    26    43    44
+bonded_type_torsion   37    37    26    43    44
+# # aliphatical. subst. guanidinium Cal-Cal-N-H, Hal-Cal-N-H
+# # these are both empty in OPLS
+# # aliphatical. subst. guanidinium Hal-Cal-N-Cgdn
+bonded_type_torsion   15    35    26    43    45
+bonded_type_torsion   16    36    26    43    45
+bonded_type_torsion   17    37    26    43    45
+
+
+# # residue-specific kT-size rotational barriers
+# # PRO (all these are deemed to be mandatory: see above)
+# # VAL
+bonded_type_torsion   19    37    47    35    59
+bonded_type_torsion   22    37    47    35    59
+bonded_type_torsion   38    37    47    35    58
+bonded_type_torsion   39    37    47    35    58
+# # LEU
+bonded_type_torsion   19    37    48    37    59
+bonded_type_torsion   22    37    48    37    59
+bonded_type_torsion   38    37    48    37    58
+bonded_type_torsion   39    37    48    37    58
+# # ILE
+bonded_type_torsion   19    37    49    35    61
+bonded_type_torsion   22    37    49    35    61
+bonded_type_torsion   38    37    49    35    60
+bonded_type_torsion   39    37    49    35    60
+bonded_type_torsion   19    37    49    36    61
+bonded_type_torsion   22    37    49    36    61
+bonded_type_torsion   38    37    49    36    60
+bonded_type_torsion   39    37    49    36    60
+# # MET
+bonded_type_torsion   19    37    63    36    63
+bonded_type_torsion   22    37    63    36    63
+bonded_type_torsion   38    37    63    36    62
+bonded_type_torsion   39    37    63    36    62
+# # SER
+bonded_type_torsion   19    37    50    29    51
+bonded_type_torsion   22    37    50    29    51
+bonded_type_torsion   38    37    50    29    50
+bonded_type_torsion   39    37    50    29    50
+bonded_type_torsion   37    50    29     4    81
+# # CYS
+bonded_type_torsion   19    37    52    79    53
+bonded_type_torsion   22    37    52    79    53
+bonded_type_torsion   38    37    52    79    52
+bonded_type_torsion   39    37    52    79    52
+# # TRP
+bonded_type_torsion   19    37    57    73    65
+bonded_type_torsion   22    37    57    73    65
+bonded_type_torsion   38    37    57    73    64
+bonded_type_torsion   39    37    57    73    64
+bonded_type_torsion   40    73    57    16    47
+bonded_type_torsion   40    73    57    37    46
+# # HIX
+bonded_type_torsion   74    58    37    38    21
+bonded_type_torsion   74    58    37    19    22
+bonded_type_torsion   74    58    37    22    22
+bonded_type_torsion   74    58    37    39    21
+bonded_type_torsion   24    74    58    37    48
+bonded_type_torsion   25    74    58    37    48
+bonded_type_torsion   24    74    58    16    49
+bonded_type_torsion   25    74    58    16    49
+bonded_type_torsion   24   154    58    37    48
+bonded_type_torsion   24   154    58    16    49
+bonded_type_torsion   19    37    58   154    73
+bonded_type_torsion   22    37    58   154    73
+bonded_type_torsion   38    37    58   154    72
+bonded_type_torsion   39    37    58   154    72
+# # ASN
+bonded_type_torsion   19    37    60    38    55
+bonded_type_torsion   22    37    60    38    55
+bonded_type_torsion   38    37    60    38    54
+bonded_type_torsion   39    37    60    38    54
+bonded_type_torsion   37    60    38    18    86
+# # GLN
+bonded_type_torsion   19    37    62    36    57
+bonded_type_torsion   22    37    62    36    57
+bonded_type_torsion   38    37    62    36    56
+bonded_type_torsion   39    37    62    36    56
+bonded_type_torsion   62    36    38    18    35
+# # ASP
+bonded_type_torsion   19    37    59    39    67
+bonded_type_torsion   22    37    59    39    67
+bonded_type_torsion   38    37    59    39    66
+bonded_type_torsion   39    37    59    39    66
+# # GLU
+bonded_type_torsion   19    37    61    36    69
+bonded_type_torsion   22    37    61    36    69
+bonded_type_torsion   38    37    61    36    68
+bonded_type_torsion   39    37    61    36    68
+# # LYS
+bonded_type_torsion   19    37    64    36    71
+bonded_type_torsion   22    37    64    36    71
+bonded_type_torsion   38    37    64    36    70
+bonded_type_torsion   39    37    64    36    70
+# # ARG
+bonded_type_torsion   19    37    65    36    75
+bonded_type_torsion   22    37    65    36    75
+bonded_type_torsion   38    37    65    36    74
+bonded_type_torsion   39    37    65    36    74
+# # non-standard ones use standard OPLS-AA (non-L) torsions
+bonded_type_torsion   19    37    66    36     5
+bonded_type_torsion   22    37    66    36     7
+bonded_type_torsion   38    37    66    36     4
+bonded_type_torsion   39    37    66    36     6
+bonded_type_torsion   19    37    67    35     5
+bonded_type_torsion   22    37    67    35     7
+bonded_type_torsion   38    37    67    35     4
+bonded_type_torsion   39    37    67    35     6
+bonded_type_torsion   19    37    68    36     5
+bonded_type_torsion   22    37    68    36     7
+bonded_type_torsion   38    37    68    36     4
+bonded_type_torsion   39    37    68    36     6
+bonded_type_torsion   19    37    69    36     5
+bonded_type_torsion   22    37    69    36     7
+bonded_type_torsion   38    37    69    36     4
+bonded_type_torsion   39    37    69    36     6
+bonded_type_torsion   19    37    70    36     5
+bonded_type_torsion   22    37    70    36     7
+bonded_type_torsion   38    37    70    36     4
+bonded_type_torsion   39    37    70    36     6
+
+
+
+###################################################
+#                                                 #
+#    The list below encompasses the bonded types  #
+#    with a short description.                    #
+#    Note that this list is not processed in any  #
+#    way by the software.                         #
+#    Also note that the assignment above provides #
+#    support only for a subset of these types     #
+#                                                 #
+###################################################
+
+# bonded_type   1   "Polar Hydrogen in Guanidinium Ions (NH2 or RNH)"
+# bonded_type   2   "Aromatic Hydrogen (CH)"
+# bonded_type   3   "Polar Hydrogen in Methanol (OH)"
+# bonded_type   4   "Polar Hydrogen in prim. Alcohol (OH)"
+# bonded_type   5   "Polar Hydrogen in sec. Alcohol (OH)"
+# bonded_type   6   "Polar Hydrogen in prim. Amide (NH2)"
+# bonded_type   7   "Polar Hydrogen in sec. Amide (RNH)"
+# bonded_type   8   "Hydrogen in NH4"
+# bonded_type   9   "Polar Hydrogen in prim. Ammonium Ion (RNH3)"
+# bonded_type  10   "Polar Hydrogen in sec. Ammonium Ion (RR'NH2)"
+# bonded_type  11   "Polar Hydrogen in Thiols (SH)"
+# bonded_type  12   "Polar Hydrogen in Phenols (OH)"
+# bonded_type  13   "Aromatic Hydrogen in N-Heteroaromatic Rings (NH)"
+# bonded_type  14   "Hydrogen in CH4"
+# bonded_type  15   "Aliphatic Hydrogen at a prim. Carbon (RCH3)"
+# bonded_type  16   "Aliphatic Hydrogen at a sec. Carbon (RR'CH2)"
+# bonded_type  17   "Aliphatic Hydrogen at a tert. Carbon (RR'R''CH)"
+# bonded_type  18   "Nitrogen in prim. Amide (CHHN)"
+# bonded_type  19   "Nitrogen in sec. Amide (CRHN)"
+# bonded_type  20   "Nitrogen in tert. Amide (CRR'N)"
+# bonded_type  21   "Nitrogen in NH4"
+# bonded_type  22   "Nitrogen in prim. Ammonium Ion (RH3N(+))"
+# bonded_type  23   "Nitrogen in sec. Ammonium Ion (RR'H2N(+))"
+# bonded_type  24   "Protonated Nitrogen in N-Heteroaromatic Rings (RR'HN)"
+# bonded_type  25   "Deprotonated Nitrogen in N-Heteroaromatic Rings (RR'N)"
+# bonded_type  26   "Nitrogen in Guanidinium Ions"
+# bonded_type  27   "Oxygen in Amides, Carboxylic Acids, and Keto-Compounds (CO)"
+# bonded_type  28   "Oxygen in Carboxylates (COO(-))"
+# bonded_type  29   "Oxygen in Alcohols (RHO)"
+# bonded_type  30   "Oxygen in TIP5P Water"
+# bonded_type  31   "Oxygen in Phenols (RHO)"
+# bonded_type  32   "Oxygen in Lactams (CO)"
+# bonded_type  33   "Oxygen in Aldehydes and Formamides (CO)"
+# bonded_type  34   "Carbon in CH4"
+# bonded_type  35   "Aliphatic prim. Carbon (RCH3)"
+# bonded_type  36   "Aliphatic sec. Carbon (RR'CH2)"
+# bonded_type  37   "Aliphatic tert. Carbon (RR'R''CH)"
+# bonded_type  38   "Carbonyl Carbon in Amides, Carboxylic Acids, and Keto-Compounds (RR'OC)"
+# bonded_type  39   "Carboxylate Carbon in Carboxylates (RCOO(-))"
+# bonded_type  40   "Aromatic Carbon (RR'HC)"
+# bonded_type  41   "Aromatic Carbon (RR'R''C)"
+# bonded_type  42   "Aromatic Carbon in Phenols (RR'OC)"
+# bonded_type  43   "Central Carbon in Guanidinium Ions (NNNC(+))"
+# bonded_type  44   "Aliphatic quat. Carbon (RR'R''R'''C)"
+# bonded_type  45   "Carbonyl Carbon in Aldehydes and Formamides (RHOC)"
+# bonded_type  46   "beta-Carbon in ALA/AIB"
+# bonded_type  47   "beta-Carbon in VAL"
+# bonded_type  48   "beta-Carbon in LEU"
+# bonded_type  49   "beta-Carbon in ILE"
+# bonded_type  50   "beta-Carbon in SER"
+# bonded_type  51   "beta-Carbon in THR"
+# bonded_type  52   "beta-Carbon in CYS (thiolic)"
+# bonded_type  53   "beta-Carbon in CYS (disulfidic)"
+# bonded_type  54   "beta-Carbon in PRO"
+# bonded_type  55   "beta-Carbon in PHE"
+# bonded_type  56   "beta-Carbon in TYR/PTR/TYO"
+# bonded_type  57   "beta-Carbon in TRP"
+# bonded_type  58   "beta-Carbon in HID/E/P"
+# bonded_type  59   "beta-Carbon in ASP"
+# bonded_type  60   "beta-Carbon in ASN"
+# bonded_type  61   "beta-Carbon in GLU/GLH"
+# bonded_type  62   "beta-Carbon in GLN"
+# bonded_type  63   "beta-Carbon in MET"
+# bonded_type  64   "beta-Carbon in LYS/LYD/KAC/KM1/KM2/KM3"
+# bonded_type  65   "beta-Carbon in ARG"
+# bonded_type  66   "beta-Carbon in ORN"
+# bonded_type  67   "beta-Carbon in ABA/GAM"
+# bonded_type  68   "beta-Carbon in NVA"
+# bonded_type  69   "beta-Carbon in NLE"
+# bonded_type  70   "beta-Carbon in DAB"
+# bonded_type  71   "beta-Carbon in PCA"
+# bonded_type  72   "beta-Carbon in HYP"
+# bonded_type  73   "CG in TRP"
+# bonded_type  74   "CG in HID/E"
+# bonded_type  75   "CE1 in HID/E"
+# bonded_type  76   "CD2 in HID"
+# bonded_type  77   "CE1 in HIP"
+# bonded_type  78   "CD2 in HIE"
+# bonded_type  79   "Sulfur in Thiols (RHS)"
+# bonded_type  80   "Sulfur in Thioethers (RR'S)"
+# bonded_type  81   "Sulfur in Disulfides (RSS)"
+# bonded_type  82   "Oxygen in SPC Water"
+# bonded_type  83   "Hydrogen in SPC Water"
+# bonded_type  84   "Oxygen in TIP3P Water"
+# bonded_type  85   "Hydrogen in TIP3P Water"
+# bonded_type  86   "Oxygen in TIP4P Water"
+# bonded_type  87   "Hydrogen in TIP4P Water"
+# bonded_type  88   "Massless Point Charge in TIP4P Water (MW)"
+# bonded_type  89   "Terminal Hydrogen in Aldehydes and Formamides (CH)"
+# bonded_type  90   "CD2 in TRP"
+# bonded_type  91   "CE2 in TRP"
+# bonded_type  92   "CD2 in HIP"
+# bonded_type  93   "Phosphorus in Phosphates (O4P)"
+# bonded_type  94   "Terminal Oxygen in Phosphates (PO)"
+# bonded_type  95   "Protonated or Phosphoesterified Oxygen in Phosphates (RPO)"
+# bonded_type  96   "Carbon in Phosphoesters (RR'R''OC)"
+# bonded_type  97   "C4* in Cyclic Ribose"
+# bonded_type  98   "C3* in Cyclic Ribose"
+# bonded_type  99   "C2* in Cyclic Ribose"
+# bonded_type 100   "C1* in Cyclic Ribose"
+# bonded_type 101   "O4* in Cyclic Ribose"
+# bonded_type 102   "C4* in Cyclic Deoxyribose"
+# bonded_type 103   "C3* in Cyclic Deoxyribose"
+# bonded_type 104   "C2* in Cyclic Deoxyribose"
+# bonded_type 105   "C1* in Cyclic Deoxyribose"
+# bonded_type 106   "O4* in Cyclic Deoxyribose"
+# bonded_type 107   "Hydrogen in Protonated Phosphates (OH)"
+# bonded_type 108   "N1 in Cytosine"
+# bonded_type 109   "C2 in Cytosine"
+# bonded_type 110   "O2 in Cytosine"
+# bonded_type 111   "N3 in Cytosine"
+# bonded_type 112   "C4 in Cytosine"
+# bonded_type 113   "N4 in Cytosine"
+# bonded_type 114   "C5 in Cytosine"
+# bonded_type 115   "C6 in Cytosine"
+# bonded_type 116   "N1 in Uracil"
+# bonded_type 117   "C2 in Uracil"
+# bonded_type 118   "O2 in Uracil"
+# bonded_type 119   "N3 in Uracil"
+# bonded_type 120   "C4 in Uracil"
+# bonded_type 121   "O4 in Uracil"
+# bonded_type 122   "C5 in Uracil"
+# bonded_type 123   "C6 in Uracil"
+# bonded_type 124   "N1 in Thymine"
+# bonded_type 125   "C2 in Thymine"
+# bonded_type 126   "O2 in Thymine"
+# bonded_type 127   "N3 in Thymine"
+# bonded_type 128   "C4 in Thymine"
+# bonded_type 129   "O4 in Thymine"
+# bonded_type 130   "C5 in Thymine"
+# bonded_type 131   "C6 in Thymine"
+# bonded_type 132   "N1 in Adenine"
+# bonded_type 133   "C2 in Adenine"
+# bonded_type 134   "N3 in Adenine"
+# bonded_type 135   "C4 in Adenine"
+# bonded_type 136   "C5 in Adenine"
+# bonded_type 137   "C6 in Adenine"
+# bonded_type 138   "N6 in Adenine"
+# bonded_type 139   "N7 in Adenine"
+# bonded_type 140   "C8 in Adenine"
+# bonded_type 141   "N9 in Adenine"
+# bonded_type 142   "N1 in Guanine"
+# bonded_type 143   "C2 in Guanine"
+# bonded_type 144   "N2 in Guanine"
+# bonded_type 145   "N3 in Guanine"
+# bonded_type 146   "C4 in Guanine"
+# bonded_type 147   "C5 in Guanine"
+# bonded_type 148   "C6 in Guanine"
+# bonded_type 149   "O6 in Guanine"
+# bonded_type 150   "N7 in Guanine"
+# bonded_type 151   "C8 in Guanine"
+# bonded_type 152   "N9 in Guanine"
+# bonded_type 153   "Carbon in Urea"
+# bonded_type 154   "CG in HIP"
+# bonded_type 155   "CD in PRO"
+# bonded_type 156   "CL in perchlorate"
+# bonded_type 157   "O in perchlorate"
+# bonded_type 158   "N in nitrate"
+# bonded_type 159   "O in nitrate"
+# bonded_type 160   "C1 (fused) in naphthalene"
+# bonded_type 161   "Hydroxyl Oxygen in Carboxylic Acids"
+# bonded_type 162   "Ester Oxygen in Arly Phosphates"
+# bonded_type 163   "Oxygen in Phenolates"
+# bonded_type 164   "Nitrogen in Neutral Amines"
+# bonded_type 165   "beta-Carbon in ASH"
+# bonded_type 166   "beta-Carbon in CYX"
+# bonded_type 167   "beta-Carbon in SEP"
+# bonded_type 168   "beta-Carbon in TPO"
+# bonded_type 169   "Sulfur in Thiolates (RS(-))"
+# bonded_type 170   "N in tertiary ammonium(+)"
+# bonded_type 171   "H in tertiary ammonium(+)"
+# bonded_type 172   "N in quaternary ammonium(+)"
