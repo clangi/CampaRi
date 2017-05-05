@@ -46,7 +46,7 @@
 sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot = "plots/",
                         timeline = T, local_cut = T, return_plot = F, annotate_snap_dist = F, sub_sampling_factor = NULL,
                         ann_trace = F, return_ann_trace = F, background_height = NULL,
-                        ann_names_L = NULL, ann_names_R = NULL,
+                        ann_names_L = NULL, ann_names_R = NULL, horiz_lines_on_timeline = NULL, points_on_timeline = NULL,
                         title = ""){
   # check on title
   if(!is.character(title)) stop("title var must be a string")
@@ -159,8 +159,15 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
     }
   } 
   
+  # checking the horiz_lines_on_timeline
+  if(!is.null(horiz_lines_on_timeline) && !is.numeric(horiz_lines_on_timeline))
+      stop('horiz_lines_on_timeline must be a numeric.')
+  if(!is.null(points_on_timeline) && !is.numeric(points_on_timeline))
+    stop('points_on_timeline must be a numeric.')
+  
+  
+  # Main ann_trace constructor
   if(!no_trace){
-    # Main ann_trace constructor
     ann_tr <- array("NA", dim = dp[1])
     # ann_trace == TRUE
     if(automatic_trace_half){
@@ -250,6 +257,8 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
     tr_init <- 12
     main_col<-"darkblue"
   }
+  
+  
   # plotting the trace 
   if(!no_trace && one_line_trace && !annotate_snap_dist){
     gg <- gg + geom_segment(aes(xx[seq(1, dp[1], sub_sampling_factor)], 
@@ -269,6 +278,69 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
   }
   
   
+  # annotation preparation for timeline and annotation of snap distance
+  if(timeline || annotate_snap_dist){
+    single_line_general_ann <- array("gray1", dim = dp[1])
+    if(one_line_trace){
+      single_line_general_ann <- ann_tr
+    }else if(multi_line_trace){
+      single_line_general_ann <- ann_tr[1,]
+      warning('timeline color kept as first line in annotation trace inserted (it is multiple lines).')
+    }
+  }
+  
+  # plotting the distance between snapshots (on top of everything)
+  if(annotate_snap_dist){
+    max_snap_dist <- max(pin[,5])
+    gg <- gg + geom_segment(aes(xx[seq(1, dp[1], sub_sampling_factor)],
+                                y = rep(ymax*3/4 , length(xx))[seq(1, dp[1], sub_sampling_factor)],
+                                xend = xx[seq(1, dp[1], sub_sampling_factor)], 
+                                yend = ((pin[,5]*((ymax)/4) + (3*ymax)/4))[seq(1, dp[1], sub_sampling_factor)]),
+                            col = single_line_general_ann[seq(1, dp[1], sub_sampling_factor)],
+                            size = 0.1)
+  }
+  
+  
+  # timeline at the bottom
+  if(timeline){
+    gg <- gg + geom_point(aes(x=xx[seq(1, dp[1], sub_sampling_factor)],
+                              y = ((pin[,3]*1.0*ymax*1/6)/dp[1])[seq(1, dp[1], sub_sampling_factor)]), 
+                          col=single_line_general_ann[seq(1, dp[1], sub_sampling_factor)],
+                          size=0.01) + 
+      annotate("text", label = "0%", x = -dp[1]/100, y = 0, size = 3, angle = 90) +
+      annotate("text", label = "100%", x = -dp[1]/100, y = 1.0*ymax*1/6, size = 3, angle = 90)
+    if(!is.null(horiz_lines_on_timeline)){
+      for(l in 1:length(horiz_lines_on_timeline)){
+        if(horiz_lines_on_timeline[l]%%1 != 0 || horiz_lines_on_timeline[l] < 1 || horiz_lines_on_timeline[l] > dp[1])
+          stop(horiz_lines_on_timeline[l],' is not an integer or it is not in the snapshots window (1:n_snaps).')
+      }
+      
+      # mechanical switch of horizontal line plotting
+      y_horiz_line <- ((horiz_lines_on_timeline * 1.0) / dp[1]) * (ymax / 6.0)
+      # y_horiz_line <- ((pin[,3]*1.0*ymax*1/6)/dp[1])[horiz_lines_on_timeline]
+      color_horiz_line <- "black"
+      # color_horiz_line <- single_line_general_ann[horiz_lines_on_timeline]
+      gg <- gg + geom_segment(aes(x = xx[1], xend = xx[dp[1]], 
+                                  y = y_horiz_line, yend = y_horiz_line),
+                              size=0.1, col = color_horiz_line)
+    }
+    if(!is.null(points_on_timeline)){
+      for(l in 1:length(points_on_timeline)){
+        if(points_on_timeline[l]%%1 != 0 || points_on_timeline[l] < 1 || points_on_timeline[l] > dp[1])
+          stop(points_on_timeline[l],' is not an integer or it is not in the snapshots window (1:n_snaps).')
+      }
+      y_points <- ((pin[,3]*1.0*ymax*1/6)/dp[1])[points_on_timeline]
+      color_points <- "green4"
+      # color_horiz_line <- single_line_general_ann[points_on_timeline]
+      gg <- gg + geom_point(aes(x=xx[points_on_timeline], y=y_points),
+                              size=0.7, col = color_points)
+    }
+  }else if(!is.null(horiz_lines_on_timeline)){
+    stop('To use horiz_lines_on_timeline you must have active the timeline options.')
+  }else if(!is.null(points_on_timeline)){
+    stop('To use points_on_timeline you must have active the timeline options.')
+  }
+  
   
   # annotation names LEFT
   if(!is.null(ann_names_L)&&is.character(ann_names_L)&&length(ann_names_L)==n_lines_annotation){
@@ -286,40 +358,10 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
   }else if(!is.null(ann_names_R)){
     stop('The annotation names have not been inserted correctly')
   }
-  
-  # annotation preparation for timeline and annotation of snap distance
-  if(timeline || annotate_snap_dist){
-    single_line_general_ann <- array("gray1", dim = dp[1])
-    if(one_line_trace){
-      single_line_general_ann <- ann_tr
-    }else if(multi_line_trace){
-      single_line_general_ann <- ann_tr[1,]
-      warning('timeline color kept as first line in annotation trace inserted (it is multiple lines).')
-    }
-  }
-  
-  # timeline at the bottom
-  if(timeline){
-    gg <- gg + geom_point(aes(x=xx[seq(1, dp[1], sub_sampling_factor)],
-                              y = ((pin[,3]*1.0*ymax*1/6)/dp[1])[seq(1, dp[1], sub_sampling_factor)]), 
-                          col=single_line_general_ann[seq(1, dp[1], sub_sampling_factor)],
-                          size=0.01) + 
-      annotate("text", label = "0%", x = -dp[1]/100, y = 0, size = 3, angle = 90) +
-      annotate("text", label = "100%", x = -dp[1]/100, y = 1.0*ymax*1/6, size = 3, angle = 90)
-  }
-  # plotting the distance between snapshots (on top of everything)
-  if(annotate_snap_dist){
-    max_snap_dist <- max(pin[,5])
-    gg <- gg + geom_segment(aes(xx[seq(1, dp[1], sub_sampling_factor)],
-                                y = rep(ymax*3/4 , length(xx))[seq(1, dp[1], sub_sampling_factor)],
-                                xend = xx[seq(1, dp[1], sub_sampling_factor)], 
-                                yend = ((pin[,5]*((ymax)/4) + (3*ymax)/4))[seq(1, dp[1], sub_sampling_factor)]),
-                            col = single_line_general_ann[seq(1, dp[1], sub_sampling_factor)],
-                            size = 0.1)
-  }
-  
+
   # basic annotation (principal cut)
-  gg <- gg + geom_line(aes(x = xx, y = -log((pin[,4]/Nsnap))), color=main_col, size=0.2)
+  gg <- gg + geom_line(aes(x = xx, y = -log((pin[,4]/Nsnap))), color=main_col, size=0.2) +
+    theme_minimal()
   
   # local cut
   if(local_cut) gg <- gg + 

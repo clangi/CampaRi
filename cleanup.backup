@@ -1,0 +1,7 @@
+#!/bin/sh
+
+if [ -e src/Makevars ]; then rm -f src/Makevars; fi
+if [ -e src/*.o ]; then rm -f src/contract_mst.o src/dist_clusters_utils.o src/gen_manycuts.o src/gen_progind.o src/main_clu_adjl_mst_dumping.o src/main_clu_adjl_mst.o src/m_clustering.o src/m_gen_nbls.o src/m_mst_dumping.o src/m_mst.o src/m_variables_gen.o src/utilities_netcdf.o src/utilities.o; fi
+if [ -e src/*.mod ]; then rm -f src/*.mod; fi
+if [ -e config.log ]; then rm -f config.log; fi
+if [ -e config.status ]; then rm -f config.status; fi
