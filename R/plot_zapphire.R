@@ -46,7 +46,9 @@
 sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot = "plots/",
                         timeline = T, local_cut = T, return_plot = F, annotate_snap_dist = F, sub_sampling_factor = NULL,
                         ann_trace = F, return_ann_trace = F, background_height = NULL,
-                        ann_names_L = NULL, ann_names_R = NULL, horiz_lines_on_timeline = NULL, points_on_timeline = NULL,
+                        ann_names_L = NULL, ann_names_R = NULL, horiz_lines_on_timeline = NULL, 
+                        points_on_timeline = NULL, only_timeline = FALSE, general_size_annPoints = 1.,
+                        n_barriers_to_highlight = NULL,
                         title = ""){
   # check on title
   if(!is.character(title)) stop("title var must be a string")
@@ -69,6 +71,17 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
     stop('write must be a logical.')
   if(!is.logical(annotate_snap_dist))
     stop('annotate_snap_dist must be a logical.')
+  if(!is.logical(only_timeline))
+    stop('only_timeline must be a logical.')
+  
+  # general_size_annPoints = 1 must be a numeric
+  if(!is.numeric(general_size_annPoints) || length(general_size_annPoints) != 1)
+    stop('general_size_annPoints must be a single numeric.')
+  
+  # checking the number of basins input
+  if(!is.null(n_barriers_to_highlight))
+    if(!is.numeric(n_barriers_to_highlight) || length(n_barriers_to_highlight) != 1 || n_barriers_to_highlight%%1 != 0)
+      stop('n_barriers_to_highlight must be a single whole number')
   
   # loading data - sapphire table
   # the coercion to data.frame is made for retrocompatibili with non-data.table code
@@ -266,7 +279,7 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
                                 xend = xx[seq(1, dp[1], sub_sampling_factor)], 
                                 yend = rep(ymax*3/4 + ymax/8, length(xx))[seq(1, dp[1], sub_sampling_factor)]),
                             col = ann_tr[seq(1, dp[1], sub_sampling_factor)],
-                            size = 1)
+                            size = 0.1*general_size_annPoints)
   } else if(!no_trace && multi_line_trace && !annotate_snap_dist){
     for(i in 0:(n_lines_annotation-1))
       gg <- gg + geom_segment(x=xx[seq(1, dp[1], sub_sampling_factor)], 
@@ -274,7 +287,7 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
                               xend = xx[seq(1, dp[1], sub_sampling_factor)], 
                               yend = rep(ymax*((tr_init+(((i+1)*(16-tr_init))/n_lines_annotation))/16), length(xx))[seq(1, dp[1], sub_sampling_factor)],
                               col = ann_tr[(i+1),][seq(1, dp[1], sub_sampling_factor)],
-                              size = 1)
+                              size = 0.1*general_size_annPoints)
   }
   
   
@@ -297,7 +310,7 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
                                 xend = xx[seq(1, dp[1], sub_sampling_factor)], 
                                 yend = ((pin[,5]*((ymax)/4) + (3*ymax)/4))[seq(1, dp[1], sub_sampling_factor)]),
                             col = single_line_general_ann[seq(1, dp[1], sub_sampling_factor)],
-                            size = 0.1)
+                            size = 0.1*general_size_annPoints)
   }
   
   
@@ -306,7 +319,7 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
     gg <- gg + geom_point(aes(x=xx[seq(1, dp[1], sub_sampling_factor)],
                               y = ((pin[,3]*1.0*ymax*1/6)/dp[1])[seq(1, dp[1], sub_sampling_factor)]), 
                           col=single_line_general_ann[seq(1, dp[1], sub_sampling_factor)],
-                          size=0.01) + 
+                          size=0.01*general_size_annPoints) + 
       annotate("text", label = "0%", x = -dp[1]/100, y = 0, size = 3, angle = 90) +
       annotate("text", label = "100%", x = -dp[1]/100, y = 1.0*ymax*1/6, size = 3, angle = 90)
     if(!is.null(horiz_lines_on_timeline)){
@@ -322,7 +335,7 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
       # color_horiz_line <- single_line_general_ann[horiz_lines_on_timeline]
       gg <- gg + geom_segment(aes(x = xx[1], xend = xx[dp[1]], 
                                   y = y_horiz_line, yend = y_horiz_line),
-                              size=0.1, col = color_horiz_line)
+                              size=0.2*general_size_annPoints, col = color_horiz_line)
     }
     if(!is.null(points_on_timeline)){
       for(l in 1:length(points_on_timeline)){
@@ -333,7 +346,7 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
       color_points <- "green4"
       # color_horiz_line <- single_line_general_ann[points_on_timeline]
       gg <- gg + geom_point(aes(x=xx[points_on_timeline], y=y_points),
-                              size=0.7, col = color_points)
+                              size=0.7*general_size_annPoints, col = color_points)
     }
   }else if(!is.null(horiz_lines_on_timeline)){
     stop('To use horiz_lines_on_timeline you must have active the timeline options.')
@@ -368,6 +381,59 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
     geom_point(mapping = aes(x=xx,y=2.5 - (1./3.)*log((pin[,10] + pin[,12]) / Nsnap)), 
                color="red3", size=0.1) 
   
+  
+  # plotting ONLY timeline
+  if(only_timeline){
+    if(timeline){
+      ymax <- dp[1]
+      gg <- ggplot() + geom_point(aes(x=xx[seq(1, dp[1], sub_sampling_factor)],
+                                y = ((pin[,3]*1.0*ymax*1/6)/dp[1])[seq(1, dp[1], sub_sampling_factor)]), 
+                            col=single_line_general_ann[seq(1, dp[1], sub_sampling_factor)],
+                            size=0.01*general_size_annPoints) + 
+        annotate("text", label = "0%", x = -dp[1]/100, y = 0, size = 3, angle = 90) +
+        annotate("text", label = "100%", x = -dp[1]/100, y = 1.0*ymax*1/6, size = 3, angle = 90)
+      if(!is.null(horiz_lines_on_timeline)){
+        for(l in 1:length(horiz_lines_on_timeline)){
+          if(horiz_lines_on_timeline[l]%%1 != 0 || horiz_lines_on_timeline[l] < 1 || horiz_lines_on_timeline[l] > dp[1])
+            stop(horiz_lines_on_timeline[l],' is not an integer or it is not in the snapshots window (1:n_snaps).')
+        }
+        
+        # mechanical switch of horizontal line plotting
+        y_horiz_line <- ((horiz_lines_on_timeline * 1.0) / dp[1]) * (ymax / 6.0)
+        # y_horiz_line <- ((pin[,3]*1.0*ymax*1/6)/dp[1])[horiz_lines_on_timeline]
+        color_horiz_line <- "black"
+        # color_horiz_line <- single_line_general_ann[horiz_lines_on_timeline]
+        gg <- gg + geom_segment(aes(x = xx[1], xend = xx[dp[1]], 
+                                    y = y_horiz_line, yend = y_horiz_line),
+                                size=0.2*general_size_annPoints, col = color_horiz_line)
+      }
+      if(!is.null(points_on_timeline)){
+        for(l in 1:length(points_on_timeline)){
+          if(points_on_timeline[l]%%1 != 0 || points_on_timeline[l] < 1 || points_on_timeline[l] > dp[1])
+            stop(points_on_timeline[l],' is not an integer or it is not in the snapshots window (1:n_snaps).')
+        }
+        y_points <- ((pin[,3]*1.0*ymax*1/6)/dp[1])[points_on_timeline]
+        color_points <- "green4"
+        # color_horiz_line <- single_line_general_ann[points_on_timeline]
+        gg <- gg + geom_point(aes(x=xx[points_on_timeline], y=y_points),
+                              size=0.7, col = color_points)
+      }
+    }else if(!is.null(horiz_lines_on_timeline)){
+      stop('To use horiz_lines_on_timeline you must have active the timeline options.')
+    }else if(!is.null(points_on_timeline)){
+      stop('To use points_on_timeline you must have active the timeline options.')
+    }else{
+      stop('If you want to plot only the timeline please use also timeline = TRUE')
+    }
+  }
+  
+  if(!is.null(n_barriers_to_highlight)){
+    sorted_values <- s
+    color_vertical_line <- "black"
+    gg <- gg + geom_segment(aes(x = xx[1], xend = xx[dp[1]], 
+                                y = ymin, yend = ymax),
+                            size=0.2*general_size_annPoints, col = color_vertical_line)
+  }
   
   #   #basin call
   #   if(basin_call) gg <- gg +

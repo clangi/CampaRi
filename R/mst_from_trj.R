@@ -107,7 +107,8 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL, clu_ra
   preprocessing_opts <- c('wgcna', 'multiplication')
   if(!is.null(pre_process) && (length(pre_process)!=1 || !is.character(pre_process) || !(pre_process %in% preprocessing_opts)))
     stop('Inserted preprocessing method (string) not valid.')
-  if(!is.null(pre_process)) cat('Preprocessing mode activated. ')
+  if(!is.null(pre_process)) cat('Preprocessing mode activated. \n')
+  if(!is.null(pre_process)) cat('WARNING: preprocessing in analysis functions were meant for developers. Please use the pre-proc step (generate_network)\n')
   if(!is.null(pre_process) && pre_process == 'wgcna'){
     # checking network construction varoables
     if(!is.null(window) && (length(window) != 1 || !is.numeric(window) || window <= 3 || window > n_snaps/2))
@@ -115,18 +116,19 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL, clu_ra
     if((!is.null(overlapping_reduction) && (length(overlapping_reduction) != 1 ||!is.numeric(overlapping_reduction) ||
                                             overlapping_reduction <= 0 || overlapping_reduction > 1)))
       stop('The used overlapping_reduction is not correctly defined. It must be a number between 0 and 1.')
-
+    # please consider generate network
+    transpose_trj <- FALSE
     # setting standard window size
     if(is.null(window)) window <- nrow(trj)/100
     cat('A network will be generated using the WGCNA correlation algorithm and using a sliding window of', window, 'snapshots.\n')
     # Calling generate_network
-    trj <- generate_network(trj, window, overlapping_reduction, ...)
+    trj <- generate_network(trj=trj, window = window, overlapping_reduction = overlapping_reduction, transpose_trj = transpose_trj, ...)
     n_xyz <- ncol(trj)
   }
   if(!is.null(pre_process) && pre_process == 'multiplication'){
     cat('A multiplication will be generated copy-pasting dimensionalities from a sliding window of', window, 'snapshots.\n')
     # Calling multiplicate_trj (the )
-    trj <- multiplicate_trj(trj, window, overlapping_reduction)
+    trj <- multiplicate_trj(trj, window)
     n_xyz <- ncol(trj)
   }
 

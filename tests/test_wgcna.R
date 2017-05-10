@@ -13,7 +13,6 @@
 w_dir <- getwd()
 system("mkdir output_to_delete")
 setwd("output_to_delete/")
-w_dir <- getwd()
 # remove.packages("CampaRi", lib="~/R/x86_64-pc-linux-gnu-library/3.1")
 # library(devtools)
 # install_github("Melkiades/CampaRi")
@@ -30,8 +29,9 @@ options(CampaRi.data_management = "netcdf") # netcdf handling
 # ------------------------
 
 library(WGCNA)
-mat_wgcna <- WGCNA::adjacency(datExpr = trj, type = 'unsigned', corFnc = 'cor', power = 1, 
-                              corOptions = "use = 'p', method = 'spearman'") # "use = 'p'" is the standard 
+mat_wgcna <- WGCNA::adjacency(datExpr = trj, type = 'unsigned', corFnc = 'cor', power = 1)
+                              
+                              # corOptions = "use = 'p', method = 'spearman'") # "use = 'p'" is the standard 
 # NB: the spearman construction is outrageously long
 
 homemade_mat_wgcna <- array(0, dim(mat_wgcna))
@@ -69,13 +69,14 @@ if(mst) {
 }
 # ------------------------------------------------------
 # Wrapper run
-mst_from_trj(trj = trj, distance_method = distance_measure, clu_radius = cluster_rad,
+trj_wgcna <- generate_network(trj = trj, window = 1000, method = "hamming")
+mst_from_trj(trj = trj_wgcna, distance_method = distance_measure, clu_radius = cluster_rad,
              birch_clu = birch_clustering, mode = "fortran", rootmax_rad = cluster_maxrad, logging = F,
-             tree_height = birch_height, n_search_attempts = 100, pre_process = 'wgcna', window = 1000)
+             tree_height = birch_height, n_search_attempts = 100)
 ret <- gen_progindex(nsnaps=nrow(trj), snap_start = 2)
 # ret <- gen_progindex(adjl = adjl, snap_start = 2)
 gen_annotation(ret_data = ret,snap_start = 2,local_cut_width = floor(nrow(trj)/27))
-sapphire_plot(sap_file = "REPIX_000000000002.dat",local_cut = T,timeline = T, ann_trace = 2,title = "WRAPPER CAMPARI")
+sapphire_plot(sap_file = "REPIX_000000000002.dat",timeline = T, only_timeline=F)
 # -----------------------------------------------------
 # plotting annotation
 trj_fyc <- read.table("../../dihedral_original.fyc")

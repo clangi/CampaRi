@@ -25,7 +25,7 @@
 #' @importFrom WGCNA adjacency
 #' @importFrom data.table transpose
 
-generate_network <- function(trj, window = NULL, overlapping_reduction = NULL, transpose_trj = FALSE,... ){
+generate_network <- function(trj, window = NULL, method = 'wgcna', overlapping_reduction = NULL, transpose_trj = FALSE,... ){
  
   # checking additional variable
   input_args <- list(...)
@@ -33,23 +33,28 @@ generate_network <- function(trj, window = NULL, overlapping_reduction = NULL, t
   if(any(!(names(input_args) %in% avail_extra_argoments))) 
     warning('There is a probable mispelling in one of the inserted variables. Please check the available extra input arguments.')
   
+  if(!(method %in% c('wgcna','hamming','euclidean')))
+     stop('method not considered.')
+  
   # Default handling
   if(!('wgcna_type' %in% names(input_args))) wgcna_type <- 'unsigned' else wgcna_type <- input_args[['wgcna_type']]
   if(!('wgcna_power' %in% names(input_args))) wgcna_power <- 1 else wgcna_power <- input_args[['wgcna_power']]
   if(!('wgcna_corOp' %in% names(input_args))) wgcna_corOp <- "use = 'p'" else wgcna_corOp <- input_args[['wgcna_corOp']]
-  
+
   # Additional input (...) checks
   if(!is.character(wgcna_type) || !is.character(wgcna_corOp) || !is.numeric(wgcna_power)) stop('Inserted values for wgcna specifics not correct.')
-  
+  print(overlapping_reduction)
   if(wgcna_corOp == 'pearson') wgcna_corOp <- "use = 'p'"
   else if(wgcna_corOp == 'spearman') wgcna_corOp <- "use = 'p', method = 'spearman'"
   
   # Checking input variables (again - it is also a stand alone function)
   if(!is.null(window) && (length(window) != 1 || !is.numeric(window) || window <= 3 || window > nrow(trj)/2))
     stop('The used window (distance 12) is too small or too big (must be less than half to have sense) or it is simply an erroneus insertion.')
-  if((!is.null(overlapping_reduction) && (length(overlapping_reduction) != 1 ||!is.numeric(overlapping_reduction) ||
-                                          overlapping_reduction <= 0 || overlapping_reduction > 1)))
-    stop('The used overlapping_reduction is not correctly defined. It must be a number between 0 and 1.')
+  
+  if(!is.null(overlapping_reduction)) warning('overlapping_reduction functionality is not implemented still. It will not be used.')
+  # if((!is.null(overlapping_reduction) && (length(overlapping_reduction) != 1 ||!is.numeric(overlapping_reduction) ||
+  #                                         overlapping_reduction <= 0 || overlapping_reduction > 1)))
+  #   warning('The used overlapping_reduction is not correctly defined. It must be a number between 0 and 1.')
   if(!is.logical(transpose_trj))
     stop('transpose_trj must be a logical value.')
   
@@ -95,8 +100,14 @@ generate_network <- function(trj, window = NULL, overlapping_reduction = NULL, t
     if(transpose_trj)
       tmp_trj <- suppressWarnings(transpose(data.frame(tmp_trj))) # I suppress the warnings for lost names
     
-    built_net <- WGCNA::adjacency(tmp_trj, type = wgcna_type, corFnc = 'cor', power = wgcna_power, 
+    if(method == 'wgcna')
+      built_net <- WGCNA::adjacency(tmp_trj, type = wgcna_type, corFnc = 'cor', power = wgcna_power, 
                                     corOptions = wgcna_corOp)
+    else if(method == 'hamming')
+      built_net <- WGCNA::adjacency(tmp_trj, type = "distance", distFnc = "hammingit")
+    else if(method == 'euclidean')
+      built_net <- WGCNA::adjacency(tmp_trj, type = "distance")
+    
     # Taking only the upper.tri  
     trj_out[i,] <- built_net[upper.tri(built_net)]
   }
@@ -132,3 +143,6 @@ generate_network <- function(trj, window = NULL, overlapping_reduction = NULL, t
     cat(string_to_print, sep = "")
   } 
 }
+# hammingit <- function(x,y){
+#   return(sum(x!=y))
+# }
