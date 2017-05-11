@@ -29,7 +29,7 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', overlapping_r
  
   # checking additional variable
   input_args <- list(...)
-  avail_extra_argoments <- c('wgcna_type', 'wgcna_power', 'wgcna_corOp')
+  avail_extra_argoments <- c('wgcna_type', 'wgcna_power', 'wgcna_corOp', 'minkowski_p')
   if(any(!(names(input_args) %in% avail_extra_argoments))) 
     warning('There is a probable mispelling in one of the inserted variables. Please check the available extra input arguments.')
   
@@ -40,12 +40,19 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', overlapping_r
   if(!('wgcna_type' %in% names(input_args))) wgcna_type <- 'unsigned' else wgcna_type <- input_args[['wgcna_type']]
   if(!('wgcna_power' %in% names(input_args))) wgcna_power <- 1 else wgcna_power <- input_args[['wgcna_power']]
   if(!('wgcna_corOp' %in% names(input_args))) wgcna_corOp <- "use = 'p'" else wgcna_corOp <- input_args[['wgcna_corOp']]
-
+  if(!('minkowski_p' %in% names(input_args))) minkowski_p <- 3 else minkowski_p <- input_args[['minkowski_p']]
+  
   # Additional input (...) checks
-  if(!is.character(wgcna_type) || !is.character(wgcna_corOp) || !is.numeric(wgcna_power)) stop('Inserted values for wgcna specifics not correct.')
-
+  # ---------------------------
+  # wgcna specific inputs
+  if(!is.character(wgcna_type) || !is.character(wgcna_corOp) || !is.numeric(wgcna_power) || wgcna_power%%1 != 0) 
+    stop('Inserted values for wgcna specifics inserted.')
   if(wgcna_corOp == 'pearson') wgcna_corOp <- "use = 'p'"
   else if(wgcna_corOp == 'spearman') wgcna_corOp <- "use = 'p', method = 'spearman'"
+  
+  # minkowski specific checks
+  if(!is.numeric(minkowski_p) || minkowski_p %% 1 != 0) stop('minkowski_p must be an integer')
+  else minkowski_p <- paste0(", p = '",minkowski_p,"'") 
   
   # Checking input variables (again - it is also a stand alone function)
   if(!is.null(window) && (length(window) != 1 || !is.numeric(window) || window <= 3 || window > nrow(trj)/2))
@@ -103,10 +110,13 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', overlapping_r
     if(method == 'wgcna')
       built_net <- WGCNA::adjacency(tmp_trj, type = wgcna_type, corFnc = 'cor', power = wgcna_power, 
                                     corOptions = wgcna_corOp)
-    else if(method != 'wgcna')
-      built_net <- WGCNA::adjacency(tmp_trj, type = "distance", distOptions = paste0("method = '",method,"'"))
-    else
+    else if(method != 'wgcna'){
+      distOptions_manual <- paste0("method = '",method,"'")
+      if(method == 'minkowski') distOptions_manual <- paste0(distOptions_manual, minkowski_p)
+      built_net <- WGCNA::adjacency(tmp_trj, type = "distance", distOptions = distOptions_manual)
+    }else{
       stop('Something in the method construction went wrong. Please refer to the developers.')
+    }
     # Taking only the upper.tri  
     trj_out[i,] <- built_net[upper.tri(built_net)]
   }
