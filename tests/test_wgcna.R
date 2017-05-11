@@ -69,7 +69,7 @@ if(mst) {
 }
 # ------------------------------------------------------
 # Wrapper run
-trj_wgcna <- generate_network(trj = trj, window = 1000, method = "hamming")
+trj_wgcna <- generate_network(trj = trj, window = 1200, method = "binary")
 mst_from_trj(trj = trj_wgcna, distance_method = distance_measure, clu_radius = cluster_rad,
              birch_clu = birch_clustering, mode = "fortran", rootmax_rad = cluster_maxrad, logging = F,
              tree_height = birch_height, n_search_attempts = 100)
@@ -84,7 +84,7 @@ prog_index_table <- read.table("REPIX_000000000002.dat")[,c(3,4)]
 xx <- seq(from=1, by=1, to=nrow(trj_fyc))
 ann <- t((trj_fyc[prog_index_table[xx, 1], ] %% 360 < 120) + (trj_fyc[prog_index_table[xx, 1], ] %% 360 < 240) + 1)
 title1 <- "NBU SST, 30k snapshots - WRAPPER"
-sapphire_plot(sap_file = "REPIX_000000000002.dat", local_cut = T, timeline = T, ann_trace = ann, ann_names_L = c("CCCC","HCCC","CCCH"), title = title1)
+sapphire_plot(sap_file = "REPIX_000000000002.dat", local_cut = T, timeline = T, ann_trace = ann[3,], title = title1)
 
 # ----------------------------------------------------
 # DELETING THE WORKING DIR where we just worked

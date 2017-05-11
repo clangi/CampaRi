@@ -33,7 +33,7 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', overlapping_r
   if(any(!(names(input_args) %in% avail_extra_argoments))) 
     warning('There is a probable mispelling in one of the inserted variables. Please check the available extra input arguments.')
   
-  if(!(method %in% c('wgcna','hamming','euclidean')))
+  if(!(method %in% c('wgcna', 'binary', 'euclidean', 'maximum', 'canberra', 'minkowski')))
      stop('method not considered.')
   
   # Default handling
@@ -43,7 +43,7 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', overlapping_r
 
   # Additional input (...) checks
   if(!is.character(wgcna_type) || !is.character(wgcna_corOp) || !is.numeric(wgcna_power)) stop('Inserted values for wgcna specifics not correct.')
-  print(overlapping_reduction)
+
   if(wgcna_corOp == 'pearson') wgcna_corOp <- "use = 'p'"
   else if(wgcna_corOp == 'spearman') wgcna_corOp <- "use = 'p', method = 'spearman'"
   
@@ -103,11 +103,10 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', overlapping_r
     if(method == 'wgcna')
       built_net <- WGCNA::adjacency(tmp_trj, type = wgcna_type, corFnc = 'cor', power = wgcna_power, 
                                     corOptions = wgcna_corOp)
-    else if(method == 'hamming')
-      built_net <- WGCNA::adjacency(tmp_trj, type = "distance", distFnc = "hammingit")
-    else if(method == 'euclidean')
-      built_net <- WGCNA::adjacency(tmp_trj, type = "distance")
-    
+    else if(method != 'wgcna')
+      built_net <- WGCNA::adjacency(tmp_trj, type = "distance", distOptions = paste0("method = '",method,"'"))
+    else
+      stop('Something in the method construction went wrong. Please refer to the developers.')
     # Taking only the upper.tri  
     trj_out[i,] <- built_net[upper.tri(built_net)]
   }
@@ -143,6 +142,3 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', overlapping_r
     cat(string_to_print, sep = "")
   } 
 }
-# hammingit <- function(x,y){
-#   return(sum(x!=y))
-# }
