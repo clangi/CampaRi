@@ -45,7 +45,7 @@
 #' @import ggplot2
 sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot = "plots/",
                         timeline = T, local_cut = T, return_plot = F, annotate_snap_dist = F, sub_sampling_factor = NULL,
-                        ann_trace = F, return_ann_trace = F, background_height = NULL,
+                        ann_trace = F, return_ann_trace = F, background_height = NULL, reorder_annotation = FALSE,
                         ann_names_L = NULL, ann_names_R = NULL, horiz_lines_on_timeline = NULL, 
                         points_on_timeline = NULL, only_timeline = FALSE, general_size_annPoints = 1.,
                         n_barriers_to_highlight = NULL,
@@ -73,6 +73,8 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
     stop('annotate_snap_dist must be a logical.')
   if(!is.logical(only_timeline))
     stop('only_timeline must be a logical.')
+  if(!is.logical(reorder_annotation))
+    stop('reorder_annotation must be a logical.')
   
   # general_size_annPoints = 1 must be a numeric
   if(!is.numeric(general_size_annPoints) || length(general_size_annPoints) != 1)
@@ -92,7 +94,12 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
   
   # checking single numbers 
   if(!is.null(sub_sampling_factor) && (!is.numeric(sub_sampling_factor) || length(sub_sampling_factor) != 1 || (dp[1]%%sub_sampling_factor != 0))){
-    stop('Wrong sub_sampling_factor insertion. It must be a number divisible by the number of snapshots.')
+    warning('Wrong sub_sampling_factor insertion. It should be a number divisible by the number of snapshots. It will be used anyway with a truncated ending.')
+    # cat('Checking a different value for sub_sampling factor (the first divisible number).')
+    # divisible_sub_sampling values
+    # for(i in 2:dp[1]){
+    #   {if(dp[1]%%i==0) print(sum(trial_len)/i)}
+    # }
   }else if(!is.null(sub_sampling_factor)){
     do_subsam_ann <- TRUE
   }else{
@@ -152,6 +159,7 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
       
     # multiple lines
     }else if(length(dim(ann_trace)) == 2){
+      warning("MULTIPLE LINES NOT WORKING FOR GGPLOT2 UPDATE - TODO")
       multi_line_trace <- TRUE
       n_lines_annotation <- dim(ann_trace)[1]
       if(is.numeric(ann_trace)){
@@ -171,6 +179,11 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
       no_trace <- TRUE
     }
   } 
+  
+  # checking the reordering of the annotation (functionality that is working only with one-line whatever) TODO extend it
+  if(reorder_annotation && (!one_line_trace && (!numeric_trace || !character_trace)))
+    stop('reorder_annotation is supported only for one_line_trace and direct numeric-character insertion')
+  
   
   # checking the horiz_lines_on_timeline
   if(!is.null(horiz_lines_on_timeline) && !is.numeric(horiz_lines_on_timeline))
@@ -210,7 +223,9 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
       # as numeric
       }else if(numeric_trace){
         max_value_ann_trace <- max(ann_trace)
-        ann_tr <- sapply(ann_trace, FUN = function(x){ paste0("gray",floor(100/max_value_ann_trace)*x) })
+        ann_tr <- sapply(ann_trace, FUN = function(x){ paste0("gray",floor(65/max_value_ann_trace)*x) })
+        if(reorder_annotation)
+          ann_tr <- ann_tr[pin[,3]]
       }
     }
     # ann_trace == multi-lines annotation
@@ -335,7 +350,7 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
       # color_horiz_line <- single_line_general_ann[horiz_lines_on_timeline]
       gg <- gg + geom_segment(aes(x = xx[1], xend = xx[dp[1]], 
                                   y = y_horiz_line, yend = y_horiz_line),
-                              size=0.2*general_size_annPoints, col = color_horiz_line)
+                              size=0.4*general_size_annPoints, col = color_horiz_line)
     }
     if(!is.null(points_on_timeline)){
       for(l in 1:length(points_on_timeline)){
@@ -343,10 +358,12 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
           stop(points_on_timeline[l],' is not an integer or it is not in the snapshots window (1:n_snaps).')
       }
       y_points <- ((pin[,3]*1.0*ymax*1/6)/dp[1])[points_on_timeline]
+      # y_points <- ((points_on_timeline * 1.0) / dp[1]) * (ymax / 6.0)
+      
       color_points <- "green4"
       # color_horiz_line <- single_line_general_ann[points_on_timeline]
       gg <- gg + geom_point(aes(x=xx[points_on_timeline], y=y_points),
-                              size=0.7*general_size_annPoints, col = color_points)
+                              size=1.0*general_size_annPoints, col = color_points)
     }
   }else if(!is.null(horiz_lines_on_timeline)){
     stop('To use horiz_lines_on_timeline you must have active the timeline options.')
@@ -387,11 +404,13 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
     if(timeline){
       ymax <- dp[1]
       gg <- ggplot() + geom_point(aes(x=xx[seq(1, dp[1], sub_sampling_factor)],
-                                y = ((pin[,3]*1.0*ymax*1/6)/dp[1])[seq(1, dp[1], sub_sampling_factor)]), 
+                                y = (pin[,3][seq(1, dp[1], sub_sampling_factor)])), 
                             col=single_line_general_ann[seq(1, dp[1], sub_sampling_factor)],
                             size=0.01*general_size_annPoints) + 
         annotate("text", label = "0%", x = -dp[1]/100, y = 0, size = 3, angle = 90) +
-        annotate("text", label = "100%", x = -dp[1]/100, y = 1.0*ymax*1/6, size = 3, angle = 90)
+        annotate("text", label = "100%", x = -dp[1]/100, y = dp[1], size = 3, angle = 90) +
+        xlab("Progress Index") + ylab("Temporal annotation")
+      
       if(!is.null(horiz_lines_on_timeline)){
         for(l in 1:length(horiz_lines_on_timeline)){
           if(horiz_lines_on_timeline[l]%%1 != 0 || horiz_lines_on_timeline[l] < 1 || horiz_lines_on_timeline[l] > dp[1])
@@ -399,24 +418,24 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
         }
         
         # mechanical switch of horizontal line plotting
-        y_horiz_line <- ((horiz_lines_on_timeline * 1.0) / dp[1]) * (ymax / 6.0)
+        y_horiz_line <- ((horiz_lines_on_timeline * 1.0))
         # y_horiz_line <- ((pin[,3]*1.0*ymax*1/6)/dp[1])[horiz_lines_on_timeline]
         color_horiz_line <- "black"
         # color_horiz_line <- single_line_general_ann[horiz_lines_on_timeline]
         gg <- gg + geom_segment(aes(x = xx[1], xend = xx[dp[1]], 
                                     y = y_horiz_line, yend = y_horiz_line),
-                                size=0.2*general_size_annPoints, col = color_horiz_line)
+                                size=0.4*general_size_annPoints, col = color_horiz_line)
       }
       if(!is.null(points_on_timeline)){
         for(l in 1:length(points_on_timeline)){
           if(points_on_timeline[l]%%1 != 0 || points_on_timeline[l] < 1 || points_on_timeline[l] > dp[1])
             stop(points_on_timeline[l],' is not an integer or it is not in the snapshots window (1:n_snaps).')
         }
-        y_points <- ((pin[,3]*1.0*ymax*1/6)/dp[1])[points_on_timeline]
+        y_points <- (pin[,3]*1.0)[points_on_timeline]
         color_points <- "green4"
         # color_horiz_line <- single_line_general_ann[points_on_timeline]
         gg <- gg + geom_point(aes(x=xx[points_on_timeline], y=y_points),
-                              size=0.7, col = color_points)
+                              size=1.0*general_size_annPoints, col = color_points)
       }
     }else if(!is.null(horiz_lines_on_timeline)){
       stop('To use horiz_lines_on_timeline you must have active the timeline options.')
@@ -432,7 +451,7 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
     color_vertical_line <- "black"
     gg <- gg + geom_segment(aes(x = xx[1], xend = xx[dp[1]], 
                                 y = ymin, yend = ymax),
-                            size=0.2*general_size_annPoints, col = color_vertical_line)
+                            size=0.4*general_size_annPoints, col = color_vertical_line)
   }
   
   #   #basin call

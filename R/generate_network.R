@@ -90,10 +90,18 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', overlapping_r
   else
     trj_out <- matrix(NA, nrow = nrow(trj), ncol = ((ncol(trj)-1)*ncol(trj)/2)) 
   
+  # time keeping variables
+  if(nrow(trj)*ncol(trj) > 500000)
+    timing_it <- TRUE
+  
   # Main transformation
   message('Network construction started.')
   for(i in 1:dim(trj)[1]){
-    .print_consecutio( if(i==1) 0 else i, dim(trj)[1], 70)
+    # adding time if necessary
+    if(i==1&&timing_it)
+      time1 <- proc.time()
+    .print_consecutio(if(i==1) 0 else i, dim(trj)[1], 70, timeit=timing_it, time_first = time1)
+    
     if((i - window_l) <= 0) {
       tmp_trj <- trj[1:(i+window_r),]
       if(transpose_trj) tmp_trj <- rbind(tmp_trj, tmp_trj[1:(window - nrow(tmp_trj)),])
@@ -135,11 +143,27 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', overlapping_r
   return(trj_out)
 }
 
-.print_consecutio <- function(itering, total_to_iter, tot_to_print = 10){
-  state_to_print <- ((itering*1.0)/total_to_iter)*tot_to_print
+.print_consecutio <- function(itering, total_to_iter, tot_to_print = 10, other_to_print = "", timeit = T, time_first = NULL){
+  state_to_print <- floor(((itering*1.0)/total_to_iter)*tot_to_print)
   white_not_to_print <- tot_to_print - state_to_print
+  if(timeit && is.null(time_first))
+    stop("If you want to time me you need to give me the starting of time (time_first).")
   if(state_to_print%%1 == 0){
-  string_to_print <- "\r|"
+    if(timeit){
+      time_spent <- proc.time() - time_first
+      time_spent <- time_spent["elapsed"] + time_spent["user.self"] + time_spent["sys.self"]
+      time_spent <- round(as.numeric(time_spent), digits = 3)
+      if(time_spent>120)
+        time_needed <- paste0("(needs: ", round((time_spent*1.0/itering)*total_to_iter,digits = 1)," s)")
+      else
+        time_needed <- ""
+      if(time_spent != 0)
+        time_spent <- paste0(" Time spent: ", time_spent , " s")
+      else
+        time_spent <- ""
+      other_to_print <- paste(time_spent, time_needed, other_to_print)
+    }
+    string_to_print <- "\r|"
     if(state_to_print != 0){
       for(eq in 1:state_to_print)
         string_to_print <- paste0(string_to_print, "=")
@@ -148,7 +172,7 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', overlapping_r
       for(emp in 1:white_not_to_print)
         string_to_print <- paste0(string_to_print, " ")
     }
-    string_to_print <- paste0(string_to_print,"| ", (state_to_print*100)/tot_to_print, "%")
+    string_to_print <- paste0(string_to_print,"| ", floor((state_to_print*100)/tot_to_print), "%  ", other_to_print)
     cat(string_to_print, sep = "")
   } 
 }
