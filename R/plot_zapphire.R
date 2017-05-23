@@ -43,11 +43,13 @@
 #' @importFrom graphics hist plot 
 #' @export sapphire_plot
 #' @import ggplot2
-sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot = "plots/",
-                        timeline = T, local_cut = T, return_plot = F, annotate_snap_dist = F, sub_sampling_factor = NULL,
-                        ann_trace = F, return_ann_trace = F, background_height = NULL, reorder_annotation = FALSE,
-                        ann_names_L = NULL, ann_names_R = NULL, horiz_lines_on_timeline = NULL, 
-                        points_on_timeline = NULL, only_timeline = FALSE, general_size_annPoints = 1.,
+sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot = "plots/", return_plot = F, local_cut = TRUE,
+                        timeline = FALSE, only_timeline = FALSE, annotate_snap_dist = F, timeline_proportion = NULL,
+                        ann_trace = FALSE, return_ann_trace = FALSE, background_height = NULL, reorder_annotation = FALSE,
+                        ann_names_L = NULL, ann_names_R = NULL, 
+                        horiz_lines_on_timeline = NULL, horiz_colored_areas = NULL, reorder_horizline_on_timeline = FALSE,
+                        points_on_timeline = NULL, reorder_points_on_timeline = FALSE,
+                        general_size_annPoints = 1., sub_sampling_factor = NULL,
                         n_barriers_to_highlight = NULL,
                         title = ""){
   # check on title
@@ -75,10 +77,22 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
     stop('only_timeline must be a logical.')
   if(!is.logical(reorder_annotation))
     stop('reorder_annotation must be a logical.')
+  if(!is.logical(reorder_points_on_timeline))
+    stop('reorder_points_on_timeline must be a logical.')
+  if(!is.logical(reorder_horizline_on_timeline))
+    stop('reorder_horizline_on_timeline must be a logical.')
+  
+  # putting on timeline if only timeline is on
+  if(only_timeline && !timeline)
+    timeline <- TRUE
   
   # general_size_annPoints = 1 must be a numeric
   if(!is.numeric(general_size_annPoints) || length(general_size_annPoints) != 1)
     stop('general_size_annPoints must be a single numeric.')
+
+  # timeline_proportion must be single numeric
+  if(!is.null(timeline_proportion) && (!is.numeric(timeline_proportion) || length(timeline_proportion) != 1))
+    stop('timeline_proportion must be a single numeric.')
   
   # checking the number of basins input
   if(!is.null(n_barriers_to_highlight))
@@ -186,11 +200,30 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
   
   
   # checking the horiz_lines_on_timeline
-  if(!is.null(horiz_lines_on_timeline) && !is.numeric(horiz_lines_on_timeline))
+  if(!is.null(horiz_lines_on_timeline)) {
+    if(!is.numeric(horiz_lines_on_timeline))
       stop('horiz_lines_on_timeline must be a numeric.')
-  if(!is.null(points_on_timeline) && !is.numeric(points_on_timeline))
-    stop('points_on_timeline must be a numeric.')
-  
+    if(any(horiz_lines_on_timeline%%1 != 0) || any(horiz_lines_on_timeline > dp[1]) || any(horiz_lines_on_timeline < 1))
+      stop('horiz_lines_on_timeline must be an integer in the trj dimensions.')
+  }
+  # checking the horiz_colored_areas (plotted vertically)
+  if(!is.null(horiz_colored_areas)){
+    if((!is.numeric(horiz_colored_areas) || 
+        any(horiz_colored_areas%%1 != 0) || any(horiz_colored_areas > 5) || any(horiz_colored_areas < 1)))
+      stop('horiz_lines_on_timeline must be a numeric vector (integer between 1 and 5). It will color the section of horiz_lines_on_timeline.')
+    if(is.null(horiz_lines_on_timeline))
+      stop('Current implementation does not handle area labeling on the timeline with different steps than horizontal lines (horiz_lines_on_timeline).')
+    n_h_partitions <- length(horiz_colored_areas)
+    if(! length(horiz_lines_on_timeline) %in% c(n_h_partitions - 1, n_h_partitions, n_h_partitions + 1))
+      stop('Number of colored areas labels must match the number of horizontal lines. ')
+  } 
+  # checking the points on the timeline
+  if(!is.null(points_on_timeline)){
+    if(!is.numeric(points_on_timeline))
+      stop('points_on_timeline must be a numeric.')
+    if(any(points_on_timeline%%1 != 0) || any(points_on_timeline > dp[1]) || any(points_on_timeline < 1))
+      stop('points_on_timeline must be an integer in the trj dimensions.')
+  }
   
   # Main ann_trace constructor
   if(!no_trace){
@@ -331,45 +364,90 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
   
   # timeline at the bottom
   if(timeline){
-    gg <- gg + geom_point(aes(x=xx[seq(1, dp[1], sub_sampling_factor)],
-                              y = ((pin[,3]*1.0*ymax*1/6)/dp[1])[seq(1, dp[1], sub_sampling_factor)]), 
-                          col=single_line_general_ann[seq(1, dp[1], sub_sampling_factor)],
-                          size=0.01*general_size_annPoints) + 
-      annotate("text", label = "0%", x = -dp[1]/100, y = 0, size = 3, angle = 90) +
-      annotate("text", label = "100%", x = -dp[1]/100, y = 1.0*ymax*1/6, size = 3, angle = 90)
+    if(!is.null(timeline_proportion)){
+      tp <- timeline_proportion
+      if(tp > 1 || tp < 0.1){
+        warning('the timeline proportions was too big in comparison to the plot (it must be between 0.1 and 1). It is coerced to standard value.')
+        tp <- 1.0/6
+      }
+    }else{
+      tp <- 1.0/6
+    }
+    if(only_timeline){
+      ymax <- dp[1]
+      tp <- 1.0
+      gg <- ggplot() + geom_point(aes(x=xx[seq(1, dp[1], sub_sampling_factor)],
+                                y = (pin[,3][seq(1, dp[1], sub_sampling_factor)])),
+                            col=single_line_general_ann[seq(1, dp[1], sub_sampling_factor)],
+                            size=0.01*general_size_annPoints) + theme_minimal() +
+        annotate("text", label = "0%", x = -dp[1]/90, y = 0, size = 3, angle = 90) +
+        annotate("text", label = "100%", x = -dp[1]/90, y = dp[1], size = 3, angle = 90) +
+        xlab("Progress Index") + ylab("Temporal annotation")
+    }else{
+      gg <- gg + geom_point(aes(x=xx[seq(1, dp[1], sub_sampling_factor)],
+                                y = ((pin[,3]*1.0*ymax*tp)/dp[1])[seq(1, dp[1], sub_sampling_factor)]), 
+                            col=single_line_general_ann[seq(1, dp[1], sub_sampling_factor)],
+                            size=0.01*general_size_annPoints) + 
+        annotate("text", label = "0%", x = -dp[1]/90, y = 0, size = 3, angle = 90) +
+        annotate("text", label = "100%", x = -dp[1]/90, y = 1.0*ymax*tp, size = 3, angle = 90)
+    }
+    
+    # printing horizontal lines on the timeline annotation
     if(!is.null(horiz_lines_on_timeline)){
-      for(l in 1:length(horiz_lines_on_timeline)){
-        if(horiz_lines_on_timeline[l]%%1 != 0 || horiz_lines_on_timeline[l] < 1 || horiz_lines_on_timeline[l] > dp[1])
-          stop(horiz_lines_on_timeline[l],' is not an integer or it is not in the snapshots window (1:n_snaps).')
+      
+      # adding the initial value to have a correct plotting in color
+      if(all(horiz_lines_on_timeline != 1))
+        horiz_lines_on_timeline <- c(1, horiz_lines_on_timeline)
+      # adding the ending value for identical reasons
+      if(all(horiz_lines_on_timeline != dp[1]))
+        horiz_lines_on_timeline <- c(horiz_lines_on_timeline, dp[1])
+      
+      if(reorder_horizline_on_timeline)
+        y_horiz_line <- ((pin[,3]*1.0*ymax*tp)/dp[1])[horiz_lines_on_timeline]
+      else
+        y_horiz_line <- ((horiz_lines_on_timeline * 1.0) / dp[1]) * (ymax * tp)
+      
+      # plotting areas of horizontal lines
+      if(!is.null(horiz_colored_areas)){
+        gg<- gg + geom_segment(aes(x = 0, xend = 0, 
+                                   y = y_horiz_line[1:(length(y_horiz_line)-1)], 
+                                   yend = y_horiz_line[2:length(y_horiz_line)]),
+                               size=2*general_size_annPoints, col = horiz_colored_areas)
       }
       
-      # mechanical switch of horizontal line plotting
-      y_horiz_line <- ((horiz_lines_on_timeline * 1.0) / dp[1]) * (ymax / 6.0)
-      # y_horiz_line <- ((pin[,3]*1.0*ymax*1/6)/dp[1])[horiz_lines_on_timeline]
+      # plotting horizontal lines
       color_horiz_line <- "black"
-      # color_horiz_line <- single_line_general_ann[horiz_lines_on_timeline]
       gg <- gg + geom_segment(aes(x = xx[1], xend = xx[dp[1]], 
                                   y = y_horiz_line, yend = y_horiz_line),
                               size=0.4*general_size_annPoints, col = color_horiz_line)
     }
+    
+    # Printing points on the timeline annotation
     if(!is.null(points_on_timeline)){
-      for(l in 1:length(points_on_timeline)){
-        if(points_on_timeline[l]%%1 != 0 || points_on_timeline[l] < 1 || points_on_timeline[l] > dp[1])
-          stop(points_on_timeline[l],' is not an integer or it is not in the snapshots window (1:n_snaps).')
-      }
-      y_points <- ((pin[,3]*1.0*ymax*1/6)/dp[1])[points_on_timeline]
-      # y_points <- ((points_on_timeline * 1.0) / dp[1]) * (ymax / 6.0)
+      
+      # adding the initial value to have a correct plotting in color (no just because we can)
+      if(all(points_on_timeline != 1))
+        points_on_timeline <- c(1, points_on_timeline)
+      # adding the ending value for identical reasons
+      if(all(points_on_timeline != dp[1]))
+        points_on_timeline <- c(points_on_timeline, dp[1])
+      
+      if(reorder_points_on_timeline)
+        y_points <- ((pin[,3]*1.0*ymax*tp)/dp[1])[points_on_timeline]
+      else
+        y_points <- ((points_on_timeline * 1.0) / dp[1]) * (ymax * tp)
       
       color_points <- "green4"
-      # color_horiz_line <- single_line_general_ann[points_on_timeline]
+      
       gg <- gg + geom_point(aes(x=xx[points_on_timeline], y=y_points),
-                              size=1.0*general_size_annPoints, col = color_points)
+                            size=1.5*general_size_annPoints, col = color_points)
     }
   }else if(!is.null(horiz_lines_on_timeline)){
     stop('To use horiz_lines_on_timeline you must have active the timeline options.')
   }else if(!is.null(points_on_timeline)){
     stop('To use points_on_timeline you must have active the timeline options.')
   }
+  
   
   
   # annotation names LEFT
@@ -390,61 +468,16 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
   }
 
   # basic annotation (principal cut)
-  gg <- gg + geom_line(aes(x = xx, y = -log((pin[,4]/Nsnap))), color=main_col, size=0.2) +
-    theme_minimal()
+  if(!only_timeline)
+    gg <- gg + geom_line(aes(x = xx, y = -log((pin[,4]/Nsnap))), color=main_col, size=0.2) +
+      theme_minimal()
   
   # local cut
-  if(local_cut) gg <- gg + 
-    geom_point(mapping = aes(x=xx,y=2.5 - (1./3.)*log((pin[,10] + pin[,12]) / Nsnap)), 
-               color="red3", size=0.1) 
+  if(!only_timeline)
+    if(local_cut) gg <- gg + 
+      geom_point(mapping = aes(x=xx,y=2.5 - (1./3.)*log((pin[,10] + pin[,12]) / Nsnap)), 
+                 color="red3", size=0.1) 
   
-  
-  # plotting ONLY timeline
-  if(only_timeline){
-    if(timeline){
-      ymax <- dp[1]
-      gg <- ggplot() + geom_point(aes(x=xx[seq(1, dp[1], sub_sampling_factor)],
-                                y = (pin[,3][seq(1, dp[1], sub_sampling_factor)])), 
-                            col=single_line_general_ann[seq(1, dp[1], sub_sampling_factor)],
-                            size=0.01*general_size_annPoints) + 
-        annotate("text", label = "0%", x = -dp[1]/100, y = 0, size = 3, angle = 90) +
-        annotate("text", label = "100%", x = -dp[1]/100, y = dp[1], size = 3, angle = 90) +
-        xlab("Progress Index") + ylab("Temporal annotation")
-      
-      if(!is.null(horiz_lines_on_timeline)){
-        for(l in 1:length(horiz_lines_on_timeline)){
-          if(horiz_lines_on_timeline[l]%%1 != 0 || horiz_lines_on_timeline[l] < 1 || horiz_lines_on_timeline[l] > dp[1])
-            stop(horiz_lines_on_timeline[l],' is not an integer or it is not in the snapshots window (1:n_snaps).')
-        }
-        
-        # mechanical switch of horizontal line plotting
-        y_horiz_line <- ((horiz_lines_on_timeline * 1.0))
-        # y_horiz_line <- ((pin[,3]*1.0*ymax*1/6)/dp[1])[horiz_lines_on_timeline]
-        color_horiz_line <- "black"
-        # color_horiz_line <- single_line_general_ann[horiz_lines_on_timeline]
-        gg <- gg + geom_segment(aes(x = xx[1], xend = xx[dp[1]], 
-                                    y = y_horiz_line, yend = y_horiz_line),
-                                size=0.4*general_size_annPoints, col = color_horiz_line)
-      }
-      if(!is.null(points_on_timeline)){
-        for(l in 1:length(points_on_timeline)){
-          if(points_on_timeline[l]%%1 != 0 || points_on_timeline[l] < 1 || points_on_timeline[l] > dp[1])
-            stop(points_on_timeline[l],' is not an integer or it is not in the snapshots window (1:n_snaps).')
-        }
-        y_points <- (pin[,3]*1.0)[points_on_timeline]
-        color_points <- "green4"
-        # color_horiz_line <- single_line_general_ann[points_on_timeline]
-        gg <- gg + geom_point(aes(x=xx[points_on_timeline], y=y_points),
-                              size=1.0*general_size_annPoints, col = color_points)
-      }
-    }else if(!is.null(horiz_lines_on_timeline)){
-      stop('To use horiz_lines_on_timeline you must have active the timeline options.')
-    }else if(!is.null(points_on_timeline)){
-      stop('To use points_on_timeline you must have active the timeline options.')
-    }else{
-      stop('If you want to plot only the timeline please use also timeline = TRUE')
-    }
-  }
   
   if(!is.null(n_barriers_to_highlight)){
     sorted_values <- s
