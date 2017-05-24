@@ -468,15 +468,18 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
   }
 
   # basic annotation (principal cut)
-  if(!only_timeline)
-    gg <- gg + geom_line(aes(x = xx, y = -log((pin[,4]/Nsnap))), color=main_col, size=0.2) +
+  if(!only_timeline){
+    if(min(-log((pin[,4]/Nsnap))) < tp*ymax)
+      main_col <- 'dodgerblue'
+    gg <- gg + geom_line(aes(x = xx, y = -log((pin[,4]/Nsnap))), color=main_col, size=0.8) +
       theme_minimal()
+  }
   
   # local cut
   if(!only_timeline)
     if(local_cut) gg <- gg + 
       geom_point(mapping = aes(x=xx,y=2.5 - (1./3.)*log((pin[,10] + pin[,12]) / Nsnap)), 
-                 color="red3", size=0.1) 
+                 color="red3", size=0.08) 
   
   
   if(!is.null(n_barriers_to_highlight)){
