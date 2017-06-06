@@ -25,7 +25,7 @@
 #' @importFrom WGCNA adjacency
 #' @importFrom data.table transpose
 
-generate_network <- function(trj, window = NULL, method = 'wgcna', overlapping_reduction = NULL, transpose_trj = FALSE,... ){
+generate_network <- function(trj, window = NULL, method = 'wgcna', overlapping_reduction = NULL, transpose_trj = FALSE, ...){
  
   # checking additional variable
   input_args <- list(...)
@@ -79,7 +79,6 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', overlapping_r
     window_r <- floor((window-1)/2)
     window_l <- ceiling((window-1)/2)
   } 
-  
   # Check for NA
   if(any(is.na(trj))) stop('There are NA values in the input trajectory')
     
@@ -95,7 +94,7 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', overlapping_r
     timing_it <- TRUE
   
   # Main transformation
-  message('Network construction started.')
+  message('Network construction started (selected window: ', window, ').')
   for(i in 1:dim(trj)[1]){
     # adding time if necessary
     if(i==1&&timing_it)

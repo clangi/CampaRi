@@ -4,8 +4,8 @@
 \alias{generate_network}
 \title{Create a network for each snapshots}
 \usage{
-generate_network(trj, window = NULL, overlapping_reduction = NULL,
-  transpose_trj = FALSE, ...)
+generate_network(trj, window = NULL, method = "wgcna",
+  overlapping_reduction = NULL, transpose_trj = FALSE, ...)
 }
 \arguments{
 \item{trj}{Input trajectory (variables on the columns and equal-time spaced snpashots on the row). It must be a \code{matrix} or a \code{data.frame} of numeric.}

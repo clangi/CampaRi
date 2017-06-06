@@ -5,10 +5,9 @@
 \title{Sapphire plot - plotting annotation and progrex index}
 \usage{
 sapphire_plot(sap_file = NULL, sap_table = NULL, write = F,
-  folderPlot = "plots/", timeline = T, local_cut = T, return_plot = F,
-  annotate_snap_dist = F, sub_sampling_factor = NULL, ann_trace = F,
-  return_ann_trace = F, background_height = NULL, ann_names_L = NULL,
-  ann_names_R = NULL, title = "")
+  folderPlot = "plots/", return_plot = F, local_cut = TRUE,
+  timeline = FALSE, sub_sampling_factor = NULL, ann_trace = FALSE,
+  return_ann_trace = FALSE, title = "", ...)
 }
 \arguments{
 \item{sap_file}{Annotated progrex index file. This can be left unused if \code{sap_table} is used instead.
@@ -21,13 +20,11 @@ Also in this case the format of the table must be the file output of \code{gen_a
 
 \item{folderPlot}{A character string that defines the folder in which save the plots (\code{write} argument must be \code{TRUE}).}
 
-\item{timeline}{A logical indicating whether add a timeline annotation (with the original order) on the bottom of the plot.}
+\item{return_plot}{if \code{TRUE} it returns the plot object (ggplot).}
 
 \item{local_cut}{A logical that, if \code{TRUE} plots the local cut annotation function (see \code{gen_annotation}).}
 
-\item{return_plot}{if \code{TRUE} it returns the plot object (ggplot).}
-
-\item{annotate_snap_dist}{if \code{TRUE} the distance between snapshots will be added on the top of the plot}
+\item{timeline}{A logical indicating whether add a timeline annotation (with the original order) on the bottom of the plot.}
 
 \item{sub_sampling_factor}{if a number is inserted the annotation will be subsampled by that factor.}
 
@@ -36,13 +33,7 @@ that follows a split in half of the original timeline. If only an integer have b
 Instead if a matrix have been inserted it will be a plotted as it is on the top of the plot mapping the range of numbers in order to
 produce a gray scale horizontal annotation.}
 
-\item{return_ann_trace}{If \code{TRUE} the annotation vector is returned.}
-
-\item{background_height}{Defines the height on which to put the annotation (integer between 1 and 14).}
-
-\item{ann_names_L}{Vector of characther strings indicating, from top on the left, the names of the annotation horizontal bars.}
-
-\item{ann_names_R}{Vector of characther strings indicating, from top on the right, the names of the annotation horizontal bars.}
+\item{return_ann_trace}{If \code{TRUE} the annotation vector is returned. This option can be really useful for adding layers and specific text \link{ggplot2}.}
 
 \item{title}{Title of the plot (default "")}
 }

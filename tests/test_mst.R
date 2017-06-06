@@ -28,9 +28,9 @@ trj <- read.dcd("../inst/extdata/NBU_1250fs.dcd")
 
 # Wrapper analysis
 # ------------------------------------------
-
+options(CampaRi.data_management = "R") # netcdf handling
 adjl <- mst_from_trj(trj = trj, mode = "fortran", normalize_d = FALSE, logging = T)
-ret <- gen_progindex(adjl, snap_start = 10)
+ret <- gen_progindex(adjl = adjl, snap_start = 10)
 ret2 <- gen_annotation(ret, snap_start = 10)
 sapphire_plot(sap_file = 'REPIX_000000000010.dat', title = "CAMPARI WRAPPER - MST", 
               timeline = F, ann_trace = F)

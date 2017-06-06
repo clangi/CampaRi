@@ -16,12 +16,12 @@
 #' Instead if a matrix have been inserted it will be a plotted as it is on the top of the plot mapping the range of numbers in order to
 #' produce a gray scale horizontal annotation.
 #' @param return_plot if \code{TRUE} it returns the plot object (ggplot).
-#' @param annotate_snap_dist if \code{TRUE} the distance between snapshots will be added on the top of the plot
+# @param annotate_snap_dist if \code{TRUE} the distance between snapshots will be added on the top of the plot
 #' @param sub_sampling_factor if a number is inserted the annotation will be subsampled by that factor.
-#' @param return_ann_trace If \code{TRUE} the annotation vector is returned.
-#' @param background_height Defines the height on which to put the annotation (integer between 1 and 14).
-#' @param ann_names_L Vector of characther strings indicating, from top on the left, the names of the annotation horizontal bars.
-#' @param ann_names_R Vector of characther strings indicating, from top on the right, the names of the annotation horizontal bars.
+#' @param return_ann_trace If \code{TRUE} the annotation vector is returned. This option can be really useful for adding layers and specific text \link{ggplot2}.
+# @param background_height Defines the height on which to put the annotation (integer between 1 and 14).
+# @param ann_names_L Vector of characther strings indicating, from top on the left, the names of the annotation horizontal bars.
+# @param ann_names_R Vector of characther strings indicating, from top on the right, the names of the annotation horizontal bars.
 #' @param title Title of the plot (default "")
 #'
 #' @details For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
@@ -43,23 +43,71 @@
 #' @importFrom graphics hist plot 
 #' @export sapphire_plot
 #' @import ggplot2
-sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot = "plots/", return_plot = F, local_cut = TRUE,
-                        timeline = FALSE, only_timeline = FALSE, annotate_snap_dist = F, timeline_proportion = NULL,
-                        ann_trace = FALSE, return_ann_trace = FALSE, background_height = NULL, reorder_annotation = FALSE,
-                        ann_names_L = NULL, ann_names_R = NULL, 
-                        horiz_lines_on_timeline = NULL, horiz_colored_areas = NULL, reorder_horizline_on_timeline = FALSE,
-                        points_on_timeline = NULL, reorder_points_on_timeline = FALSE,
-                        general_size_annPoints = 1., sub_sampling_factor = NULL,
-                        n_barriers_to_highlight = NULL,
-                        title = ""){
+
+
+sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPlot = "plots/", return_plot = F, local_cut = TRUE,
+                          timeline = FALSE, sub_sampling_factor = NULL, ann_trace = FALSE, return_ann_trace = FALSE,
+                          title = "", ...){
+  
+  # Analysis of extra args
+  input_args <- list(...)
+  avail_extra_argoments <- c('only_timeline',
+                             'reorder_annotation', 
+                             'annotate_snap_dist',
+                             'rescaling_ann_col', # if true the numerical ann are rescaled in grey
+                             'reorder_horizline_on_timeline',
+                             'reorder_points_on_timeline',
+                             
+                             'timeline_proportion',
+                             'background_height',
+                             'ann_initial_point',
+                             'horiz_lines_on_timeline', 
+                             'horiz_colored_areas',
+                             'points_on_timeline', 
+                             'vertical_barriers_points', 
+                             'specific_palette', 
+                             
+                             'general_size_annPoints')
+                             
+
+  if(any(!(names(input_args) %in% avail_extra_argoments))) 
+    warning('There is a probable mispelling in one of the inserted variables. Please check the available extra input arguments.')
+  
+  # Default handling
+  if(!('only_timeline' %in% names(input_args))) only_timeline <- FALSE else only_timeline <- input_args[['only_timeline']]
+  if(!('reorder_annotation' %in% names(input_args))) reorder_annotation <- FALSE else reorder_annotation <- input_args[['reorder_annotation']]
+  if(!('annotate_snap_dist' %in% names(input_args))) annotate_snap_dist <- FALSE  else annotate_snap_dist <- input_args[['annotate_snap_dist']]
+  if(!('rescaling_ann_col' %in% names(input_args))) rescaling_ann_col <- TRUE  else rescaling_ann_col <- input_args[['rescaling_ann_col']]
+  if(!('reorder_horizline_on_timeline' %in% names(input_args))) reorder_horizline_on_timeline <- FALSE else reorder_horizline_on_timeline <- input_args[['reorder_horizline_on_timeline']]
+  if(!('reorder_points_on_timeline' %in% names(input_args))) reorder_points_on_timeline <- FALSE  else reorder_points_on_timeline <- input_args[['reorder_points_on_timeline']]
+  
+  if(!('timeline_proportion' %in% names(input_args))) timeline_proportion <- NULL else timeline_proportion <- input_args[['timeline_proportion']]
+  if(!('background_height' %in% names(input_args))) background_height <- NULL else background_height <- input_args[['background_height']]
+  if(!('ann_initial_point' %in% names(input_args))) ann_initial_point <- NULL else ann_initial_point <- input_args[['ann_initial_point']]
+  if(!('horiz_lines_on_timeline' %in% names(input_args))) horiz_lines_on_timeline <- NULL else horiz_lines_on_timeline <- input_args[['horiz_lines_on_timeline']]
+  if(!('horiz_colored_areas' %in% names(input_args))) horiz_colored_areas <- NULL else horiz_colored_areas <- input_args[['horiz_colored_areas']]
+  if(!('points_on_timeline' %in% names(input_args))) points_on_timeline <- NULL else points_on_timeline <- input_args[['points_on_timeline']]
+  if(!('vertical_barriers_points' %in% names(input_args))) vertical_barriers_points <- NULL else vertical_barriers_points <- input_args[['vertical_barriers_points']]
+  if(!('specific_palette' %in% names(input_args))) specific_palette <- NULL else specific_palette <- input_args[['specific_palette']]
+  
+  if(!('general_size_annPoints' %in% names(input_args))) general_size_annPoints <- 1. else general_size_annPoints <- input_args[['general_size_annPoints']]
+
+  # ============================
+  #          CHECKS
+  # ============================
+  #
+  #
+  # ---------------------
   # check on title
   if(!is.character(title)) stop("title var must be a string")
+  # ---------------------
   # check on output folder
   if(file.exists(folderPlot)&&write) print(paste0(folderPlot," already exixts. Posting plots there."))
   else if(write){
     dir.create(folderPlot)
     cat(paste0(folderPlot," created in order to contain new plots."))
   }
+  # ---------------------
   # checking the logicals
   if(!is.logical(return_plot))
     stop('return_plot must be a logical.')
@@ -81,38 +129,41 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
     stop('reorder_points_on_timeline must be a logical.')
   if(!is.logical(reorder_horizline_on_timeline))
     stop('reorder_horizline_on_timeline must be a logical.')
-  
+  if(!is.logical(rescaling_ann_col))
+    stop('rescaling_ann_col must be a logical.')
+
+  # --------------------- 
   # putting on timeline if only timeline is on
   if(only_timeline && !timeline)
     timeline <- TRUE
   
+  # ---------------------  
   # general_size_annPoints = 1 must be a numeric
   if(!is.numeric(general_size_annPoints) || length(general_size_annPoints) != 1)
     stop('general_size_annPoints must be a single numeric.')
 
+  # ---------------------
   # timeline_proportion must be single numeric
   if(!is.null(timeline_proportion) && (!is.numeric(timeline_proportion) || length(timeline_proportion) != 1))
     stop('timeline_proportion must be a single numeric.')
   
-  # checking the number of basins input
-  if(!is.null(n_barriers_to_highlight))
-    if(!is.numeric(n_barriers_to_highlight) || length(n_barriers_to_highlight) != 1 || n_barriers_to_highlight%%1 != 0)
-      stop('n_barriers_to_highlight must be a single whole number')
-  
+  # ---------------------
   # loading data - sapphire table
   # the coercion to data.frame is made for retrocompatibili with non-data.table code
   if(is.null(sap_table)&&!is.null(sap_file)) pin <- data.frame(fread(sap_file)) 
   else if(is.null(sap_file)&&!is.null(sap_table)) pin <- sap_table
   else stop("Sapphire table needed in input. Check the documentation")
   dp <- dim(pin)
+  Nsnap <- dp[1]
   
+  # ---------------------
   # checking single numbers 
-  if(!is.null(sub_sampling_factor) && (!is.numeric(sub_sampling_factor) || length(sub_sampling_factor) != 1 || (dp[1]%%sub_sampling_factor != 0))){
-    warning('Wrong sub_sampling_factor insertion. It should be a number divisible by the number of snapshots. It will be used anyway with a truncated ending.')
+  if(!is.null(sub_sampling_factor) && (!is.numeric(sub_sampling_factor) || length(sub_sampling_factor) != 1 || (Nsnap%%sub_sampling_factor != 0))){
+    warning('Wrong sub_sampling_factor insertion. It should be a number divisible by the number of snapshots. Otherwise, it will be used anyway with a truncated ending.')
     # cat('Checking a different value for sub_sampling factor (the first divisible number).')
     # divisible_sub_sampling values
-    # for(i in 2:dp[1]){
-    #   {if(dp[1]%%i==0) print(sum(trial_len)/i)}
+    # for(i in 2:Nsnap){
+    #   {if(Nsnap%%i==0) print(sum(trial_len)/i)}
     # }
   }else if(!is.null(sub_sampling_factor)){
     do_subsam_ann <- TRUE
@@ -121,7 +172,56 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
     sub_sampling_factor <- 1
   }
   
-  # logic std
+  # ---------------------
+  # checking the horiz_lines_on_timeline
+  if(!is.null(horiz_lines_on_timeline)) {
+    if(!is.numeric(horiz_lines_on_timeline))
+      stop('horiz_lines_on_timeline must be a numeric.')
+    if(any(horiz_lines_on_timeline%%1 != 0) || any(horiz_lines_on_timeline > Nsnap) || any(horiz_lines_on_timeline < 1))
+      stop('horiz_lines_on_timeline must be an integer in the trj dimensions.')
+  }
+  
+  # ---------------------
+  # checking the barriers
+  if(!is.null(vertical_barriers_points)) {
+    if(!is.numeric(vertical_barriers_points))
+      stop('vertical_barriers_points must be a numeric.')
+    if(any(vertical_barriers_points%%1 != 0) || any(vertical_barriers_points > Nsnap) || any(vertical_barriers_points < 1))
+      stop('vertical_barriers_points must be an integer in the trj dimensions.')
+  }
+  
+  # ---------------------
+  # checking the horiz_colored_areas (plotted vertically)
+  if(!is.null(horiz_colored_areas)){
+    if((!is.numeric(horiz_colored_areas) || 
+        any(horiz_colored_areas%%1 != 0) || any(horiz_colored_areas > 5) || any(horiz_colored_areas < 1)))
+      stop('horiz_lines_on_timeline must be a numeric vector (integer between 1 and 5). It will color the section of horiz_lines_on_timeline.')
+    if(is.null(horiz_lines_on_timeline))
+      stop('Current implementation does not handle area labeling on the timeline with different steps than horizontal lines (horiz_lines_on_timeline).')
+    n_h_partitions <- length(horiz_colored_areas)
+    if(! length(horiz_lines_on_timeline) %in% c(n_h_partitions - 1, n_h_partitions, n_h_partitions + 1))
+      stop('Number of colored areas labels must match the number of horizontal lines. ')
+  } 
+  
+  # ---------------------
+  # checking the points on the timeline
+  if(!is.null(points_on_timeline)){
+    if(!is.numeric(points_on_timeline))
+      stop('points_on_timeline must be a numeric.')
+    if(any(points_on_timeline%%1 != 0) || any(points_on_timeline > Nsnap) || any(points_on_timeline < 1))
+      stop('points_on_timeline must be an integer in the trj dimensions.')
+  }
+  
+  # ---------------------
+  # checking the color palette
+  if(!is.null(specific_palette) &&
+     (!all(is.character(specific_palette)) || !all(nchar(specific_palette)==7) || !all(sapply(a, function(x){substring(x,1,1)}) == "#")))
+    stop('specific_palette must be of the type "#b47b00", "#D9E000" (7 characters starting with #')
+  
+  # ---------------------
+  # checking ann_trace input
+  # ---------------------
+  # logic standards
   no_trace <- FALSE
   automatic_trace_half <- FALSE
   # manual insertion std
@@ -131,8 +231,7 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
   character_trace <- FALSE
   n_partitions_trace <- FALSE
   
-  
-  # checking ann_trace input
+  # Main switcher
   if(is.logical(ann_trace) && ann_trace){
     automatic_trace_half <- TRUE 
     one_line_trace <- TRUE
@@ -144,10 +243,18 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
     if(is.null(dim(ann_trace)) || length(dim(ann_trace)) == 1){
       one_line_trace <- TRUE
       # correct length
-      if(length(ann_trace) == dp[1]){
+      if(length(ann_trace) == Nsnap){
         # is numeric?
         if(is.numeric(ann_trace)){
-          ann_trace <- as.integer(ann_trace)
+          # if(rescaling_ann_col) ann_trace <- as.integer(ann_trace) # not needed: it can generate imprecisions before the division and floor done afterwards
+          if(any(ann_trace < 0)){
+            warning('Inserted negative values in the annotation trace. ', sum(ann_trace < 0), ' values have been coerced to pos.')
+            ann_trace <- abs(ann_trace)
+          }
+          if(any(ann_trace == 0)){
+            warning('Inserted 0 values (', sum(ann_trace==0), ') in the annotation trace. 1 is added to all values.')
+            ann_trace <- ann_trace + 1
+          }
           numeric_trace <- TRUE
         # is character?
         }else if(is.character(ann_trace)){
@@ -157,7 +264,7 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
           no_trace <- TRUE
         }
       # one line different length < n_snaps
-      }else if(length(ann_trace) < dp[1]){
+      }else if(length(ann_trace) < Nsnap){
         # case one number -> number of partitions to do
         if(length(ann_trace) == 1){
           n_partitions_trace <- TRUE
@@ -173,12 +280,14 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
       
     # multiple lines
     }else if(length(dim(ann_trace)) == 2){
-      warning("MULTIPLE LINES NOT WORKING FOR GGPLOT2 UPDATE - TODO")
+      # warning("MULTIPLE LINES NOT WORKING FOR GGPLOT2 UPDATE - TODO")
       multi_line_trace <- TRUE
       n_lines_annotation <- dim(ann_trace)[1]
       if(is.numeric(ann_trace)){
-        for(i in 1:n_lines_annotation)
-          ann_trace[i,] <- as.integer(ann_trace[i,])
+        # if(rescaling_ann_col){
+        #   for(i in 1:n_lines_annotation)
+        #     ann_trace[i,] <- as.integer(ann_trace[i,])
+        # }
         numeric_trace <- TRUE
         # is character?
       }else if(is.character(ann_trace)){
@@ -194,48 +303,30 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
     }
   } 
   
+  # ---------------------
   # checking the reordering of the annotation (functionality that is working only with one-line whatever) TODO extend it
-  if(reorder_annotation && (!one_line_trace && (!numeric_trace || !character_trace)))
-    stop('reorder_annotation is supported only for one_line_trace and direct numeric-character insertion')
-  
-  
-  # checking the horiz_lines_on_timeline
-  if(!is.null(horiz_lines_on_timeline)) {
-    if(!is.numeric(horiz_lines_on_timeline))
-      stop('horiz_lines_on_timeline must be a numeric.')
-    if(any(horiz_lines_on_timeline%%1 != 0) || any(horiz_lines_on_timeline > dp[1]) || any(horiz_lines_on_timeline < 1))
-      stop('horiz_lines_on_timeline must be an integer in the trj dimensions.')
-  }
-  # checking the horiz_colored_areas (plotted vertically)
-  if(!is.null(horiz_colored_areas)){
-    if((!is.numeric(horiz_colored_areas) || 
-        any(horiz_colored_areas%%1 != 0) || any(horiz_colored_areas > 5) || any(horiz_colored_areas < 1)))
-      stop('horiz_lines_on_timeline must be a numeric vector (integer between 1 and 5). It will color the section of horiz_lines_on_timeline.')
-    if(is.null(horiz_lines_on_timeline))
-      stop('Current implementation does not handle area labeling on the timeline with different steps than horizontal lines (horiz_lines_on_timeline).')
-    n_h_partitions <- length(horiz_colored_areas)
-    if(! length(horiz_lines_on_timeline) %in% c(n_h_partitions - 1, n_h_partitions, n_h_partitions + 1))
-      stop('Number of colored areas labels must match the number of horizontal lines. ')
-  } 
-  # checking the points on the timeline
-  if(!is.null(points_on_timeline)){
-    if(!is.numeric(points_on_timeline))
-      stop('points_on_timeline must be a numeric.')
-    if(any(points_on_timeline%%1 != 0) || any(points_on_timeline > dp[1]) || any(points_on_timeline < 1))
-      stop('points_on_timeline must be an integer in the trj dimensions.')
+  if(reorder_annotation){
+    if(n_partitions_trace || automatic_trace_half)
+      stop('reorder_annotation is supported only for direct (==nrow(trj)) numeric-character insertion')
   }
   
+  
+  # ============================
   # Main ann_trace constructor
+  # ============================
+  #
   if(!no_trace){
-    ann_tr <- array("NA", dim = dp[1])
-    # ann_trace == TRUE
+    ann_tr <- array("NA", dim = Nsnap)
+    # ---------------------
+    # AUTOMATIC 2 divisions: ann_trace == TRUE 
     if(automatic_trace_half){
       message("Annotation trace set to automatic. It will be considered bipartite along the timeline.")
       cat("Half random mode selected for the trace annotation. First half will be light grey")
-      ann_tr[pin[,3]>=dp[1]/2 & ann_tr == "NA"]<-"gray75"
-      ann_tr[pin[,3] < dp[1]/2 & ann_tr == "NA"] <- "gray30"
+      ann_tr[pin[,3]>=Nsnap/2 & ann_tr == "NA"]<-"gray75"
+      ann_tr[pin[,3] < Nsnap/2 & ann_tr == "NA"] <- "gray30"
     }
-    # ann_trace == number of partitions
+    # ---------------------
+    # AUTOMATIC n partitions: ann_trace == number of partitions
     if(n_partitions_trace){
       message("Only 10 shades of grey are possible for the 'number' option of ann_trace.
               If you inserted more than 10 it will be truncated. Please consider manual color insertion.")
@@ -243,47 +334,87 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
         warning('inserted more than 10 possible division of the timeline. It has been truncated to 10.')
         ann_trace = 10
       }
-      ann_tr[pin[,3]<dp[1]/ann_trace] <- "gray1"
-      for(i in 1:(ann_trace-1)) ann_tr[pin[,3]<dp[1]*(i+1)/ann_trace
-                                       & pin[,3]>=dp[1]*(i)/ann_trace
+      ann_tr[pin[,3]<Nsnap/ann_trace] <- "gray1"
+      for(i in 1:(ann_trace-1)) ann_tr[pin[,3]<Nsnap*(i+1)/ann_trace
+                                       & pin[,3]>=Nsnap*(i)/ann_trace
                                        & ann_tr == "NA"] <- paste0("gray",floor(100/ann_trace)*i)
     }
-    # ann_trace == exactly the ann_trace
+    # ---------------------
+    # DIRECT INSERTION (ONE LINE): ann_trace == exactly the ann_trace
     if(!automatic_trace_half && one_line_trace){
-      # in form of character
+      
+      # as character
       if(character_trace){
-        ann_tr <- ann_trace[pin[,3]]
+        
+        # reordering
+        if(reorder_annotation)
+          ann_tr <- ann_trace[pin[,3]]
+        else
+          ann_tr <- ann_trace
+        
       # as numeric
       }else if(numeric_trace){
-        max_value_ann_trace <- max(ann_trace)
-        ann_tr <- sapply(ann_trace, FUN = function(x){ paste0("gray",floor(65/max_value_ann_trace)*x) })
+        
+        # rescaling colors (grey based)
+        if(rescaling_ann_col){
+          max_value_ann_trace <- max(ann_trace)
+          ann_tr <- sapply(ann_trace, FUN = function(x){ paste0("gray",floor(70/max_value_ann_trace*x)) })
+        }else{
+          ann_tr <- ann_trace
+        }
+        # reordering      
         if(reorder_annotation)
           ann_tr <- ann_tr[pin[,3]]
       }
     }
-    # ann_trace == multi-lines annotation
+    # ---------------------
+    # DIRECT INSERTION (MULTI LINE):ann_trace == multi-lines annotation
     if(multi_line_trace){
       ann_tr <- array("NA", dim = dim(ann_trace))
-      # as character input
+      
+      # as character
       if(character_trace){
-        for(i in 1:n_lines_annotation)
-        ann_tr[i,] <- ann_trace[i, pin[,3]]
-      # as numeric input
+        # reordering
+        if(reorder_annotation)    
+          for(i in 1:n_lines_annotation)
+            ann_tr[i,] <- ann_trace[i, pin[,3]]
+        else
+          ann_tr <- ann_trace
+        
+      # as numeric
       }else if(numeric_trace){
-        for(i in 1:n_lines_annotation){
-          max_value_ann_trace <- max(ann_trace[i,])
-          ann_tr[i,] <- sapply(ann_trace[i,],FUN = function(x){paste0("gray",floor(100/max_value_ann_trace)*x)})
+        
+        # rescaling colors (grey based)
+        if(rescaling_ann_col){
+          for(i in 1:n_lines_annotation){
+            max_value_ann_trace <- max(ann_trace[i,])
+            ann_tr[i,] <- sapply(ann_trace[i,],FUN = function(x){paste0("gray",floor(70/max_value_ann_trace*x))})
+          }
+        }else{
+          # reordering
+          if(reorder_annotation)    
+            for(i in 1:n_lines_annotation)
+              ann_tr[i,] <- ann_trace[i, pin[,3]]
+            else
+              ann_tr <- ann_trace
         }
-        max_value_ann_trace <- max(ann_trace)
       }
     }
   }else{
     warning("Annotation trace option not used.")
   }
   
+  
+  # ============================
+  #         The plot
+  # ============================
+  #
+  #
+  #
+  # ---------------------
   # Set range of x and y values for the plot:
-  Nsnap<-dp[1]
-  xx = seq(from=1, by=1, to=Nsnap)
+  xx <- seq(from=1, by=1, to=Nsnap)[seq(1, Nsnap, sub_sampling_factor)]
+  
   ymin = 0
   ymax_cut = -log(pin[,4]/Nsnap)
   ymax_local_cut = 2.5 - (1./3.)*log((pin[,10] + pin[,12]) / Nsnap)
@@ -291,57 +422,97 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
   ymax_local_cut = ymax_local_cut[!is.infinite(ymax_local_cut)&!is.na(ymax_local_cut)]
   ymax = max(ymax_cut, ymax_local_cut)
   
+  # ---------------------
   # initial creation of the plot
   gg <- ggplot() +
     xlab("Progress Index") + ylab("Annotation")
   # theme_bw() +
   # theme(panel.grid.minor = element_line(colour="gray80"))
   
+  # ---------------------
   # Trace height from the top. This is the 0-16 parts out of ymax
-  if(!is.null(background_height)&&is.numeric(background_height)&&length(background_height)==1){
-    if(background_height>14||background_height<0){
+  if(!is.null(background_height) && is.numeric(background_height) && length(background_height) == 1L){
+    if(background_height > 1 || background_height < 0){
       warning("Inserted background height too small or too big.")
-      background_height <- 12
+      background_height <- ymax/8.
     }
-    tr_init <- background_height
-    if(background_height>8)
-      main_col<-"darkblue"
-    else
-      main_col <- "dodgerblue"
-  }else if(!is.null(background_height)&&is.character(background_height)&&background_height=="full"){
-    if(timeline)
-      tr_init <- 4
-    else
-      tr_init <- 0
-    main_col <- "dodgerblue"
+    background_height <- background_height*ymax
   }else{
-    tr_init <- 12
-    main_col<-"darkblue"
+    background_height <- ymax/8.
+  }
+  if(!is.null(ann_initial_point) && is.numeric(ann_initial_point) && length(ann_initial_point) == 1L){
+    if(ann_initial_point >= 1 || ann_initial_point < 0){
+      warning("Inserted initial annotation point too small or too big (between 0-1).")
+      ann_init <- ymax*3/4.
+    }
+    ann_init <- ann_initial_point*ymax
+  }else{
+    ann_init <- ymax*3/4.
   }
   
-  
-  # plotting the trace 
+  # ---------------------
+  # main trace - plotting
+  # one line trace
   if(!no_trace && one_line_trace && !annotate_snap_dist){
-    gg <- gg + geom_segment(aes(xx[seq(1, dp[1], sub_sampling_factor)], 
-                                y = rep(ymax*3/4, length(xx))[seq(1, dp[1], sub_sampling_factor)],
-                                xend = xx[seq(1, dp[1], sub_sampling_factor)], 
-                                yend = rep(ymax*3/4 + ymax/8, length(xx))[seq(1, dp[1], sub_sampling_factor)]),
-                            col = ann_tr[seq(1, dp[1], sub_sampling_factor)],
-                            size = 0.1*general_size_annPoints)
-  } else if(!no_trace && multi_line_trace && !annotate_snap_dist){
-    for(i in 0:(n_lines_annotation-1))
-      gg <- gg + geom_segment(x=xx[seq(1, dp[1], sub_sampling_factor)], 
-                              y = rep(ymax*((tr_init+((i*(16-tr_init))/n_lines_annotation))/16),length(xx))[seq(1, dp[1], sub_sampling_factor)],
-                              xend = xx[seq(1, dp[1], sub_sampling_factor)], 
-                              yend = rep(ymax*((tr_init+(((i+1)*(16-tr_init))/n_lines_annotation))/16), length(xx))[seq(1, dp[1], sub_sampling_factor)],
-                              col = ann_tr[(i+1),][seq(1, dp[1], sub_sampling_factor)],
+    if(is.null(specific_palette)){
+      gg <- gg + geom_segment(aes(xx, 
+                                  y = rep(ann_init, length(xx))[seq(1, Nsnap, sub_sampling_factor)],
+                                  xend = xx, 
+                                  yend = rep(ann_init + background_height, length(xx))[seq(1, Nsnap, sub_sampling_factor)]),
+                              col = ann_tr[seq(1, Nsnap, sub_sampling_factor)],
                               size = 0.1*general_size_annPoints)
+    # specific color palette
+    }else{
+      if(rescaling_ann_col)
+        stop('The specific insertion of a palette collides with the rescaling of the colors. Please turn it off to use the specific palette option.')
+      gg <- gg + geom_segment(aes(xx, 
+                                  y = rep(ann_init, length(xx))[seq(1, Nsnap, sub_sampling_factor)],
+                                  xend = xx, 
+                                  yend = rep(ann_init + background_height, length(xx))[seq(1, Nsnap, sub_sampling_factor)], 
+                                  col = ann_tr[seq(1, Nsnap, sub_sampling_factor)]), # col is INSIDE aes
+                              size = 0.1*general_size_annPoints)
+      gg <- gg + scale_color_gradientn(colours = specific_palette, guide = FALSE) #  guide_legend(title = "Days")
+      # gg <- gg + guides(colour=FALSE)
+    }
+    # multi line trace
+    }else if(!no_trace && multi_line_trace && !annotate_snap_dist){
+      
+      # var init  
+      height_one_band <- background_height/n_lines_annotation
+      y_multilines <- array(NA, dim = c(n_lines_annotation, length(xx)))
+      x_multilines <- rep(xx, n_lines_annotation)
+      # sequential add of the height of the horizontal band
+      for(i in 1:n_lines_annotation){
+        y_multilines[i,] <- rep(ann_init, length(xx))[seq(1, Nsnap, sub_sampling_factor)] + height_one_band*(i-1)
+        if(sub_sampling_factor!=1)
+          ann_tr[i,] <- ann_tr[i,][seq(1, Nsnap, sub_sampling_factor)]
+      }
+      # main vectorization and plot
+      if(is.null(specific_palette)){
+        gg <- gg + geom_segment(aes(x = c(x_multilines),
+                                y = c(t(y_multilines)),
+                                xend = c(x_multilines),
+                                yend = c(t(y_multilines) + height_one_band)),
+                                col = c(t(ann_tr)),
+                                size = 0.1*general_size_annPoints)
+    # specific color palette
+    }else{
+      if(rescaling_ann_col)
+        stop('The specific insertion of a palette collides with the rescaling of the colors. Please turn it off to use the specific palette option.')
+      gg <- gg + geom_segment(aes(xx, 
+                                  y = rep(ann_init, length(xx))[seq(1, Nsnap, sub_sampling_factor)],
+                                  xend = xx,
+                                  yend = rep(ann_init + background_height, length(xx))[seq(1, Nsnap, sub_sampling_factor)],
+                                  col = ann_tr[seq(1, Nsnap, sub_sampling_factor)]), # col is INSIDE aes
+                              size = 0.1*general_size_annPoints)
+      gg <- gg + scale_color_gradientn(colours = specific_palette, guide = FALSE) #  guide_legend(title = "Days")
+    } 
   }
   
-  
-  # annotation preparation for timeline and annotation of snap distance
+  # ---------------------
+  # SETING: NO MORE THAN ONE ANN LINE AVAILABLE - annotation preparation for timeline and annotation of snap distance
   if(timeline || annotate_snap_dist){
-    single_line_general_ann <- array("gray1", dim = dp[1])
+    single_line_general_ann <- array("gray1", dim = Nsnap)
     if(one_line_trace){
       single_line_general_ann <- ann_tr
     }else if(multi_line_trace){
@@ -349,21 +520,22 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
       warning('timeline color kept as first line in annotation trace inserted (it is multiple lines).')
     }
   }
-  
+  # ---------------------
   # plotting the distance between snapshots (on top of everything)
   if(annotate_snap_dist){
     max_snap_dist <- max(pin[,5])
-    gg <- gg + geom_segment(aes(xx[seq(1, dp[1], sub_sampling_factor)],
-                                y = rep(ymax*3/4 , length(xx))[seq(1, dp[1], sub_sampling_factor)],
-                                xend = xx[seq(1, dp[1], sub_sampling_factor)], 
-                                yend = ((pin[,5]*((ymax)/4) + (3*ymax)/4))[seq(1, dp[1], sub_sampling_factor)]),
-                            col = single_line_general_ann[seq(1, dp[1], sub_sampling_factor)],
+    gg <- gg + geom_segment(aes(xx,
+                                y = rep(ann_init , length(xx))[seq(1, Nsnap, sub_sampling_factor)],
+                                xend = xx, 
+                                yend = ((pin[,5]*1.*background_height)/max_snap_dist + ann_init)[seq(1, Nsnap, sub_sampling_factor)]),
+                            col = single_line_general_ann[seq(1, Nsnap, sub_sampling_factor)],
                             size = 0.1*general_size_annPoints)
   }
   
-  
+  # ---------------------
   # timeline at the bottom
   if(timeline){
+    # setting timeline proportions
     if(!is.null(timeline_proportion)){
       tp <- timeline_proportion
       if(tp > 1 || tp < 0.1){
@@ -373,23 +545,57 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
     }else{
       tp <- 1.0/6
     }
+    
+    # only timeline
     if(only_timeline){
-      ymax <- dp[1]
+      
+      ymax <- Nsnap
       tp <- 1.0
-      gg <- ggplot() + geom_point(aes(x=xx[seq(1, dp[1], sub_sampling_factor)],
-                                y = (pin[,3][seq(1, dp[1], sub_sampling_factor)])),
-                            col=single_line_general_ann[seq(1, dp[1], sub_sampling_factor)],
-                            size=0.01*general_size_annPoints) + theme_minimal() +
-        annotate("text", label = "0%", x = -dp[1]/90, y = 0, size = 3, angle = 90) +
-        annotate("text", label = "100%", x = -dp[1]/90, y = dp[1], size = 3, angle = 90) +
+      
+      # without palette
+      if(is.null(specific_palette)){
+        gg <- ggplot() + geom_point(aes(x=xx,
+                                  y = (pin[,3][seq(1, Nsnap, sub_sampling_factor)])),
+                                  col=single_line_general_ann[seq(1, Nsnap, sub_sampling_factor)],
+                              size=0.01*general_size_annPoints) 
+        
+      # with palette
+      }else{
+        if(rescaling_ann_col)
+          stop('The specific insertion of a palette collides with the rescaling of the colors. Please turn it off to use the specific palette option.')
+        gg <- ggplot() + geom_point(aes(x=xx,
+                                        y = (pin[,3][seq(1, Nsnap, sub_sampling_factor)]),
+                                        col=single_line_general_ann[seq(1, Nsnap, sub_sampling_factor)]), # col INSIDE
+                                    size=0.01*general_size_annPoints) 
+        gg <- gg + scale_color_gradientn(colours = specific_palette, guide = FALSE) #  guide_legend(title = "Days")
+      } 
+      
+      # standard add
+      gg <- gg + theme_minimal() + 
+        annotate("text", label = "0%", x = -Nsnap/90, y = 0, size = 3, angle = 90) +
+        annotate("text", label = "100%", x = -Nsnap/90, y = Nsnap, size = 3, angle = 90) +
         xlab("Progress Index") + ylab("Temporal annotation")
+
+    # normal timeline trace (no only)      
     }else{
-      gg <- gg + geom_point(aes(x=xx[seq(1, dp[1], sub_sampling_factor)],
-                                y = ((pin[,3]*1.0*ymax*tp)/dp[1])[seq(1, dp[1], sub_sampling_factor)]), 
-                            col=single_line_general_ann[seq(1, dp[1], sub_sampling_factor)],
-                            size=0.01*general_size_annPoints) + 
-        annotate("text", label = "0%", x = -dp[1]/90, y = 0, size = 3, angle = 90) +
-        annotate("text", label = "100%", x = -dp[1]/90, y = 1.0*ymax*tp, size = 3, angle = 90)
+      # without palette
+      if(is.null(specific_palette)){
+        gg <- gg + geom_point(aes(x=xx,
+                                  y = ((pin[,3]*1.0*ymax*tp)/Nsnap)[seq(1, Nsnap, sub_sampling_factor)]),
+                              col=single_line_general_ann[seq(1, Nsnap, sub_sampling_factor)],
+                              size=0.01*general_size_annPoints)
+      # with palette
+      }else{
+        gg <- gg + geom_point(aes(x=xx,
+                                  y = ((pin[,3]*1.0*ymax*tp)/Nsnap)[seq(1, Nsnap, sub_sampling_factor)],
+                                  col=single_line_general_ann[seq(1, Nsnap, sub_sampling_factor)]), # col INSIDE
+                              size=0.01*general_size_annPoints)
+        gg <- gg + scale_color_gradientn(colours = specific_palette, guide = FALSE) #  guide_legend(title = "Days")
+      }
+      # standard add
+      gg <- gg +
+        annotate("text", label = "0%", x = -Nsnap/90, y = 0, size = 3, angle = 90) +
+        annotate("text", label = "100%", x = -Nsnap/90, y = 1.0*ymax*tp, size = 3, angle = 90)
     }
     
     # printing horizontal lines on the timeline annotation
@@ -399,13 +605,13 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
       if(all(horiz_lines_on_timeline != 1))
         horiz_lines_on_timeline <- c(1, horiz_lines_on_timeline)
       # adding the ending value for identical reasons
-      if(all(horiz_lines_on_timeline != dp[1]))
-        horiz_lines_on_timeline <- c(horiz_lines_on_timeline, dp[1])
+      if(all(horiz_lines_on_timeline != Nsnap))
+        horiz_lines_on_timeline <- c(horiz_lines_on_timeline, Nsnap)
       
       if(reorder_horizline_on_timeline)
-        y_horiz_line <- ((pin[,3]*1.0*ymax*tp)/dp[1])[horiz_lines_on_timeline]
+        y_horiz_line <- ((pin[,3]*1.0*ymax*tp)/Nsnap)[horiz_lines_on_timeline]
       else
-        y_horiz_line <- ((horiz_lines_on_timeline * 1.0) / dp[1]) * (ymax * tp)
+        y_horiz_line <- ((horiz_lines_on_timeline * 1.0) / Nsnap) * (ymax * tp)
       
       # plotting areas of horizontal lines
       if(!is.null(horiz_colored_areas)){
@@ -417,7 +623,7 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
       
       # plotting horizontal lines
       color_horiz_line <- "black"
-      gg <- gg + geom_segment(aes(x = xx[1], xend = xx[dp[1]], 
+      gg <- gg + geom_segment(aes(x = xx[1], xend = xx[Nsnap], 
                                   y = y_horiz_line, yend = y_horiz_line),
                               size=0.4*general_size_annPoints, col = color_horiz_line)
     }
@@ -429,13 +635,13 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
       if(all(points_on_timeline != 1))
         points_on_timeline <- c(1, points_on_timeline)
       # adding the ending value for identical reasons
-      if(all(points_on_timeline != dp[1]))
-        points_on_timeline <- c(points_on_timeline, dp[1])
+      if(all(points_on_timeline != Nsnap))
+        points_on_timeline <- c(points_on_timeline, Nsnap)
       
       if(reorder_points_on_timeline)
-        y_points <- ((pin[,3]*1.0*ymax*tp)/dp[1])[points_on_timeline]
+        y_points <- ((pin[,3]*1.0*ymax*tp)/Nsnap)[points_on_timeline]
       else
-        y_points <- ((points_on_timeline * 1.0) / dp[1]) * (ymax * tp)
+        y_points <- ((points_on_timeline * 1.0) / Nsnap) * (ymax * tp)
       
       color_points <- "green4"
       
@@ -448,31 +654,40 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
     stop('To use points_on_timeline you must have active the timeline options.')
   }
   
-  
-  
+  # --------------------- NO MORE NECESSARY. IT IS ENOUGH TO RETURN THE PLOT AND DO IT MANUALLY
   # annotation names LEFT
-  if(!is.null(ann_names_L)&&is.character(ann_names_L)&&length(ann_names_L)==n_lines_annotation){
-    for(i in 0:(n_lines_annotation-1))
-      gg <- gg + annotate("text",x = -(length(xx)/24)*nchar(ann_names_L[i+1])/2,
-                          y = ymax*((tr_init + (((i+0.5)*(16-tr_init))/n_lines_annotation))/16), label = ann_names_L[i+1])
-  }else if(!is.null(ann_names_L)){
-    stop('The annotation names have not been inserted correctly')
-  }
+  # if(!is.null(ann_names_L)&&is.character(ann_names_L)&&length(ann_names_L)==n_lines_annotation){
+  #   for(i in 0:(n_lines_annotation-1))
+  #     gg <- gg + annotate("text",x = -(length(xx)/24)*nchar(ann_names_L[i+1])/2,
+  #                         y = ymax*((tr_init + (((i+0.5)*(16-tr_init))/n_lines_annotation))/16), label = ann_names_L[i+1])
+  # }else if(!is.null(ann_names_L)){
+  #   stop('The annotation names have not been inserted correctly')
+  # }
+  # ---------------------
   # annotation names RIGHT
-  if(!is.null(ann_names_R)&&is.character(ann_names_R)&&length(ann_names_R)==n_lines_annotation){
-    for(i in 0:(n_lines_annotation-1))
-      gg <- gg + annotate("text",x = length(xx)+(length(xx)/24)*nchar(ann_names_R[i+1])/2,
-                          y = ymax*((tr_init + (((i+0.5)*(16-tr_init))/n_lines_annotation))/16), label = ann_names_R[i+1])
-  }else if(!is.null(ann_names_R)){
-    stop('The annotation names have not been inserted correctly')
-  }
+  # if(!is.null(ann_names_R)&&is.character(ann_names_R)&&length(ann_names_R)==n_lines_annotation){
+  #   for(i in 0:(n_lines_annotation-1))
+  #     gg <- gg + annotate("text",x = length(xx)+(length(xx)/24)*nchar(ann_names_R[i+1])/2,
+  #                         y = ymax*((tr_init + (((i+0.5)*(16-tr_init))/n_lines_annotation))/16), label = ann_names_R[i+1])
+  # }else if(!is.null(ann_names_R)){
+  #   stop('The annotation names have not been inserted correctly')
+  # }
+  # ---------------------
+  # vertical annotation points
+  # if(!is.null(vertical_barriers_points)){
+  #   # plotting vertical lines
+  #   color_vertical_line <- "black"
+  #   gg <- gg + geom_segment(aes(x = vertical_barriers_points, xend = (vertical_barriers_points + 1), 
+  #                               y = ymin + ymax/8, yend = ymax-ymax/7),
+  #                           size=0.4*general_size_annPoints, col = color_vertical_line)
+  # }
 
   # basic annotation (principal cut)
   if(!only_timeline){
-    if(min(-log((pin[,4]/Nsnap))) < tp*ymax)
+    main_col <- 'darkblue'
+    if((timeline && (min(-log((pin[,4]/Nsnap))) < tp*ymax)) || (!no_trace && (background_height > ymax/2.1)))
       main_col <- 'dodgerblue'
-    gg <- gg + geom_line(aes(x = xx, y = -log((pin[,4]/Nsnap))), color=main_col, size=0.8) +
-      theme_minimal()
+    gg <- gg + geom_line(aes(x = xx, y = -log((pin[,4]/Nsnap))), color=main_col, size=0.8)
   }
   
   # local cut
@@ -482,24 +697,12 @@ sapphire_plot<-function(sap_file = NULL, sap_table = NULL, write = F, folderPlot
                  color="red3", size=0.08) 
   
   
-  if(!is.null(n_barriers_to_highlight)){
-    sorted_values <- s
-    color_vertical_line <- "black"
-    gg <- gg + geom_segment(aes(x = xx[1], xend = xx[dp[1]], 
-                                y = ymin, yend = ymax),
-                            size=0.4*general_size_annPoints, col = color_vertical_line)
-  }
   
-  #   #basin call
-  #   if(basin_call) gg <- gg +
-  #     geom_text(data = data.frame(), aes(Nsnap/4, ymax-1*ymax/14, label = "Basin 1")) +
-  #     geom_text(data = data.frame(), aes(Nsnap*3/4, ymax-1*ymax/14, label = "Basin 2"))
-  #   # p + annotate("rect", xmin = 3, xmax = 4.2, ymin = 12, ymax = 21,
-  #              alpha = .2)
-  # if(!is.null(subtitle)&&is.character(subtitle))
-  #   gg <- gg + ggtitle(bquote(atop(.(title), atop(italic(.(subtitle)), ""))))
-  # else
-  gg <- gg + ggtitle(title)
+  
+  # -----------------------
+  # title and theme
+  gg <- gg + ggtitle(title) + theme_minimal()
+  
   if(write) {
     jpeg_file <- 'rplot.jpg'
     jpeg_file_tm <- 0

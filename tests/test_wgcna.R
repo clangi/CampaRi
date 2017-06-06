@@ -13,42 +13,13 @@
 w_dir <- getwd()
 system("mkdir output_to_delete")
 setwd("output_to_delete/")
-# remove.packages("CampaRi", lib="~/R/x86_64-pc-linux-gnu-library/3.1")
-# library(devtools)
-# install_github("Melkiades/CampaRi")
 # library(CampaRi)
 
 # butane chain simulated data
 # ---------------------------
 library(bio3d)
-trj <- read.dcd("../inst/extdata/NBU_1250fs.dcd")
+trj <- read.dcd("~/projects/CampaR/CampaRi/inst/extdata/NBU_1250fs.dcd")
 options(CampaRi.data_management = "netcdf") # netcdf handling
-
-
-# Testing the covariance construction of WGCNA
-# ------------------------
-
-library(WGCNA)
-mat_wgcna <- WGCNA::adjacency(datExpr = trj, type = 'unsigned', corFnc = 'cor', power = 1)
-                              
-                              # corOptions = "use = 'p', method = 'spearman'") # "use = 'p'" is the standard 
-# NB: the spearman construction is outrageously long
-
-homemade_mat_wgcna <- array(0, dim(mat_wgcna))
-
-for(i in 1:nrow(mat_wgcna)){
-  for(j in 1:ncol(mat_wgcna)){
-    homemade_mat_wgcna[i,j] <- abs(cor(trj[,i], trj[,j]))
-  }
-}
-
-# Let's check it is really as it seems! -> they are == !
-sum(mat_wgcna == homemade_mat_wgcna)
-42*42
-
-# let's try the covariance matrix
-cov_mat <- cov(trj)
-cov_mat <- cov_mat/max(cov_mat)
 
 
 # variables initialization
@@ -90,3 +61,30 @@ sapphire_plot(sap_file = "REPIX_000000000002.dat", local_cut = T, timeline = T, 
 # DELETING THE WORKING DIR where we just worked
 setwd("..")
 system("rm -rf output_to_delete")
+
+# Testing the covariance construction of WGCNA
+# ------------------------
+
+library(WGCNA)
+mat_wgcna <- WGCNA::adjacency(datExpr = trj, type = 'unsigned', corFnc = 'cor', power = 1)
+
+# corOptions = "use = 'p', method = 'spearman'") # "use = 'p'" is the standard 
+# NB: the spearman construction is outrageously long
+
+homemade_mat_wgcna <- array(0, dim(mat_wgcna))
+
+for(i in 1:nrow(mat_wgcna)){
+  for(j in 1:ncol(mat_wgcna)){
+    homemade_mat_wgcna[i,j] <- abs(cor(trj[,i], trj[,j]))
+  }
+}
+
+# Let's check it is really as it seems! -> they are == !
+sum(mat_wgcna == homemade_mat_wgcna)
+42*42
+
+# let's try the covariance matrix
+cov_mat <- cov(trj)
+cov_mat <- cov_mat/max(cov_mat)
+
+
