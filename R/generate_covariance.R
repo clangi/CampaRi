@@ -17,12 +17,11 @@
 #' \code{\link{adjl_from_progindex}}, \code{\link{gen_progindex}}, \code{\link{gen_annotation}}.
 # @examples
 #' 
-#'
 #' @export generate_covariance
 #' @importFrom stats cov
 
 generate_covariance <- function(trj, window = NULL, overlapping_reduction = NULL){
-  
+  stop('This function is no more supported. Please use the method="covariance" option in the function generate_network().')
   # Checking input variables (again - it is also a stand alone function)
   if(!is.null(window) && (length(window) != 1 || !is.numeric(window) || window <= 3 || window > nrow(trj)/2))
     stop('The used window (distance 12) is too small or too big (must be less than half to have sense) or it is simply an erroneus insertion.')

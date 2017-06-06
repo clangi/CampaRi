@@ -20,7 +20,7 @@
 #' \code{\link{adjl_from_progindex}}, \code{\link{gen_progindex}}, \code{\link{gen_annotation}}.
 # @examples
 #' 
-#'
+#' @importFrom bio3d writePdb
 #' @export generate_network
 #' @importFrom WGCNA adjacency
 #' @importFrom data.table transpose
@@ -29,11 +29,11 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', overlapping_r
  
   # checking additional variable
   input_args <- list(...)
-  avail_extra_argoments <- c('wgcna_type', 'wgcna_power', 'wgcna_corOp', 'minkowski_p')
+  avail_extra_argoments <- c('wgcna_type', 'wgcna_power', 'wgcna_corOp', 'minkowski_p', 'cov_method')
   if(any(!(names(input_args) %in% avail_extra_argoments))) 
     warning('There is a probable mispelling in one of the inserted variables. Please check the available extra input arguments.')
   
-  if(!(method %in% c('wgcna', 'binary', 'euclidean', 'maximum', 'canberra', 'minkowski')))
+  if(!(method %in% c('wgcna', 'binary', 'euclidean', 'maximum', 'canberra', 'minkowski', 'covariance')))
      stop('method not considered.')
   
   # Default handling
@@ -41,6 +41,7 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', overlapping_r
   if(!('wgcna_power' %in% names(input_args))) wgcna_power <- 1 else wgcna_power <- input_args[['wgcna_power']]
   if(!('wgcna_corOp' %in% names(input_args))) wgcna_corOp <- "use = 'p'" else wgcna_corOp <- input_args[['wgcna_corOp']]
   if(!('minkowski_p' %in% names(input_args))) minkowski_p <- 3 else minkowski_p <- input_args[['minkowski_p']]
+  if(!('cov_method' %in% names(input_args))) cov_method <- 'pearson' else cov_mat <- input_args[['spearman']]
   
   # Additional input (...) checks
   # ---------------------------
@@ -62,6 +63,12 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', overlapping_r
   # if((!is.null(overlapping_reduction) && (length(overlapping_reduction) != 1 ||!is.numeric(overlapping_reduction) ||
   #                                         overlapping_reduction <= 0 || overlapping_reduction > 1)))
   #   warning('The used overlapping_reduction is not correctly defined. It must be a number between 0 and 1.')
+  
+  # Checking the cov_method
+  if(! cov_method %in% c('pearson','spearman', 'kendall'))
+    stop('cov_method not supported.')
+  
+  # -----------------------------
   if(!is.logical(transpose_trj))
     stop('transpose_trj must be a logical value.')
   
@@ -117,10 +124,12 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', overlapping_r
     if(method == 'wgcna')
       built_net <- WGCNA::adjacency(tmp_trj, type = wgcna_type, corFnc = 'cor', power = wgcna_power, 
                                     corOptions = wgcna_corOp)
-    else if(method != 'wgcna'){
+    else if(method != 'wgcna' && method != 'covariance'){
       distOptions_manual <- paste0("method = '",method,"'")
       if(method == 'minkowski') distOptions_manual <- paste0(distOptions_manual, minkowski_p)
       built_net <- WGCNA::adjacency(tmp_trj, type = "distance", distOptions = distOptions_manual)
+    }else if(method == 'covariance'){
+      built_net <- cov(tmp_trj, method = cov_method)
     }else{
       stop('Something in the method construction went wrong. Please refer to the developers.')
     }
