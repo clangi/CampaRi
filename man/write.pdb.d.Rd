@@ -4,18 +4,23 @@
 \alias{write.pdb.d}
 \title{Writing a pdb file from trajectory matrix in R}
 \usage{
-write.pdb.d(trj, base_name, round = FALSE, digit = 4, dim_check = TRUE)
+write.pdb.d(trj, file_name, method = "bio3d", round = FALSE, digit = 4,
+  dim_check = TRUE, ...)
 }
 \arguments{
 \item{trj}{Time series in a matrix shape (also data.frame numeric). The number of variables (nrow) must be divisible by 3 for atom-like pdb writing.}
 
-\item{base_name}{File base name.}
+\item{file_name}{File name of the output pdb.}
+
+\item{method}{default method will use bio3d support to write pdb file (other methods are "automatic") but it is buggy}
 
 \item{round}{\code{TRUE} will truncate the output following the \code{digit} variable.}
 
 \item{digit}{Number of digits that will be kept from truncation (\code{round}).}
 
 \item{dim_check}{\code{TRUE} to check if number of columns is higher than number of rows and stop consequently.}
+
+\item{...}{Extra variables for bio3d function write.pdb.}
 }
 \description{
 \code{write.pdb.d} writes to file a pdb file with the trajectory matrix in input.
@@ -23,9 +28,6 @@ write.pdb.d(trj, base_name, round = FALSE, digit = 4, dim_check = TRUE)
 }
 \details{
 For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
-}
-\examples{
-write.pdb.d(matrix(rnorm(900), nrow = 100, ncol = 9), base_name = "rnorm_trj")
 }
 \seealso{
 \code{\link{campari}}

@@ -15,27 +15,20 @@ w_dir <- getwd()
 system("mkdir output_to_delete")
 setwd("output_to_delete/")
 w_dir <- getwd()
-# remove.packages("CampaRi", lib="~/R/x86_64-pc-linux-gnu-library/3.1")
-# library(devtools)
-# install_github("Melkiades/CampaRi")
-# library(CampaRi)
+library(devtools)
+install_github("Melkiades/CampaRi")
+library(CampaRi)
 
 
 # butane chain simulated data - variables init
 # ------------------------------------------
 library(bio3d)
-trj <- read.dcd("../inst/extdata/NBU_1250fs.dcd")
+trj <- read.dcd("../CampaRi/inst/extdata/NBU_1250fs.dcd")
 
-# Wrapper analysis
+
+
 # ------------------------------------------
-options(CampaRi.data_management = "R") # netcdf handling
-adjl <- mst_from_trj(trj = trj, mode = "fortran", normalize_d = FALSE, logging = T)
-ret <- gen_progindex(adjl = adjl, snap_start = 10)
-ret2 <- gen_annotation(ret, snap_start = 10)
-sapphire_plot(sap_file = 'REPIX_000000000010.dat', title = "CAMPARI WRAPPER - MST", 
-              timeline = F, ann_trace = F)
-
-# Original campari analysis
+#           MST - run_campari
 # ------------------------------------------
 system('cp ../inst/extdata/NBU_1250fs.dcd .')
 system('cp ../inst/extdata/nbu.key .')
@@ -44,6 +37,38 @@ camp_home <- "/software/campariv3/"
 campari(nsnaps = nrow(trj), w_dir, "NBU_1250fs.dcd", base_name="nbu", camp_home,
         cprogindstart = 10, pdb_format = 4, distance_met = 5)
 sapphire_plot(sap_file = "PROGIDX_000000000010.dat", title = "ORIGINAL CAMPARI - MST")
+
+
+
+# ------------------------------------------
+#            MST - R backend
+# ------------------------------------------
+options(CampaRi.data_management = "R") # netcdf handling
+adjl <- mst_from_trj(trj = trj, mode = "fortran", normalize_d = FALSE, logging = F)
+ret <- gen_progindex(adjl = adjl, snap_start = 10)
+ret2 <- gen_annotation(ret, snap_start = 10)
+sapphire_plot(sap_file = 'REPIX_000000000010.dat', title = "CAMPARI WRAPPER - MST", 
+              timeline = F, ann_trace = F)
+
+
+
+# ------------------------------------------
+#            MST - Netcdf backend
+# ------------------------------------------
+options(CampaRi.data_management = "netcdf") # netcdf handling
+mst_from_trj(trj = trj, mode = "fortran", normalize_d = T, logging = F)
+ret <- gen_progindex(nsnaps = nrow(trj), snap_start = 10)
+ret2 <- gen_annotation(ret, snap_start = 10)
+sapphire_plot(sap_file = 'REPIX_000000000010.dat', title = "CAMPARI WRAPPER - MST", timeline = T, ann_trace = F)
+
+
+
+
+
+
+
+
+
 
 # recompute the progress index from PROGIDX/REPIX matrix output
 # ------------------------------------------

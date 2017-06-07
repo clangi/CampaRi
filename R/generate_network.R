@@ -20,7 +20,6 @@
 #' \code{\link{adjl_from_progindex}}, \code{\link{gen_progindex}}, \code{\link{gen_annotation}}.
 # @examples
 #' 
-#' @importFrom bio3d writePdb
 #' @export generate_network
 #' @importFrom WGCNA adjacency
 #' @importFrom data.table transpose

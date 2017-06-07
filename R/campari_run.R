@@ -22,7 +22,12 @@
 #' }
 #'
 #' @export campari
+#' 
+#' 
+
+
 campari<-function(nsnaps, working_dir, data_file, base_name, camp_home, ...){
+  stop('This function is no more supported. Use run_campari() instead.')
   input_list <- list(...)
   if(!"cprogindstart" %in% names(input_list)) cprogindstart = 1
   else cprogindstart = as.numeric(input_list["cprogindstart"])

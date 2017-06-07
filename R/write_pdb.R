@@ -9,16 +9,20 @@
 #' @param round \code{TRUE} will truncate the output following the \code{digit} variable.
 #' @param digit Number of digits that will be kept from truncation (\code{round}).
 #' @param dim_check \code{TRUE} to check if number of columns is higher than number of rows and stop consequently.
+#' @param ... Extra variables for bio3d function write.pdb.
 #' 
 #' @details For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
 #' @seealso
 #' \code{\link{campari}}
-#' @examples
-#' write.pdb.d(matrix(rnorm(900), nrow = 100, ncol = 9), base_name = "rnorm_trj")
-#' @export
-write.pdb.d<-function(trj, file_name, method = "bio3d", round=FALSE, digit=4, dim_check = TRUE){
+#' 
+#' @importFrom bio3d write.pdb
+#' @export write.pdb.d
+#' 
+#' 
+
+write.pdb.d<-function(trj, file_name, method = "bio3d", round=FALSE, digit=4, dim_check = TRUE, ...){
   # input checks
-  if(! method %in% c('bio3d', 'automatic.'))
+  if(! method %in% c('bio3d', 'automatic_safe', 'automatic_unsafe'))
     stop('not supported methods')
   
   if(!is.character(file_name))
@@ -32,8 +36,20 @@ write.pdb.d<-function(trj, file_name, method = "bio3d", round=FALSE, digit=4, di
   
   # main functions
   if(method == 'bio3d'){
-    write.pdb() # todo
-  }else if(method == 'automatic'){
+    message('Selected bio3d handling of PBD. Please check the documentation of bio3d::write.pdb and add all the necessary ')
+    bio3d::write.pdb(file = file_name, xyz = trj, ...) # todo
+  }else if(method == 'automatic_safe'){
+    pdbfile <- file(file_name, open="w")
+    
+    sst <- sprintf("MODEL %8i\nATOM      1  CL  CL-     1    %8.3f%8.3f%8.3f\nATOM      2  CL  CL-     2    %8.3f%8.3f%8.3f\nATOM      3  CL  CL-     3    %8.3f%8.3f%8.3f\nATOM      4  CL  CL-     4    %8.3f%8.3f%8.3f\nATOM      5  CL  CL-     5    %8.3f%8.3f%8.3f\nENDMDL",
+                   1:dd[1], as.double(wd2[, 1]), as.double(wd2[, 2]), as.double(wd2[, 3]), as.double(wd2[, 4]), as.double(wd2[, 5]), 
+                   as.double(wd2[, 6]), as.double(wd2[, 7]), as.double(wd2[, 8]), as.double(wd2[, 9]), as.double(wd2[, 10]),
+                   as.double(wd2[, 11]), as.double(wd2[, 12]), as.double(wd2[, 13]), as.double(wd2[, 14]), as.double(wd2[, 15]))
+    
+    write(sst, file=pdbfile)
+    close(pdbfile)
+    
+  }else if(method == 'automatic_unsafe'){
     if(file.exists(paste0(base_name, ".pdb"))) system(paste0("rm ", paste0(base_name, ".pdb")))
     if(file.exists(paste0(base_name, ".in"))) system(paste0("rm ", base_name, ".in"))
     nr <- nrow(trj)
