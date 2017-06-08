@@ -12,7 +12,7 @@
 # Set and making working directory
 #----------------------------------------------
 w_dir <- getwd()
-system("mkdir output_to_delete")
+# system("mkdir output_to_delete")
 setwd("output_to_delete/")
 w_dir <- getwd()
 library(devtools)
@@ -23,20 +23,55 @@ library(CampaRi)
 # butane chain simulated data - variables init
 # ------------------------------------------
 library(bio3d)
-trj <- read.dcd("../CampaRi/inst/extdata/NBU_1250fs.dcd")
+trj <- read.dcd("../inst/extdata/NBU_1250fs.dcd")
+
+# ------------------------------------------
+#           SIMULATION 11 - run_campari
+# ------------------------------------------
+run_campari(FMCSC_SEQFILE="nbu.in",
+            # FMCSC_BASENAME="NBU", # lets try the base_name option
+            base_name = "ciglioni_simulazioni", print_status = F,
+            FMCSC_SC_IPP=0.0,
+            FMCSC_SC_BONDED_T=1.0,
+            FMCSC_DYNAMICS=3,
+            FMCSC_FRICTION=3.0,
+            FMCSC_TIMESTEP=0.005,
+            FMCSC_TEMP=400.0,
+            FMCSC_NRSTEPS=10000000,
+            FMCSC_EQUIL=0,
+            FMCSC_XYZOUT=100,
+            FMCSC_XYZPDB=3,
+            FMCSC_TOROUT=100,
+            FMCSC_COVCALC=20000000,
+            FMCSC_SAVCALC=20000000,
+            FMCSC_POLCALC=20000000,
+            FMCSC_RHCALC=20000000,
+            FMCSC_INTCALC=20000000,
+            FMCSC_POLOUT=20000000,
+            FMCSC_ENSOUT=20000000,
+            FMCSC_ENOUT=20000000,
+            FMCSC_RSTOUT=20000000
+)
 
 
 
 # ------------------------------------------
 #           MST - run_campari
 # ------------------------------------------
-system('cp ../inst/extdata/NBU_1250fs.dcd .')
-system('cp ../inst/extdata/nbu.key .')
-system('cp ../inst/extdata/NBU_1250fs.in .')
-camp_home <- "/software/campariv3/"
-campari(nsnaps = nrow(trj), w_dir, "NBU_1250fs.dcd", base_name="nbu", camp_home,
-        cprogindstart = 10, pdb_format = 4, distance_met = 5)
-sapphire_plot(sap_file = "PROGIDX_000000000010.dat", title = "ORIGINAL CAMPARI - MST")
+run_campari(trj = trj,
+            FMCSC_CPROGINDMODE=1, #mst
+            FMCSC_CCOLLECT=1,
+            FMCSC_CMODE=4,
+            FMCSC_CDISTANCE=7, #rmsd without alignment
+            FMCSC_CPROGINDSTART=21, #starting snapshot 
+            # FMCSC_CPROGINDRMAX=1000, #search att
+            # FMCSC_BIRCHHEIGHT=2, #birch height
+            FMCSC_CMAXRAD=6, #clustering
+            FMCSC_CRADIUS=4,
+            FMCSC_CCUTOFF=10,
+            FMCSC_CPROGINDWIDTH=1000) #local cut
+            #FMCSC_CPROGMSTFOLD 4 # b)
+sapphire_plot(sap_file = "PROGIDX_000000000021.dat", title = "ORIGINAL CAMPARI - MST")
 
 
 
