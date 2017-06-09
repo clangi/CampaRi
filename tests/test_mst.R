@@ -26,17 +26,19 @@ library(bio3d)
 trj <- read.dcd("../inst/extdata/NBU_1250fs.dcd")
 
 # ------------------------------------------
-#           SIMULATION 11 - run_campari
+# SIMULATION from tutorial 11 - run_campari
 # ------------------------------------------
+
+
 # reading an already formatted keyfile (it will skip the empty lines and comments)
 keywords <- keywords_from_keyfile(key_file_input = "nbu.key") #list format
-keywords_from_keyfile(key_file_input = "nbu.key", return_string_of_arguments = TRUE)
+keywords_from_keyfile(key_file_input = "nbu.key", return_string_of_arguments = TRUE) # copy paste format
 
 
 # standard run of the simulation in tutarial 11
-run_campari(FMCSC_SEQFILE="nbu.in",
+run_campari(FMCSC_SEQFILE="NBU_1250fs.in",
             # FMCSC_BASENAME="NBU", # lets try the base_name option
-            base_name = "ciglioni_simulazioni", print_status = F, # it will take 55 s in background ~
+            base_name = "nbu", print_status = F, # it will take 55 s in background ~
             FMCSC_SC_IPP=0.0,
             FMCSC_SC_BONDED_T=1.0,
             FMCSC_DYNAMICS=3,
@@ -60,15 +62,31 @@ run_campari(FMCSC_SEQFILE="nbu.in",
 )
 
 
+# ------------------------------------------
+# tutorial 11 - step 2 (Simple Clustering)
+# ------------------------------------------
+# take the variables in a function argument format from key file exemple
+keys <- keywords_from_keyfile(key_file_input = "keyfile.key", return_string_of_arguments = T, 
+                              keyword_list_first = F, keyword_list = c(FMCSC_SEQFILE="NBU_1250fs.in"))
+print(keys) # copy paste it in the run_campari or BETTER provide the keyfile directly
+
+# in the following we use the key_file_input to set the majority of the keys and we override SEQFILE directly from the function
+run_campari(data_file = "NBU_1250fs.dcd", key_file_input = "keyfile.key", FMCSC_SEQFILE="NBU_1250fs.in") 
+
+
+
+# remember to use the following commad on the logfile to extract the clustering summary (or use show_clustering_summary function)
+# for i in `grep -F 'CLUSTER SUMMARY' -A 10 LOGFILE | tail -n 9 | awk '{print $3}'`; do (j=`echo -e "$i + 1" | bc`; head -n $j NBU.fyc | tail -n 1 | awk '{printf("Step %10i: C1C2C3C4: %10.3f C3C2C1H11: %10.3f C2C3C4H41: %10.3f\n",$1/10,$2,$3,$4)}') done
+
 
 # ------------------------------------------
-#           MST - run_campari
+#           MST - run_campari in ncminer mode
 # ------------------------------------------
 run_campari(trj = trj,
             FMCSC_CPROGINDMODE=1, #mst
             FMCSC_CCOLLECT=1,
             FMCSC_CMODE=4,
-            FMCSC_CDISTANCE=1, #rmsd without alignment 7 - 
+            FMCSC_CDISTANCE=7, #rmsd without alignment 7 - dihedral distances need a complete analysis (pdb_format dcd pdb etc...) 
             FMCSC_CPROGINDSTART=21, #starting snapshot 
             # FMCSC_CPROGINDRMAX=1000, #search att
             # FMCSC_BIRCHHEIGHT=2, #birch height

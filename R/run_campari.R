@@ -13,7 +13,7 @@
 #' @param nsnaps Number of snapshots in the trajectory file. If the data_file format is not ASCII this variable must be set to the number of snapshots in the trajectory.
 #' @param multi_threading Default to FALSE. It will run campari_threads with openmp directives if installed.
 #' @param mpi Default to FALSE. It will run campari_mpi with installed mpi-compiler. Please consider also campari_threads_mpi (also multi_threading=TRUE).
-#' @param key_file_input If you provide an already formatted keyfile to this argument, every variable defined there will override the one in this function and CAMPARI will 
+#' @param key_file_input If you provide an already formatted keyfile to this argument, every variable defined in the provided keyfile will be overriden by the ones in this function and CAMPARI will 
 #' be run after the generation of a new keyfile. Please note that in the case of multivariable keywords the algorithm will keep only the first value. Consider using \code{\link{keywords_from_keyfile}} function.
 #' @param ... Analysis variables (similarly to \code{\link{mst_from_trj}}). You can check all of these in the original documentation (\url{http://campari.sourceforge.net/documentation.html}). 
 #'
@@ -49,7 +49,8 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   names(args_list) <- toupper(toupper(names(args_list)))
   args_names <- names(args_list)
   if(!is.null(key_file_input)){
-    args_list <- keywords_from_keyfile(key_file_input = key_file_input, keyword_list = args_list)
+    cat('Keyfile manually inserted for enhanced keywords feeding. Attention: some standard checks will be overriden and others could be misbehaving.\n')
+    args_list <- keywords_from_keyfile(key_file_input = key_file_input, keyword_list = args_list, keyword_list_first = FALSE)
     args_names <- names(args_list)
   }
   
@@ -103,10 +104,11 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   }else if(!is.null(data_file)){
     if(!file.exists(data_file))
       stop('Inserted file for the analysis is not present in the directory.')
-    if(is.null(nsnaps) && file_ext(data_file) %in% c('tsv', 'dat')) nsnaps <- as.numeric(strsplit(system(paste0('wc -l ', base_name)), " ")[[1]][1])
-    if(is.null(nvars) && file_ext(data_file) %in% c('tsv', 'dat')) nvars <- as.numeric(strsplit(system(paste0('wc -n1 ', base_name, '| wc -l')), " ")[[1]][1])
+    if(is.null(nsnaps) && file_ext(data_file) %in% c('tsv', 'dat')) nsnaps <- as.numeric(strsplit(suppressWarnings(system(paste0('wc -l ', base_name)), " ")[[1]][1]))
+    if(is.null(nvars) && file_ext(data_file) %in% c('tsv', 'dat')) nvars <- as.numeric(strsplit(suppressWarnings(system(paste0('wc -n1 ', base_name, '| wc -l')), " ")[[1]][1]))
     if(is.null(nsnaps) && "FMCSC_NCDM_NRFRMS" %in% args_names) nsnaps <- args_list[["FMCSC_NCDM_NRFRMS"]]
-    if(is.null(nsnaps)) stop('FMCSC_NCDM_NRFRMS or nsnaps must be provided for non-ASCII file data analysis.')
+    if(is.null(nsnaps) && !"FMCSC_NRSTEPS" %in% args_names)
+      stop('FMCSC_NCDM_NRFRMS or nsnaps must be provided for non-ASCII file data analysis.')
     analysis_mode <- TRUE
   }else{
     if(any(c('FMCSC_PDB_FORMAT') %in% args_names)){
@@ -189,7 +191,7 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   
   # eventual add of bashrc PATH exports
   cat('Looking for additional campari bin locations (exports) in ~./bashrc file... ')
-  camp_bin_path <- system('cat ~/.bashrc | grep PATH | grep camp', intern = T)
+  camp_bin_path <- suppressWarnings(system('cat ~/.bashrc | grep PATH | grep camp', intern = T))
   if(length(camp_bin_path) != 0){
     camp_bin_path <- strsplit(paste(camp_bin_path, collapse = 'PATH'), split = "PATH|:", fixed = FALSE)[[1]]
     if(length(camp_bin_path) > 1){
@@ -204,7 +206,7 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   }
   # eventual add of additional aliases
   cat('Looking for additional campari bin locations (aliases) in ~./bashrc file... ')
-  camp_bin_alias <- system('cat ~/.bashrc | grep alias | grep camp', intern = T)
+  camp_bin_alias <- suppressWarnings(system('cat ~/.bashrc | grep alias | grep camp', intern = T))
   if(length(camp_bin_alias) != 0){
     camp_bin_alias <- strsplit(paste(camp_bin_alias, collapse = '='), split = "=|'|\"", fixed = FALSE)[[1]]
     if(length(camp_bin_alias) > 1){
@@ -223,7 +225,7 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   
   
   # standard exe
-  campari_exe <- system(paste0('which ',base_exe), intern = T)
+  campari_exe <- suppressWarnings(system(paste0('which ',base_exe), intern = T))
   if(!multi_threading && !mpi && length(campari_exe) == 0) 
     stop('No campari (or camp_ncminer) executable found between the standard commands. Please install the library and alias the bin executables.')
   else if(!multi_threading && !mpi)
@@ -231,7 +233,7 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   
   # multi_threading exe
   if(multi_threading){
-    campari_threads_exe <- system(paste0('which ', base_exe, '_threads'), intern = T)
+    campari_threads_exe <- suppressWarnings(system(paste0('which ', base_exe, '_threads'), intern = T))
     if(!mpi && length(campari_threads_exe) == 0) 
       stop('No campari_threads (or camp_ncminer_threads) executable found between the standard commands. Please install the library and alias the bin executables.')
     else if(!mpi)
@@ -240,7 +242,7 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   
   # mpi exe
   if(mpi){
-    campari_mpi_exe <- system(paste0('which ', base_exe, '_mpi'), intern = T)
+    campari_mpi_exe <- suppressWarnings(system(paste0('which ', base_exe, '_mpi'), intern = T))
     if(!multi_threading && length(campari_mpi_exe) == 0) 
       stop('No campari_mpi (or camp_ncminer_mpi) executable found between the standard commands. Please install the library and alias the bin executables.')
     else if(!multi_threading)
@@ -249,7 +251,7 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   
   # mpi and multi_threading exe
   if(mpi && multi_threading){
-    campari_mpi_threads_exe <- system(paste0('which ', base_exe, '_mpi_threads'), intern = T)
+    campari_mpi_threads_exe <- suppressWarnings(system(paste0('which ', base_exe, '_mpi_threads'), intern = T))
     if(length(campari_mpi_threads_exe) == 0) 
       stop('No campari_mpi_threads (or camp_ncminer_mpi_threads) executable found between the standard commands. Please install the library and alias the bin executables.')
     else
@@ -273,6 +275,18 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   args_list <- c(args_list, PARAMETERS=paramiters)
   
   # -----------------------
+  # Certain variables CANNOT be repeated (or at least must exist specifically)
+  # therefore we coerce to have only the last one existing
+  must_exist_keys <- c('PARAMETERS', 'FMCSC_SEQFILE')
+  for(i in must_exist_keys){
+    tmp_k <- args_list[which(names(args_list)==i)] # keep all the elements on the side
+    tmp_k <- tmp_k[length(tmp_k)] # take the last element
+    args_list <- args_list[-which(names(args_list)==i)] # delete all the duplicate
+    args_list <- c(args_list, tmp_k)
+  }
+  
+  
+  # -----------------------
   # keyfile writer
   cat('writing of keyfile ', key_f, '\n\n')
   args_names <- names(args_list)
@@ -288,10 +302,10 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   cat('                         CAMPARI                       \n')
   cat('-------------------------------------------------------\n')
   if(print_status){
-    system(paste0(campari_main_exe, " -k ", key_f, " | tee ", log_f))
+    suppressWarnings(system(paste0(campari_main_exe, " -k ", key_f, " | tee ", log_f)))
   }else{
     cat('Direct console printing disabled (it will run in background). Please check', log_f, ' file for real time logging.')
-    system(paste0(campari_main_exe, " -k ", key_f, " >& ", log_f, "&"))
+    suppressWarnings(system(paste0(campari_main_exe, " -k ", key_f, " >& ", log_f, "&")))
     
   }
 }
