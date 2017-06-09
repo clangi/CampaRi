@@ -3,11 +3,11 @@
 #
 # Davide G.
 #----------------------------------------------
-# Minimum Spanning Tree test - no netcdf support needed
-
-
-
-
+# 
+#
+#
+#
+#
 
 # Set and making working directory
 #----------------------------------------------
@@ -28,9 +28,15 @@ trj <- read.dcd("../inst/extdata/NBU_1250fs.dcd")
 # ------------------------------------------
 #           SIMULATION 11 - run_campari
 # ------------------------------------------
+# reading an already formatted keyfile (it will skip the empty lines and comments)
+keywords <- keywords_from_keyfile(key_file_input = "nbu.key") #list format
+keywords_from_keyfile(key_file_input = "nbu.key", return_string_of_arguments = TRUE)
+
+
+# standard run of the simulation in tutarial 11
 run_campari(FMCSC_SEQFILE="nbu.in",
             # FMCSC_BASENAME="NBU", # lets try the base_name option
-            base_name = "ciglioni_simulazioni", print_status = F,
+            base_name = "ciglioni_simulazioni", print_status = F, # it will take 55 s in background ~
             FMCSC_SC_IPP=0.0,
             FMCSC_SC_BONDED_T=1.0,
             FMCSC_DYNAMICS=3,
@@ -62,13 +68,13 @@ run_campari(trj = trj,
             FMCSC_CPROGINDMODE=1, #mst
             FMCSC_CCOLLECT=1,
             FMCSC_CMODE=4,
-            FMCSC_CDISTANCE=7, #rmsd without alignment
+            FMCSC_CDISTANCE=1, #rmsd without alignment 7 - 
             FMCSC_CPROGINDSTART=21, #starting snapshot 
             # FMCSC_CPROGINDRMAX=1000, #search att
             # FMCSC_BIRCHHEIGHT=2, #birch height
             FMCSC_CMAXRAD=6, #clustering
             FMCSC_CRADIUS=4,
-            FMCSC_CCUTOFF=10,
+            FMCSC_CCUTOFF=100,
             FMCSC_CPROGINDWIDTH=1000) #local cut
             #FMCSC_CPROGMSTFOLD 4 # b)
 sapphire_plot(sap_file = "PROGIDX_000000000021.dat", title = "ORIGINAL CAMPARI - MST")
