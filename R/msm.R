@@ -39,6 +39,7 @@
 #' @details The main reference for the Markov state model creation is [1][Prinz, J.H., et al. "Markov models of molecular kinetics: Generation and validation." \emph{The Journal of chemical physics} 134.17 (2011): 174105]. See also [2][Guarnera, E., Pellarin, R., & Caflisch, A. (2009). How does a simplified-sequence protein fold?. \emph{Biophysical journal}, 97(6), 1737-1746.] for non-Markovian flux.
 
 #' @importFrom data.table fread fwrite
+#' @importFrom Hmisc errbar 
 #' @export msm
 
 
