@@ -265,7 +265,7 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   camp_home <- strsplit(campari_main_exe, split = "bin")[[1]][1]
   
   # -----------------------
-  # extra checks
+  # must exist checks - PARAMETERS
   if("PARAMETERS" %in% args_names)
     paramiters <- args_list[["PARAMETERS"]]
   else
@@ -277,12 +277,14 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   # -----------------------
   # Certain variables CANNOT be repeated (or at least must exist specifically)
   # therefore we coerce to have only the last one existing
-  must_exist_keys <- c('PARAMETERS', 'FMCSC_SEQFILE')
-  for(i in must_exist_keys){
-    tmp_k <- args_list[which(names(args_list)==i)] # keep all the elements on the side
-    tmp_k <- tmp_k[length(tmp_k)] # take the last element
-    args_list <- args_list[-which(names(args_list)==i)] # delete all the duplicate
-    args_list <- c(args_list, tmp_k)
+  must_exist_unique_keys <- c('PARAMETERS', 'FMCSC_SEQFILE')
+  for(i in must_exist_unique_keys){
+    if(i %in% args_names){ # bug was for SEQFILE when it was not needed
+      tmp_k <- args_list[which(names(args_list)==i)] # keep all the elements on the side
+      tmp_k <- tmp_k[length(tmp_k)] # take the last element
+      args_list <- args_list[-which(names(args_list)==i)] # delete all the duplicate
+      args_list <- c(args_list, tmp_k)
+    }
   }
   
   

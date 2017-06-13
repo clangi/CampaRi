@@ -110,7 +110,7 @@ show_clustering_summary(log_file = "base_name.log", fyc_file = "nbu.fyc", sub_sa
 # ------------------------------------------
 # Here we apply the method of Blöchliger et al. to study the metastable states sampled in our simulation.
 # We start with a new key-file from scratch. As for the case of simple clustering, the following basic keywords are required:
-run_campari(data_file = "nbu_traj.dcd", key_file_input = "key_advanced.key")
+run_campari(data_file = "nbu_traj.dcd", key_file_input = "key_advanced.key", FMCSC_CPROGINDRMAX=50000)
             
 sapphire_plot('PROGIDX_000000000001.dat')
 
@@ -123,7 +123,7 @@ FMCSC_CRADIUS 20.0 # threshold radius (in degrees) of clusters
 FMCSC_CPROGINDRMAX 1500 # number of search attempts"
 keywords_from_keyfile(copied_string, return_string_of_arguments = T, key_file_is_keywords = T)
 run_campari(data_file = "nbu_traj.dcd", key_file_input = "key_advanced.key", 
-            FMCSC_CPROGINDSTART=-2, FMCSC_CMSMCFEP=1, FMCSC_CRADIUS=20, FMCSC_CPROGINDRMAX=7000)
+            FMCSC_CPROGINDSTART=-2, FMCSC_CMSMCFEP=1, FMCSC_CRADIUS=20, FMCSC_CPROGINDRMAX=1500)
 
 # ------------------------------------------
 #           MST - run_campari in ncminer mode
@@ -132,13 +132,20 @@ run_campari(data_file = "nbu_traj.dcd", key_file_input = "key_advanced.key",
 # butane chain simulated data - variables init
 # ------------------------------------------
 library(bio3d)
-trj <- read.dcd("../inst/extdata/NBU_1250fs.dcd")
+# trj <- read.dcd("nbu_traj.dcd")
+
+# to use ncminer we need to load fyc directly (dihedral angles handling not implemented)
+trj <- fread("nbu.fyc", header = F, skip = 1)
+head(trj)
+fread("head -n 1 nbu.fyc") # head of it
+trj <- as.data.frame(trj[,-1])
+trj <- sapply(trj, as.numeric) # always be sure that it is numeric!
 
 run_campari(trj = trj,
             FMCSC_CPROGINDMODE=1, #mst
-            FMCSC_CCOLLECT=1,
+            FMCSC_CCOLLECT=5,
             FMCSC_CMODE=4,
-            FMCSC_CDISTANCE=7, #rmsd without alignment 7 - dihedral distances need a complete analysis (pdb_format dcd pdb etc...) 
+            FMCSC_CDISTANCE=1, #rmsd without alignment 7 - dihedral distances need a complete analysis (pdb_format dcd pdb etc...) 
             FMCSC_CPROGINDSTART=21, #starting snapshot 
             # FMCSC_CPROGINDRMAX=1000, #search att
             # FMCSC_BIRCHHEIGHT=2, #birch height
