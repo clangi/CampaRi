@@ -29,7 +29,7 @@
 #'      }
 #'      
 #' @return A list containing
-#'       \itemize {
+#'       \itemize{
 #'         \item "\code{tab.st}" Data frame containing the boundaries of each state, their lengths and the type of the right boundary. Type=1 means that it is a matched partition, type=2 is only dynamic, type=3 is only kinetic. The type of the last state is always equal to 1.
 #'         \item "\code{nbins}" 2-D vector containing number of bins on x-axis and y-axis.
 #'         \item "\code{call}" The matched call. 
