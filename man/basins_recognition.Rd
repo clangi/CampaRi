@@ -4,19 +4,22 @@
 \alias{basins_recognition}
 \title{Identifying basins in the SAPPHIRE plot}
 \usage{
-basins_recognition(file, nx = 500, ny.aut = TRUE, local.cut = FALSE,
-  match = FALSE, avg.opt = c("movav", "SG"), plot = FALSE, ...)
+basins_recognition(data, nx, ny = nx, ny.aut = FALSE, local.cut = FALSE,
+  match = FALSE, avg.opt = c("movav", "SG"), plot = FALSE,
+  out.file = TRUE, silent = FALSE, ...)
 }
 \arguments{
-\item{file}{Name of the PROGIDX_<...>.dat file.}
+\item{data}{Name of the PROGIDX_<...>.dat file or Data frame with three columns containing, in order, the (sorted) progress index, the relative time indices and the cut function.}
 
 \item{nx}{Number of bins on the x-axis of the 2-D histogram.}
 
-\item{ny.aut}{Logical value indicating whether a suitable number of bins on the y-axis has to be identified automatically. Default value is \code{TRUE}.}
+\item{ny}{Number of bins on the y-axis of the 2-D histogram. Default to nx.}
+
+\item{ny.aut}{Logical value indicating whether a suitable number of bins on the y-axis has to be identified automatically. Default value is \code{FALSE}.}
 
 \item{local.cut}{Logical value indicating whether the localized cut function has to be used (see references). Default value is \code{FALSE}.}
 
-\item{match}{Logical value indicating whether results from kinetic and dynamic annotation have to be either matched or merged.}
+\item{match}{Logical value indicating whether results from kinetic and dynamic annotation have to be either matched or merged. Default value is \code{FALSE}}
 
 \item{avg.opt}{Smoothing filter in the kinetic annotation analysis
 \itemize{
@@ -24,25 +27,33 @@ basins_recognition(file, nx = 500, ny.aut = TRUE, local.cut = FALSE,
      \item "\code{SG}" for savitzkyGolay filter
 }}
 
-\item{plot}{A logical value indicating whether to plot results or not. Default value if \code{FALSE}.}
+\item{plot}{A logical value indicating whether to display the SAPPHIRE plot with the resulting partitions or not. Black partitions are the matched ones, blue ones derive only from the dynamic analysis and orange ones only from the kinetic analysis. Default value is \code{FALSE}.}
+
+\item{out.file}{A logical value indicating whether to write an output file with the state sequence ordered with respect to the PI. Default value is \code{TRUE}.}
+
+\item{silent}{A logical value indicating whether the function has to remain silent or not. Default value is \code{FALSE}}
 
 \item{...}{\itemize{
   \item "\code{time.series}" File name. If specified, it substitutes the time series of the PROGIDX_<..> file with the one provided by the file.
   \item "\code{only.kin}" Logical value indicating whether it should be performed only the analysis of the kinetic annotation, thus disregarding completely the dynamic trace.  
-  \item "\code{ny}" Number of bins on the y-axis of the 2-D histogram if \code{ny.aut=FALSE}. Default value is nx.
-  \item "\code{pol.degree}" degree of the Savitzky-Golay filter
+  \item "\code{pol.degree}" Degree of the Savitzky-Golay filter in case it was chosen. Default to 2.
 }}
 }
 \value{
-Data frame containing the boundaries of each state and his length
+A list containing
+      \itemize {
+        \item "\code{tab.st}" Data frame containing the boundaries of each state, their lengths and the type of the right boundary. Type=1 means that it is a matched partition, type=2 is only dynamic, type=3 is only kinetic. The type of the last state is always equal to 1.
+        \item "\code{nbins}" 2-D vector containing number of bins on x-axis and y-axis.
+        \item "\code{call}" The matched call. 
+      }
 }
 \description{
 \code{basins_recognition} uses the information provided by the SAPPHIRE plot in order to identify free energy basins, 
     thus leading to a discretized trajectory. In particular, it inspects both the kinetic annotation and times of occurence
     (called dynamic annotation hereafter) of the progress index and, at the end, it matches (or merges) the resulting state barriers coming from each of the single analysis.  
     The analysis of the dynamical trace is driven by an underlying 2-D histogram whose number of bins has to be given either manually or automatically (this option is available only for number of bins on the y-axis). These values has to be chosen appropriately because they provide the minimum size that a state should have in order to be identified.
-    Regarding the kinetic annotation, the identification of the states is equivalent to discerning its main peaks. This task is performed by means of a smoothing filter, either moving average or Savitzky Golay, and a naive algorithm to find the local maxima.
-    Finally, the user can decide on either selecting only the partitions in common to both the annotation (matching) or retaining them all (merging).
+    Regarding the kinetic annotation, the identification of the states is equivalent to discerning its main peaks. This task is performed by means of a smoothing filter, either moving average or Savitzky Golay, and a naive algorithm to find the local maxima. The window size of the filter and of the peak search algorithm is equal to the number of snapshots divided by \code{nx}.
+    Eventually, the user can decide on either selecting only the partitions in common to both the annotation (matching) or retaining them all (merging).
 }
 \details{
 For details regarding the SAPPHIRE plot, please refer to the relative publications \url{http://www.nature.com/articles/srep06264}. 
@@ -54,7 +65,7 @@ adjl <- mst_from_trj(trj = matrix(rnorm(1000), nrow = 100, ncol = 10))
 ret<-gen_progindex(adjl = adjl)
 gen_annotation(ret_data = ret, local_cut_width = 10)
 \dontrun{
-basins_recognition("PROGIDX_000000000001.dat")
+basins_recognition("PROGIDX_000000000001.dat", nx=500)
 }
 
 }

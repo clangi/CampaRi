@@ -5,7 +5,8 @@
 \title{Shows the clustering summary from log file}
 \usage{
 show_clustering_summary(log_file, fyc_file, verbose = TRUE,
-  number_of_clusters = 10, return_centers = FALSE, return_angles = FALSE)
+  number_of_clusters = 10, sub_sampling_factor = 1,
+  return_centers = FALSE, return_angles = FALSE)
 }
 \arguments{
 \item{log_file}{log output of a campari run in which a clustering was performed}
@@ -13,6 +14,15 @@ show_clustering_summary(log_file, fyc_file, verbose = TRUE,
 \item{fyc_file}{the fyc file which was output of the same campari run}
 
 \item{verbose}{if verbose is \code{TRUE} the clustering summary will be printed directly in the console (first 10 elements).}
+
+\item{number_of_clusters}{It defaults to 10 and defines the number of centers to consider in the clustering summary.}
+
+\item{sub_sampling_factor}{It defaults to 1 and defines the subsampling that was performed on the trajectory (FMCSC_CCOLLECT). Use it only if 
+the analysis was running with that variable different from 1 (use everysnapshot). Otherwise the results will be inconsistent or even erroneous.}
+
+\item{return_centers}{it returns the cluster centers.}
+
+\item{return_angles}{it returns the cluster centers' angles.}
 }
 \value{
 A named list or a table of keywords readed from the keyfile in input
