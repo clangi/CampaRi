@@ -5,7 +5,8 @@
 \title{Transform a keyfile in a list of keywords}
 \usage{
 keywords_from_keyfile(key_file_input, return_table = FALSE,
-  keyword_list = NULL, return_string_of_arguments = FALSE)
+  keyword_list = NULL, return_string_of_arguments = FALSE,
+  keyword_list_first = TRUE)
 }
 \arguments{
 \item{key_file_input}{An already formatted keyfile. It can contain comments (#) and blank lines. Please note that in the case of multivariable keywords 
@@ -16,6 +17,8 @@ the algorithm will keep only the first value. Consider using \code{return_table}
 \item{keyword_list}{If provided, the function will append the readed keywords to this list and return it.}
 
 \item{return_string_of_arguments}{This argument will provide the possibility to have a string with already formatted function arguments (can be directly copied in \code{\link{run_campari}}).}
+
+\item{keyword_list_first}{It defines if the inserted keyword_list must be inserted afterwords or before (\code{TRUE}) the loaded keyfile keywords.}
 }
 \value{
 A named list or a table of keywords readed from the keyfile in input

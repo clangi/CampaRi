@@ -20,11 +20,6 @@ install_github("Melkiades/CampaRi")
 library(CampaRi)
 
 
-# butane chain simulated data - variables init
-# ------------------------------------------
-library(bio3d)
-trj <- read.dcd("../inst/extdata/NBU_1250fs.dcd")
-
 # ------------------------------------------
 # SIMULATION from tutorial 11 - run_campari
 # ------------------------------------------
@@ -36,7 +31,7 @@ keywords_from_keyfile(key_file_input = "nbu.key", return_string_of_arguments = T
 
 
 # standard run of the simulation in tutarial 11
-run_campari(FMCSC_SEQFILE="NBU_1250fs.in",
+run_campari(FMCSC_SEQFILE="nbu.in",
             # FMCSC_BASENAME="NBU", # lets try the base_name option
             base_name = "nbu", print_status = F, # it will take 55 s in background ~
             FMCSC_SC_IPP=0.0,
@@ -66,22 +61,79 @@ run_campari(FMCSC_SEQFILE="NBU_1250fs.in",
 # tutorial 11 - step 2 (Simple Clustering)
 # ------------------------------------------
 # take the variables in a function argument format from key file exemple
-keys <- keywords_from_keyfile(key_file_input = "keyfile.key", return_string_of_arguments = T, 
-                              keyword_list_first = F, keyword_list = c(FMCSC_SEQFILE="NBU_1250fs.in"))
-print(keys) # copy paste it in the run_campari or BETTER provide the keyfile directly
+keys <- keywords_from_keyfile(key_file_input = "keyfile_exemple.key", return_string_of_arguments = T, 
+                              keyword_list_first = F, keyword_list = c(FMCSC_SEQFILE="nbu.in"))
+print(keys) # you can copy paste it in the run_campari BUT IT IS BETTER provide the keyfile directly (see next)
 
 # in the following we use the key_file_input to set the majority of the keys and we override SEQFILE directly from the function
-run_campari(data_file = "NBU_1250fs.dcd", key_file_input = "keyfile.key", FMCSC_SEQFILE="NBU_1250fs.in") 
+run_campari(data_file = "nbu_traj.dcd", key_file_input = "keyfile_exemple.key", FMCSC_SEQFILE="nbu.in") 
+
+# remember to use the following commad on the logfile and fycfile to extract the clustering summary (or use show_clustering_summary function)
+# for i in `grep -F 'CLUSTER SUMMARY' -A 10 LOGFILE | tail -n 9 | awk '{print $3}'`; do (j=`echo -e "$i + 1" | bc`; head -n $j FYCFILE | tail -n 1 | awk '{printf("Step %10i: C1C2C3C4: %10.3f C3C2C1H11: %10.3f C2C3C4H41: %10.3f\n",$1/10,$2,$3,$4)}') done
+show_clustering_summary(log_file = "base_name.log", fyc_file = "nbu.fyc")
 
 
+# ------------------------------------------
+# Step 4 - Tuning Options and Choices for Clustering
+# ------------------------------------------
+run_campari(data_file = "nbu_traj.dcd", key_file_input = "keyfile_exemple.key",
+            FMCSC_CDISTANCE=5, #RMSD with pairwise alignment
+            FMCSC_CFILE="carbons.lst", # you have to write it with 1,2,3,4 (see yourcalc_END.pdb for numbering scheme)
+            FMCSC_CRADIUS=0.02, # changing thresholds because we changed the distance
+            FMCSC_CMAXRAD=1.0,
+            FMCSC_SEQFILE="nbu.in") 
 
-# remember to use the following commad on the logfile to extract the clustering summary (or use show_clustering_summary function)
-# for i in `grep -F 'CLUSTER SUMMARY' -A 10 LOGFILE | tail -n 9 | awk '{print $3}'`; do (j=`echo -e "$i + 1" | bc`; head -n $j NBU.fyc | tail -n 1 | awk '{printf("Step %10i: C1C2C3C4: %10.3f C3C2C1H11: %10.3f C2C3C4H41: %10.3f\n",$1/10,$2,$3,$4)}') done
+# it changed the results!
+show_clustering_summary(log_file = "base_name.log", fyc_file = "nbu.fyc")
 
+# hierarchical clustering (as there are some more keywords to copy -> keywords_from_keyfile using key_file_is_keywords)
+copied_string <- "FMCSC_CMODE 3 # use hierarchical clustering
+FMCSC_CDISTANCE 1 # use dihedral angles to represent each snapshot
+FMCSC_CRADIUS 30.0 # threshold radius (in degrees) of clusters
+FMCSC_CMAXRAD 30.0 # threshold radius (in degrees) for truncated leader algorithm used for preprocessing
+FMCSC_CCUTOFF 60.0 # cutoff distance for neighbor list
+FMCSC_CLINKAGE 3 # linkage criterion (3 = mean)" # KEEP THIS FORMATTING!!
+keywords_from_keyfile(copied_string, return_string_of_arguments = T, key_file_is_keywords = T)
+
+# now you can copy paste it in run_campari
+run_campari(data_file = "nbu_traj.dcd", key_file_input = "keyfile_exemple.key",
+            FMCSC_SEQFILE="nbu.in",
+            FMCSC_CMODE=3, FMCSC_CDISTANCE=1, FMCSC_CRADIUS=30, FMCSC_CMAXRAD=30, FMCSC_CCUTOFF=60, FMCSC_CLINKAGE=3,
+            FMCSC_CCOLLECT=10) # the algorithm is not scalable
+
+# remember that all this runs work in append. So only the last element assigned counts
+
+# lets see the results
+show_clustering_summary(log_file = "base_name.log", fyc_file = "nbu.fyc", sub_sampling_factor = 10) # this is due to CCOLLECT
+# ------------------------------------------
+# Step 5 - Advanced algorithms
+# ------------------------------------------
+# Here we apply the method of Blöchliger et al. to study the metastable states sampled in our simulation.
+# We start with a new key-file from scratch. As for the case of simple clustering, the following basic keywords are required:
+run_campari(data_file = "nbu_traj.dcd", key_file_input = "key_advanced.key")
+            
+sapphire_plot('PROGIDX_000000000001.dat')
+
+
+# lets do it with pseudo energy profile
+copied_string <- "
+FMCSC_CPROGINDSTART -2 # consistently use largest cluster or representative thereof for reference in profiles
+FMCSC_CMSMCFEP 1 # request MFPT-based cFEP
+FMCSC_CRADIUS 20.0 # threshold radius (in degrees) of clusters
+FMCSC_CPROGINDRMAX 1500 # number of search attempts"
+keywords_from_keyfile(copied_string, return_string_of_arguments = T, key_file_is_keywords = T)
+run_campari(data_file = "nbu_traj.dcd", key_file_input = "key_advanced.key", 
+            FMCSC_CPROGINDSTART=-2, FMCSC_CMSMCFEP=1, FMCSC_CRADIUS=20, FMCSC_CPROGINDRMAX=7000)
 
 # ------------------------------------------
 #           MST - run_campari in ncminer mode
 # ------------------------------------------
+
+# butane chain simulated data - variables init
+# ------------------------------------------
+library(bio3d)
+trj <- read.dcd("../inst/extdata/NBU_1250fs.dcd")
+
 run_campari(trj = trj,
             FMCSC_CPROGINDMODE=1, #mst
             FMCSC_CCOLLECT=1,

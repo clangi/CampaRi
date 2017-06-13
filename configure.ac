@@ -121,6 +121,7 @@ fi
 #    CAMPARI to install
 # ---------------------------
 if test "${with_campari}" != "no"; then
+	AC_MSG_ERROR([ATTENTION: THIS OPTION IS STILL NOT AVAILABLE BECAUSE UNDER DEV.])
 	campari_installed="0"
 	SECTION_TITLE([Original campari library installing...])
 	AC_MSG_CHECKING([which folder will be used for CAMPARI_HOME])

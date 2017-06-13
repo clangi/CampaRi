@@ -1,0 +1,184 @@
+---
+title: "Tutorial 11"
+date: "`r BiocStyle::doc_date()`"
+vignette: >
+  %\VignetteIndexEntry{"2. Tutorial 11"}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(progress = FALSE)
+```
+
+
+This tutorial can be viewed as a follow-up to Tutorial 10, as it covers the analysis of a trajectory with rather specific tasks in mind. Specifically, here we wish to run clustering and related algorithms on a trajectory of a toy system (n-butane) exhibiting clear and intuitive state partitioning.
+
+
+
+# Step 1 - Generating a suitable trajectory
+
+The molecule under study, n-butane, is so small that it is feasible and convenient to generate a statistically meaningful trajectory within this tutorial. Since some of the algorithms tested here respond to kinetics, we will obtain a stochastic dynamics trajectory in torsional space via the following R code:
+
+```{r, eval=FALSE}
+# standard run of the simulation in tutarial 11
+run_campari(FMCSC_SEQFILE="nbu.in",
+            # FMCSC_BASENAME="NBU", # lets try the base_name option
+            base_name = "nbu", print_status = F, # it will take 55 s in background ~
+            FMCSC_SC_IPP=0.0,
+            FMCSC_SC_BONDED_T=1.0,
+            FMCSC_DYNAMICS=3,
+            FMCSC_FRICTION=3.0,
+            FMCSC_TIMESTEP=0.005,
+            FMCSC_TEMP=400.0,
+            FMCSC_NRSTEPS=10000000,
+            FMCSC_EQUIL=0,
+            FMCSC_XYZOUT=100,
+            FMCSC_XYZPDB=3,
+            FMCSC_TOROUT=100,
+            FMCSC_COVCALC=20000000,
+            FMCSC_SAVCALC=20000000,
+            FMCSC_POLCALC=20000000,
+            FMCSC_RHCALC=20000000,
+            FMCSC_INTCALC=20000000,
+            FMCSC_POLOUT=20000000,
+            FMCSC_ENSOUT=20000000,
+            FMCSC_ENOUT=20000000,
+            FMCSC_RSTOUT=20000000
+)
+```
+
+
+
+
+<!-- <div class="panel panel-info">
+<div class="panel-heading">Understanding the barcode</div>
+<div class="panel-body">
+
+A TCGA barcode is composed of a collection of identifiers. Each specifically identifies a TCGA data element. Refer to the following figure for an illustration of how metadata identifiers comprise a barcode. An aliquot barcode contains the highest number of identifiers.
+
+Example:
+
+- Aliquot barcode: TCGA-G4-6317-02A-11D-2064-05
+- Participant: TCGA-G4-6317
+- Sample: TCGA-G4-6317-02
+
+For more information check [TCGA wiki](https://wiki.nci.nih.gov/display/TCGA/TCGA+barcode)
+</div>
+</div> -->
+
+# Step 2 - Simple clustering
+
+
+
+```{r, eval=FALSE}
+keys <- keywords_from_keyfile(key_file_input = "keyfile_exemple.key", return_string_of_arguments = T, 
+                              keyword_list_first = F, keyword_list = c(FMCSC_SEQFILE="nbu.in"))
+print(keys) # you can copy paste it in the run_campari BUT IT IS BETTER provide the keyfile directly (see next)
+
+# in the following we use the key_file_input to set the majority of the keys and we override SEQFILE directly from the function
+run_campari(data_file = "nbu_traj.dcd", key_file_input = "keyfile_exemple.key", FMCSC_SEQFILE="nbu.in") 
+
+# remember to use the following commad on the logfile and fycfile to extract the clustering summary (or use show_clustering_summary function)
+# for i in `grep -F 'CLUSTER SUMMARY' -A 10 LOGFILE | tail -n 9 | awk '{print $3}'`; do (j=`echo -e "$i + 1" | bc`; head -n $j FYCFILE | tail -n 1 | awk '{printf("Step %10i: C1C2C3C4: %10.3f C3C2C1H11: %10.3f C2C3C4H41: %10.3f\n",$1/10,$2,$3,$4)}') done
+show_clustering_summary(log_file = "base_name.log", fyc_file = "nbu.fyc")
+```
+
+
+<!-- You can easily search GDC data using the `GDCquery` function. -->
+
+<!-- Using a summary of filters as used in the TCGA portal, the function works -->
+<!-- with the following arguments: -->
+
+<!-- * **project** A list of valid project (it can be more than one) (see table below) -->
+<!-- * **data.category** A valid project (see list with getProjectSummary(project)) -->
+<!-- * **data.type** A data type to filter the files to download -->
+<!-- * **sample.type** A sample type to filter the files to download (See table below) -->
+<!-- * **workflow.type** GDC workflow type -->
+<!-- * **barcode** A list of barcodes to filter the files to download (can be partial barcodes) -->
+<!-- * **legacy** Access legacy archive data (hg19 and hg18 data) instead of harmonized data? Default: FALSE -->
+<!-- * **platform** Experimental data platform (HumanMethylation450, AgilentG4502A_07 etc). Used only for legacy repository -->
+<!-- * **file.type** A string to filter files, based on its names. Used only for legacy repository -->
+
+<!-- ## project options -->
+<!-- The options for the field `project` are below: -->
+<!-- ```{r, eval = TRUE, echo = FALSE} -->
+<!-- datatable(TCGAbiolinks:::getGDCprojects(), -->
+<!--           filter = 'top', -->
+<!--           options = list(scrollX = TRUE, keys = TRUE, pageLength = 10), -->
+<!--           rownames = FALSE, -->
+<!--           caption = "List of projects") -->
+<!-- ``` -->
+
+<!-- ## sample.type options -->
+<!-- The options for the field `sample.type` are below: -->
+<!-- ```{r, eval = TRUE, echo = FALSE} -->
+<!-- datatable(TCGAbiolinks:::getBarcodeDefinition(), -->
+<!--           filter = 'top', -->
+<!--           options = list(scrollX = TRUE, keys = TRUE, pageLength = 10), -->
+<!--           rownames = FALSE, -->
+<!--           caption = "List sample types") -->
+<!-- ``` -->
+
+<!-- The other fields (data.category, data.type, workflow.type, platform, file.type) can be found below. -->
+<!-- Please, not that these tables are still incomplete. -->
+
+<!-- ## Harmonized data options (`legacy = FALSE`) -->
+
+<!-- ```{r} -->
+<!-- datatable(readr::read_csv("https://docs.google.com/spreadsheets/d/1f98kFdj9mxVDc1dv4xTZdx8iWgUiDYO-qiFJINvmTZs/export?format=csv&gid=2046985454"), -->
+<!--           filter = 'top', -->
+<!--           options = list(scrollX = TRUE, keys = TRUE, pageLength = 40), -->
+<!--           rownames = FALSE) -->
+<!-- ``` -->
+
+<!-- ## Legacy archive data  options (`legacy = TRUE`) -->
+<!-- ```{r} -->
+<!-- datatable(readr::read_csv("https://docs.google.com/spreadsheets/d/1f98kFdj9mxVDc1dv4xTZdx8iWgUiDYO-qiFJINvmTZs/export?format=csv&gid=1817673686"), -->
+<!--           filter = 'top', -->
+<!--           options = list(scrollX = TRUE, keys = TRUE, pageLength = 40), -->
+<!--           rownames = FALSE) -->
+<!-- ``` -->
+
+
+
+<!-- # Legacy archive examples -->
+
+<!-- ## DNA methylation -->
+
+<!-- This exmaple shows how the user can search for  glioblastoma multiform (GBM) -->
+<!-- and low grade gliomas (LGG) DNA methylation data -->
+<!-- for platform Illumina Human Methylation 450 and Illumina Human Methylation 27. -->
+
+<!-- ```{r message=FALSE, warning=FALSE} -->
+<!-- query <- GDCquery(project = c("TCGA-GBM","TCGA-LGG"), -->
+<!--                       legacy = TRUE, -->
+<!--                       data.category = "DNA methylation", -->
+<!--                       platform = c("Illumina Human Methylation 450", "Illumina Human Methylation 27")) -->
+<!-- datatable(getResults(query, rows = 1:100), -->
+<!--               filter = 'top', -->
+<!--               options = list(scrollX = TRUE, keys = TRUE, pageLength = 5), -->
+<!--               rownames = FALSE) -->
+<!-- ``` -->
+
+<!-- ## Gene expression -->
+
+<!-- This exmaple shows how the user can search for  glioblastoma multiform (GBM) -->
+<!-- gene expression data with the normalized results for expression of a gene. -->
+<!-- For more information check [rnaseqV2 TCGA wiki](https://wiki.nci.nih.gov/display/tcga/rnaseq+version+2) -->
+<!-- ```{r message=FALSE, warning=FALSE} -->
+<!-- # Gene expression aligned against hg19. -->
+<!-- query.exp.hg19 <- GDCquery(project = "TCGA-GBM", -->
+<!--                   data.category = "Gene expression", -->
+<!--                   data.type = "Gene expression quantification", -->
+<!--                   platform = "Illumina HiSeq", -->
+<!--                   file.type  = "normalized_results", -->
+<!--                   experimental.strategy = "RNA-Seq", -->
+<!--                   barcode = c("TCGA-14-0736-02A-01R-2005-01", "TCGA-06-0211-02A-02R-2005-01"), -->
+<!--                   legacy = TRUE) -->
+<!-- datatable(getResults(query.exp.hg19), -->
+<!--               filter = 'top', -->
+<!--               options = list(scrollX = TRUE, keys = TRUE, pageLength = 5), -->
+<!--               rownames = FALSE) -->
+<!-- ``` -->

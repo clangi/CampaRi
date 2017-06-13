@@ -21,7 +21,7 @@ run_campari(trj = NULL, base_name = "base_name", data_file = NULL,
 
 \item{mpi}{Default to FALSE. It will run campari_mpi with installed mpi-compiler. Please consider also campari_threads_mpi (also multi_threading=TRUE).}
 
-\item{key_file_input}{If you provide an already formatted keyfile to this argument, every variable defined there will override the one in this function and CAMPARI will 
+\item{key_file_input}{If you provide an already formatted keyfile to this argument, every variable defined in the provided keyfile will be overriden by the ones in this function and CAMPARI will 
 be run after the generation of a new keyfile. Please note that in the case of multivariable keywords the algorithm will keep only the first value. Consider using \code{\link{keywords_from_keyfile}} function.}
 
 \item{...}{Analysis variables (similarly to \code{\link{mst_from_trj}}). You can check all of these in the original documentation (\url{http://campari.sourceforge.net/documentation.html}).}

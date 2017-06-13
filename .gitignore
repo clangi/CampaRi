@@ -17,3 +17,4 @@ config.log
 config.status
 autom4te.cache/
 m4/
+inst/doc
