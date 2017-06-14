@@ -623,13 +623,12 @@ ac_includes_default="\
 
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
-NETCDF4_CPPFLAGS
+with_netcdf4_fortran
+HAVE_NETCDF4
 NETCDF4_FLIBS
 NETCDF4_FFLAGS
 NETCDF4_FC
-NETCDF4_LIBS
 NETCDF4_LDFLAGS
-NETCDF4_CFLAGS
 NETCDF4_CC
 NETCDF4_VERSION
 EGREP
@@ -638,11 +637,16 @@ ac_ct_CC
 CPPFLAGS
 CFLAGS
 CC
+NETCDF4_LIBS
+NETCDF4_CFLAGS
 NC_CONFIG
 GREP
 AWK
 SED
+PKG_CONFIG_LIBDIR
+PKG_CONFIG_PATH
 PKG_CONFIG
+BASENAME
 DIRNAME
 PWD
 MKDIR
@@ -711,6 +715,11 @@ FC
 FCFLAGS
 LDFLAGS
 LIBS
+PKG_CONFIG
+PKG_CONFIG_PATH
+PKG_CONFIG_LIBDIR
+NETCDF4_CFLAGS
+NETCDF4_LIBS
 CC
 CFLAGS
 CPPFLAGS
@@ -1346,6 +1355,15 @@ Some influential environment variables:
   LDFLAGS     linker flags, e.g. -L<lib dir> if you have libraries in a
               nonstandard directory <lib dir>
   LIBS        libraries to pass to the linker, e.g. -l<library>
+  PKG_CONFIG  path to pkg-config utility
+  PKG_CONFIG_PATH
+              directories to add to pkg-config's search path
+  PKG_CONFIG_LIBDIR
+              path overriding pkg-config's built-in search path
+  NETCDF4_CFLAGS
+              C compiler flags for NETCDF4, overriding pkg-config
+  NETCDF4_LIBS
+              linker flags for NETCDF4, overriding pkg-config
   CC          C compiler command
   CFLAGS      C compiler flags
   CPPFLAGS    (Objective) C/C++ preprocessor flags, e.g. -I<include dir> if
@@ -2962,8 +2980,75 @@ $as_echo "no" >&6; }
 fi
 
 
-# Extract the first word of "pkg-config", so it can be a program name with args.
-set dummy pkg-config; ac_word=$2
+# Extract the first word of "basename", so it can be a program name with args.
+set dummy basename; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_BASENAME+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $BASENAME in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_BASENAME="$BASENAME" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_BASENAME="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+BASENAME=$ac_cv_path_BASENAME
+if test -n "$BASENAME"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $BASENAME" >&5
+$as_echo "$BASENAME" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+if test "x$ac_cv_env_PKG_CONFIG_set" != "xset"; then
+	if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}pkg-config", so it can be a program name with args.
+set dummy ${ac_tool_prefix}pkg-config; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
 if ${ac_cv_path_PKG_CONFIG+:} false; then :
@@ -3000,6 +3085,90 @@ else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 fi
+
+
+fi
+if test -z "$ac_cv_path_PKG_CONFIG"; then
+  ac_pt_PKG_CONFIG=$PKG_CONFIG
+  # Extract the first word of "pkg-config", so it can be a program name with args.
+set dummy pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_ac_pt_PKG_CONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $ac_pt_PKG_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_ac_pt_PKG_CONFIG="$ac_pt_PKG_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_ac_pt_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+ac_pt_PKG_CONFIG=$ac_cv_path_ac_pt_PKG_CONFIG
+if test -n "$ac_pt_PKG_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_pt_PKG_CONFIG" >&5
+$as_echo "$ac_pt_PKG_CONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+  if test "x$ac_pt_PKG_CONFIG" = x; then
+    PKG_CONFIG=""
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    PKG_CONFIG=$ac_pt_PKG_CONFIG
+  fi
+else
+  PKG_CONFIG="$ac_cv_path_PKG_CONFIG"
+fi
+
+fi
+if test -n "$PKG_CONFIG"; then
+	_pkg_min_version=0.20
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking pkg-config is at least version $_pkg_min_version" >&5
+$as_echo_n "checking pkg-config is at least version $_pkg_min_version... " >&6; }
+	if $PKG_CONFIG --atleast-pkgconfig-version $_pkg_min_version; then
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	else
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+		PKG_CONFIG=""
+	fi
+fi
+# AC_PATH_PROG(PKG_CONFIG, pkg-config)
+
+all_options="netcdf4 campari"
+
+options=
+
+
+
+		echo '   Checking for netcdf4 libraries   ' | sed -e's/./-/g' >&6
+	echo '   Checking for netcdf4 libraries' >& 6
+	echo '   Checking for netcdf4 libraries   ' | sed -e's/./-/g' >&6
 
 
 # ===========================================================================
@@ -3095,21 +3264,6 @@ fi
 
 #serial 2
 
-
-
-
-all_options="netcdf4 campari"
-
-options=
-
-
-
-
-
-
-		echo '   Checking for netcdf4 libraries   ' | sed -e's/./-/g' >&6
-	echo '   Checking for netcdf4 libraries' >& 6
-	echo '   Checking for netcdf4 libraries   ' | sed -e's/./-/g' >&6
 
 
 
@@ -4190,7 +4344,27 @@ if test "${with_netcdf4+set}" = set; then :
    else
      with_netcdf4="yes"
      NETCDF4_PREFIX="${withval}"
-     NC_CONFIG="${withval}/bin/nc-config"
+     NC_CONFIG_TO_FIND="nc-config"
+     #if prefix is set by user then search for nc-config
+     if test -d "${NETCDF4_PREFIX}"; then
+       for NC_CONFIG_PATH in bin /
+       do
+       NETCDF4_PATH_ABS=${NETCDF4_PREFIX}/${NC_CONFIG_PATH}
+       { $as_echo "$as_me:${as_lineno-$LINENO}: search for nc-config in: ${NETCDF4_PATH_ABS}" >&5
+$as_echo "$as_me: search for nc-config in: ${NETCDF4_PATH_ABS}" >&6;}
+       if test ! -h ${NETCDF4_PATH_ABS}; then
+         if test -f ${NETCDF4_PATH_ABS}/${NC_CONFIG_TO_FIND} || \
+         test -x ${NETCDF4_PATH_ABS}/${NC_CONFIG_TO_FIND}; then
+           NC_CONFIG="${NETCDF4_PATH_ABS}/${NC_CONFIG_TO_FIND}"
+           { $as_echo "$as_me:${as_lineno-$LINENO}: found nc-config in: ${NETCDF4_PATH_ABS}" >&5
+$as_echo "$as_me: found nc-config in: ${NETCDF4_PATH_ABS}" >&6;}
+           break;
+         fi
+       fi
+       done
+     else
+       as_fn_error $? "Inserted netcdf4 folder does not contain any nc-config to set flags." "$LINENO" 5
+     fi
    fi
 else
   with_netcdf4="yes"
@@ -4209,8 +4383,8 @@ NETCDF4_FFLAGS=""
 NETCDF4_FLIBS=""
 
 if test "$with_netcdf4" = "yes"; then
-    if test -z "$NC_CONFIG"; then
-                for ac_prog in nc-config
+  if test -z "$NC_CONFIG"; then
+        for ac_prog in nc-config
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -4255,7 +4429,7 @@ fi
   test -n "$NC_CONFIG" && break
 done
 
-        NETCDF4_PREFIX=$($as_dirname -- $($as_dirname -- "$NC_CONFIG" ||
+    NETCDF4_PREFIX=$($as_dirname -- $($as_dirname -- "$NC_CONFIG" ||
 $as_expr X"$NC_CONFIG" : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \
 	 X"$NC_CONFIG" : 'X\(//\)[^/]' \| \
 	 X"$NC_CONFIG" : 'X\(//\)$' \| \
@@ -4410,20 +4584,20 @@ $as_echo X"$NC_CONFIG" |
 	    q
 	  }
 	  s/.*/./; q')
-    else
-        { $as_echo "$as_me:${as_lineno-$LINENO}: checking Using provided NetCDF4 prefix" >&5
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking Using provided NetCDF4 prefix" >&5
 $as_echo_n "checking Using provided NetCDF4 prefix... " >&6; }
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $NC_CONFIG" >&5
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $NC_CONFIG" >&5
 $as_echo "$NC_CONFIG" >&6; }
-    fi
+  fi
 
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for NetCDF4 libraries" >&5
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for NetCDF4 libraries" >&5
 $as_echo_n "checking for NetCDF4 libraries... " >&6; }
 
-    if test ! -f "$NC_CONFIG" || test ! -x "$NC_CONFIG"; then
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+  if test ! -f "$NC_CONFIG" || test ! -x "$NC_CONFIG"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-        { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING:
+    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING:
 
 Unable to locate NetCDF4 compilation helper script 'nc-config'.
 Please specify --with-netcdf4=<LOCATION> as the full path prefix
@@ -4437,52 +4611,404 @@ Please specify --with-netcdf4=<LOCATION> as the full path prefix
 where NetCDF4 has been installed.
 NetCDF4 support is being disabled (equivalent to --with-netcdf4=no).
 " >&2;}
-        with_netcdf4="no"
-        with_netcdf4_fortran="no"
-    else
-                NETCDF4_CC=$(eval $NC_CONFIG --cc | $AWK '{print $1}')
-        if test "$NETCDF4_CC" = "ccache"; then
-            NETCDF4_CC=$(eval $NC_CONFIG --cc | $AWK '{print $2}')
-        fi
+  with_netcdf4="no"
+  with_netcdf4_fortran="no"
+  else
+        NETCDF4_CC=$(eval $NC_CONFIG --cc | $AWK '{print $1}')
+    if test "$NETCDF4_CC" = "ccache"; then
+      NETCDF4_CC=$(eval $NC_CONFIG --cc | $AWK '{print $2}')
+    fi
 
-                NETCDF4_VERSION=$(eval $NC_CONFIG --version | $AWK '{print $2}')
+        NETCDF4_VERSION=$(eval $NC_CONFIG --version | $AWK '{print $2}')
 
-                NETCDF4_CFLAGS=$(eval $NC_CONFIG --cflags)
+        NETCDF4_CFLAGS=$(eval $NC_CONFIG --cflags)
 
-                NETCDF4_tmp_clibs=$(eval $NC_CONFIG --libs)
+        NETCDF4_tmp_clibs=$(eval $NC_CONFIG --libs)
 
-                for arg in $NETCDF4_tmp_clibs ; do
-          case "$arg" in
-            -L*) echo $NETCDF4_LDFLAGS | $GREP -e "$arg" 2>&1 >/dev/null \
-                   || NETCDF4_LDFLAGS="$arg $NETCDF4_LDFLAGS"
-              ;;
-            -l*) echo $NETCDF4_LIBS | $GREP -e "$arg" 2>&1 >/dev/null \
-                   || NETCDF4_LIBS="$arg $NETCDF4_LIBS"
-              ;;
-          esac
-        done
-
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes (version $NETCDF4_VERSION)" >&5
+        for arg in $NETCDF4_tmp_clibs ; do
+      case "$arg" in
+        -L*) echo $NETCDF4_LDFLAGS | $GREP -e "$arg" 2>&1 >/dev/null \
+               || NETCDF4_LDFLAGS="$arg $NETCDF4_LDFLAGS"
+          ;;
+        -l*) echo $NETCDF4_LIBS | $GREP -e "$arg" 2>&1 >/dev/null \
+               || NETCDF4_LIBS="$arg $NETCDF4_LIBS"
+          ;;
+      esac
+    done
+    # echo "libs=$NETCDF4_LIBS"
+    # echo "cflags=$NETCDF4_CFLAGS"
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes (version $NETCDF4_VERSION)" >&5
 $as_echo "yes (version $NETCDF4_VERSION)" >&6; }
 
-                if test "$netcdf4_requested_mode" = "parallel" ; then
-            with_netcdf4_parallel=$(eval $NC_CONFIG --has-pnetcdf)
-            if test "$with_netcdf4_parallel" = "no" ; then
-                as_fn_error $? "
+        if test "$netcdf4_requested_mode" = "parallel" ; then
+      with_netcdf4_parallel=$(eval $NC_CONFIG --has-pnetcdf)
+      if test "$with_netcdf4_parallel" = "no" ; then
+        as_fn_error $? "
 parallel NetCDF4 is not supported (while it was requested)
 " "$LINENO" 5
-            fi
-        fi
+      fi
+    fi
 
-                ax_lib_netcdf4_save_CC=$CC
-        ax_lib_netcdf4_save_CPPFLAGS=$CPPFLAGS
-        ax_lib_netcdf4_save_LIBS=$LIBS
-        ax_lib_netcdf4_save_LDFLAGS=$LDFLAGS
-        CC=$NETCDF4_CC
-        CFLAGS=$NETCDF4_CFLAGS
-        LIBS=$NETCDF4_LIBS
-        LDFLAGS=$NETCDF4_LDFLAGS
-        ac_fn_c_check_header_mongrel "$LINENO" "netcdf.h" "ac_cv_header_netcdf_h" "$ac_includes_default"
+
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: looking for nf-config (fortran explicit bindings)" >&5
+$as_echo "$as_me: looking for nf-config (fortran explicit bindings)" >&6;}
+    NF_CONFIG_TO_FIND="nf-config"
+    if test -d "${NETCDF4_PREFIX}"; then
+      for NF_CONFIG_PATH in bin /
+      do
+      NETCDF4_PATH_ABS=${NETCDF4_PREFIX}/${NF_CONFIG_PATH}
+      { $as_echo "$as_me:${as_lineno-$LINENO}: search for nf-config in: ${NETCDF4_PATH_ABS}" >&5
+$as_echo "$as_me: search for nf-config in: ${NETCDF4_PATH_ABS}" >&6;}
+      if test ! -h ${NETCDF4_PATH_ABS}; then
+        if test -f ${NETCDF4_PATH_ABS}/${NF_CONFIG_TO_FIND} || \
+        test -x ${NETCDF4_PATH_ABS}/${NF_CONFIG_TO_FIND}; then
+          NF_CONFIG="${NETCDF4_PATH_ABS}/${NF_CONFIG_TO_FIND}"
+          { $as_echo "$as_me:${as_lineno-$LINENO}: found nf-config in: ${NETCDF4_PATH_ABS}" >&5
+$as_echo "$as_me: found nf-config in: ${NETCDF4_PATH_ABS}" >&6;}
+          break;
+        fi
+      fi
+      done
+    else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Inserted netcdf4 folder does not contain any nf-config to set fortran flags." >&5
+$as_echo "$as_me: WARNING: Inserted netcdf4 folder does not contain any nf-config to set fortran flags." >&2;}
+    fi
+
+    # checking fortran bindings
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for matching NetCDF4 Fortran libraries using nf-config" >&5
+$as_echo_n "checking for matching NetCDF4 Fortran libraries using nf-config... " >&6; }
+    if test ! -f "$NF_CONFIG" || test ! -x "$NF_CONFIG"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+      if test -f "$NC_CONFIG" || test -x "$NC_CONFIG"; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether nc-config has still the Fortran bindings" >&5
+$as_echo_n "checking whether nc-config has still the Fortran bindings... " >&6; }
+        NETCDF4_FC=$(eval $NC_CONFIG --fc | $AWK '{print $1}')
+        if test -n "${NETCDF4_FC}" || test "${NETCDF4_FC}" != ""; then
+          { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+          NETCDF_FVERSION=$(eval $NC_CONFIG --version | $AWK '{print $2}')
+          { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes (version $NETCDF_FVERSION)" >&5
+$as_echo "yes (version $NETCDF_FVERSION)" >&6; }
+          NETCDF4_FC=$(eval $NC_CONFIG --fc | $AWK '{print $1}')
+          if test "$NETCDF4_FC" = "ccache"; then
+            NETCDF4_FC=$(eval $NC_CONFIG --fc | $AWK '{print $2}')
+          fi
+                    NETCDF4_FFLAGS=$(eval $NC_CONFIG --fflags)
+
+                    NETCDF4_tmp_flibs=$(eval $NC_CONFIG --flibs)
+
+                    for arg in $NETCDF4_tmp_flibs ; do
+            case "$arg" in
+              -L*) echo $NETCDF4_LDFLAGS | $GREP -e "$arg" 2>&1 >/dev/null \
+                     || NETCDF4_LDFLAGS="$arg $NETCDF4_LDFLAGS"
+                ;;
+              -l*) echo $NETCDF4_FLIBS | $GREP -e "$arg" 2>&1 >/dev/null \
+                     || NETCDF4_FLIBS="$arg $NETCDF4_FLIBS"
+                ;;
+            esac
+          done
+          with_netcdf4_fortran="yes"
+        else
+          { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+          { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: No Fortran bindings found (not even in nc-config)." >&5
+$as_echo "$as_me: WARNING: No Fortran bindings found (not even in nc-config)." >&2;}
+          with_netcdf4_fortran="no"
+        fi
+      else
+        { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: No Fortran bindings found (neither nc-config exe present)." >&5
+$as_echo "$as_me: WARNING: No Fortran bindings found (neither nc-config exe present)." >&2;}
+        with_netcdf4_fortran="no"
+      fi
+      # echo "libs=$NETCDF4_LIBS"
+      # echo "cfalgs=$NETCDF4_CFLAGS"
+      # echo "glibs=$NETCDF4_FLIBS"
+      # echo "fflags=$NETCDF4_FFLAGS"
+    else
+      NETCDF_FVERSION=$(eval $NF_CONFIG --version | $AWK '{print $2}')
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes (version $NETCDF_FVERSION)" >&5
+$as_echo "yes (version $NETCDF_FVERSION)" >&6; }
+      NETCDF4_FC=$(eval $NF_CONFIG --fc | $AWK '{print $1}')
+      if test "$NETCDF4_FC" = "ccache"; then
+        NETCDF4_FC=$(eval $NF_CONFIG --fc | $AWK '{print $2}')
+      fi
+            NETCDF4_FFLAGS=$(eval $NF_CONFIG --fflags)
+
+            NETCDF4_tmp_flibs=$(eval $NF_CONFIG --flibs)
+
+            for arg in $NETCDF4_tmp_flibs ; do
+        case "$arg" in
+          -L*) echo $NETCDF4_LDFLAGS | $GREP -e "$arg" 2>&1 >/dev/null \
+                 || NETCDF4_LDFLAGS="$arg $NETCDF4_LDFLAGS"
+            ;;
+          -l*) echo $NETCDF4_FLIBS | $GREP -e "$arg" 2>&1 >/dev/null \
+                 || NETCDF4_FLIBS="$arg $NETCDF4_FLIBS"
+            ;;
+        esac
+      done
+      with_netcdf4_fortran="yes"
+    fi
+
+    # check if include dir is WRONG in nc-config
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking correct position of include directory" >&5
+$as_echo "$as_me: checking correct position of include directory" >&6;}
+    if test -f "$NF_CONFIG" || test -x "$NF_CONFIG"; then
+      NX_CONFIG="$NF_CONFIG"
+    elif test -f "$NC_CONFIG" || test -x "$NC_CONFIG"; then
+      NX_CONFIG="$NC_CONFIG"
+    else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: no executable command present (i.e. no nc-config nor nf-config)." >&5
+$as_echo "$as_me: WARNING: no executable command present (i.e. no nc-config nor nf-config)." >&2;}
+    fi
+    if test -n "${NX_CONFIG}"; then
+      NETCDF4_INCLUDEDIR=$(eval $NX_CONFIG --includedir)
+      if test ! -d "${NETCDF4_INCLUDEDIR}" || \
+      test -z "$(ls -A ${NETCDF4_INCLUDEDIR})" || \
+      test ! -e "${NETCDF4_INCLUDEDIR}/netcdf.h"; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING:
+
+The include directory is empty or it does
+not exists or it does not contain netcdf.h.
+" >&5
+$as_echo "$as_me: WARNING:
+
+The include directory is empty or it does
+not exists or it does not contain netcdf.h.
+" >&2;}
+        { $as_echo "$as_me:${as_lineno-$LINENO}: looking for correct options using pkg-config." >&5
+$as_echo "$as_me: looking for correct options using pkg-config." >&6;}
+        if test -n "${PKG_CONFIG}" ; then
+          NC_PKG_CONFIG=no
+          module_name="netcdf"
+          # if test $(${PKG_CONFIG} --libs "netcdf >= 4.4"); then
+          #   module_name="netcdf-fortran"
+          #   AC_MSG_NOTICE([found version higher than 4.4, the netcdf-fortran will be checked.])
+          # fi
+          for module_name in netcdf-fortran netcdf; do
+            { $as_echo "$as_me:${as_lineno-$LINENO}: checking ${module_name}.pc in system locations" >&5
+$as_echo_n "checking ${module_name}.pc in system locations... " >&6; }
+            if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"\${module_name}\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "${module_name}") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+
+              { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+              NC_PKG_CONFIG=yes
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+            if test "${NC_PKG_CONFIG}" != "no"; then
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for NETCDF4" >&5
+$as_echo_n "checking for NETCDF4... " >&6; }
+
+if test -n "$NETCDF4_CFLAGS"; then
+    pkg_cv_NETCDF4_CFLAGS="$NETCDF4_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"\${module_name}\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "${module_name}") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_NETCDF4_CFLAGS=`$PKG_CONFIG --cflags "${module_name}" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$NETCDF4_LIBS"; then
+    pkg_cv_NETCDF4_LIBS="$NETCDF4_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"\${module_name}\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "${module_name}") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_NETCDF4_LIBS=`$PKG_CONFIG --libs "${module_name}" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        NETCDF4_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "${module_name}" 2>&1`
+        else
+	        NETCDF4_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "${module_name}" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$NETCDF4_PKG_ERRORS" >&5
+
+
+                { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: still nothing found for libs and flags" >&5
+$as_echo "$as_me: WARNING: still nothing found for libs and flags" >&2;}
+                NC_PKG_CONFIG=no
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+                { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: still nothing found for libs and flags" >&5
+$as_echo "$as_me: WARNING: still nothing found for libs and flags" >&2;}
+                NC_PKG_CONFIG=no
+else
+	NETCDF4_CFLAGS=$pkg_cv_NETCDF4_CFLAGS
+	NETCDF4_LIBS=$pkg_cv_NETCDF4_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+                { $as_echo "$as_me:${as_lineno-$LINENO}: new libs and flags assigned to NETCDF4" >&5
+$as_echo "$as_me: new libs and flags assigned to NETCDF4" >&6;}
+                NC_PKG_CONFIG=yes
+                break;
+
+fi
+            fi
+          done
+          # still not found... manual setting of libs and flags
+          if test "${NC_PKG_CONFIG}" = "no"; then
+            # looking for netcdf.pc
+            { $as_echo "$as_me:${as_lineno-$LINENO}: looking directly for netcdf.pc in common locations." >&5
+$as_echo "$as_me: looking directly for netcdf.pc in common locations." >&6;}
+            for PKG_CONFIG_TO_FIND in netcdf-fortran.pc netcdf.pc
+            do
+            if test -d "${NETCDF4_PREFIX}"; then
+              for PKG_CONFIG_PATH in / lib lib/pkgconfig; do
+                NETCDF4_PATH_ABS=${NETCDF4_PREFIX}/${PKG_CONFIG_PATH}
+                { $as_echo "$as_me:${as_lineno-$LINENO}: search for $PKG_CONFIG_TO_FIND in: ${NETCDF4_PATH_ABS}" >&5
+$as_echo "$as_me: search for $PKG_CONFIG_TO_FIND in: ${NETCDF4_PATH_ABS}" >&6;}
+                if test -f ${NETCDF4_PATH_ABS}/${PKG_CONFIG_TO_FIND}; then
+                  PKG_CONFIG_NC="${NETCDF4_PATH_ABS}/${PKG_CONFIG_TO_FIND}"
+                  { $as_echo "$as_me:${as_lineno-$LINENO}: found $PKG_CONFIG_TO_FIND in: ${NETCDF4_PATH_ABS}" >&5
+$as_echo "$as_me: found $PKG_CONFIG_TO_FIND in: ${NETCDF4_PATH_ABS}" >&6;}
+                  break;
+                fi
+              done
+            fi
+            if test -n "${PKG_CONFIG_NC}"; then break; fi
+            done
+            # now let's use this netcdf*.pc
+            if test -n "${PKG_CONFIG_NC}"; then
+              NETCDF4_tmp_flibs=$(eval $PKG_CONFIG --libs "${PKG_CONFIG_NC}")
+              NETCDF4_CFLAGS=$(eval $PKG_CONFIG --cflags "${PKG_CONFIG_NC}")
+              includedir=$(eval $PKG_CONFIG --cflags-only-I "${PKG_CONFIG_NC}" | $SED "s/-I//1")
+              for arg in $NETCDF4_tmp_flibs ; do
+                case "$arg" in
+                  -L*) echo $NETCDF4_LDFLAGS | $GREP -e "$arg" 2>&1 >/dev/null \
+                         || NETCDF4_LDFLAGS="$arg"
+                    ;;
+                  -l*) echo $NETCDF4_LIBS | $GREP -e "$arg" 2>&1 >/dev/null \
+                         || NETCDF4_LIBS="$arg"
+                    ;;
+                esac
+              done
+              # echo "libs=$NETCDF4_LIBS"
+              # echo "cfalgs=$NETCDF4_CFLAGS"
+              # echo "glibs=$NETCDF4_FFLAGS"
+              # echo "fflags=$NETCDF4_FFLAGS"
+              # echo "includedir=$includedir"
+              if test -n "$includedir" || \
+              test -d "${includedir}" || \
+              test -n "$(ls -A ${includedir})" || \
+              test -e "${includedir}/netcdf.h"; then
+                { $as_echo "$as_me:${as_lineno-$LINENO}: new include directory found in $includedir" >&5
+$as_echo "$as_me: new include directory found in $includedir" >&6;}
+                with_netcdf4="yes"
+                { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING:
+the fortran flags (NETCDF4_FLIBS and NETCDF4_FFLAGS)
+will be taken fron the C flags because for now pkg-config
+is not set to look for them automatically.
+" >&5
+$as_echo "$as_me: WARNING:
+the fortran flags (NETCDF4_FLIBS and NETCDF4_FFLAGS)
+will be taken fron the C flags because for now pkg-config
+is not set to look for them automatically.
+" >&2;}
+                NETCDF4_FFLAGS="$NETCDF4_CFLAGS"
+                NETCDF4_FLIBS="$NETCDF4_LIBS"
+                with_netcdf4_fortran="yes"
+              else
+                with_netcdf4="no"
+                with_netcdf4_fortran="no"
+                { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING:
+pkg-config could not set a new include directory
+automatically. This feature ended in a dead point
+because include dir (which was wrongly set in nc-config)
+was not found neither in netcdf*.pc.
+Netcdf4 functionality will be turned off.
+" >&5
+$as_echo "$as_me: WARNING:
+pkg-config could not set a new include directory
+automatically. This feature ended in a dead point
+because include dir (which was wrongly set in nc-config)
+was not found neither in netcdf*.pc.
+Netcdf4 functionality will be turned off.
+" >&2;}
+              fi
+            else
+              with_netcdf4="no"
+              with_netcdf4_fortran="no"
+              { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING:
+It was impossible to find netcdf*.pc. Not having the correct include,
+bin and lib folder, the netcdf4 support will be disabled.
+" >&5
+$as_echo "$as_me: WARNING:
+It was impossible to find netcdf*.pc. Not having the correct include,
+bin and lib folder, the netcdf4 support will be disabled.
+" >&2;}
+            fi
+          fi
+        # no pkg-config command found.
+        else
+          with_netcdf4="no"
+          with_netcdf4_fortran="no"
+          { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING:
+pkg-config not found. Not having the correct include,
+bin and lib folder, the netcdf4 support will be disabled.
+" >&5
+$as_echo "$as_me: WARNING:
+pkg-config not found. Not having the correct include,
+bin and lib folder, the netcdf4 support will be disabled.
+" >&2;}
+        fi
+      else
+        { $as_echo "$as_me:${as_lineno-$LINENO}: includedir found correctly" >&5
+$as_echo "$as_me: includedir found correctly" >&6;}
+      fi
+    fi
+
+        ax_lib_netcdf4_save_CC=$CC
+    ax_lib_netcdf4_save_CPPFLAGS=$CPPFLAGS
+    ax_lib_netcdf4_save_LIBS=$LIBS
+    ax_lib_netcdf4_save_LDFLAGS=$LDFLAGS
+    CC=$NETCDF4_CC
+    CFLAGS=$NETCDF4_CFLAGS
+    LIBS=$NETCDF4_LIBS
+    LDFLAGS=$NETCDF4_LDFLAGS
+    ac_fn_c_check_header_mongrel "$LINENO" "netcdf.h" "ac_cv_header_netcdf_h" "$ac_includes_default"
 if test "x$ac_cv_header_netcdf_h" = xyes; then :
   ac_cv_netcdf4_h=yes
 else
@@ -4490,7 +5016,7 @@ else
 fi
 
 
-        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for nc_create in -lnetcdf" >&5
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for nc_create in -lnetcdf" >&5
 $as_echo_n "checking for nc_create in -lnetcdf... " >&6; }
 if ${ac_cv_lib_netcdf_nc_create+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -4532,49 +5058,16 @@ else
   ac_cv_libnetcdf4=no
 fi
 
-        if test "$ac_cv_netcdf4_h" = "no" && \
-           test "$ac_cv_libnetcdf4" = "no" ; then
-            { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Unable to compile NetCDF4 test program" >&5
+    if test "$ac_cv_netcdf4_h" = "no" && \
+       test "$ac_cv_libnetcdf4" = "no" ; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Unable to compile NetCDF4 test program" >&5
 $as_echo "$as_me: WARNING: Unable to compile NetCDF4 test program" >&2;}
-        fi
+    fi
 
-        CC=$ax_lib_netcdf4_save_CC
-        CFLAGS=$ax_lib_netcdf4_save_CFLAGS
-        LIBS=$ax_lib_netcdf4_save_LIBS
-        LDFLAGS=$ax_lib_hdf5_save_LDFLAGS
-
-
-        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for matching NetCDF4 Fortran libraries" >&5
-$as_echo_n "checking for matching NetCDF4 Fortran libraries... " >&6; }
-        NF_CONFIG="${NETCDF4_PREFIX}/bin/nf-config"
-        if test ! -f "$NF_CONFIG" || test ! -x "$NF_CONFIG"; then
-            { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-            with_netcdf4_fortran="no"
-        else
-            NETCDF_FVERSION=$(eval $NF_CONFIG --version | $AWK '{print $2}')
-            { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes (version $NETCDF_FVERSION)" >&5
-$as_echo "yes (version $NETCDF_FVERSION)" >&6; }
-            NETCDF4_FC=$(eval $NF_CONFIG --fc | $AWK '{print $1}')
-            if test "$NETCDF4_FC" = "ccache"; then
-                NETCDF4_FC=$(eval $NF_CONFIG --fc | $AWK '{print $2}')
-            fi
-                        NETCDF4_FFLAGS=$(eval $NF_CONFIG --fflags)
-
-                        NETCDF4_tmp_flibs=$(eval $NF_CONFIG --flibs)
-
-                        for arg in $NETCDF4_tmp_flibs ; do
-              case "$arg" in
-                -L*) echo $NETCDF4_LDFLAGS | $GREP -e "$arg" 2>&1 >/dev/null \
-                       || NETCDF4_LDFLAGS="$arg $NETCDF4_LDFLAGS"
-                  ;;
-                -l*) echo $NETCDF4_FLIBS | $GREP -e "$arg" 2>&1 >/dev/null \
-                       || NETCDF4_FLIBS="$arg $NETCDF4_FLIBS"
-                  ;;
-               esac
-            done
-            with_netcdf4_fortran="yes"
-        fi
+    CC=$ax_lib_netcdf4_save_CC
+    CFLAGS=$ax_lib_netcdf4_save_CFLAGS
+    LIBS=$ax_lib_netcdf4_save_LIBS
+    LDFLAGS=$ax_lib_hdf5_save_LDFLAGS
 
 
 
@@ -4587,27 +5080,50 @@ $as_echo "yes (version $NETCDF_FVERSION)" >&6; }
 
 $as_echo "#define HAVE_NETCDF4 1" >>confdefs.h
 
-    fi
+  fi
 fi
 
 if test "$with_netcdf4_fortran" = "yes"; then
+		options="$options NetCDF4"
 
+  # test whether netcdf target compiler is the same of the selected one
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether netcdf target compiler is the same compiler that has been selected" >&5
+$as_echo_n "checking whether netcdf target compiler is the same compiler that has been selected... " >&6; }
+  if test `$BASENAME "${NETCDF4_FC}"` = `$BASENAME "${FC}"`; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
 
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+    as_fn_error $? "
 
+  ATTENTION!! The target compiler used for netcdf4 is different from the
+  selected one for campari. Please consider reinstalling netcdf4 using
+  the correct --exec-prefix.
+  " "$LINENO" 5
+  fi
 
+elif test "$with_netcdf4" = "no"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING:
 
+ATTENTION!! It is not possible to avoid the use netcdf memory handling.
 
+" >&5
+$as_echo "$as_me: WARNING:
 
+ATTENTION!! It is not possible to avoid the use netcdf memory handling.
 
-
-	$as_echo "#define HAVE_NETCDF4 1" >>confdefs.h
-
-	options="$options netcdf4"
+" >&2;}
 else
-	as_fn_error $? "Unable to find NetCDF4 (version >=4.4.0), we need NetCDF4 specifically for Fortran.
-	Please be sure that command nf-config exists and it is not competing with previous versions (nc-config must have NO fortran bindings)." "$LINENO" 5
-fi
+	as_fn_error $? "
 
+Unable to find NetCDF4 and set Fortran bindings. Please be
+sure that command nc-config(nf-config for recent versions) exists
+and it is not competing with previous versions (nc-config should not
+have fortran bindings if nf-config is provided).
+" "$LINENO" 5
+fi
 
 
 
@@ -4666,6 +5182,7 @@ fi
 #    CAMPARI to install
 # ---------------------------
 if test "${with_campari}" != "no"; then
+	as_fn_error $? "ATTENTION: THIS OPTION IS STILL NOT AVAILABLE BECAUSE UNDER DEV." "$LINENO" 5
 	campari_installed="0"
 
 		echo '   Original campari library installing...   ' | sed -e's/./-/g' >&6
@@ -4843,28 +5360,44 @@ echo -e "\n" >& 6
 	echo '   Important variables' >& 6
 	echo '   Important variables   ' | sed -e's/./-/g' >&6
 
+# netcdf4
+# ---------------------------------------------------------------------------
+
+
+# AC_SUBST(NETCDF4_CC)
+# AC_SUBST(NETCDF4_CFLAGS)
+# AC_SUBST(NETCDF4_CPPFLAGS)
+
+
+
+
+
+
 if test "$with_netcdf4_fortran" = "yes"; then
+  # echo "HAVE_NETCDF4=1" >& AS_MESSAGE_FD
 	echo "NETCDF4_VERSION=$NETCDF4_VERSION" >& 6
 	echo "NETCDF4_FC=$NETCDF4_FC" >& 6
-
-	echo "NETCDF4_FLIBS=$NETCDF4_FLIBS" >& 6
 	echo "NETCDF4_FFLAGS=$NETCDF4_FFLAGS" >& 6
-	echo "" >& 6
-	echo "From R session:" >& 6
-	echo '   $1   ' | sed -e's/./-/g' >& 6
-	echo "FC=$FC" >& 6
-	echo "FCFLAGS=$FCFLAGS" >& 6
-	echo "SHLIB_FFLAGS=$SHLIB_FFLAGS" >& 6
-	echo "FPICFLAGS=$FPICFLAGS" >& 6
-	echo "SAFE_FFLAGS=$SAFE_FFLAGS" >& 6
-	echo "FLIBS=$FLIBS" >& 6
-	echo "BLAS_LIBS=$BLAS_LIBS" >& 6
-	echo "LAPACK_LIBS=$LAPACK_LIBS" >& 6
-	echo "R_PACKAGE_DIR=$R_PACKAGE_DIR" >& 6
-	echo "R_LIBRARY_DIR=$R_LIBRARY_DIR" >& 6
-	echo "R_PACKAGE_NAME=$R_PACKAGE_NAME" >& 6
-	echo "" >& 6
+	# echo "NETCDF4_FCLAGS=$NETCDF4_FCLAGS" >& AS_MESSAGE_FD # it is not set
+  echo "NETCDF4_LDFLAGS(not used)=$NETCDF4_LDFLAGS" >& 6
+  echo "NETCDF4_FLIBS=$NETCDF4_FLIBS" >& 6
+  echo '--' >& 6
 fi
+echo ' ' >& 6
+echo "From R session:" >& 6
+echo ' ' >& 6
+echo "FC=$FC" >& 6
+echo "FCFLAGS=$FCFLAGS" >& 6
+echo "SHLIB_FFLAGS=$SHLIB_FFLAGS" >& 6
+echo "FPICFLAGS=$FPICFLAGS" >& 6
+echo "SAFE_FFLAGS=$SAFE_FFLAGS" >& 6
+echo "FLIBS=$FLIBS" >& 6
+echo "BLAS_LIBS=$BLAS_LIBS" >& 6
+echo "LAPACK_LIBS=$LAPACK_LIBS" >& 6
+echo "R_PACKAGE_DIR=$R_PACKAGE_DIR" >& 6
+echo "R_LIBRARY_DIR=$R_LIBRARY_DIR" >& 6
+echo "R_PACKAGE_NAME=$R_PACKAGE_NAME" >& 6
+echo "" >& 6
 
 
 

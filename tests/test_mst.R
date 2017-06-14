@@ -161,7 +161,7 @@ sapphire_plot(sap_file = "PROGIDX_000000000021.dat", title = "ORIGINAL CAMPARI -
 # ------------------------------------------
 #            MST - R backend
 # ------------------------------------------
-options(CampaRi.data_management = "R") # netcdf handling
+options(CampaRi.data_management = "R") # R handling !!! ATTENTION MEMORY PROBLEMS ARE POSSIBLE FOR BIG DATA-SETS (USE NETCDF HANDLING)
 adjl <- mst_from_trj(trj = trj, mode = "fortran", normalize_d = FALSE, logging = F)
 ret <- gen_progindex(adjl = adjl, snap_start = 10)
 ret2 <- gen_annotation(ret, snap_start = 10)
@@ -174,18 +174,10 @@ sapphire_plot(sap_file = 'REPIX_000000000010.dat', title = "CAMPARI WRAPPER - MS
 #            MST - Netcdf backend
 # ------------------------------------------
 options(CampaRi.data_management = "netcdf") # netcdf handling
-mst_from_trj(trj = trj, mode = "fortran", normalize_d = T, logging = F)
+mst_from_trj(trj = trj[1:30000,], mode = "fortran", normalize_d = T, logging = F, distance = 1)
 ret <- gen_progindex(nsnaps = nrow(trj), snap_start = 10)
 ret2 <- gen_annotation(ret, snap_start = 10)
 sapphire_plot(sap_file = 'REPIX_000000000010.dat', title = "CAMPARI WRAPPER - MST", timeline = T, ann_trace = F)
-
-
-
-
-
-
-
-
 
 
 # recompute the progress index from PROGIDX/REPIX matrix output

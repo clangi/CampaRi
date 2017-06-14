@@ -14,7 +14,6 @@ OBJECTS=$(SOURCES:.f90=.o)
 # Now the compiling definitions
 all: $(SHLIB)
 
-
 #$(OBJECTS): $(SOURCES)
 #	$(NETCDF4_FC) -o $@ $(MY_PKG_FCFLAGS) -c $^ $(MY_PKG_LIBS)
 
@@ -30,4 +29,4 @@ main_clu_adjl_mst_dumping.o: main_clu_adjl_mst_dumping.f90
 
 # This works only if the names are assigned differently!
 PKG_LIBS= $(MY_PKG_LIBS)
-PKG_FCFLAGS= $(MY_PKG_FCFLAGS) 
+PKG_FCFLAGS= $(MY_PKG_FCFLAGS)
