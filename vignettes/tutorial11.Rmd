@@ -10,6 +10,7 @@ vignette: >
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_knit$set(progress = FALSE)
+knitr::opts_knit$set(root.dir="out_to_del/")
 ```
 
 
@@ -71,7 +72,7 @@ Using run_campari() as follows, it is possible to call the original CAMPARI exec
 run_campari(FMCSC_SEQFILE="nbu.in", # you must have it defined according to CAMPARI's rules
             # FMCSC_BASENAME="NBU", # lets try the base_name option
             base_name = "NBU", print_status = F, # it will take 55 s in background ~
-            PARAMETERS="olsaal.prm", # if this variable it is not supplied will be automatically assigned to <full path to folder>/campari/params/abs3.2_opls.prm
+            PARAMETERS="oplsaal.prm", # if this variable it is not supplied will be automatically assigned to <full path to folder>/campari/params/abs3.2_opls.prm
             FMCSC_SC_IPP=0.0,
             FMCSC_SC_BONDED_T=1.0,
             FMCSC_DYNAMICS=3,
@@ -348,13 +349,41 @@ The cost of the algorithm scales roughly linearly with the number of search atte
 Rscript plotOneShot.R
 ```
 
-Anyhow we advise to use the function sapphire_plot() which come with the CampaRi package because it is built around the ggplot2.
+Anyhow we advise to use the function sapphire_plot() which come with the CampaRi package because it is built around the ggplot2 and it is easy extensible using its grammar.
 
+```{r, eval=FALSE}
+sapphire_plot('PROGIDX_000000000001.dat') # simple way
+sapphire_plot('PROGIDX_000000000001.dat', timeline = TRUE) # with the timeline at the bottom
+sapphire_plot('PROGIDX_000000000001.dat', local_cut = FALSE) # without the local cut
 
+# lets create the annotation (using NBU.fyc) and use it in the matrix like format (layersxn_snapshots) in sapphire_plot()
+trj_fyc <- read.table("NBU.fyc")[,-1]
+prog_index_table <- read.table('PROGIDX_000000000001.dat')[,3]
+ann <- t((trj_fyc[prog_index_table, ] %% 360 < 120) + (trj_fyc[prog_index_table, ] %% 360 < 240) + 1)
+# lets plot it!!!
+sapphire_plot('PROGIDX_000000000001.dat', local_cut = FALSE, ann_trace = ann) # with ANNOTATION!!
 
+# the advanced option -> adding layers to the gg object
+gg <- sapphire_plot('PROGIDX_000000000001.dat', return_plot = TRUE, local_cut = FALSE, ann_trace = ann) # without the local cut
+# add theme classic and text
+gg + 
+  theme_classic() + 
+  annotate("text", x = rep(-100, 3), y = c(7, 8, 9), label = c("CCCH", "HCCC", "CCCC"))
+```
 
+If you used the Rscript option, then the plot will be saved to "oneShot.eps" and should look similar to Fig. 2 in the reference paper for this method. Anyhow, there should be 27 distinct non-overlapping basins. The output is a combination of cut-based and structural annotations. It would therefore be interesting to obtain a direct comparison to a cut-based pseudo free energy profile. For this, add the following variables (R code):
 
+```{r, eval=FALSE}
+# lets copy the string from the original tutorial
+copied_string <- "
+FMCSC_CPROGINDSTART -2 # consistently use largest cluster or representative thereof for reference in profiles
+FMCSC_CMSMCFEP 1 # request MFPT-based cFEP
+FMCSC_CRADIUS 20.0 # threshold radius (in degrees) of clusters
+FMCSC_CPROGINDRMAX 1500 # number of search attempts"
+keywords_from_keyfile(copied_string, return_string_of_arguments = T, key_file_is_keywords = T)
+run_campari(data_file = "NBU.dcd", key_file_input = "nbu_advanced.key", 
+            FMCSC_CPROGINDSTART=-2, FMCSC_CMSMCFEP=1, FMCSC_CRADIUS=20, FMCSC_CPROGINDRMAX=1500)
+```
 
-
-
+This will create a progress index output file as before, but using a different starting snapshot (reflected in the name of the file). The relevant information can be obtained from log output. It will also create an output file called MFPT_FWD_CFEP_00000001.dat, and a plot of columns 3 against 5 would provide output comparable to the annotation we studied before. It is left as an exercise to modify or create plotting commands preparing an explicit comparison of the data (refer to publications on progress index and clustering for details). 
 

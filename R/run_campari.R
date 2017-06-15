@@ -339,8 +339,8 @@ for details.
     suppressWarnings(system(paste0(campari_main_exe, " -k ", key_f, " >& ", log_f, "&")))
   }else{
     cat('Direct console printing disabled. Please check', log_f, ' file for real time logging (At the end it will be tailed).')
-    suppressWarnings(system(paste0(campari_main_exe, " -k ", key_f, " >& tee ", log_f)))
-    suppressWarnings(system(paste0("tail -n1 ", log_f)))
+    suppressWarnings(system(paste0(campari_main_exe, " -k ", key_f, " >& ", log_f)))
+    suppressWarnings(system(paste0("tail -n8 ", log_f)))
     if(grepl(x = suppressWarnings(system(paste0("tail -n1 ", log_f), intern = TRUE)), pattern = "STOP"))
       stop('
 ===============

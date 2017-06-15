@@ -5084,7 +5084,7 @@ $as_echo "#define HAVE_NETCDF4 1" >>confdefs.h
 fi
 
 if test "$with_netcdf4_fortran" = "yes"; then
-		options="$options NetCDF4"
+		options="$options netcdf4"
 
   # test whether netcdf target compiler is the same of the selected one
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether netcdf target compiler is the same compiler that has been selected" >&5
