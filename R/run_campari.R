@@ -235,7 +235,7 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   
   
   # standard exe
-  campari_exe <- suppressWarnings(system(paste0('which ',base_exe), intern = T))
+  campari_exe <- suppressWarnings(system(paste0('which ', base_exe), intern = T))
   if(!multi_threading && !mpi && length(campari_exe) == 0) 
     stop('No campari (or camp_ncminer) executable found between the standard commands. Please install the library and alias the bin executables.')
   else if(!multi_threading && !mpi)
@@ -341,7 +341,7 @@ for details.
     cat('Direct console printing disabled. Please check', log_f, ' file for real time logging (At the end it will be tailed).')
     suppressWarnings(system(paste0(campari_main_exe, " -k ", key_f, " >& tee ", log_f)))
     suppressWarnings(system(paste0("tail -n1 ", log_f)))
-    if(grepl(x = suppressWarnings(system(paste0("tail -n8 ", log_f), intern = TRUE)), pattern = "STOP"))
+    if(grepl(x = suppressWarnings(system(paste0("tail -n1 ", log_f), intern = TRUE)), pattern = "STOP"))
       stop('
 ===============
 CAMPARI CRASHED
