@@ -6,7 +6,8 @@
 \usage{
 run_campari(trj = NULL, base_name = "base_name", data_file = NULL,
   nsnaps = NULL, multi_threading = FALSE, mpi = FALSE,
-  print_status = TRUE, key_file_input = NULL, ...)
+  print_status = TRUE, run_in_background = FALSE, key_file_input = NULL,
+  ...)
 }
 \arguments{
 \item{trj}{Trajectory to be analysed by campari. It must be in the format (snapshots per variables). It will be written as an .tsv in the current working directory.}
@@ -17,9 +18,13 @@ run_campari(trj = NULL, base_name = "base_name", data_file = NULL,
 
 \item{nsnaps}{Number of snapshots in the trajectory file. If the data_file format is not ASCII this variable must be set to the number of snapshots in the trajectory.}
 
-\item{multi_threading}{Default to FALSE. It will run campari_threads with openmp directives if installed.}
+\item{multi_threading}{Default to \code{FALSE}. It will run campari_threads with openmp directives if installed.}
 
-\item{mpi}{Default to FALSE. It will run campari_mpi with installed mpi-compiler. Please consider also campari_threads_mpi (also multi_threading=TRUE).}
+\item{mpi}{Default to \code{FALSE}. It will run campari_mpi with installed mpi-compiler. Please consider also campari_threads_mpi (also multi_threading=TRUE).}
+
+\item{print_status}{Default to \code{TRUE}. It will print CAMPARI output on the R console or not otherwise.}
+
+\item{run_in_background}{Default to \code{FALSE}. It will run CAMPARI in background. This option will disable print_status automatically.}
 
 \item{key_file_input}{If you provide an already formatted keyfile to this argument, every variable defined in the provided keyfile will be overriden by the ones in this function and CAMPARI will 
 be run after the generation of a new keyfile. Please note that in the case of multivariable keywords the algorithm will keep only the first value. Consider using \code{\link{keywords_from_keyfile}} function.}

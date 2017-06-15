@@ -11,8 +11,10 @@
 #' @param base_name This string can be used for the input/output files, such as (\code{base_name.key}, \code{base_name.in}) and others.
 #' @param data_file Input file (e.g. \code{trajectory.dcd}) location. This or \code{trj} must be set.
 #' @param nsnaps Number of snapshots in the trajectory file. If the data_file format is not ASCII this variable must be set to the number of snapshots in the trajectory.
-#' @param multi_threading Default to FALSE. It will run campari_threads with openmp directives if installed.
-#' @param mpi Default to FALSE. It will run campari_mpi with installed mpi-compiler. Please consider also campari_threads_mpi (also multi_threading=TRUE).
+#' @param multi_threading Default to \code{FALSE}. It will run campari_threads with openmp directives if installed.
+#' @param mpi Default to \code{FALSE}. It will run campari_mpi with installed mpi-compiler. Please consider also campari_threads_mpi (also multi_threading=TRUE).
+#' @param print_status Default to \code{TRUE}. It will print CAMPARI output on the R console or not otherwise.
+#' @param run_in_background Default to \code{FALSE}. It will run CAMPARI in background. This option will disable print_status automatically.
 #' @param key_file_input If you provide an already formatted keyfile to this argument, every variable defined in the provided keyfile will be overriden by the ones in this function and CAMPARI will 
 #' be run after the generation of a new keyfile. Please note that in the case of multivariable keywords the algorithm will keep only the first value. Consider using \code{\link{keywords_from_keyfile}} function.
 #' @param ... Analysis variables (similarly to \code{\link{mst_from_trj}}). You can check all of these in the original documentation (\url{http://campari.sourceforge.net/documentation.html}). 
@@ -32,7 +34,8 @@
 #' 
 
 run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=NULL,
-                        multi_threading=FALSE, mpi=FALSE, print_status=TRUE, key_file_input=NULL, ...){
+                        multi_threading=FALSE, mpi=FALSE, print_status=TRUE, run_in_background=FALSE,
+                        key_file_input=NULL, ...){
   
   # -----------------------
   #        CHECKS  
@@ -62,6 +65,13 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
     stop('mpi must be a logical.')
   if(!is.logical(print_status))
     stop('print_status must be a logical.')
+  if(!is.logical(run_in_background))
+    stop('run_in_background must be a logical.')
+  if(run_in_background){
+    warning('run_in_background option manually forced print_status to FALSE')
+    print_status <- FALSE
+  }
+  
   if(!is.null(nsnaps) && (!is.numeric(nsnaps) || nsnaps%%1 != 0))
     stop('nsnaps must be an integer.')
   if(!is.null(data_file) && (!is.character(data_file) || length(nchar(data_file)) > 1))
@@ -266,10 +276,20 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   
   # -----------------------
   # must exist checks - PARAMETERS
-  if("PARAMETERS" %in% args_names)
+  if("PARAMETERS" %in% args_names){
     paramiters <- args_list[["PARAMETERS"]]
-  else
-    paramiters <- paste0(camp_home,"/params/abs3.2_opls.prm")  # file defining system energies. Irrelevant fuer blosse Analyse.
+    if(grepl(pattern = "/", paramiters)){
+      message('Found PARAMETERS variable with full path to the parameter file. Please use simply the filename to look directly into the exe directory.')
+    }else{
+      message('Inserted only filename in the PARAMETERS variable. This file will be searched in the exe directory. To use current directory please add "./" in front of the filename.')      
+      paramiters <- paste0(camp_home, "params/", paramiters)
+    }
+  }else{
+    paramiters <- paste0(camp_home,"params/abs3.2_opls.prm")  # file defining system energies. Irrelevant fuer blosse Analyse.
+    warning('PARAMETERS variable not found. It MUST be supplied, therefore we automatically assign it to: ', paramiters)
+    cat('PARAMITERS variable AUTOMATICALLY assigned to', paramiters, '. ATTENTION! This file should be correctly assigned to avoid spurious behaviours. \n')
+  }
+  cat('Using the following specific PARAMETERS:', paramiters, '\n')
   
   if(!file.exists(paramiters)) stop('Parameter file not found in: ', paramiters)
   args_list <- c(args_list, PARAMETERS=paramiters)
@@ -303,11 +323,31 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   cat('-------------------------------------------------------\n')
   cat('                         CAMPARI                       \n')
   cat('-------------------------------------------------------\n')
+  cat('If not in bakground mode, an error in CAMPARI will be reflected in R.')
   if(print_status){
     suppressWarnings(system(paste0(campari_main_exe, " -k ", key_f, " | tee ", log_f)))
-  }else{
+    if(grepl(x = suppressWarnings(system(paste0("tail -n1 ", log_f), intern = TRUE)), pattern = "STOP"))
+      stop('
+===============
+CAMPARI CRASHED
+===============
+Check the log 
+for details.
+           ')
+  }else if(run_in_background){
     cat('Direct console printing disabled (it will run in background). Please check', log_f, ' file for real time logging.')
     suppressWarnings(system(paste0(campari_main_exe, " -k ", key_f, " >& ", log_f, "&")))
-    
+  }else{
+    cat('Direct console printing disabled. Please check', log_f, ' file for real time logging (At the end it will be tailed).')
+    suppressWarnings(system(paste0(campari_main_exe, " -k ", key_f, " >& tee ", log_f)))
+    suppressWarnings(system(paste0("tail -n1 ", log_f)))
+    if(grepl(x = suppressWarnings(system(paste0("tail -n8 ", log_f), intern = TRUE)), pattern = "STOP"))
+      stop('
+===============
+CAMPARI CRASHED
+===============
+Check the log 
+for details.
+           ')
   }
 }
