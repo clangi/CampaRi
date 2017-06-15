@@ -323,16 +323,15 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   cat('-------------------------------------------------------\n')
   cat('                         CAMPARI                       \n')
   cat('-------------------------------------------------------\n')
-  cat('If not in bakground mode, an error in CAMPARI will be reflected in R.')
+  cat('If not in bakground mode, an error in CAMPARI will be reflected in R.\n')
   if(print_status){
     suppressWarnings(system(paste0(campari_main_exe, " -k ", key_f, " | tee ", log_f)))
-    if(grepl(x = suppressWarnings(system(paste0("tail -n1 ", log_f), intern = TRUE)), pattern = "STOP"))
+    if(grepl(x = suppressWarnings(system(paste0("tail -n1 ", log_f), intern = TRUE)), pattern = "STOP") || 
+       grepl(x = suppressWarnings(system(paste0("tail -n8 ", log_f), intern = TRUE)), pattern = "CAMPARI CRASHED"))
       stop('
-===============
-CAMPARI CRASHED
-===============
-Check the log 
-for details.
+============================================
+CAMPARI CRASHED - Check the log for details.
+============================================
            ')
   }else if(run_in_background){
     cat('Direct console printing disabled (it will run in background). Please check', log_f, ' file for real time logging.')
@@ -340,14 +339,14 @@ for details.
   }else{
     cat('Direct console printing disabled. Please check', log_f, ' file for real time logging (At the end it will be tailed).')
     suppressWarnings(system(paste0(campari_main_exe, " -k ", key_f, " >& ", log_f)))
-    suppressWarnings(system(paste0("tail -n8 ", log_f)))
-    if(grepl(x = suppressWarnings(system(paste0("tail -n1 ", log_f), intern = TRUE)), pattern = "STOP"))
+    cat('\n')
+    suppressWarnings(system(paste0("tail -n7 ", log_f)))
+    if(grepl(x = suppressWarnings(system(paste0("tail -n1 ", log_f), intern = TRUE)), pattern = "STOP") ||
+       grepl(x = suppressWarnings(system(paste0("tail -n8 ", log_f), intern = TRUE)), pattern = "CAMPARI CRASHED"))
       stop('
-===============
-CAMPARI CRASHED
-===============
-Check the log 
-for details.
+============================================
+CAMPARI CRASHED - Check the log for details.
+============================================
            ')
   }
 }
