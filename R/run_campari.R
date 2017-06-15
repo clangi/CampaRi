@@ -94,8 +94,8 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   
   # checking existance of files
   # if(file.exists(seq_in)) warning(seq_in, " is present in the working directory. It will be overwritten.")
-  if(file.exists(log_f)) warning(log_f, " is present in the working directory. It will be overwritten.")
-  if(file.exists(key_f)) warning(key_f, " is present in the working directory. It will be overwritten.")
+  if(file.exists(log_f)) cat(log_f, " is present in the working directory. It will be overwritten.\n")
+  if(file.exists(key_f)) cat(key_f, " is present in the working directory. It will be overwritten.\n")
   
   
   # -----------------------
@@ -320,33 +320,33 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   # -----------------------
   # final run of campari
   cat('Starting campari... \n')
-  cat('-------------------------------------------------------\n')
-  cat('                         CAMPARI                       \n')
-  cat('-------------------------------------------------------\n')
+  cat(' --------------------------------------------------------------------------\n')
+  cat('                                    CAMPARI                                \n')
+  cat(' --------------------------------------------------------------------------\n')
   cat('If not in bakground mode, an error in CAMPARI will be reflected in R.\n')
   if(print_status){
     suppressWarnings(system(paste0(campari_main_exe, " -k ", key_f, " | tee ", log_f)))
     if(grepl(x = suppressWarnings(system(paste0("tail -n1 ", log_f), intern = TRUE)), pattern = "STOP") || 
        grepl(x = suppressWarnings(system(paste0("tail -n8 ", log_f), intern = TRUE)), pattern = "CAMPARI CRASHED"))
       stop('
-============================================
-CAMPARI CRASHED - Check the log for details.
-============================================
+   ============================================
+   CAMPARI CRASHED - Check the log for details.
+   ============================================
            ')
   }else if(run_in_background){
-    cat('Direct console printing disabled (it will run in background). Please check', log_f, ' file for real time logging.')
+    cat('Direct console printing disabled (it will run in background). Please check', log_f, ' file for real time logging.\n')
     suppressWarnings(system(paste0(campari_main_exe, " -k ", key_f, " >& ", log_f, "&")))
   }else{
-    cat('Direct console printing disabled. Please check', log_f, ' file for real time logging (At the end it will be tailed).')
+    cat('Direct console printing disabled. Please check', log_f, ' file for real time logging (at the end it will be tailed).\n')
     suppressWarnings(system(paste0(campari_main_exe, " -k ", key_f, " >& ", log_f)))
     cat('\n')
     suppressWarnings(system(paste0("tail -n7 ", log_f)))
     if(grepl(x = suppressWarnings(system(paste0("tail -n1 ", log_f), intern = TRUE)), pattern = "STOP") ||
        grepl(x = suppressWarnings(system(paste0("tail -n8 ", log_f), intern = TRUE)), pattern = "CAMPARI CRASHED"))
       stop('
-============================================
-CAMPARI CRASHED - Check the log for details.
-============================================
+   ============================================
+   CAMPARI CRASHED - Check the log for details.
+   ============================================
            ')
   }
 }

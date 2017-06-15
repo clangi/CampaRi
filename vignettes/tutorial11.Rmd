@@ -95,17 +95,17 @@ run_campari(FMCSC_SEQFILE="nbu.in", # you must have it defined according to CAMP
             FMCSC_RSTOUT=20000000
 )
 ```
-__NB__: if PARAMETERS is not assigned to olsaal.prm, in this case will be automatically defined using abs3.2_opls.prm with the following error/warning: "No applicable assignments for torsional angle potentials found in parameter file <full path to folder>/campari/params/abs3.2_opls.prm". In this case this will lead to unconsistent results in the future analysis of metastable basins.
+__NB__: if PARAMETERS is not assigned to oplsaal.prm, in this case will be automatically defined using abs3.2_opls.prm with the following error/warning: "No applicable assignments for torsional angle potentials found in parameter file <full path to folder>/campari/params/abs3.2_opls.prm". In this case this will lead to unconsistent results in the future analysis of metastable basins.
 
 __NB2__: here the PARAMETERS var can be the full path or only the parameter file name (e.g. "olsaal.prm"). In this second case the executable folder will be used to look for the provided parameter file.
 
-Please note that the above calculations were possible thanks to the possibility to automatically set a PARAMETERS file from the campari exe. Let's rename some of the results:
+Let's rename some of the results:
 ```{bash, eval=FALSE}
 mv NBU_traj.dcd NBU.dcd
 mv FYC.dat NBU.fyc
 ```
 
-This generates a dcd-trajectory of 50ns length with structures saved every 0.5ps (100000 snapshots). The degrees of freedom are the central torsion angle (C-C-C-C) and the two methyl spins (all-atom representation), which are all independent of one another on account of the Hamiltonian chosen (purely torsional potentials). The simulation itself should take no longer than 5-15 minutes on a modern desktop machine. Aside from the trajectory ("NBU.dcd"), an auxiliary output file is produced listing the actual values for the three torsional angles for every trajectory snapshot in columns 3-5 (renamed to NBU.fyc).
+This generates a dcd-trajectory of 50ns length with structures saved every 0.5ps (100000 snapshots). The degrees of freedom are the central torsion angle (C-C-C-C) and the two methyl spins (all-atom representation), which are all independent of one another on account of the Hamiltonian chosen (purely torsional potentials). The simulation itself should take no longer than 5-15 minutes on a modern desktop machine. Aside from the trajectory ("NBU.dcd"), an auxiliary output file is produced listing the actual values for the three torsional angles for every trajectory snapshot in columns 2-3-4 (renamed to NBU.fyc).
 
 
 
@@ -179,12 +179,12 @@ Anyhow we advise to use the more practical and complete function show_clustering
 # use the following commad on the LOGFILE and FYCFILE to extract the clustering summary 
 show_clustering_summary(log_file = "nbu_clustering.log", fyc_file = "NBU.fyc")
 ```
-This identifies the representative snapshots for the 9 largest clusters (clusters are ordered by decreasing size) and finds the corresponding values for the three torsion angles in NBU.fyc printing them in user-friendly fashion. The above command should (at least in most cases) indeed yield the expected result, i.e., values should be close to the energetic minima (-60°, 60° and 180°), and the "C1C2C3C4" values should all be close to 180° (note that torsion angles are defined over the interval [-180°180°], which implies that values close to either -180° or 180° are technically adjacent). The tree-based algorithm is particularly appropriate here, because it effectively chooses cluster centroids based on local data density (similar to what a hierarchical scheme would do). The partitioning inherent to the system should also be apparent in the cluster sizes, i.e., tutorial11.log should show relatively clearly that the first 9 clusters are significantly larger than the rest. You should consider investigating whether the mapping between largest clusters and expected states continues to hold even for those states where the central torsion is not in anti (it usually works for most if not all of the 27 largest clusters).
+This identifies the representative snapshots for the 10 largest clusters (clusters are ordered by decreasing size) and finds the corresponding values for the three torsion angles in NBU.fyc printing them in user-friendly fashion. The above command should (at least in most cases) indeed yield the expected result, i.e., values should be close to the energetic minima (-60°, 60° and 180°), and the "C1C2C3C4" values should all be close to 180° (note that torsion angles are defined over the interval [-180°180°], which implies that values close to either -180° or 180° are technically adjacent). The tree-based algorithm is particularly appropriate here, because it effectively chooses cluster centroids based on local data density (similar to what a hierarchical scheme would do). The partitioning inherent to the system should also be apparent in the cluster sizes, i.e., nbu_clustering.log should show relatively clearly that the first 10 clusters are significantly larger than the rest. You should consider investigating whether the mapping between largest clusters and expected states continues to hold even for those states where the central torsion is not in anti (it usually works for most if not all of the 27 largest clusters).
 This concludes a first structural clustering on a toy system yielding interpretable results.
 
 
 ## Step 3 - Additional output
-The analysis run in the previous step should have produced some additional output files, specifically a VMD visualization script, which will not be discussed further here, and two other files, viz., STRUCT_CLUSTERING.clu and STRUCT_CLUSTERING.graphml. The former is an annotated trajectory specifying for each snapshot the number of the cluster it belongs to (numbering as in tutorial11.log). In other words, it provides a coarse-grained mesostate trajectory, from which a network model can be constructed. Such a network model or graph is indeed what is provided in the latter file, and you can load and visualize it like any other graph in .graphml format (using packages such as Gephi or Visone). Based on these output files, you could perform a Markov model analysis (e.g., using EMMA or Wordom) or directly compute cut-based free energy profiles within CAMPARI.
+The analysis run in the previous step should have produced some additional output files, specifically a VMD visualization script, which will not be discussed further here, and two other files, viz., STRUCT_CLUSTERING.clu and STRUCT_CLUSTERING.graphml. The former is an annotated trajectory specifying for each snapshot the number of the cluster it belongs to (numbering as in nbu_clustering.log). In other words, it provides a coarse-grained mesostate trajectory, from which a network model can be constructed. Such a network model or graph is indeed what is provided in the latter file, and you can load and visualize it like any other graph in .graphml format (using packages such as Gephi or Visone). Based on these output files, you could perform a Markov model analysis (e.g., using EMMA or Wordom) or directly compute cut-based free energy profiles within CAMPARI.
 
 
 ## Step 4 - Tuning options and choices for clustering
@@ -239,7 +239,7 @@ For more information check [Tutorial 11: Structural Clustering and Related Metho
 In the following code we used the feature of overriding the variable inserted. If not specified accordingly, the function variables (e.g. FMCSC_CDISTANCE=5) overwrite the ones readed from keyfile. Also if you duplicate a function argument only the last one will be used. The R code would be:
 
 ```{r, eval=FALSE}
-un_campari(data_file = "NBU.dcd", key_file_input = "nbu_clustering.key", base_name="nbu_clustering_rmsd",
+run_campari(data_file = "NBU.dcd", key_file_input = "nbu_clustering.key", base_name="nbu_clustering_rmsd",
             FMCSC_CDISTANCE=5, #RMSD with pairwise alignment
             FMCSC_CFILE="carbons.lst", # you have to write it with 1,2,3,4 (see yourcalc_END.pdb for numbering scheme)
             FMCSC_CRADIUS=0.02, # changing thresholds because we changed the distance
@@ -254,7 +254,7 @@ show_clustering_summary(log_file = "nbu_clustering_rmsd.log", fyc_file = "NBU.fy
 
 Note that the output files from Step 2 are overwritten. Because we selected the carbon atoms only for the RMSD computation, we do not expect to observe the same state partitioning as before. Specifically, the information on the methyl groups is lost (cluster centroid positions for these two torsion angles should approximately appear as if drawn randomly from the underlying distribution).
 
-An additional clustering method offered by CAMPARI is hierarchical clustering. Copy "clustering.key" to "hierachicalClustering.key" and change the clustering specific keywords as the following (already R code). Note that the keywords have been copied directly in a string var (copied_string) from the original tutorial ([Tutorial 11](campari.sourceforge.net/tutorial11.html)) in order to use the handy option key_file_is_keyword.
+An additional clustering method offered by CAMPARI is hierarchical clustering. Change the clustering specific keywords as the following (already R code). Note that the keywords have been copied directly in a string var (copied_string) from the original tutorial ([Tutorial 11](campari.sourceforge.net/tutorial11.html)) in order to use the handy option key_file_is_keyword.
 ```{r, eval=FALSE}
 # hierarchical clustering (as there are some more keywords to copy -> keywords_from_keyfile using key_file_is_keywords)
 copied_string <- "FMCSC_CMODE 3 # use hierarchical clustering
@@ -276,7 +276,7 @@ run_campari(data_file = "NBU.dcd", key_file_input = "nbu_clustering.key", base_n
 # remember that all this runs work in append. So only the last element assigned counts
 ```
 
-Using R in this way permits you some enhancement in flexibility, e.g. you do not have to remove the FMCSC_CFILE variable. In theory, hierarchical clustering requires all the N(N-1)/2 pairwise distances. To speed up the algorithm, the following heuristics are used by CAMPARI. First the data are preprocessed by leader clustering with cluster size set by FMCSC_CMAXRAD. Based on that, truncated neighbor lists are computed with a truncation cutoff set by FMCSC_CCUTOFF. This cutoff has to be at least twice as large as the target threshold radius for the clustering (→ FMCSC_CRADIUS). During the last stage of the algorithm the chosen linkage criterion is also a critical setting for efficiency (maximum linkage is very slow). Since the algorithm is not scalable, we subsample the trajectory and set FMCSC_CCOLLECT to 10 (use only every 10th snapshot).
+Using R in this way permits you some enhancement in flexibility, e.g. you do not have to remove the FMCSC_CFILE variable. In theory, hierarchical clustering requires all the N(N-1)/2 pairwise distances. To speed up the algorithm, the following heuristics are used by CAMPARI. First the data are preprocessed by leader clustering with cluster size set by FMCSC_CMAXRAD. Based on that, truncated neighbor lists are computed with a truncation cutoff set by FMCSC_CCUTOFF. This cutoff has to be at least twice as large as the target threshold radius for the clustering (FMCSC_CRADIUS). During the last stage of the algorithm the chosen linkage criterion is also a critical setting for efficiency (maximum linkage is very slow). Since the algorithm is not scalable, we subsample the trajectory and set FMCSC_CCOLLECT to 10 (use only every 10th snapshot).
 
 As with the tree-based algorithm discussed in Step 2, a cluster summary is written to the log file and the same additional output files are produced (STRUCT_CLUSTERING.vmd, STRUCT_CLUSTERING.clu, and STRUCT_CLUSTERING.graphml). There may be an additional output file (FRAMES_NBL.nc) that is a representation of the mutual neighbor relationships amongst snapshots (binary). You should perform the same tests as above to verify that the clustering is meaningful:
 
@@ -340,7 +340,7 @@ For more information check [Tutorial 11: Structural Clustering and Related Metho
 Here, we select the method of Blöchliger et al. via keyword FMCSC_CMODE. Details are provided in the corresponding documentation and in the reference publication. As in Step 2, we pick all the dihedral angles to represent the system. We use the fast approximate algorithm (FMCSC_CPROGINDMODE), which relies, for efficiency only, on preorganizing the data via the tree-like algorithm of Vitalis and Caflisch discussed in Step 2. We use the same settings for this auxiliary clustering. In addition, two keywords have to be specified. FMCSC_CPROGINDRMAX sets the number of search attempts for the approximate algorithm (a higher value gives more accurate results), and FMCSC_CPROGINDSTART specifies the starting snapshot for the resulting profile. After pasting all the above keywords into a key-file "nbu_advanced.key", you can run:
 
 ```{r, eval=FALSE}
-run_campari(data_file = "NBU.dcd", key_file_input = "nbu_advanced.key") # , FMCSC_CPROGINDRMAX=10000
+run_campari(data_file = "NBU.dcd", key_file_input = "nbu_advanced.key", base_name = "nbu_advanced") # , FMCSC_CPROGINDRMAX=10000
 ```
 
 The cost of the algorithm scales roughly linearly with the number of search attempts. Given the relatively high value, the generation of the approximate minimum spanning tree may take a few minutes. The resulting output is collected in the file PROGIDX_000000000001.dat and plotting the fourth column will give you the desired profile. You can use this [R-script](http://campari.sourceforge.net/examples/tutorial11/plotOneShot.R) to plot the output with some structural annotation by running:
@@ -353,7 +353,7 @@ Anyhow we advise to use the function sapphire_plot() which come with the CampaRi
 
 ```{r, eval=FALSE}
 sapphire_plot('PROGIDX_000000000001.dat') # simple way
-sapphire_plot('PROGIDX_000000000001.dat', timeline = TRUE) # with the timeline at the bottom
+sapphire_plot('PROGIDX_000000000001.dat', timeline = TRUE) # with the timeline at the bottom # the dot size can be reduced internally
 sapphire_plot('PROGIDX_000000000001.dat', local_cut = FALSE) # without the local cut
 
 # lets create the annotation (using NBU.fyc) and use it in the matrix like format (layersxn_snapshots) in sapphire_plot()
@@ -367,8 +367,13 @@ sapphire_plot('PROGIDX_000000000001.dat', local_cut = FALSE, ann_trace = ann) # 
 gg <- sapphire_plot('PROGIDX_000000000001.dat', return_plot = TRUE, local_cut = FALSE, ann_trace = ann) # without the local cut
 # add theme classic and text
 gg + 
-  theme_classic() + 
-  annotate("text", x = rep(-100, 3), y = c(7, 8, 9), label = c("CCCH", "HCCC", "CCCC"))
+  ggplot2::theme_classic() + 
+  ggplot2::annotate("text", x = rep(4000, 3), y = c(8.3, 8.80, 9.3), label = c("CCCH", "HCCC", "CCCC"))
+```
+With the sapphire_plot() function we can get a SAPPHIRE plot such as the following:
+```{r, eval=TRUE}
+img <- png::readPNG("../Rplot.png")
+grid::grid.raster(image = img)
 ```
 
 If you used the Rscript option, then the plot will be saved to "oneShot.eps" and should look similar to Fig. 2 in the reference paper for this method. Anyhow, there should be 27 distinct non-overlapping basins. The output is a combination of cut-based and structural annotations. It would therefore be interesting to obtain a direct comparison to a cut-based pseudo free energy profile. For this, add the following variables (R code):
