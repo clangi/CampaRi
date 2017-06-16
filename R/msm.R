@@ -80,7 +80,7 @@ msm <-  function(seq, lag=1, tm.opt=c("symm", "mle"), eig.plot=FALSE, CK.test=FA
             seq.st <- data.bas[,]
         }
     } else if(!is.matrix(seq)) {
-        seq.st <- seq
+        seq.st <- unlist(seq)
     } else if(nrow(seq)==ncol(seq)) {
         cnt.mode <- TRUE
     } else stop("Input \"seq\" not recognized")
@@ -184,10 +184,10 @@ msm <-  function(seq, lag=1, tm.opt=c("symm", "mle"), eig.plot=FALSE, CK.test=FA
 ##############################################################################
     ## Eigenvalues and stationary distibution
     tmp <- eigen(t(tm)) ## Left eigenvectors
-    if (!(max(tmp$values)<1.01 & max(tmp$values)>0.99)) stop("ERROR in MLE Eigenvalues")
+    if (!(max(Re(tmp$values))<1.01 & max(Re(tmp$values))>0.99)) stop("ERROR in MLE Eigenvalues")
     eig <- Re(sort(tmp$values,decreasing=TRUE))
-    eig.vec <- tmp$vectors[,order(Re(tmp$values), decreasing=TRUE)]
-    stat <- tmp$vectors[,which.max(tmp$values)]/sum(tmp$vectors[,which.max(tmp$values)])
+    eig.vec <- Re(tmp$vectors[,order(Re(tmp$values), decreasing=TRUE)])
+    stat <- Re(tmp$vectors[,which.max(Re(tmp$values))])/Re(sum(tmp$vectors[,which.max(Re(tmp$values))]))
     if (sum(stat)<0) stat <- -stat
 
 ##############################################################################
