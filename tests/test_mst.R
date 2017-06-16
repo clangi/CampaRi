@@ -144,7 +144,7 @@ library(bio3d)
 # trj <- read.dcd("nbu_traj.dcd")
 
 # to use ncminer we need to load fyc directly (dihedral angles handling not implemented)
-trj <- fread("FYC.dat", header = F, skip = 1)
+trj <- fread("vignettes/out_to_del/NBU.fyc", header = F, skip = 1)
 head(trj)
 fread("head -n 1 nbu.fyc") # head of it
 trj <- as.data.frame(trj[,-1])
@@ -210,6 +210,5 @@ sapphire_plot(sap_file = 'REPIX_000000001000.dat',
               timeline = F,ann_trace = F)
 
 #             -----------------
-# DELETING THE WORKING DIR where we just worked
 setwd("..")
 system("rm -rf output_to_delete")

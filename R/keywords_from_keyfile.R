@@ -55,8 +55,13 @@ keywords_from_keyfile <- function(key_file_input, return_table=FALSE, keyword_li
     key_names<-NULL
   }
   
-  if(!key_file_is_keywords) what_to_read <- paste0('sed "s/#.*//" ', key_file_input)
-  else what_to_read <- key_file_input
+  if(!key_file_is_keywords) {
+    suppressWarnings(system(paste0('sed -i "s/  */ /g" ', key_file_input)))
+    suppressWarnings(system(paste0('sed -i "s/\t\t*/ /g" ', key_file_input)))
+    what_to_read <- paste0('sed "s/#.*//" ', key_file_input)
+  }else{
+    what_to_read <- key_file_input
+  } 
   keywords_table <- fread(input = what_to_read, blank.lines.skip = TRUE, header = FALSE, fill = TRUE) # fill is for multivalues keywords
   colnames(keywords_table) <- c('keyword', paste0('value', 1:(ncol(keywords_table)-1)))
   if(keyword_list_first){
