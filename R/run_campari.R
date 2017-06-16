@@ -15,6 +15,7 @@
 #' @param mpi Default to \code{FALSE}. It will run campari_mpi with installed mpi-compiler. Please consider also campari_threads_mpi (also multi_threading=TRUE).
 #' @param print_status Default to \code{TRUE}. It will print CAMPARI output on the R console or not otherwise.
 #' @param run_in_background Default to \code{FALSE}. It will run CAMPARI in background. This option will disable print_status automatically.
+#' @param return_log Default to \code{FALSE}. It will return CAMPARI log as a string (also).
 #' @param key_file_input If you provide an already formatted keyfile to this argument, every variable defined in the provided keyfile will be overriden by the ones in this function and CAMPARI will 
 #' be run after the generation of a new keyfile. Please note that in the case of multivariable keywords the algorithm will keep only the first value. Consider using \code{\link{keywords_from_keyfile}} function.
 #' @param ... Analysis variables (similarly to \code{\link{mst_from_trj}}). You can check all of these in the original documentation (\url{http://campari.sourceforge.net/documentation.html}). 
@@ -35,7 +36,7 @@
 
 run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=NULL,
                         multi_threading=FALSE, mpi=FALSE, print_status=TRUE, run_in_background=FALSE,
-                        key_file_input=NULL, ...){
+                        key_file_input=NULL, return_log = FALSE, ...){
   
   # -----------------------
   #        CHECKS  
@@ -67,10 +68,17 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
     stop('print_status must be a logical.')
   if(!is.logical(run_in_background))
     stop('run_in_background must be a logical.')
+  if(!is.logical(return_log))
+    stop('return_log must be a logical.')
   if(run_in_background){
     warning('run_in_background option manually forced print_status to FALSE')
     print_status <- FALSE
   }
+  if(return_log && (run_in_background)){
+    warning('If return_log is active it is not possible to run_in_background. run_in_background is set to FALSE.')
+    run_in_background <- FALSE
+  }
+    
   
   if(!is.null(nsnaps) && (!is.numeric(nsnaps) || nsnaps%%1 != 0))
     stop('nsnaps must be an integer.')
@@ -85,7 +93,7 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   # Base name checks and needed file setting
   if(!is.character(base_name) || length(nchar(base_name)) > 1)
     stop('base_name must be a single character string.')
-  message('Selected base name for every output/input files (WARNING: they will be overwritten): ', base_name)
+  cat('Selected base name for every output/input files (WARNING: they will be overwritten): ', base_name, '\n')
   if(!"FMCSC_BASENAME" %in% args_names) args_list <- c(args_list, FMCSC_BASENAME=base_name)
   
   # seq_in <- paste0(base_name, '.in') # should it be inserted or not??
@@ -279,7 +287,7 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   if("PARAMETERS" %in% args_names){
     paramiters <- args_list[["PARAMETERS"]]
     if(grepl(pattern = "/", paramiters)){
-      message('Found PARAMETERS variable with full path to the parameter file. Please use simply the filename to look directly into the exe directory.')
+      cat('Found PARAMETERS variable with full path to the parameter file. Please use simply the filename to look directly into the exe directory.\n')
     }else{
       message('Inserted only filename in the PARAMETERS variable. This file will be searched in the exe directory. To use current directory please add "./" in front of the filename.')      
       paramiters <- paste0(camp_home, "params/", paramiters)
@@ -343,4 +351,5 @@ CAMPARI CRASHED - Check the log for details.
 CAMPARI CRASHED - Check the log for details.
 ============================================')
   }
+  if(return_log) invisible(readChar(log_f, file.info(log_f)$size))
 }
