@@ -335,10 +335,10 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
            ')
   }else if(run_in_background){
     cat('Direct console printing disabled (it will run in background). Please check', log_f, ' file for real time logging.\n')
-    suppressWarnings(system(paste0(campari_main_exe, " -k ", key_f, " >& ", log_f, "&")))
+    suppressWarnings(system(paste0(campari_main_exe, " -k ", key_f, " &> ", log_f, "&")))
   }else{
     cat('Direct console printing disabled. Please check', log_f, ' file for real time logging (at the end it will be tailed).\n')
-    suppressWarnings(system(paste0(campari_main_exe, " -k ", key_f, " >& ", log_f)))
+    suppressWarnings(system(paste0(campari_main_exe, " -k ", key_f, " &> ", log_f)))
     cat('\n')
     suppressWarnings(system(paste0("tail -n7 ", log_f)))
     if(grepl(x = suppressWarnings(system(paste0("tail -n1 ", log_f), intern = TRUE)), pattern = "STOP") ||

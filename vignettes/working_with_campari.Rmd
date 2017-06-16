@@ -57,9 +57,9 @@ trj <- as.data.frame(trj[,-1])
 trj <- sapply(trj, as.numeric) # always be sure that it is numeric!
 hist(trj[,2]) # this should have 3 peaks per diheadral angle
 
-run_campari(trj = trj,
+run_campari(trj = trj[1:1000,],
             FMCSC_CPROGINDMODE=1, #mst
-            FMCSC_CCOLLECT=5,
+            FMCSC_CCOLLECT=5, print_status = F,
             FMCSC_CMODE=4,
             FMCSC_CDISTANCE=1, #rmsd without alignment 7 - dihedral distances need a complete analysis (pdb_format dcd pdb etc...) 
             FMCSC_CPROGINDSTART=21, #starting snapshot 

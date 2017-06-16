@@ -58,6 +58,7 @@ keywords_from_keyfile <- function(key_file_input, return_table=FALSE, keyword_li
   if(!key_file_is_keywords) {
     suppressWarnings(system(paste0('sed -i "s/  */ /g" ', key_file_input)))
     suppressWarnings(system(paste0('sed -i "s/\t\t*/ /g" ', key_file_input)))
+    suppressWarnings(system(paste0('sed -i "s/^[ \t]*//" ', key_file_input)))
     what_to_read <- paste0('sed "s/#.*//" ', key_file_input)
   }else{
     what_to_read <- key_file_input
