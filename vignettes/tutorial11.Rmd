@@ -371,10 +371,9 @@ gg +
   ggplot2::annotate("text", x = rep(4000, 3), y = c(8.3, 8.80, 9.3), label = c("CCCH", "HCCC", "CCCC"))
 ```
 With the sapphire_plot() function we can get a SAPPHIRE plot such as the following:
-```{r, eval=TRUE}
-img <- png::readPNG("../Rplot.png")
-grid::grid.raster(image = img)
-```
+<div style="width:1150px; height=730px">
+![](Rplot.png)
+</div>
 
 If you used the Rscript option, then the plot will be saved to "oneShot.eps" and should look similar to Fig. 2 in the reference paper for this method. Anyhow, there should be 27 distinct non-overlapping basins. The output is a combination of cut-based and structural annotations. It would therefore be interesting to obtain a direct comparison to a cut-based pseudo free energy profile. For this, add the following variables (R code):
 
