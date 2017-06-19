@@ -5,6 +5,7 @@
 #'
 #' @param trj Input trajectory (variables on the columns and equal-time spaced snpashots on the row). It must be a \code{matrix} or a \code{data.frame} of numeric.
 #' @param window Number of snapshots taken before and after the considered snapshot. 
+#' @param method Supported pairwise similarity measures are 'wgcna', 'binary', 'euclidean', 'maximum', 'canberra', 'minkowski', 'covariance'
 #' @param overlapping_reduction Not yet supported (It will if a great number of snapshots will be considered in this analysis - snapshot selection)
 #' @param transpose_trj Defaults to F. If set T the junk of trj (i.e. with a specific window) is transposed so to infer a network with dimensions window*(window-1)/2
 #' @param ... Various variables. Possible values are \code{c('wgcna_type', 'wgcna_power', 'wgcna_corOp')}.
@@ -96,8 +97,10 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', overlapping_r
     trj_out <- matrix(NA, nrow = nrow(trj), ncol = ((ncol(trj)-1)*ncol(trj)/2)) 
   
   # time keeping variables
-  if(nrow(trj)*ncol(trj) > 500000)
+  if(nrow(trj)*ncol(trj) > 50000)
     timing_it <- TRUE
+  else
+    timing_it <- FALSE
   
   # Main transformation
   message('Network construction started (selected window: ', window, ').')

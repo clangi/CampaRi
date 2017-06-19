@@ -55,22 +55,40 @@ keywords_from_keyfile <- function(key_file_input, return_table=FALSE, keyword_li
     key_names<-NULL
   }
   
-  if(!key_file_is_keywords) {
-    suppressWarnings(system(paste0('sed -i "s/  */ /g" ', key_file_input)))
-    suppressWarnings(system(paste0('sed -i "s/\t\t*/ /g" ', key_file_input)))
-    suppressWarnings(system(paste0('sed -i "s/^[ \t]*//" ', key_file_input)))
-    what_to_read <- paste0('sed "s/#.*//" ', key_file_input)
-  }else{
-    what_to_read <- key_file_input
+  if(key_file_is_keywords) { # this is ugly but so ugly
+    cat(key_file_input, file = "a_mysterious_file_TODELETE14526.txt")
+    key_file_input <- "a_mysterious_file_TODELETE14526.txt"
   } 
+  suppressWarnings(system(paste0('sed -i "s/  */ /g" ', key_file_input)))
+  suppressWarnings(system(paste0('sed -i "s/\t\t*/ /g" ', key_file_input)))
+  suppressWarnings(system(paste0('sed -i "s/^[ \t]*//" ', key_file_input)))
+  what_to_read <- paste0('sed "s/#.*//" ', key_file_input)
+  
+  # main reader
   keywords_table <- fread(input = what_to_read, blank.lines.skip = TRUE, header = FALSE, fill = TRUE) # fill is for multivalues keywords
   colnames(keywords_table) <- c('keyword', paste0('value', 1:(ncol(keywords_table)-1)))
+  
+  # ugly
+  if(key_file_is_keywords) suppressWarnings(system('rm a_mysterious_file_TODELETE14526.txt'))
+  
   if(keyword_list_first){
     keyword_list <- c(keyword_list, c(keywords_table[,2])[[1]])
     names(keyword_list) <- c(key_names, c(keywords_table[,1])[[1]])
+    # for multielement lines (keys)
+    if(ncol(keywords_table) > 2){
+      keywords_data_frame <- data.frame(keywords_table)
+      for(k in which(!is.na(keywords_table[,3])))
+        keyword_list[k] <- paste(c(keywords_data_frame[k, !is.na(keywords_table[k,])][-1]), collapse = " ")
+    }
   }else{
     keyword_list <- c(c(keywords_table[,2])[[1]], keyword_list)
     names(keyword_list) <- c(c(keywords_table[,1])[[1]], key_names)
+    # for multielemnt lines
+    if(ncol(keywords_table) > 2){
+      keywords_data_frame <- data.frame(keywords_table)
+      for(k in which(!is.na(keywords_table[,3])))
+        keyword_list[k] <- paste(c(keywords_data_frame[k, !is.na(keywords_table[k,])][-1]), collapse = " ")
+    }
   }
   cat('Keyfile successfully loaded.', nrow(keywords_table), 'new keywords found.\n')
   
@@ -79,7 +97,7 @@ keywords_from_keyfile <- function(key_file_input, return_table=FALSE, keyword_li
       warning('The return_table option will not consider the keyword_list to be appended. It will return only the keyfile table.')
     return(keywords_table)
   }else if(return_string_of_arguments){
-    keywords_string <- paste0(names(keyword_list), "=", as.vector(unlist(keyword_list[names(keyword_list)])), collapse = ", ")
+    keywords_string <- paste0(names(keyword_list), '="', as.vector(unlist(keyword_list[names(keyword_list)])), collapse = '", ')
     return(keywords_string)
   }else{
     return(keyword_list)

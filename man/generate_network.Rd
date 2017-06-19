@@ -12,6 +12,8 @@ generate_network(trj, window = NULL, method = "wgcna",
 
 \item{window}{Number of snapshots taken before and after the considered snapshot.}
 
+\item{method}{Supported pairwise similarity measures are 'wgcna', 'binary', 'euclidean', 'maximum', 'canberra', 'minkowski', 'covariance'}
+
 \item{overlapping_reduction}{Not yet supported (It will if a great number of snapshots will be considered in this analysis - snapshot selection)}
 
 \item{transpose_trj}{Defaults to F. If set T the junk of trj (i.e. with a specific window) is transposed so to infer a network with dimensions window*(window-1)/2}

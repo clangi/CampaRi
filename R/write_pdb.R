@@ -4,7 +4,8 @@
 #'      The number of variables (number of columns) must be divisible by 3 to mantain the atomic 3D structure.
 #'
 #' @param trj Time series in a matrix shape (also data.frame numeric). The number of variables (nrow) must be divisible by 3 for atom-like pdb writing.
-#' @param method default method will use bio3d support to write pdb file (other methods are "automatic") but it is buggy
+#' @param method default method will use automatic_safe support to write pdb file (other methods are 'bio3d', 'automatic_unsafe'). With bio3d extra options will be passed to write.pdb function.
+#' The first one uses an old system with printf. The other one is fragile for large dimensions and negative values.
 #' @param file_name File name of the output pdb.
 #' @param round \code{TRUE} will truncate the output following the \code{digit} variable.
 #' @param digit Number of digits that will be kept from truncation (\code{round}).
@@ -16,11 +17,11 @@
 #' \code{\link{campari}}
 #' 
 #' @importFrom bio3d write.pdb
-#' @export write.pdb.d
+#' @export write_pdb
 #' 
 #' 
 
-write.pdb.d<-function(trj, file_name, method = "bio3d", round=FALSE, digit=4, dim_check = TRUE, ...){
+write_pdb<-function(trj, file_name, method = "automatic_safe", round=FALSE, digit=4, dim_check = TRUE, ...){
   # input checks
   if(! method %in% c('bio3d', 'automatic_safe', 'automatic_unsafe'))
     stop('not supported methods')
@@ -33,20 +34,24 @@ write.pdb.d<-function(trj, file_name, method = "bio3d", round=FALSE, digit=4, di
     trj <- as.matrix(trj)
     if(!is.numeric(trj)) stop("Numeric input must be supplied.")
   }
+  if(ncol(trj)%%3 != 0)
+    stop('The trj matrix must be a multiple of 3 to write a pdb file correctly formatted (even if it is not molecular data).')
   
   # main functions
   if(method == 'bio3d'){
-    message('Selected bio3d handling of PBD. Please check the documentation of bio3d::write.pdb and add all the necessary ')
-    bio3d::write.pdb(file = file_name, xyz = trj, ...) # todo
+    message('Selected bio3d handling of PBD. Please check the documentation of bio3d::write.pdb and add all the necessary variables to this function (or use it directly')
+    for(i in 1:nrow(trj))
+      bio3d::write.pdb(file = file_name, xyz = trj[i,], append = TRUE, ...) # todo
   }else if(method == 'automatic_safe'){
+    message('Selected sprintf support! it will be printed to file in append using a general scheme with CL CL- types. For more specifications please use the bio3d option.')
     pdbfile <- file(file_name, open="w")
-    
-    sst <- sprintf("MODEL %8i\nATOM      1  CL  CL-     1    %8.3f%8.3f%8.3f\nATOM      2  CL  CL-     2    %8.3f%8.3f%8.3f\nATOM      3  CL  CL-     3    %8.3f%8.3f%8.3f\nATOM      4  CL  CL-     4    %8.3f%8.3f%8.3f\nATOM      5  CL  CL-     5    %8.3f%8.3f%8.3f\nENDMDL",
-                   1:dd[1], as.double(wd2[, 1]), as.double(wd2[, 2]), as.double(wd2[, 3]), as.double(wd2[, 4]), as.double(wd2[, 5]), 
-                   as.double(wd2[, 6]), as.double(wd2[, 7]), as.double(wd2[, 8]), as.double(wd2[, 9]), as.double(wd2[, 10]),
-                   as.double(wd2[, 11]), as.double(wd2[, 12]), as.double(wd2[, 13]), as.double(wd2[, 14]), as.double(wd2[, 15]))
-    
-    write(sst, file=pdbfile)
+    for(u in 1:nrow(trj)){
+      sst <- sprintf("MODEL %8i\n", as.integer(u))
+      sst2 <- NULL
+      for(u2 in 1:(ncol(trj)/3))
+        sst2 <- paste0(sst2, sprintf("ATOM  %5i  CL  CL- %5i    %8.3f%8.3f%8.3f\n", as.integer(u2), as.integer(u2), trj[u, u2], trj[u, u2 + 1], trj[u, u2 + 2]))
+      write(paste0(sst, sst2, "ENDMDL"), file=pdbfile, append = TRUE)
+    }
     close(pdbfile)
     
   }else if(method == 'automatic_unsafe'){
