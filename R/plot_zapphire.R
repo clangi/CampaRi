@@ -25,7 +25,7 @@
 #' @param title Title of the plot (default "")
 #' @param ... Other options are: 'only_timeline', 'reorder_annotation', 'annotate_snap_dist', 'rescaling_ann_col', 'reorder_horizline_on_timeline', 
 #' 'reorder_points_on_timeline', 'timeline_proportion', 'background_height', 'ann_initial_point', 'horiz_lines_on_timeline',  'horiz_colored_areas', 'points_on_timeline',  
-#' 'vertical_barriers_points', 'specific_palette',  'general_size_annPoints'
+#' 'vertical_barriers_points', 'specific_palette',  'general_size_annPoints', 'size_points_on_timeline'
 #' @details For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
 #'
 #' @return If \code{ann_trace_ret} is active it will return the annotation trace used for the plot.
