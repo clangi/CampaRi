@@ -94,7 +94,7 @@ msm <-  function(seq, lag=1, tm.opt=c("symm", "mle"), eig.plot=FALSE, CK.test=FA
             if(!all((setA) %in% tab.st$n)) stop("State in setA not existing")
             if(is.null(setA)) {
                 setA <- tab.st$n[which.max(tab.st$length)[1]]
-                warning(paste("setA is not defined.\n  Default to the largest state", setA), immediate.=T)
+                cat(paste("setA is not defined.\n  Default to the largest state", setA, "\n"))
             }
         }
         if(!all(tab.st$n==c(1:n.st))) stop("State are not numbered from 1 to n.st")
