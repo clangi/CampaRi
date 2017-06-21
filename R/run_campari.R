@@ -334,10 +334,8 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   cat('If not in bakground mode, an error in CAMPARI will be reflected in R.\n')
   if(print_status){
     suppressWarnings(system(paste0(campari_main_exe, " -k ", key_f, " | tee ", log_f)))
-    if(grepl(x = suppressWarnings(system(paste0("tail -n8 ", log_f), intern = TRUE)), pattern = "CAMPARI CRASHED"))
-      stop('============================================
-CAMPARI CRASHED - Check the log for details.
-============================================')
+    if(any(grepl(x = suppressWarnings(system(paste0("tail -n8 ", log_f), intern = TRUE)), pattern = "CAMPARI CRASHED")))
+      stop('======== detected CAMPARI CRASHED in log. Please check it for details ========')
   }else if(run_in_background){
     cat('Direct console printing disabled (it will run in background). Please check', log_f, ' file for real time logging.\n')
     suppressWarnings(system(paste0(campari_main_exe, " -k ", key_f, " > ", log_f, "&")))
@@ -346,10 +344,8 @@ CAMPARI CRASHED - Check the log for details.
     suppressWarnings(system(paste0(campari_main_exe, " -k ", key_f, " > ", log_f)))
     cat('\n')
     suppressWarnings(system(paste0("tail -n6 ", log_f)))
-    if(grepl(x = suppressWarnings(system(paste0("tail -n8 ", log_f), intern = TRUE)), pattern = "CAMPARI CRASHED"))
-      stop('============================================
-CAMPARI CRASHED - Check the log for details.
-============================================')
+    if(any(grepl(x = suppressWarnings(system(paste0("tail -n8 ", log_f), intern = TRUE)), pattern = "CAMPARI CRASHED")))
+      stop('======== detected CAMPARI CRASHED in log. Please check it for details ========')
   }
   if(return_log) invisible(readChar(log_f, file.info(log_f)$size))
 }
