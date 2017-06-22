@@ -23,7 +23,9 @@
 # @param ann_names_L Vector of characther strings indicating, from top on the left, the names of the annotation horizontal bars.
 # @param ann_names_R Vector of characther strings indicating, from top on the right, the names of the annotation horizontal bars.
 #' @param title Title of the plot (default "")
-#'
+#' @param ... Other options are: 'only_timeline', 'reorder_annotation', 'annotate_snap_dist', 'rescaling_ann_col', 'reorder_horizline_on_timeline', 
+#' 'reorder_points_on_timeline', 'timeline_proportion', 'background_height', 'ann_initial_point', 'horiz_lines_on_timeline',  'horiz_colored_areas', 'points_on_timeline',  
+#' 'vertical_barriers_points', 'specific_palette',  'general_size_annPoints', 'size_points_on_timeline'
 #' @details For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
 #'
 #' @return If \code{ann_trace_ret} is active it will return the annotation trace used for the plot.
@@ -67,7 +69,8 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
                              'vertical_barriers_points', 
                              'specific_palette', 
                              
-                             'general_size_annPoints')
+                             'general_size_annPoints',
+                             'size_points_on_timeline')
                              
 
   if(any(!(names(input_args) %in% avail_extra_argoments))) 
@@ -91,6 +94,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   if(!('specific_palette' %in% names(input_args))) specific_palette <- NULL else specific_palette <- input_args[['specific_palette']]
   
   if(!('general_size_annPoints' %in% names(input_args))) general_size_annPoints <- 1. else general_size_annPoints <- input_args[['general_size_annPoints']]
+  if(!('size_points_on_timeline' %in% names(input_args))) size_points_on_timeline <- 0.01 else size_points_on_timeline <- input_args[['size_points_on_timeline']]
 
   # ============================
   #          CHECKS
@@ -141,6 +145,11 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   # general_size_annPoints = 1 must be a numeric
   if(!is.numeric(general_size_annPoints) || length(general_size_annPoints) != 1)
     stop('general_size_annPoints must be a single numeric.')
+  
+  # ---------------------  
+  # size_points_on_timeline = 0.01 must be a numeric
+  if(!is.numeric(size_points_on_timeline) || length(size_points_on_timeline) != 1)
+    stop('size_points_on_timeline must be a single numeric.')
 
   # ---------------------
   # timeline_proportion must be single numeric
@@ -215,7 +224,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   # ---------------------
   # checking the color palette
   if(!is.null(specific_palette) &&
-     (!all(is.character(specific_palette)) || !all(nchar(specific_palette)==7) || !all(sapply(a, function(x){substring(x,1,1)}) == "#")))
+     (!all(is.character(specific_palette)) || !all(nchar(specific_palette)==7) || !all(sapply(specific_palette, function(x){substring(x,1,1)}) == "#")))
     stop('specific_palette must be of the type "#b47b00", "#D9E000" (7 characters starting with #')
   
   # ---------------------
@@ -557,7 +566,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
         gg <- ggplot() + geom_point(aes(x=xx,
                                   y = (pin[,3][seq(1, Nsnap, sub_sampling_factor)])),
                                   col=single_line_general_ann[seq(1, Nsnap, sub_sampling_factor)],
-                              size=0.01*general_size_annPoints) 
+                              size=size_points_on_timeline*general_size_annPoints) 
         
       # with palette
       }else{
@@ -566,7 +575,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
         gg <- ggplot() + geom_point(aes(x=xx,
                                         y = (pin[,3][seq(1, Nsnap, sub_sampling_factor)]),
                                         col=single_line_general_ann[seq(1, Nsnap, sub_sampling_factor)]), # col INSIDE
-                                    size=0.01*general_size_annPoints) 
+                                    size=size_points_on_timeline*general_size_annPoints) 
         gg <- gg + scale_color_gradientn(colours = specific_palette, guide = FALSE) #  guide_legend(title = "Days")
       } 
       
@@ -583,13 +592,13 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
         gg <- gg + geom_point(aes(x=xx,
                                   y = ((pin[,3]*1.0*ymax*tp)/Nsnap)[seq(1, Nsnap, sub_sampling_factor)]),
                               col=single_line_general_ann[seq(1, Nsnap, sub_sampling_factor)],
-                              size=0.01*general_size_annPoints)
+                              size=size_points_on_timeline*general_size_annPoints)
       # with palette
       }else{
         gg <- gg + geom_point(aes(x=xx,
                                   y = ((pin[,3]*1.0*ymax*tp)/Nsnap)[seq(1, Nsnap, sub_sampling_factor)],
                                   col=single_line_general_ann[seq(1, Nsnap, sub_sampling_factor)]), # col INSIDE
-                              size=0.01*general_size_annPoints)
+                              size=size_points_on_timeline*general_size_annPoints)
         gg <- gg + scale_color_gradientn(colours = specific_palette, guide = FALSE) #  guide_legend(title = "Days")
       }
       # standard add

@@ -1,6 +1,6 @@
 CampaRi.Rproj
 .Rbuildignore
-.Rproj.user
+.Rproj.user/*
 .Rhistory
 .RData
 .Ruserdata
@@ -13,9 +13,9 @@ src/REPIX
 src/Makevars*
 output_to_delete/
 man/.Rd2pdf21998/
-
 config.log
 config.status
 autom4te.cache/
-m4/
 inst/doc
+vignettes/out_to_del/*
+TODEL

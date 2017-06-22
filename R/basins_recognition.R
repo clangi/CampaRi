@@ -88,7 +88,9 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
             pol.degree <- 2 
         } else pol.degree <- input.args$pol.degree
     }
-
+    lt <- function(x){
+      return(length(x))
+    }
     as.real <- function(x) {
         return(as.double(x))
     }

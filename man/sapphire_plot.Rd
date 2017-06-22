@@ -36,6 +36,10 @@ produce a gray scale horizontal annotation.}
 \item{return_ann_trace}{If \code{TRUE} the annotation vector is returned. This option can be really useful for adding layers and specific text \link{ggplot2}.}
 
 \item{title}{Title of the plot (default "")}
+
+\item{...}{Other options are: 'only_timeline', 'reorder_annotation', 'annotate_snap_dist', 'rescaling_ann_col', 'reorder_horizline_on_timeline', 
+'reorder_points_on_timeline', 'timeline_proportion', 'background_height', 'ann_initial_point', 'horiz_lines_on_timeline',  'horiz_colored_areas', 'points_on_timeline',  
+'vertical_barriers_points', 'specific_palette',  'general_size_annPoints', 'size_points_on_timeline'}
 }
 \value{
 If \code{ann_trace_ret} is active it will return the annotation trace used for the plot.
