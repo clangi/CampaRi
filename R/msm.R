@@ -20,6 +20,7 @@
 #'       \item \code{vectors} The left eigenvectors of the transition matrix. 
 #'       \item \code{Q} The metastability, i.e. the trace of the transition matrix.   
 #'       \item \code{flux} The non-Markovian flux (see reference [2])
+#'       \item \code{mtp} Mean transition time between different states (see reference [3])
 #'       \item \code{pMSM} A vector of probabilities to be at set A, starting from A itself, aftera certain number of steps, calculated by means of the transition matrix (see reference [1]).
 #'       \item \code{pMD} A vector of probabilities to be at set A, starting from A itself, aftera certain number of steps, calculated directly from the trajectory (see reference [1]).
 #'       \item \code{epsMD} The statistical errors associated to the \code{pMD} (see reference [1]).
@@ -36,7 +37,7 @@
 #'     msm("BASINS_1.dat", 100, tm.opt="mle", CK.test=TRUE, setA=c(1,2))
 #' }
 #'
-#' @details The main reference for the Markov state model creation is [1][Prinz, J.H., et al. "Markov models of molecular kinetics: Generation and validation." \emph{The Journal of chemical physics} 134.17 (2011): 174105]. See also [2][Guarnera, E., Pellarin, R., & Caflisch, A. (2009). How does a simplified-sequence protein fold?. \emph{Biophysical journal}, 97(6), 1737-1746.] for non-Markovian flux.
+#' @details The main reference for the Markov state model creation is [1][Prinz, J.H., et al. "Markov models of molecular kinetics: Generation and validation." \emph{The Journal of chemical physics} 134.17 (2011): 174105]. See also [2][Guarnera, E., Pellarin, R., & Caflisch, A. (2009). How does a simplified-sequence protein fold?. \emph{Biophysical journal}, 97(6), 1737-1746.] for non-Markovian flux and [3][Noé F., et. al. "Hierarchical analysis of conformational dynamics in biomolecules: Transition metwork of metastable states". \emph{The Journal of Chemical Physics} 126, (2007): 155102.]
 
 #' @importFrom data.table fread fwrite
 #' @importFrom Hmisc errbar
@@ -94,7 +95,7 @@ msm <-  function(seq, lag=1, tm.opt=c("symm", "mle"), eig.plot=FALSE, CK.test=FA
             if(!all((setA) %in% tab.st$n)) stop("State in setA not existing")
             if(is.null(setA)) {
                 setA <- tab.st$n[which.max(tab.st$length)[1]]
-                cat(paste("setA is not defined.\n  Default to the largest state", setA, "\n"))
+                if(!silent) cat(paste("setA is not defined.\n  Default to the largest state", setA, "\n"))
             }
         }
         if(!all(tab.st$n==c(1:n.st))) stop("State are not numbered from 1 to n.st")
@@ -193,7 +194,11 @@ msm <-  function(seq, lag=1, tm.opt=c("symm", "mle"), eig.plot=FALSE, CK.test=FA
 ##############################################################################
     ## Calculating non-Markovian Flux 
     flux <- 1 - sum(as.vector(stat %*% (tm %^% 2)))
-    
+
+##############################################################################
+    ## Calculating the mean transition time
+    mtp <- lag/sum(as.vector(stat %*% (tm-(diag(nrow(tm))*diag(tm)))))
+
     
 ##############################################################################
     if(CK.test) {
@@ -291,6 +296,6 @@ msm <-  function(seq, lag=1, tm.opt=c("symm", "mle"), eig.plot=FALSE, CK.test=FA
     }
     
     if(!silent) cat("Done.\n")
-    invisible(list(TM=tm, cnt=cnt, values=eig, vectors=eig.vec, Q=sum(diag(tm)), flux=flux, pMSM=pMSM, pMD=pMD, epsMD=epsMD, chi=chi, n.st=n.st, seq.st=seq.st, tab.st=tab.st, cstored=cstored, call=call))
+    invisible(list(TM=tm, cnt=cnt, values=eig, vectors=eig.vec, Q=sum(diag(tm)), mtp=mtp, flux=flux, pMSM=pMSM, pMD=pMD, epsMD=epsMD, chi=chi, n.st=n.st, seq.st=seq.st, tab.st=tab.st, cstored=cstored, call=call))
 
 }

@@ -38,6 +38,7 @@ A list containing
       \item \code{vectors} The left eigenvectors of the transition matrix. 
       \item \code{Q} The metastability, i.e. the trace of the transition matrix.   
       \item \code{flux} The non-Markovian flux (see reference [2])
+      \item \code{mtp} Mean transition time between different states (see reference [3])
       \item \code{pMSM} A vector of probabilities to be at set A, starting from A itself, aftera certain number of steps, calculated by means of the transition matrix (see reference [1]).
       \item \code{pMD} A vector of probabilities to be at set A, starting from A itself, aftera certain number of steps, calculated directly from the trajectory (see reference [1]).
       \item \code{epsMD} The statistical errors associated to the \code{pMD} (see reference [1]).
@@ -53,7 +54,7 @@ A list containing
 \code{msm} uses the discretized trajectory (state sequence) to infer the transition matrix of the process. Further values are extracted, like the eigenvalues, eigenvectors, non-Markovian flux and metastability. If requested, a Chapman-Kolmogorv test is carried out to check the Markovianity of model.
 }
 \details{
-The main reference for the Markov state model creation is [1][Prinz, J.H., et al. "Markov models of molecular kinetics: Generation and validation." \emph{The Journal of chemical physics} 134.17 (2011): 174105]. See also [2][Guarnera, E., Pellarin, R., & Caflisch, A. (2009). How does a simplified-sequence protein fold?. \emph{Biophysical journal}, 97(6), 1737-1746.] for non-Markovian flux.
+The main reference for the Markov state model creation is [1][Prinz, J.H., et al. "Markov models of molecular kinetics: Generation and validation." \emph{The Journal of chemical physics} 134.17 (2011): 174105]. See also [2][Guarnera, E., Pellarin, R., & Caflisch, A. (2009). How does a simplified-sequence protein fold?. \emph{Biophysical journal}, 97(6), 1737-1746.] for non-Markovian flux and [3][Noé F., et. al. "Hierarchical analysis of conformational dynamics in biomolecules: Transition metwork of metastable states". \emph{The Journal of Chemical Physics} 126, (2007): 155102.]
 }
 \examples{
 \dontrun{
