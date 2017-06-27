@@ -32,6 +32,7 @@
 #'       \itemize{
 #'         \item "\code{tab.st}" Data frame containing the boundaries of each state, their lengths and the type of the right boundary. Type=1 means that it is a matched partition, type=2 is only dynamic, type=3 is only kinetic. The type of the last state is always equal to 1.
 #'         \item "\code{nbins}" 2-D vector containing number of bins on x-axis and y-axis.
+#'         \item "\code{seq.st}" The time-ordered discretized trajectory.
 #'         \item "\code{call}" The matched call. 
 #'       }   
 #' @examples
@@ -88,9 +89,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
             pol.degree <- 2 
         } else pol.degree <- input.args$pol.degree
     }
-    lt <- function(x){
-      return(length(x))
-    }
+
     as.real <- function(x) {
         return(as.double(x))
     }
@@ -674,8 +673,9 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
 #####################################################################
     if(is.null(breaks)) {
         if(!silent) cat("NO barriers have been found")
+        seq.st <- rep(1, nrow(progind))
         if(out.file) {
-            output.match <- data.frame(PI=progind$PI, Time=progind$Time, State=rep(1, nrow(progind)))
+            output.match <- data.frame(PI=progind$PI, Time=progind$Time, State=seq.st)
             if(is.character(data)) {
                 if(!silent) cat("Writing", gsub("PROGIDX", "BASINS", strsplit(data,"/",fixed=T)[[1]][length(strsplit(data,"/",fixed=T)[[1]])]), "...\n")
                 fwrite(output.match, file=gsub("PROGIDX", "BASINS", data), sep='\t', row.names=FALSE, col.names=FALSE)
@@ -689,17 +689,17 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
         if(!silent) cat(breaks, "\n")
 
         vec <- sort(breaks)
-        state <- NULL
+        seq.st <- NULL
         for (i in 1:(length(vec)+1)) {
             if (i==1) ib <- 0
             else ib <- vec[i-1]
             if (i==length(vec)+1) fb <- cstored
             else fb <- vec[i]
             ## if(!silent) cat(i,ib,fb,fb-ib,"\n")
-            state <- c(state,rep(i,fb-ib))
+            seq.st <- c(seq.st,rep(i,fb-ib))
         }
         if(out.file) {
-            output.match <- data.frame(PI=progind$PI, Time=progind$Time, State=state)
+            output.match <- data.frame(PI=progind$PI, Time=progind$Time, State=seq.st)
             if(is.character(data)) {
                 if(!silent) cat("Writing", gsub("PROGIDX", "BASINS", strsplit(data,"/",fixed=T)[[1]][length(strsplit(data,"/",fixed=T)[[1]])]), "...\n")
                 fwrite(output.match, file=gsub("PROGIDX", "BASINS", data), sep='\t', row.names=FALSE, col.names=FALSE)
@@ -766,7 +766,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
             tab.st$type[match(vkin[-match(brk.mtc, vkin)], tab.st$end)] <- 3
         }
     }
-    invisible(list(tab.st=tab.st, nbins=c(nx,ny), call=call))
+    invisible(list(tab.st=tab.st, nbins=c(nx,ny), seq.st=seq.st[order(progind$Time)], call=call))
     
 }
 
