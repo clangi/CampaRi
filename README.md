@@ -15,22 +15,45 @@ Analysis algorithms extracted from the original 'campari' software package.
 They consists in a kinetic annotation of the trajectory based on the minimum spanning tree constructed on the distances between snapshots. The fast algorithm is implemented on the basis of a modified version of the birch algorithm, while the slow one is based on a simple leader clustering. For more information please visit the [original website](http://campari.sourceforge.net/index.html)
 
 ### Installation ###
+
+This code is available on this GitHub repository and therefore it can be downloaded directly and locally installed or, using the handy "devtools", it can be installed from R in the following simple way:
+
 ```R
-library(devtools)
+library(devtools) # external libssl-dev is needed
 install_github("Melkiades/CampaRi")
+
+# Please note that you must install some libraries from Bioconductor (these are not automatically installed from dependencies)
+# To do so: 
+source("http://bioconductor.org/biocLite.R") 
+biocLite(c("AnnotationDbi", "impute", "GO.db", "preprocessCore")) 
+install.packages("WGCNA") # this is the dependence that needs bioconductor
+
 library(CampaRi)
 ```
 
 ------------------------------------------------------------------------
+### Usage - tests ###
 
-### Manual ###
+We are currently writing how-to-use guides with examples and datasets. These vignettes are available internally in the package and can be browsed as following (please note that some external library is needed - e.g. pandoc).
+
+```R
+library(knitr)
+library(rmarkdown)
+install_github("Melkiades/CampaRi", build_vignettes= TRUE)
+
+# TO BROWSE THEM after the installation
+browseVignettes("CampaRi") 
+```
+
+
+------------------------------------------------------------------------
+### Extensive Manual ###
 
 For more details, please refer to the main documentation of the original [CAMPARI documentation](http://campari.sourceforge.net/documentation.html).
 
 
-### Usage - tests ###
 
-All the tests can be found in the 'unusual' folder tests. The whole system must be still updated with the __testthat__ support and possibly a __vignette__ integration.
+
 
 
 ------------------------------------------------------------------------

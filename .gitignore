@@ -19,3 +19,4 @@ autom4te.cache/
 inst/doc
 vignettes/out_to_del/*
 TODEL
+.Rproj.user

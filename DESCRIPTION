@@ -23,6 +23,6 @@ LinkingTo: Rcpp, RcppArmadillo
 LazyData: true
 RoxygenNote: 6.0.1
 NeedsCompilation: yes
-SystemRequirements: netcdf library version 4.1 or later
+SystemRequirements: netcdf library version 4.1 or later with Fortran bindings 
 URL: https://github.com/Melkiades/CampaR1, http://campari.sourceforge.net/index.html
 BugReports: https://github.com/Melkiades/CampaR1/issues

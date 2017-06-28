@@ -9,13 +9,14 @@ bioc_required: true
 
 os:
   - linux
+  - osx
 
 #dist: xenial #not working because only trusty is supported
 
 dist: trusty
 
 addons:
-  apt: # ignored if not linux
+  apt: # ignored if not linux BUT we need with-fortran... How to?
     packages:
       - libnetcdf-dev
 
@@ -27,8 +28,9 @@ notifications:
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install netcdf ; fi # must be specified
-
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install netcdf --with-fortran; fi # must be specified
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt update -g ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt install libnetcdf-dev --with-fortran; fi # must be specified
 
 
 # The following are useful if you are building on multiple testing machines. If only apt-get installation is needed it is possible to use the addons command (see before)
@@ -53,6 +55,8 @@ r-packages:
   - prospectr
   - splus2R
   - stats
+  - expm
+  - Hmisc
 
 after_script:
   - ls -lah
