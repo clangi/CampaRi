@@ -33,7 +33,8 @@ library(CampaRi)
 Please note that to unlock some fundamental analysis function you need to install netcdf 4.1 or later library for backend fast data-handling.
 This library must be installed --with-fortran bindings (it is possible to check this using the nc-config or nf-config commands (with --all option)).
 Netcdf4 can be installed as following (this is the simple way):
-```bash
+
+```sh
 # mac osx
 brew update
 brew install netcdf --with-fortran
