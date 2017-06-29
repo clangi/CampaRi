@@ -41,7 +41,8 @@ brew install netcdf --with-fortran
 
 # linux
 sudo apt update 
-sudo apt install libnetcdff-dev
+sudo apt install libnetcdff-dev # xenial
+sudo apt-get isntall libnetcdf
 ```
 
 ------------------------------------------------------------------------
