@@ -1,6 +1,6 @@
 # R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
 language: r
-pandoc_version: 1.16
+# pandoc_version: 1.16 # crashing because it is trying to fetch .deb from github (not existant url)
 sudo: required 		# required for apt-get
 cache: packages 	# caching the package to install is a speed-up
 warnings_are_errors: false
@@ -21,7 +21,7 @@ dist: trusty
 #      - libnetcdf-dev
 r:
   - release # currently 3.3.0
-  - bioc-devel
+  # - bioc-devel # not necessary. it duplicates again the working nodes
 ruby:
   - release # for brew
 # brew_packages:
