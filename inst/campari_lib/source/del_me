@@ -1,6 +1,0 @@
-#! /bin/bash
-
-
-i="1\n 2\n"
-echo "you have a marmotta of lenght "
-echo $i | wc -l

@@ -150,7 +150,8 @@ BLAS_LIBS=`"${R_HOME}/bin/R" CMD config BLAS_LIBS`
 LAPACK_LIBS=`"${R_HOME}/bin/R" CMD config LAPACK_LIBS`
 SAFE_FFLAGS=`"${R_HOME}/bin/R" CMD config SAFE_FFLAGS`
 
-R_PACKAGE_DIR=$PWD # TO DELETE
+# R_PACKAGE_DIR=$PWD # TO DELETE
+R_PACKAGE_DIR="." # TO DELETE
 CAMPARI_HOME="${R_PACKAGE_DIR}/inst/campari_lib"
 AC_MSG_CHECKING([if original version of CAMPARI must be installed])
 AC_ARG_WITH(campari,
@@ -181,7 +182,12 @@ fi
 #    CAMPARI to install
 # ---------------------------
 if test "${with_campari}" != "no"; then
-	AC_MSG_ERROR([ATTENTION: THIS OPTION IS STILL NOT AVAILABLE BECAUSE UNDER DEV.])
+	AC_MSG_ERROR([
+
+
+ATTENTION! The --with-campari option is still under development and it is not directly available.
+
+])
 	campari_installed="0"
 	SECTION_TITLE([Original campari library installing...])
 	AC_MSG_CHECKING([which folder will be used for CAMPARI_HOME])
