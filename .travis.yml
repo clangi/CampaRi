@@ -39,9 +39,11 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install gcc; fi
   - if [[ "${TRAVIS_OS_NAME}" = "osx" ]]; then brew link --overwrite --force cmake; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install netcdf --with-fortran --without-test; fi # must be specified
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install pandoc; fi # must be specified
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libnetcdff5; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libnetcdf-dev; fi # must be specified
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install pandoc; fi # must be specified
 
 
 # the following seems not necessary
@@ -78,6 +80,8 @@ r-packages:
   - stats
   - expm
   - Hmisc
+  - distr
+  - sfsmisc
 
 after_script:
   - ls -lah

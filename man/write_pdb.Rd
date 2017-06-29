@@ -4,13 +4,15 @@
 \alias{write_pdb}
 \title{Writing a pdb file from trajectory matrix in R}
 \usage{
-write_pdb(trj, file_name, method = "automatic_safe", round = FALSE,
-  digit = 4, dim_check = TRUE, ...)
+write_pdb(trj, file_name, seq_name = NULL, method = "automatic_safe",
+  round = FALSE, digit = 4, dim_check = TRUE, ...)
 }
 \arguments{
 \item{trj}{Time series in a matrix shape (also data.frame numeric). The number of variables (nrow) must be divisible by 3 for atom-like pdb writing.}
 
-\item{file_name}{File name of the output pdb.}
+\item{file_name}{File name of the output pdb (e.g. BPTI.pdb).}
+
+\item{seq_name}{Sequence name of the output .in file (principally used by CAMPARI).}
 
 \item{method}{default method will use automatic_safe support to write pdb file (other methods are 'bio3d', 'automatic_unsafe'). With bio3d extra options will be passed to write.pdb function.
 The first one uses an old system with printf. The other one is fragile for large dimensions and negative values.}

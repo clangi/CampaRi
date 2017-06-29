@@ -2,7 +2,7 @@ Package: CampaRi
 Type: Package
 Title: Trajectory Analysis
 Version: 0.8.8
-Date: 2017-03-06
+Date: 2017-06-30
 Author: Garolini Davide
 Maintainer: Garolini Davide <d.garolini@bioc.uzh.ch>
 Description: Analysis algorithms extracted from the original 'campari' software package.
@@ -12,11 +12,11 @@ Description: Analysis algorithms extracted from the original 'campari' software 
   simple leader clustering. For more information please visit the original documentation
   on <http://campari.sourceforge.net/index.html>.
 License: GPL (>= 3)
-Depends: R (>= 3.1.0), survival (>= 2.40-1)
+Depends: R (>= 3.1.0)
 Imports:
   bio3d, ggplot2, WGCNA, parallel, data.table, Rcpp,
   distrEx, gplots, grDevices, graphics, outliers, pcaPP,
-  prospectr, splus2R, stats, expm, Hmisc
+  prospectr, splus2R, stats, expm, Hmisc, distr, sfsmisc
 Suggests: knitr, rmarkdown
 VignetteBuilder: knitr
 LinkingTo: Rcpp, RcppArmadillo

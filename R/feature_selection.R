@@ -21,6 +21,8 @@
 #' @export select_features
 #' @importFrom data.table fwrite
 #' @importFrom pcaPP PCAproj
+#' @importFrom stats princomp
+#' @importFrom stats loadings
 #'
 
 select_features <- function(trj, feature_selection = 'pca', n_princ_comp = floor(ncol(trj)/10), pca_method = 'R'){

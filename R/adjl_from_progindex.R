@@ -18,14 +18,14 @@
 #' adjl <- adjl_from_progindex(fil = "PROGIDX_000000000001.dat")
 #' }
 #'
-#'
+#' @importFrom data.table fread
 #' @export adjl_from_progindex
 #' @useDynLib CampaRi
 
 adjl_from_progindex <- function(prog_index_file){
   # extract the SST or MST from the output of the analysis already made with campari.
   # Here we will reconstruct a bit of the tree in order to be able to find again the MST/SST
-  piOut<-read.table(file = prog_index_file)
+  piOut <- data.frame(fread(prog_index_file))
 
   # number of snapshots
   nsnaps <- nrow(piOut)

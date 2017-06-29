@@ -125,8 +125,10 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   }else if(!is.null(data_file)){
     if(!file.exists(data_file))
       stop('Inserted file for the analysis is not present in the directory.')
-    if(is.null(nsnaps) && file_ext(data_file) %in% c('tsv', 'dat')) nsnaps <- as.numeric(strsplit(suppressWarnings(system(paste0('wc -l ', base_name)), " ")[[1]][1]))
-    if(is.null(nvars) && file_ext(data_file) %in% c('tsv', 'dat')) nvars <- as.numeric(strsplit(suppressWarnings(system(paste0('wc -n1 ', base_name, '| wc -l')), " ")[[1]][1]))
+    if(is.null(nsnaps) && file_ext(data_file) %in% c('tsv', 'dat')) 
+      nsnaps <- as.numeric(strsplit(x = suppressWarnings(system(paste0('wc -l ', base_name), intern = TRUE)), split = " ")[[1]][1])
+    if(is.null(nvars) && file_ext(data_file) %in% c('tsv', 'dat')) 
+      nvars <- as.numeric(strsplit(x = suppressWarnings(system(paste0('wc -n1 ', base_name, '| wc -l '), intern = TRUE)), split =  " ")[[1]][1])
     if(is.null(nsnaps) && "FMCSC_NCDM_NRFRMS" %in% args_names) nsnaps <- args_list[["FMCSC_NCDM_NRFRMS"]]
     if(is.null(nsnaps) && !"FMCSC_NRSTEPS" %in% args_names)
       stop('FMCSC_NCDM_NRFRMS or nsnaps must be provided for non-ASCII file data analysis.')

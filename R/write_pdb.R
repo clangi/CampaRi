@@ -6,7 +6,8 @@
 #' @param trj Time series in a matrix shape (also data.frame numeric). The number of variables (nrow) must be divisible by 3 for atom-like pdb writing.
 #' @param method default method will use automatic_safe support to write pdb file (other methods are 'bio3d', 'automatic_unsafe'). With bio3d extra options will be passed to write.pdb function.
 #' The first one uses an old system with printf. The other one is fragile for large dimensions and negative values.
-#' @param file_name File name of the output pdb.
+#' @param file_name File name of the output pdb (e.g. BPTI.pdb).
+#' @param seq_name Sequence name of the output .in file (principally used by CAMPARI).
 #' @param round \code{TRUE} will truncate the output following the \code{digit} variable.
 #' @param digit Number of digits that will be kept from truncation (\code{round}).
 #' @param dim_check \code{TRUE} to check if number of columns is higher than number of rows and stop consequently.
@@ -21,14 +22,19 @@
 #' 
 #' 
 
-write_pdb<-function(trj, file_name, method = "automatic_safe", round=FALSE, digit=4, dim_check = TRUE, ...){
+write_pdb<-function(trj, file_name, seq_name=NULL, method = "automatic_safe", round=FALSE, digit=4, dim_check = TRUE, ...){
   # input checks
   if(! method %in% c('bio3d', 'automatic_safe', 'automatic_unsafe'))
     stop('not supported methods')
   
   if(!is.character(file_name))
     stop('file_name must be a character.')
+  if(!is.null(seq_name) && !is.character(seq_name))
+    stop('seq_name must be a character.')
   
+  if(is.null(seq_name))
+    seq_name <- "seq.in"
+    
   if(!is.matrix(trj)){
     if(!is.data.frame(trj)) stop('trj input must be a matrix or a data.frame')
     trj <- as.matrix(trj)
@@ -55,8 +61,8 @@ write_pdb<-function(trj, file_name, method = "automatic_safe", round=FALSE, digi
     close(pdbfile)
     
   }else if(method == 'automatic_unsafe'){
-    if(file.exists(paste0(base_name, ".pdb"))) system(paste0("rm ", paste0(base_name, ".pdb")))
-    if(file.exists(paste0(base_name, ".in"))) system(paste0("rm ", base_name, ".in"))
+    if(file.exists(file_name)) system(paste0("rm ", file_name))
+    if(file.exists(seq_name)) system(paste0("rm ", seq_name))
     nr <- nrow(trj)
     nc <- ncol(trj)
     # checking if the input has not been inverted in dimensions
@@ -71,11 +77,11 @@ write_pdb<-function(trj, file_name, method = "automatic_safe", round=FALSE, digi
       
     space <- c()
     for(n in seq(nc/3)){
-      cat("CL-", sep = "\n", file = paste0(base_name,".in"), append = TRUE)
+      cat("CL-", sep = "\n", file = seq_name, append = TRUE)
     }
-    cat("END", sep = "\n", file = paste0(base_name,".in"), append = TRUE)
+    cat("END", sep = "\n", file = seq_name, append = TRUE)
     for (i in seq(nr)){
-      cat(paste0("MODEL        ",i), file = paste0(base_name,".pdb"), sep = "\n", append=TRUE)
+      cat(paste0("MODEL        ",i), file = file_name, sep = "\n", append=TRUE)
       if(i == (nr/100)) message("1% done...")
       if(((i*100)/nr)%%10 == 0) message(((i*100)/nr),"% done...")
       for(j in seq(to = (nc),by = 3)){
@@ -89,13 +95,13 @@ write_pdb<-function(trj, file_name, method = "automatic_safe", round=FALSE, digi
         if(round) cat(paste0("ATOM ",space[1], (j+2)/3,"  ","CL  CL-",space[1], (j+2)/3, "      ", space[2],
                              format(round(trj[i,j],digits = digit), nsmall = digit),"  ", space[3],
                              format(round(trj[i,j+1],digits = digit), nsmall = digit),"  ", space[4],
-                             format(round(trj[i,j+2],digits = digit), nsmall = digit)), file=paste0(base_name,".pdb"), sep='\n', append=TRUE)
+                             format(round(trj[i,j+2],digits = digit), nsmall = digit)), file=file_name, sep='\n', append=TRUE)
         else cat(paste0("ATOM ",space[1], (j+2)/3,"  ","CL  CL-",space[1],(j+2)/3, "      ", space[2],
                         format(trj[i,j],nsmall=3),"  ", space[3],
                         format(trj[i,j+1],nsmall=3),"  ", space[4],
-                        format(trj[i,j+2],nsmall=3)),file=paste0(base_name,".pdb"),sep='\n',append=TRUE)
+                        format(trj[i,j+2],nsmall=3)), file=file_name, sep='\n',append=TRUE)
       }
-      cat("ENDMDL",file = paste0(base_name,".pdb"),sep = "\n",append=TRUE)
+      cat("ENDMDL",file = file_name,sep = "\n",append=TRUE)
     }
   }
 }

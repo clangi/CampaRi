@@ -25,7 +25,6 @@ For details, please refer to the main documentation of the original campari soft
 adjl <- adjl_from_progindex(fil = "PROGIDX_000000000001.dat")
 }
 
-
 }
 \seealso{
 \code{\link{gen_progindex}}, \code{\link{gen_annotation}}
