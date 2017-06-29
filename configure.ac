@@ -66,6 +66,7 @@ if test "$with_netcdf4_fortran" = "yes"; then
 			AC_MSG_RESULT([yes])
 			AC_MSG_NOTICE([NetCDF has been installed using cmake which still lacks a proper nf-config linking])
 			AC_MSG_NOTICE([The message on the NETCDF4 FC was ${NETCDF4_FC}])
+      AC_MSG_WARN([If you compiled NETCDF4 with a different compiler than $FC the compilation will crash])
 			AC_MSG_CHECKING([again if netcdf was built with Fortran bindings])
 			if test -z "$NC_CONFIG"; then
 				AC_MSG_RESULT([no])
@@ -122,7 +123,9 @@ AC_MSG_WARN([NETCDF Fortran bindings not find. Memory handling will be limited t
 	NETCDF4_FC="$FC"
 	NETCDF4_FFLAGS=""
 	NETCDF4_FLIBS=""
+	SOURCES="m_variables_gen.f90 m_clustering.f90 m_gen_nbls.f90 m_mst.f90 main_clu_adjl_mst.f90 utilities.f90 dist_clusters_utils.f90 gen_progind.f90 gen_manycuts.f90 contract_mst.f90"
 else
+	SOURCES="m_variables_gen.f90 m_clustering.f90 m_gen_nbls.f90 m_mst_netcdf.f90 m_mst.f90 main_clu_adjl_mst_netcdf.f90 main_clu_adjl_mst.f90 utilities_netcdf.f90 utilities.f90 dist_clusters_utils.f90 gen_progind.f90 gen_progind_netcdf.f90 gen_manycuts.f90 contract_mst.f90"
 	options="$options netcdf4"
 fi
 
@@ -293,6 +296,7 @@ SECTION_TITLE([Important variables])
 # ---------------------------------------------------------------------------
 AC_SUBST(HAVE_NETCDF4)
 AC_SUBST(NETCDF4_VERSION)
+AC_SUBST(SOURCES)
 # AC_SUBST(NETCDF4_CC)
 # AC_SUBST(NETCDF4_CFLAGS)
 # AC_SUBST(NETCDF4_CPPFLAGS)
@@ -309,8 +313,11 @@ if test "$with_netcdf4_fortran" = "yes"; then
 	echo "NETCDF4_FFLAGS=$NETCDF4_FFLAGS" >& AS_MESSAGE_FD
 	# echo "NETCDF4_FCLAGS=$NETCDF4_FCLAGS" >& AS_MESSAGE_FD # it is not set
   echo "NETCDF4_LDFLAGS(not used)=$NETCDF4_LDFLAGS" >& AS_MESSAGE_FD
-  echo "NETCDF4_FLIBS=$NETCDF4_FLIBS" >& AS_MESSAGE_FD
-  echo '--' >& AS_MESSAGE_FD
+	echo "NETCDF4_FLIBS=$NETCDF4_FLIBS" >& AS_MESSAGE_FD
+	echo '--' >& AS_MESSAGE_FD
+else
+	echo "NO NETCDF4 ACTIVE" >& AS_MESSAGE_FD
+	echo '--' >& AS_MESSAGE_FD
 fi
 
 echo ' ' >& AS_MESSAGE_FD

@@ -624,6 +624,7 @@ ac_includes_default="\
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
 with_netcdf4_fortran
+SOURCES
 HAVE_NETCDF4
 NETCDF4_FLIBS
 NETCDF4_FFLAGS
@@ -5145,6 +5146,8 @@ $as_echo "yes" >&6; }
 $as_echo "$as_me: NetCDF has been installed using cmake which still lacks a proper nf-config linking" >&6;}
 			{ $as_echo "$as_me:${as_lineno-$LINENO}: The message on the NETCDF4 FC was ${NETCDF4_FC}" >&5
 $as_echo "$as_me: The message on the NETCDF4 FC was ${NETCDF4_FC}" >&6;}
+      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: If you compiled NETCDF4 with a different compiler than $FC the compilation will crash" >&5
+$as_echo "$as_me: WARNING: If you compiled NETCDF4 with a different compiler than $FC the compilation will crash" >&2;}
 			{ $as_echo "$as_me:${as_lineno-$LINENO}: checking again if netcdf was built with Fortran bindings" >&5
 $as_echo_n "checking again if netcdf was built with Fortran bindings... " >&6; }
 			if test -z "$NC_CONFIG"; then
@@ -5227,7 +5230,9 @@ $as_echo "$as_me: WARNING: NETCDF Fortran bindings not find. Memory handling wil
 	NETCDF4_FC="$FC"
 	NETCDF4_FFLAGS=""
 	NETCDF4_FLIBS=""
+	SOURCES="m_variables_gen.f90 m_clustering.f90 m_gen_nbls.f90 m_mst.f90 main_clu_adjl_mst.f90 utilities.f90 dist_clusters_utils.f90 gen_progind.f90 gen_manycuts.f90 contract_mst.f90"
 else
+	SOURCES="m_variables_gen.f90 m_clustering.f90 m_gen_nbls.f90 m_mst_netcdf.f90 m_mst.f90 main_clu_adjl_mst_netcdf.f90 main_clu_adjl_mst.f90 utilities_netcdf.f90 utilities.f90 dist_clusters_utils.f90 gen_progind.f90 gen_progind_netcdf.f90 gen_manycuts.f90 contract_mst.f90"
 	options="$options netcdf4"
 fi
 
@@ -5469,6 +5474,7 @@ echo "" >& 6
 # ---------------------------------------------------------------------------
 
 
+
 # AC_SUBST(NETCDF4_CC)
 # AC_SUBST(NETCDF4_CFLAGS)
 # AC_SUBST(NETCDF4_CPPFLAGS)
@@ -5485,8 +5491,11 @@ if test "$with_netcdf4_fortran" = "yes"; then
 	echo "NETCDF4_FFLAGS=$NETCDF4_FFLAGS" >& 6
 	# echo "NETCDF4_FCLAGS=$NETCDF4_FCLAGS" >& AS_MESSAGE_FD # it is not set
   echo "NETCDF4_LDFLAGS(not used)=$NETCDF4_LDFLAGS" >& 6
-  echo "NETCDF4_FLIBS=$NETCDF4_FLIBS" >& 6
-  echo '--' >& 6
+	echo "NETCDF4_FLIBS=$NETCDF4_FLIBS" >& 6
+	echo '--' >& 6
+else
+	echo "NO NETCDF4 ACTIVE" >& 6
+	echo '--' >& 6
 fi
 
 echo ' ' >& 6

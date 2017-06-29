@@ -1,8 +1,9 @@
 ---
-title: "Tutorial 11"
+title: "Running the tutorial 11 using Fortran code and the package"
+author: "Davide Garolini"
 date: "`r BiocStyle::doc_date()`"
 vignette: >
-  %\VignetteIndexEntry{"2. Tutorial 11"}
+  %\VignetteIndexEntry{"Running the tutorial 11 using Fortran code and the package."}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
