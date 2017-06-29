@@ -1,6 +1,6 @@
-NETCDF4_FC=gfortran
-NETCDF4_LDFLAGS=-L/usr/lib/x86_64-linux-gnu/hdf5/serial -L/usr/lib 
-NETCDF4_FFLAGS=-I/usr/include
+NETCDF4_FC=/usr/local/Cellar/gcc/7.1.0/bin/gfortran
+NETCDF4_LDFLAGS=-L/usr/local/lib -L/usr/local/Cellar/netcdf/4.4.1.1_4/lib 
+NETCDF4_FFLAGS=-I/usr/local/include
 NETCDF4_FLIBS=-lnetcdff 
 
 # These variables are generally defined and can be assigned only once

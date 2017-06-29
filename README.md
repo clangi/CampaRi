@@ -40,8 +40,8 @@ brew update
 brew install netcdf --with-fortran
 
 # linux
-sudo apt update -g
-sudo apt install libnetcdf-dev --with-fortran
+sudo apt update 
+sudo apt install libnetcdff-dev
 ```
 
 ------------------------------------------------------------------------

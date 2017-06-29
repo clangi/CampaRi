@@ -247,7 +247,7 @@ echo "$options" "$all_options" | tr ' ' '\n' | sort | uniq -u | tr '\n' ' ' >& A
 
 
 
-echo -e "\n" >& AS_MESSAGE_FD
+echo "\n" >& AS_MESSAGE_FD
 SECTION_TITLE([Important variables])
 # netcdf4
 # ---------------------------------------------------------------------------

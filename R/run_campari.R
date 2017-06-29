@@ -18,6 +18,7 @@
 #' @param return_log Default to \code{FALSE}. It will return CAMPARI log as a string (also).
 #' @param key_file_input If you provide an already formatted keyfile to this argument, every variable defined in the provided keyfile will be overriden by the ones in this function and CAMPARI will 
 #' be run after the generation of a new keyfile. Please note that in the case of multivariable keywords the algorithm will keep only the first value. Consider using \code{\link{keywords_from_keyfile}} function.
+#' @param silent Defaults to \code{FALSE}. It will silent all outputs (not the warnings).
 #' @param ... Analysis variables (similarly to \code{\link{mst_from_trj}}). You can check all of these in the original documentation (\url{http://campari.sourceforge.net/documentation.html}). 
 #'
 #' @details For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
@@ -36,7 +37,7 @@
 
 run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=NULL,
                         multi_threading=FALSE, mpi=FALSE, print_status=TRUE, run_in_background=FALSE,
-                        key_file_input=NULL, return_log = FALSE, ...){
+                        key_file_input=NULL, return_log = FALSE, silent = FALSE, ...){
   
   # -----------------------
   #        CHECKS  
@@ -70,6 +71,8 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
     stop('run_in_background must be a logical.')
   if(!is.logical(return_log))
     stop('return_log must be a logical.')
+  if(!is.logical(silent))
+    stop('silent must be a logical.')
   if(run_in_background){
     warning('run_in_background option manually forced print_status to FALSE')
     print_status <- FALSE
@@ -93,7 +96,7 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   # Base name checks and needed file setting
   if(!is.character(base_name) || length(nchar(base_name)) > 1)
     stop('base_name must be a single character string.')
-  cat('Selected base name for every output/input files (WARNING: they will be overwritten): ', base_name, '\n')
+  if(!silent) cat('Selected base name for every output/input files (WARNING: they will be overwritten): ', base_name, '\n')
   if(!"FMCSC_BASENAME" %in% args_names) args_list <- c(args_list, FMCSC_BASENAME=base_name)
   
   # seq_in <- paste0(base_name, '.in') # should it be inserted or not??
@@ -102,8 +105,8 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   
   # checking existance of files
   # if(file.exists(seq_in)) warning(seq_in, " is present in the working directory. It will be overwritten.")
-  if(file.exists(log_f)) cat(log_f, " is present in the working directory. It will be overwritten.\n")
-  if(file.exists(key_f)) cat(key_f, " is present in the working directory. It will be overwritten.\n")
+  if(file.exists(log_f)) if(!silent) cat(log_f, " is present in the working directory. It will be overwritten.\n")
+  if(file.exists(key_f)) if(!silent) cat(key_f, " is present in the working directory. It will be overwritten.\n")
   
   
   # -----------------------
@@ -111,13 +114,13 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   if(!is.null(trj)){
     if(!is.null(data_file))
       stop('Only one between trj and data_file must be provided.')
-    message('The trajectory inserted will be written for the analysis in: ', base_name, '.tsv')
+    if(!silent) message('The trajectory inserted will be written for the analysis in: ', base_name, '.tsv')
     data_file <- paste0(base_name, '.tsv')
     if(file.exists(data_file)) warning(data_file, " is present in the working directory. It will be overwritten.")
     data.table::fwrite(data.frame(trj), data_file, sep = '\t', row.names = FALSE, col.names = FALSE) 
     if(is.null(nsnaps)) nsnaps <- nrow(trj)
     if(is.null(nvars)) nvars <- ncol(trj) 
-    message('Input trajectory dimensions: (', nsnaps, ', ', nvars, ')')
+    if(!silent) message('Input trajectory dimensions: (', nsnaps, ', ', nvars, ')')
     analysis_mode <- TRUE
   }else if(!is.null(data_file)){
     if(!file.exists(data_file))
@@ -131,12 +134,12 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   }else{
     if(any(c('FMCSC_PDB_FORMAT') %in% args_names)){
       warning('We found analysis keywords while no trj nor data_file was supplied. All the checks for the analysis inputs will be disabled. No NCMINER mode active.')
-      cat('ANALYSIS MODE (for manual insertion of FMCSC_PDB_FORMAT keyword)\n')
+      if(!silent) cat('ANALYSIS MODE (for manual insertion of FMCSC_PDB_FORMAT keyword)\n')
       particular_analy <- TRUE
     }
     if(any(c('FMCSC_NCDM_ASFILE', 'FMCSC_NCDM_NCFILE') %in% args_names)){
       warning('We found analysis keywords while no trj nor data_file was supplied. All the checks for the analysis inputs will be disabled. NCMINER mode active.')
-      cat('ANALYSIS MODE (for manual insertion of FMCSC_NCDM_* keyword)\n')
+      if(!silent) cat('ANALYSIS MODE (for manual insertion of FMCSC_NCDM_* keyword)\n')
       particular_analy <- TRUE
       if('FMCSC_NCDM_ASFILE' %in% args_names) ascii_mode <- TRUE
       if('FMCSC_NCDM_NCFILE' %in% args_names) netcdf_mode <- TRUE
@@ -146,9 +149,9 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   
   # printing the running mode
   if(simulation_mode && !particular_analy)
-    cat('SIMULATION RUN: time series (trj) or trajectory file (data_file) not inserted.\n')
+    if(!silent) cat('SIMULATION RUN: time series (trj) or trajectory file (data_file) not inserted.\n')
   if(analysis_mode)
-    cat('ANALYSIS MODE\n')
+    if(!silent) cat('ANALYSIS MODE\n')
   
   # -----------------------
   # checking analysis mode file specifics
@@ -160,7 +163,7 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
     if(!file_ext(data_file) %in% c('tsv', 'dat', 'nc', 'xtc', 'dcd', 'pdb'))
       stop("Please provide a data_file with a clear formatted extension (one between 'tsv', 'dat', 'nc', 'xtc', 'dcd', 'pdb').")
     if(file_ext(data_file) %in% c('tsv', 'dat')){
-      message('File mode: ASCII (e.g. tab separated values)')
+      if(!silent) message('File mode: ASCII (e.g. tab separated values)')
       ascii_mode <- TRUE
       args_list <- c(args_list,
                      FMCSC_NCDM_ASFILE=data_file,
@@ -169,22 +172,22 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
     }else{
       args_list <- c(args_list, FMCSC_NRSTEPS=nsnaps)
       if(file_ext(data_file) %in% c('pdb')){
-        message('File mode: PDB (consider changing pdb convention with FMCSC_PDB_R_CONV)')
+        if(!silent) message('File mode: PDB (consider changing pdb convention with FMCSC_PDB_R_CONV)')
         args_list <- c(args_list, 
                        FMCSC_PDBFILE=data_file,
                        FMCSC_PDB_FORMAT=1) # option two not ready                
       }else if(file_ext(data_file) %in% c('xtc')){
-        message('File mode: XTC (gromacs convention)')
+        if(!silent) message('File mode: XTC (gromacs convention)')
         args_list <- c(args_list, 
                        FMCSC_XTCFILE=data_file,
                        FMCSC_PDB_FORMAT=3)      
       }else if(file_ext(data_file) %in% c('dcd')){
-        message('File mode: DCD (CHARMM/NAMD style)')
+        if(!silent) message('File mode: DCD (CHARMM/NAMD style)')
         args_list <- c(args_list, 
                        FMCSC_DCDFILE=data_file,
                        FMCSC_PDB_FORMAT=4) 
       }else if(file_ext(data_file) %in% c('nc')){
-        message('File mode: NetCDF (AMBER style)')
+        if(!silent) message('File mode: NetCDF (AMBER style)')
         args_list <- c(args_list, 
                        FMCSC_NCDM_NCFILE=data_file) 
         #nsnaps?
@@ -208,33 +211,33 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   }
   
   # eventual add of bashrc PATH exports
-  cat('Looking for additional campari bin locations (exports) in ~./bashrc file... ')
+  if(!silent) cat('Looking for additional campari bin locations (exports) in ~./bashrc file... ')
   camp_bin_path <- suppressWarnings(system('cat ~/.bashrc | grep PATH | grep camp', intern = T))
   if(length(camp_bin_path) != 0){
     camp_bin_path <- strsplit(paste(camp_bin_path, collapse = 'PATH'), split = "PATH|:", fixed = FALSE)[[1]]
     if(length(camp_bin_path) > 1){
-      cat('found.\n')
+      if(!silent) cat('found.\n')
       camp_bin_path <- paste(camp_bin_path[grep(x = camp_bin_path, pattern = '/')], collapse = ":")
     }else{
-      cat('not correct format.\n')
+      if(!silent) cat('not correct format.\n')
     }
   }else{
-    cat('not found.\n')
+    if(!silent) cat('not found.\n')
     camp_bin_path <- ""
   }
   # eventual add of additional aliases
-  cat('Looking for additional campari bin locations (aliases) in ~./bashrc file... ')
+  if(!silent) cat('Looking for additional campari bin locations (aliases) in ~./bashrc file... ')
   camp_bin_alias <- suppressWarnings(system('cat ~/.bashrc | grep alias | grep camp', intern = T))
   if(length(camp_bin_alias) != 0){
     camp_bin_alias <- strsplit(paste(camp_bin_alias, collapse = '='), split = "=|'|\"", fixed = FALSE)[[1]]
     if(length(camp_bin_alias) > 1){
-      cat('found.\n')
+      if(!silent) cat('found.\n')
       camp_bin_alias <- paste(dirname(camp_bin_alias[grep(x = camp_bin_alias, pattern = '/')]), collapse = ":")
     }else{
-      cat('not correct format.\n')
+      if(!silent) cat('not correct format.\n')
     }
   }else{
-    cat('not found.\n')
+    if(!silent) cat('not found.\n')
     camp_bin_alias <- ""
   }
   
@@ -276,7 +279,7 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
       campari_main_exe <- campari_mpi_threads_exe
   }
   # printing the exe which will be used
-  cat(campari_main_exe, 'will be used for this CAMPARI run. \n')
+  if(!silent) cat(campari_main_exe, 'will be used for this CAMPARI run. \n')
   
   # -----------------------
   # set the default directory
@@ -287,17 +290,17 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   if("PARAMETERS" %in% args_names){
     paramiters <- args_list[["PARAMETERS"]]
     if(grepl(pattern = "/", paramiters)){
-      cat('Found PARAMETERS variable with full path to the parameter file. Please use simply the filename to look directly into the exe directory.\n')
+      if(!silent) cat('Found PARAMETERS variable with full path to the parameter file. Please use simply the filename to look directly into the exe directory.\n')
     }else{
-      message('Inserted only filename in the PARAMETERS variable. This file will be searched in the exe directory. To use current directory please add "./" in front of the filename.')      
+      if(!silent) message('Inserted only filename in the PARAMETERS variable. This file will be searched in the exe directory. To use current directory please add "./" in front of the filename.')      
       paramiters <- paste0(camp_home, "params/", paramiters)
     }
   }else{
     paramiters <- paste0(camp_home,"params/abs3.2_opls.prm")  # file defining system energies. Irrelevant fuer blosse Analyse.
     warning('PARAMETERS variable not found. It MUST be supplied, therefore we automatically assign it to: ', paramiters)
-    cat('PARAMITERS variable AUTOMATICALLY assigned to', paramiters, '. ATTENTION! This file should be correctly assigned to avoid spurious behaviours. \n')
+    if(!silent) cat('PARAMITERS variable AUTOMATICALLY assigned to', paramiters, '. ATTENTION! This file should be correctly assigned to avoid spurious behaviours. \n')
   }
-  cat('Using the following specific PARAMETERS:', paramiters, '\n')
+  if(!silent) cat('Using the following specific PARAMETERS:', paramiters, '\n')
   
   if(!file.exists(paramiters)) stop('Parameter file not found in: ', paramiters)
   args_list <- c(args_list, PARAMETERS=paramiters)
@@ -318,7 +321,7 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   
   # -----------------------
   # keyfile writer
-  cat('writing of keyfile ', key_f, '\n\n')
+  if(!silent) cat('writing of keyfile ', key_f, '\n\n')
   args_names <- names(args_list)
   cat(args_names[1],args_list[[1]],'\n', file = key_f)
   for(i in 2:length(args_list))
@@ -327,22 +330,22 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   
   # -----------------------
   # final run of campari
-  cat('Starting campari... \n')
-  cat(' --------------------------------------------------------------------------\n')
-  cat('                                    CAMPARI                                \n')
-  cat(' --------------------------------------------------------------------------\n')
-  cat('If not in bakground mode, an error in CAMPARI will be reflected in R.\n')
+  if(!silent) cat('Starting campari... \n')
+  if(!silent) cat(' --------------------------------------------------------------------------\n')
+  if(!silent) cat('                                    CAMPARI                                \n')
+  if(!silent) cat(' --------------------------------------------------------------------------\n')
+  if(!silent) cat('If not in bakground mode, an error in CAMPARI will be reflected in R.\n')
   if(print_status){
     suppressWarnings(system(paste0(campari_main_exe, " -k ", key_f, " | tee ", log_f)))
     if(any(grepl(x = suppressWarnings(system(paste0("tail -n8 ", log_f), intern = TRUE)), pattern = "CAMPARI CRASHED")))
       stop('======== detected CAMPARI CRASHED in log. Please check it for details ========')
   }else if(run_in_background){
-    cat('Direct console printing disabled (it will run in background). Please check', log_f, ' file for real time logging.\n')
+    if(!silent) cat('Direct console printing disabled (it will run in background). Please check', log_f, ' file for real time logging.\n')
     suppressWarnings(system(paste0(campari_main_exe, " -k ", key_f, " > ", log_f, "&")))
   }else{
-    cat('Direct console printing disabled. Please check', log_f, ' file for real time logging (at the end it will be tailed).\n')
+    if(!silent) cat('Direct console printing disabled. Please check', log_f, ' file for real time logging (at the end it will be tailed).\n')
     suppressWarnings(system(paste0(campari_main_exe, " -k ", key_f, " > ", log_f)))
-    cat('\n')
+    if(!silent) cat('\n')
     suppressWarnings(system(paste0("tail -n6 ", log_f)))
     if(any(grepl(x = suppressWarnings(system(paste0("tail -n8 ", log_f), intern = TRUE)), pattern = "CAMPARI CRASHED")))
       stop('======== detected CAMPARI CRASHED in log. Please check it for details ========')

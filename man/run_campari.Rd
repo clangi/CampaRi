@@ -7,7 +7,7 @@
 run_campari(trj = NULL, base_name = "base_name", data_file = NULL,
   nsnaps = NULL, multi_threading = FALSE, mpi = FALSE,
   print_status = TRUE, run_in_background = FALSE, key_file_input = NULL,
-  return_log = FALSE, ...)
+  return_log = FALSE, silent = FALSE, ...)
 }
 \arguments{
 \item{trj}{Trajectory to be analysed by campari. It must be in the format (snapshots per variables). It will be written as an .tsv in the current working directory.}
@@ -30,6 +30,8 @@ run_campari(trj = NULL, base_name = "base_name", data_file = NULL,
 be run after the generation of a new keyfile. Please note that in the case of multivariable keywords the algorithm will keep only the first value. Consider using \code{\link{keywords_from_keyfile}} function.}
 
 \item{return_log}{Default to \code{FALSE}. It will return CAMPARI log as a string (also).}
+
+\item{silent}{Defaults to \code{FALSE}. It will silent all outputs (not the warnings).}
 
 \item{...}{Analysis variables (similarly to \code{\link{mst_from_trj}}). You can check all of these in the original documentation (\url{http://campari.sourceforge.net/documentation.html}).}
 }
