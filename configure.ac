@@ -53,7 +53,6 @@ m4_include([tools/m4/ax_lib_netcdf4.m4])
 AX_LIB_NETCDF4()
 if test "$with_netcdf4_fortran" = "yes"; then
 	dnl This add to the NETCDF4_LIBS was needed to compile
-	options="$options netcdf4"
 
   # test whether netcdf target compiler is the same of the selected one
   AC_MSG_CHECKING([whether netcdf target compiler is the same compiler that has been selected])
@@ -114,6 +113,8 @@ if test "$with_netcdf4_fortran" = "no"; then
 ATTENTION!! It is not advisable to avoid the use netcdf memory handling.
 
 ])
+else
+	options="$options netcdf4"
 fi
 
 dnl This part will be used to establish R variables
@@ -277,7 +278,7 @@ echo "$options" "$all_options" | tr ' ' '\n' | sort | uniq -u | tr '\n' ' ' >& A
 
 
 
-echo "\n" >& AS_MESSAGE_FD
+echo "" >& AS_MESSAGE_FD
 SECTION_TITLE([Important variables])
 # netcdf4
 # ---------------------------------------------------------------------------

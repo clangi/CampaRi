@@ -5113,7 +5113,6 @@ $as_echo "#define HAVE_NETCDF4 1" >>confdefs.h
 fi
 
 if test "$with_netcdf4_fortran" = "yes"; then
-		options="$options netcdf4"
 
   # test whether netcdf target compiler is the same of the selected one
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether netcdf target compiler is the same compiler that has been selected" >&5
@@ -5207,6 +5206,8 @@ $as_echo "$as_me: WARNING:
 ATTENTION!! It is not advisable to avoid the use netcdf memory handling.
 
 " >&2;}
+else
+	options="$options netcdf4"
 fi
 
 
@@ -5437,7 +5438,7 @@ echo "$options" "$all_options" | tr ' ' '\n' | sort | uniq -u | tr '\n' ' ' >& 6
 
 
 
-echo "\n" >& 6
+echo "" >& 6
 
 		echo '   Important variables   ' | sed -e's/./-/g' >&6
 	echo '   Important variables' >& 6
