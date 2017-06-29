@@ -23,5 +23,4 @@ inst/doc
 inst/campari_lib/*
 vignettes/out_to_del/*
 TODEL
-configure.ac
 .Rproj.user
