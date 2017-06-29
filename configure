@@ -623,8 +623,8 @@ ac_includes_default="\
 
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
-HAVE_NETCDF4
 with_netcdf4_fortran
+HAVE_NETCDF4
 NETCDF4_FLIBS
 NETCDF4_FFLAGS
 NETCDF4_FC
@@ -683,6 +683,7 @@ infodir
 docdir
 oldincludedir
 includedir
+runstatedir
 localstatedir
 sharedstatedir
 sysconfdir
@@ -762,6 +763,7 @@ datadir='${datarootdir}'
 sysconfdir='${prefix}/etc'
 sharedstatedir='${prefix}/com'
 localstatedir='${prefix}/var'
+runstatedir='${localstatedir}/run'
 includedir='${prefix}/include'
 oldincludedir='/usr/include'
 docdir='${datarootdir}/doc/${PACKAGE_TARNAME}'
@@ -1014,6 +1016,15 @@ do
   | -silent | --silent | --silen | --sile | --sil)
     silent=yes ;;
 
+  -runstatedir | --runstatedir | --runstatedi | --runstated \
+  | --runstate | --runstat | --runsta | --runst | --runs \
+  | --run | --ru | --r)
+    ac_prev=runstatedir ;;
+  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
+  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
+  | --run=* | --ru=* | --r=*)
+    runstatedir=$ac_optarg ;;
+
   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
     ac_prev=sbindir ;;
   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
@@ -1151,7 +1162,7 @@ fi
 for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
 		datadir sysconfdir sharedstatedir localstatedir includedir \
 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
-		libdir localedir mandir
+		libdir localedir mandir runstatedir
 do
   eval ac_val=\$$ac_var
   # Remove trailing slashes.
@@ -1304,6 +1315,7 @@ Fine tuning of the installation directories:
   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
+  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
   --libdir=DIR            object code libraries [EPREFIX/lib]
   --includedir=DIR        C header files [PREFIX/include]
   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
@@ -5167,45 +5179,54 @@ $as_echo "no" >&6; }
   ATTENTION!! The target compiler used for netcdf4 is different from the
   selected one for campari. Please consider reinstalling netcdf4 using
   the correct --exec-prefix.
-  " >&5
+" >&5
 $as_echo "$as_me: WARNING:
 
   ATTENTION!! The target compiler used for netcdf4 is different from the
   selected one for campari. Please consider reinstalling netcdf4 using
   the correct --exec-prefix.
-  " >&2;}
+" >&2;}
 			with_netcdf4_fortran=no
 		fi
   fi
 else
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING:
 
-		Unable to find NetCDF4 and set Fortran bindings. Please be
-		sure that command nc-config(nf-config for recent versions) exists
-		and it is not competing with previous versions (nc-config should not
-			have fortran bindings if nf-config is provided).
-			" >&5
+	Unable to find NetCDF4 and set Fortran bindings. Please be
+	sure that command nc-config(nf-config for recent versions) exists
+	and it is not competing with previous versions (nc-config should not
+	have fortran bindings if nf-config is provided).
+" >&5
 $as_echo "$as_me: WARNING:
 
-		Unable to find NetCDF4 and set Fortran bindings. Please be
-		sure that command nc-config(nf-config for recent versions) exists
-		and it is not competing with previous versions (nc-config should not
-			have fortran bindings if nf-config is provided).
-			" >&2;}
+	Unable to find NetCDF4 and set Fortran bindings. Please be
+	sure that command nc-config(nf-config for recent versions) exists
+	and it is not competing with previous versions (nc-config should not
+	have fortran bindings if nf-config is provided).
+" >&2;}
 	with_netcdf4_fortran=no
 fi
 
 if test "$with_netcdf4_fortran" = "no"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING:
 
-ATTENTION!! It is not advisable to avoid the use netcdf memory handling.
-
+	ATTENTION!! It is not advisable to avoid the use netcdf memory handling.
 " >&5
 $as_echo "$as_me: WARNING:
 
-ATTENTION!! It is not advisable to avoid the use netcdf memory handling.
-
+	ATTENTION!! It is not advisable to avoid the use netcdf memory handling.
 " >&2;}
+{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: NETCDF Fortran bindings not find. Memory handling will be limited to R." >&5
+$as_echo "$as_me: WARNING: NETCDF Fortran bindings not find. Memory handling will be limited to R." >&2;}
+	NETCDF4_CC=""
+	NETCDF4_VERSION=""
+	NETCDF4_CFLAGS=""
+	NETCDF4_CPPFLAGS=""
+	NETCDF4_LDFLAGS=""
+	NETCDF4_LIBS=""
+	NETCDF4_FC="$FC"
+	NETCDF4_FFLAGS=""
+	NETCDF4_FLIBS=""
 else
 	options="$options netcdf4"
 fi
@@ -5447,31 +5468,6 @@ echo "" >& 6
 # netcdf4
 # ---------------------------------------------------------------------------
 
-if test "$with_netcdf4_fortran" = "yes"; then
-  # echo "HAVE_NETCDF4=1" >& AS_MESSAGE_FD
-	echo "NETCDF4_VERSION=$NETCDF4_VERSION" >& 6
-	echo "NETCDF4_FC=$NETCDF4_FC" >& 6
-	echo "NETCDF4_FFLAGS=$NETCDF4_FFLAGS" >& 6
-	# echo "NETCDF4_FCLAGS=$NETCDF4_FCLAGS" >& AS_MESSAGE_FD # it is not set
-  echo "NETCDF4_LDFLAGS(not used)=$NETCDF4_LDFLAGS" >& 6
-  echo "NETCDF4_FLIBS=$NETCDF4_FLIBS" >& 6
-  echo '--' >& 6
-else
-
-	echo '--' >& 6
-	echo 'NETCDF Fortran bindings not find. Memory handling will be limited to R.' >& 6
-	echo '--' >& 6
-	NETCDF4_CC=""
-	NETCDF4_VERSION=""
-	NETCDF4_CFLAGS=""
-	NETCDF4_CPPFLAGS=""
-	NETCDF4_LDFLAGS=""
-	NETCDF4_LIBS=""
-	NETCDF4_FC="$FC"
-	NETCDF4_FFLAGS=""
-	NETCDF4_FLIBS=""
-fi
-
 
 # AC_SUBST(NETCDF4_CC)
 # AC_SUBST(NETCDF4_CFLAGS)
@@ -5481,6 +5477,17 @@ fi
 
 
 
+
+if test "$with_netcdf4_fortran" = "yes"; then
+  # echo "HAVE_NETCDF4=1" >& AS_MESSAGE_FD
+	echo "NETCDF4_VERSION=$NETCDF4_VERSION" >& 6
+	echo "NETCDF4_FC=$NETCDF4_FC" >& 6
+	echo "NETCDF4_FFLAGS=$NETCDF4_FFLAGS" >& 6
+	# echo "NETCDF4_FCLAGS=$NETCDF4_FCLAGS" >& AS_MESSAGE_FD # it is not set
+  echo "NETCDF4_LDFLAGS(not used)=$NETCDF4_LDFLAGS" >& 6
+  echo "NETCDF4_FLIBS=$NETCDF4_FLIBS" >& 6
+  echo '--' >& 6
+fi
 
 echo ' ' >& 6
 echo "From R session:" >& 6

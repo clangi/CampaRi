@@ -4,6 +4,12 @@ CampaRi.Rproj
 .Rhistory
 .RData
 .Ruserdata
+
+config.log
+config.status
+autom4te.cache/*
+
+
 src/*.o
 src/*.so
 src/*.dll
@@ -13,9 +19,6 @@ src/REPIX
 src/Makevars
 output_to_delete/
 man/.Rd2pdf21998/
-config.log
-config.status
-autom4te.cache/
 inst/doc
 vignettes/out_to_del/*
 TODEL
