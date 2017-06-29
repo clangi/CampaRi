@@ -10,7 +10,7 @@ src/*.dll
 src/*.mod
 src/a.out
 src/REPIX
-src/Makevars*
+src/Makevars
 output_to_delete/
 man/.Rd2pdf21998/
 config.log

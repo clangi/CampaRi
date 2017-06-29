@@ -15,6 +15,7 @@ SECTION_TITLE([CampaRi package, AC_PACKAGE_VERSION])
 #AC_LANG(Fortran)
 AC_PROG_FC
 AC_PATH_PROG(WHICH, which)
+AC_PATH_PROG(ECHO, echo)
 AC_PATH_PROG(BASH, bash)
 AC_PATH_PROG(RM, rm)
 AC_PATH_PROG(MV, mv)
@@ -58,33 +59,62 @@ if test "$with_netcdf4_fortran" = "yes"; then
   AC_MSG_CHECKING([whether netcdf target compiler is the same compiler that has been selected])
   if test `$BASENAME "${NETCDF4_FC}"` = `$BASENAME "${FC}"`; then
     AC_MSG_RESULT([yes])
-
   else
     AC_MSG_RESULT([no])
-    AC_MSG_ERROR([
+		AC_MSG_CHECKING([if netcdf has been built with cmake (not supported for nf-config yet)])
+		testing_cmake_exception=`$ECHO "${NETCDF4_FC}" | $GREP cmake`
+		if test -n testing_cmake_exception; then
+			AC_MSG_RESULT([yes])
+			AC_MSG_NOTICE([NetCDF has been installed using cmake which still lacks a proper nf-config linking])
+			AC_MSG_NOTICE([The message on the NETCDF4 FC was ${NETCDF4_FC}])
+			AC_MSG_CHECKING([again if netcdf was built with Fortran bindings])
+			if test -z "$NC_CONFIG"; then
+				AC_MSG_RESULT([no])
+				AC_MSG_WARN([We were not able to find nc-config])
+				with_netcdf4_fortran=no
+			else
+				did_it_has_fortran=`$NC_CONFIG --has-fortran`
+				if test -n "$did_it_has_fortran"; then
+					AC_MSG_RESULT([yes])
+					AC_MSG_NOTICE([Trying to bind netcdf with usual libraries (guessing -lnetcdff)])
+					NETCDF4_FC="$FC"
+					NETCDF4_FFLAGS="${NETCDF4_CFLAGS}"
+					NETCDF4_FLIBS="-lnetcdff ${NETCDF4_LIBS}"
+				else
+					AC_MSG_RESULT([no])
+					AC_MSG_WARN([No Fortran bindings found. Option disabled])
+					with_netcdf4_fortran=no
+				fi
+			fi
+		else
+		 	AC_MSG_RESULT([no])
+			AC_MSG_WARN([
 
   ATTENTION!! The target compiler used for netcdf4 is different from the
   selected one for campari. Please consider reinstalling netcdf4 using
   the correct --exec-prefix.
   ])
+			with_netcdf4_fortran=no
+		fi
   fi
-
-elif test "$with_netcdf4" = "no"; then
-  AC_MSG_WARN([
-
-ATTENTION!! It is not possible to avoid the use netcdf memory handling.
-
-])
 else
-	AC_MSG_ERROR([
+	AC_MSG_WARN([
 
-Unable to find NetCDF4 and set Fortran bindings. Please be
-sure that command nc-config(nf-config for recent versions) exists
-and it is not competing with previous versions (nc-config should not
-have fortran bindings if nf-config is provided).
-])
+		Unable to find NetCDF4 and set Fortran bindings. Please be
+		sure that command nc-config(nf-config for recent versions) exists
+		and it is not competing with previous versions (nc-config should not
+			have fortran bindings if nf-config is provided).
+			])
+	with_netcdf4_fortran=no
 fi
 
+if test "$with_netcdf4_fortran" = "no"; then
+  AC_MSG_WARN([
+
+ATTENTION!! It is not advisable to avoid the use netcdf memory handling.
+
+])
+fi
 
 dnl This part will be used to establish R variables
 
@@ -251,16 +281,6 @@ echo "\n" >& AS_MESSAGE_FD
 SECTION_TITLE([Important variables])
 # netcdf4
 # ---------------------------------------------------------------------------
-AC_SUBST(HAVE_NETCDF4)
-AC_SUBST(NETCDF4_VERSION)
-# AC_SUBST(NETCDF4_CC)
-# AC_SUBST(NETCDF4_CFLAGS)
-# AC_SUBST(NETCDF4_CPPFLAGS)
-AC_SUBST(NETCDF4_LDFLAGS)
-AC_SUBST(NETCDF4_LIBS)
-AC_SUBST(NETCDF4_FC)
-AC_SUBST(NETCDF4_FFLAGS)
-AC_SUBST(NETCDF4_FLIBS)
 AC_SUBST(with_netcdf4_fortran)
 if test "$with_netcdf4_fortran" = "yes"; then
   # echo "HAVE_NETCDF4=1" >& AS_MESSAGE_FD
@@ -271,7 +291,32 @@ if test "$with_netcdf4_fortran" = "yes"; then
   echo "NETCDF4_LDFLAGS(not used)=$NETCDF4_LDFLAGS" >& AS_MESSAGE_FD
   echo "NETCDF4_FLIBS=$NETCDF4_FLIBS" >& AS_MESSAGE_FD
   echo '--' >& AS_MESSAGE_FD
+else
+
+	echo '--' >& AS_MESSAGE_FD
+	echo 'NETCDF Fortran bindings not find. Memory handling will be limited to R.' >& AS_MESSAGE_FD
+	echo '--' >& AS_MESSAGE_FD
+	NETCDF4_CC=""
+	NETCDF4_VERSION=""
+	NETCDF4_CFLAGS=""
+	NETCDF4_CPPFLAGS=""
+	NETCDF4_LDFLAGS=""
+	NETCDF4_LIBS=""
+	NETCDF4_FC="$FC"
+	NETCDF4_FFLAGS=""
+	NETCDF4_FLIBS=""
 fi
+AC_SUBST(HAVE_NETCDF4)
+AC_SUBST(NETCDF4_VERSION)
+# AC_SUBST(NETCDF4_CC)
+# AC_SUBST(NETCDF4_CFLAGS)
+# AC_SUBST(NETCDF4_CPPFLAGS)
+AC_SUBST(NETCDF4_LDFLAGS)
+AC_SUBST(NETCDF4_LIBS)
+AC_SUBST(NETCDF4_FC)
+AC_SUBST(NETCDF4_FFLAGS)
+AC_SUBST(NETCDF4_FLIBS)
+
 echo ' ' >& AS_MESSAGE_FD
 echo "From R session:" >& AS_MESSAGE_FD
 echo ' ' >& AS_MESSAGE_FD
