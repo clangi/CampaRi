@@ -53,7 +53,6 @@
 #' @importFrom prospectr movav savitzkyGolay
 #' @importFrom splus2R peaks
 #' @importFrom grDevices dev.new
-#' @importFrom sfsmisc is.whole 
 #' @importFrom distr DiscreteDistribution
 #' @importFrom data.table fread fwrite
 #' @export basins_recognition
@@ -63,8 +62,8 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
     
     if(!is.character(data) && !is.data.frame(data)) stop("data must be a string or a data frame")
     if(is.character(data) && !all(grepl("PROGIDX", data))) stop("Please provide a data name starting with 'PROGIDX'" )
-    if(!is.whole(nx)) stop("nx must be an integer")
-    if(!is.whole(ny)) stop("ny must be an integer")
+    if((nx %% 1) != 0) stop("nx must be an integer")
+    if((ny %% 1) != 0) stop("ny must be an integer")
     if(!is.logical(local.cut)) stop("local.cut must be a logical value")
     if(!is.logical(match)) stop("match must be a logical value")
     if(!is.logical(plot)) stop("plot must be a logical value")
