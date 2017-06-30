@@ -47,6 +47,9 @@
 #' @details For details regarding the SAPPHIRE plot, please refer to the relative publications \url{http://www.nature.com/articles/srep06264}. 
 #' Main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
 #' 
+#' @importFrom graphics abline axis legend lines mtext par points text
+#' @importFrom stats as.ts coef filter lm nls sd weighted.mean
+#' @importFrom utils head tail
 #' @importFrom gplots hist2d
 #' @importFrom distrEx HellingerDist
 #' @importFrom outliers grubbs.test
