@@ -18,7 +18,7 @@
 #' @param return_plot if \code{TRUE} it returns the plot object (ggplot).
 # @param annotate_snap_dist if \code{TRUE} the distance between snapshots will be added on the top of the plot
 #' @param sub_sampling_factor if a number is inserted the annotation will be subsampled by that factor.
-#' @param return_ann_trace If \code{TRUE} the annotation vector is returned. This option can be really useful for adding layers and specific text \link{ggplot2}.
+#' @param return_ann_trace If \code{TRUE} the annotation vector is returned. This option can be really useful for adding layers and specific text using \code{ggplot2}.
 # @param background_height Defines the height on which to put the annotation (integer between 1 and 14).
 # @param ann_names_L Vector of characther strings indicating, from top on the left, the names of the annotation horizontal bars.
 # @param ann_names_R Vector of characther strings indicating, from top on the right, the names of the annotation horizontal bars.
