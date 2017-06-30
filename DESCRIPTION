@@ -16,7 +16,7 @@ Depends: R (>= 3.1.0)
 Imports:
   bio3d, ggplot2, WGCNA, parallel, data.table, Rcpp,
   distrEx, gplots, grDevices, graphics, outliers, pcaPP,
-  prospectr, splus2R, stats, expm, Hmisc, distr, sfsmisc
+  prospectr, splus2R, stats, expm, Hmisc, distr
 Suggests: knitr, rmarkdown
 VignetteBuilder: knitr
 LinkingTo: Rcpp, RcppArmadillo
