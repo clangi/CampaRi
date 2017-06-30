@@ -40,3 +40,5 @@
 #   }
   invisible() #no output from this function
 }
+
+.lt <- function(x) return(length(x))
