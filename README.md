@@ -7,6 +7,8 @@
 
 -->
 [![Travis-CI Build Status](https://travis-ci.org/Melkiades/CampaRi.svg?branch=master)](https://travis-ci.org/Melkiades/CampaRi)
+[![DOI](https://zenodo.org/badge/68593949.svg)](https://zenodo.org/badge/latestdoi/68593949)
+
 
 ------------------------------------------------------------------------
 # CampaRi - An R wrapper for fast trajectory analysis
