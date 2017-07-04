@@ -62,7 +62,6 @@ bioc_packages:
   - impute
   - GO.db
   - preprocessCore
-  - BiocStyle
 
 r-packages:
   - bio3d
@@ -84,7 +83,9 @@ r-packages:
   - distr
   - sfsmisc
   - WGCNA
-  - covr
+  
+r_github_packages:
+  - jimhester/covr
 
 after_script:
   - ls -lah
