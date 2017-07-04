@@ -1,16 +1,18 @@
 ---
 title: "Running the tutorial 11 using Fortran code and the package"
 author: "Davide Garolini"
-date: "`r BiocStyle::doc_date()`"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{"Running the tutorial 11 using Fortran code and the package."}
   %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+  # %\VignetteEncoding{UTF-8}
+  %\usepackage[UTF-8]{inputenc} 
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-knitr::opts_knit$set(progress = FALSE)
+knitr::opts_knit$set(progress = FALSE, root.dir="out_to_del/")
 # knitr::opts_knit$set(root.dir="out_to_del/")
 ```
 

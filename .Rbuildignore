@@ -1,7 +1,11 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^\.travis\.yml$
-inst/campari_lib/*
+^inst/campari_lib/$
+^inst/campari_lib/*$
 NEWS\.md
 CONTRIBUTING\.md
 ISSUE_TEMPLATE\.md
+^vignettes/rsconnect/*$
+^vignettes/rsconnect/$
+^inst/doc/$

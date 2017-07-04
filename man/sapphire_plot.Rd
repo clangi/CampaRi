@@ -33,7 +33,7 @@ that follows a split in half of the original timeline. If only an integer have b
 Instead if a matrix have been inserted it will be a plotted as it is on the top of the plot mapping the range of numbers in order to
 produce a gray scale horizontal annotation.}
 
-\item{return_ann_trace}{If \code{TRUE} the annotation vector is returned. This option can be really useful for adding layers and specific text \link{ggplot2}.}
+\item{return_ann_trace}{If \code{TRUE} the annotation vector is returned. This option can be really useful for adding layers and specific text using \code{ggplot2}.}
 
 \item{title}{Title of the plot (default "")}
 

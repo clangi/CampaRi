@@ -3,7 +3,7 @@ Type: Package
 Title: Trajectory Analysis
 Version: 0.8.8
 Date: 2017-06-30
-Author: Garolini Davide
+Author: Garolini Davide, Cocina Francesco
 Maintainer: Garolini Davide <d.garolini@bioc.uzh.ch>
 Description: Analysis algorithms extracted from the original 'campari' software package.
   They consists in a kinetic annotation of the trajectory based on the minimum spanning tree

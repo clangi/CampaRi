@@ -1,8 +1,13 @@
 ---
 title: "Working with CampaRi"
 author: "Davide Garolini"
-date: "June 16, 2017"
-output: html_document
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{"Working with CampaRi"}
+  %\VignetteEngine{knitr::rmarkdown}
+  # %\VignetteEncoding{UTF-8}
+  %\usepackage[UTF-8]{inputenc}
 ---
 
 ```{r setup, include=FALSE}
@@ -13,8 +18,8 @@ knitr::opts_knit$set(progress = FALSE, root.dir="out_to_del/")
 Lets try out some other feature of the package.
 
 ## MST
-We will use here the trajectory generated using the following command:
-```{r}
+We will use here the trajectory generated using the following command (needs original campari package):
+```{r, eval=FALSE}
 # standard run of the simulation in tutarial 11 - In this case we copy pasted the nbu_simulation.key
 run_campari(FMCSC_SEQFILE="nbu.in", # you must have it defined according to CAMPARI's rules
             # FMCSC_BASENAME="NBU", # lets try the base_name option
@@ -48,16 +53,16 @@ system('mv FYC.dat NBU.fyc')
 
 When loading a trajectory into R, run_campari() will use the ASCII support (producing a .tsv file) which is not able to select dihedral angles as the original run. Therefore we load directly NBU.fyc and use it (distance 1).
 
-```{r}
+```{r, eval=FALSE}
+library(data.table)
 # to use ncminer we need to load fyc directly (dihedral angles handling not implemented)
-trj <- fread("vignettes/out_to_del/NBU.fyc", header = F, skip = 1)
-head(trj)
-fread("head -n 1 nbu.fyc") # head of it
-trj <- as.data.frame(trj[,-1])
+trj <- data.table::fread("NBU.fyc", header = F, skip = 1, data.table = FALSE)[,-1]
+# head(trj)
+# fread("head -n 1 NBU.fyc") # head of it
 trj <- sapply(trj, as.numeric) # always be sure that it is numeric!
 hist(trj[,2]) # this should have 3 peaks per diheadral angle
 
-run_campari(trj = trj[1:1000,],
+run_campari(trj = trj[1:10000,],
             FMCSC_CPROGINDMODE=1, #mst
             FMCSC_CCOLLECT=5, print_status = F,
             FMCSC_CMODE=4,
@@ -75,7 +80,7 @@ sapphire_plot(sap_file = "PROGIDX_000000000021.dat", title = "ORIGINAL CAMPARI -
 
 There is the possibility to use some internal replica of the main algorithms used for the metastable states recognition (basins in SAPPHIRE plots). The Minimum Spanning Tree, however, has memory limitation which are difficult to handle in R.
 
-```{r}
+```{r, eval=FALSE}
 options(CampaRi.data_management = "R") # R handling !!! ATTENTION MEMORY PROBLEMS ARE POSSIBLE FOR BIG DATA-SETS (USE NETCDF HANDLING)
 adjl <- mst_from_trj(trj = trj, mode = "fortran", normalize_d = FALSE, logging = F) # this will fail because it has a "safe" limit of 25000 snapshots
 
