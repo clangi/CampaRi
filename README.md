@@ -14,7 +14,8 @@
 ------------------------------------------------------------------------
 # CampaRi - An R wrapper for fast trajectory analysis
 
-For any help with the package usage and installation please [chat with us](https://gitter.im/CampaRi_chatroom/) (or send us an email ;))
+For any help with the package usage and installation please [chat with us](https://gitter.im/CampaRi_chatroom/).
+
 Analysis algorithms extracted from the original 'campari' software package.
 They consists in a kinetic annotation of the trajectory based on the minimum spanning tree constructed on the distances between snapshots. The fast algorithm is implemented on the basis of a modified version of the birch algorithm, while the slow one is based on a simple leader clustering. For more information please visit the [original website](http://campari.sourceforge.net/index.html)
 

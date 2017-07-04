@@ -84,10 +84,11 @@ r-packages:
   - distr
   - sfsmisc
   - WGCNA
+  - covr
 
 after_script:
   - ls -lah
   - FILE=$(ls -1t *.tar.gz | head -n 1)
 
 after_success:
-  - Rscript -e 'library(covr);codecov()'
+  - Rscript -e 'library(covr); codecov()'
