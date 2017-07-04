@@ -11,7 +11,8 @@ vignette: >
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
-knitr::opts_knit$set(progress = FALSE, root.dir="out_to_del/")
+knitr::opts_knit$set(progress = FALSE)
+# knitr::opts_knit$set(root.dir="out_to_del/")
 ```
 
 Lets try out some other feature of the package.
@@ -61,7 +62,7 @@ trj <- data.table::fread("NBU.fyc", header = F, skip = 1, data.table = FALSE)[,-
 trj <- sapply(trj, as.numeric) # always be sure that it is numeric!
 hist(trj[,2]) # this should have 3 peaks per diheadral angle
 
-run_campari(trj = trj[1:10000,],
+run_campari(trj = trj[1:20000,],
             FMCSC_CPROGINDMODE=1, #mst
             FMCSC_CCOLLECT=5, print_status = F,
             FMCSC_CMODE=4,
@@ -80,15 +81,15 @@ sapphire_plot(sap_file = "PROGIDX_000000000021.dat", title = "ORIGINAL CAMPARI -
 There is the possibility to use some internal replica of the main algorithms used for the metastable states recognition (basins in SAPPHIRE plots). The Minimum Spanning Tree, however, has memory limitation which are difficult to handle in R.
 
 ```{r, eval=FALSE}
-options(CampaRi.data_management = "R") # R handling !!! ATTENTION MEMORY PROBLEMS ARE POSSIBLE FOR BIG DATA-SETS (USE NETCDF HANDLING)
-adjl <- mst_from_trj(trj = trj, mode = "fortran", normalize_d = FALSE, logging = F) # this will fail because it has a "safe" limit of 25000 snapshots
+options(CampaRi.data_management = "netcdf") # R handling !!! ATTENTION MEMORY PROBLEMS ARE POSSIBLE FOR BIG DATA-SETS (USE NETCDF HANDLING)
+adjl <- mst_from_trj(trj = trj[1:1000,], mode = "fortran", normalize_d = FALSE, logging = F) # this will fail because it has a "safe" limit of 25000 snapshots
 
 # with 100k it is possible that also the netcdf option could exceede the memory availability
-options(CampaRi.data_management = "netcdf") # netcdf handling
-mst_from_trj(trj = trj[1:30000,], mode = "fortran", normalize_d = T, logging = F, distance_method = 1)
-ret <- gen_progindex(nsnaps = 30000, snap_start = 10)
-ret2 <- gen_annotation(ret, snap_start = 10)
-sapphire_plot(sap_file = 'REPIX_000000000010.dat', title = "CAMPARI WRAPPER - MST", timeline = T, ann_trace = F)
+# options(CampaRi.data_management = "netcdf") # netcdf handling
+# mst_from_trj(trj = trj[1:30000,], mode = "fortran", normalize_d = T, logging = F, distance_method = 1)
+# ret <- gen_progindex(nsnaps = 30000, snap_start = 10)
+# ret2 <- gen_annotation(ret, snap_start = 10)
+# sapphire_plot(sap_file = 'REPIX_000000000010.dat', title = "CAMPARI WRAPPER - MST", timeline = T, ann_trace = F)
 ```
 
 

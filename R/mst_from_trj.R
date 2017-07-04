@@ -46,28 +46,25 @@
 #' @export mst_from_trj
 #' @import parallel
 
-mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL, clu_radius = NULL, clu_hardcut = NULL, #inputs
-                       normalize_d = TRUE, birch_clu = FALSE, min_span_tree = TRUE, mode = "fortran", #algo modes
+mst_from_trj<-function(trj, dump_to_netcdf=TRUE, mode = "fortran",
+                       distance_method = 5, distance_weights = NULL, clu_radius = NULL, clu_hardcut = NULL, #inputs
+                       normalize_d = TRUE, birch_clu = FALSE, min_span_tree = TRUE,  #algo modes
                        rootmax_rad = NULL, tree_height = NULL, n_search_attempts = NULL, #sst default
                        cores = NULL, logging = FALSE, ...){ #misc
   # Checking additional inputs
   input_args <- list(...)
-  avail_extra_argoments <- c('pre_process', 'window', 'overlapping_reduction',
-                             # specific wgcna vars
-                             'wgcna_type', 'wgcna_power', 'wgcna_corOp',
-                             # feature selection
-                             'feature_selection', 'n_princ_comp')
+  avail_extra_argoments <- c()
   if(any(!(names(input_args) %in% avail_extra_argoments)))
     warning('There is a probable mispelling in one of the inserted variables. Please check the available extra input arguments.')
 
-  # wgcna and multiplication pre-processing
-  if(!('pre_process' %in% names(input_args))) pre_process <- NULL else pre_process <- input_args[['pre_process']]
-  if(!('window' %in% names(input_args))) window <- NULL else window <- input_args[['window']]
-  if(!('overlapping_reduction' %in% names(input_args))) overlapping_reduction <- NULL else overlapping_reduction <- input_args[['overlapping_reduction']]
-
-  # feature selection
-  if(!('feature_selection' %in% names(input_args))) feature_selection <- NULL else feature_selection <- input_args[['feature_selection']]
-  if(!('n_princ_comp' %in% names(input_args))) n_princ_comp <- NULL else n_princ_comp <- input_args[['n_princ_comp']]
+  # # wgcna and multiplication pre-processing
+  # if(!('pre_process' %in% names(input_args))) pre_process <- NULL else pre_process <- input_args[['pre_process']]
+  # if(!('window' %in% names(input_args))) window <- NULL else window <- input_args[['window']]
+  # if(!('overlapping_reduction' %in% names(input_args))) overlapping_reduction <- NULL else overlapping_reduction <- input_args[['overlapping_reduction']]
+  # 
+  # # feature selection
+  # if(!('feature_selection' %in% names(input_args))) feature_selection <- NULL else feature_selection <- input_args[['feature_selection']]
+  # if(!('n_princ_comp' %in% names(input_args))) n_princ_comp <- NULL else n_princ_comp <- input_args[['n_princ_comp']]
 
   # checking trajectory input
   if(!is.matrix(trj)){
@@ -103,35 +100,35 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL, clu_ra
   #
   #
   #
-
-  preprocessing_opts <- c('wgcna', 'multiplication')
-  if(!is.null(pre_process) && (length(pre_process)!=1 || !is.character(pre_process) || !(pre_process %in% preprocessing_opts)))
-    stop('Inserted preprocessing method (string) not valid.')
-  if(!is.null(pre_process)) cat('Preprocessing mode activated. \n')
-  if(!is.null(pre_process)) cat('WARNING: preprocessing in analysis functions were meant for developers. Please use the pre-proc step (generate_network)\n')
-  if(!is.null(pre_process) && pre_process == 'wgcna'){
-    # checking network construction varoables
-    if(!is.null(window) && (length(window) != 1 || !is.numeric(window) || window <= 3 || window > n_snaps/2))
-      stop('The used window (distance 12) is too small or too big (must be less than half to have sense) or it is simply an erroneus insertion.')
-    if((!is.null(overlapping_reduction) && (length(overlapping_reduction) != 1 ||!is.numeric(overlapping_reduction) ||
-                                            overlapping_reduction <= 0 || overlapping_reduction > 1)))
-      stop('The used overlapping_reduction is not correctly defined. It must be a number between 0 and 1.')
-    # please consider generate network
-    transpose_trj <- FALSE
-    # setting standard window size
-    if(is.null(window)) window <- nrow(trj)/100
-    cat('A network will be generated using the WGCNA correlation algorithm and using a sliding window of', window, 'snapshots.\n')
-    # Calling generate_network
-    trj <- generate_network(trj=trj, window = window, overlapping_reduction = overlapping_reduction, transpose_trj = transpose_trj, ...)
-    n_xyz <- ncol(trj)
-  }
-  if(!is.null(pre_process) && pre_process == 'multiplication'){
-    cat('A multiplication will be generated copy-pasting dimensionalities from a sliding window of', window, 'snapshots.\n')
-    # Calling multiplicate_trj (the )
-    trj <- multiplicate_trj(trj, window)
-    n_xyz <- ncol(trj)
-  }
-
+# 
+#   preprocessing_opts <- c('wgcna', 'multiplication')
+#   if(!is.null(pre_process) && (length(pre_process)!=1 || !is.character(pre_process) || !(pre_process %in% preprocessing_opts)))
+#     stop('Inserted preprocessing method (string) not valid.')
+#   if(!is.null(pre_process)) cat('Preprocessing mode activated. \n')
+#   if(!is.null(pre_process)) cat('WARNING: preprocessing in analysis functions were meant for developers. Please use the pre-proc step (generate_network)\n')
+#   if(!is.null(pre_process) && pre_process == 'wgcna'){
+#     # checking network construction varoables
+#     if(!is.null(window) && (length(window) != 1 || !is.numeric(window) || window <= 3 || window > n_snaps/2))
+#       stop('The used window (distance 12) is too small or too big (must be less than half to have sense) or it is simply an erroneus insertion.')
+#     if((!is.null(overlapping_reduction) && (length(overlapping_reduction) != 1 ||!is.numeric(overlapping_reduction) ||
+#                                             overlapping_reduction <= 0 || overlapping_reduction > 1)))
+#       stop('The used overlapping_reduction is not correctly defined. It must be a number between 0 and 1.')
+#     # please consider generate network
+#     transpose_trj <- FALSE
+#     # setting standard window size
+#     if(is.null(window)) window <- nrow(trj)/100
+#     cat('A network will be generated using the WGCNA correlation algorithm and using a sliding window of', window, 'snapshots.\n')
+#     # Calling generate_network
+#     trj <- generate_network(trj=trj, window = window, overlapping_reduction = overlapping_reduction, transpose_trj = transpose_trj, ...)
+#     n_xyz <- ncol(trj)
+#   }
+#   if(!is.null(pre_process) && pre_process == 'multiplication'){
+#     cat('A multiplication will be generated copy-pasting dimensionalities from a sliding window of', window, 'snapshots.\n')
+#     # Calling multiplicate_trj (the )
+#     trj <- multiplicate_trj(trj, window)
+#     n_xyz <- ncol(trj)
+#   }
+# 
 
   # -----------------------------------------------------------------------
   # Feature selection
@@ -143,11 +140,11 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL, clu_ra
   #
   # Supported algorithms: 'pca'
   #
-  if(!is.null(feature_selection)){
-    if(is.null(n_princ_comp)) n_princ_comp <- floor(ncol(trj)/10)
-    trj <- select_features(trj, feature_selection = feature_selection, n_princ_comp = n_princ_comp)
-    n_xyz <- ncol(trj)
-  }
+  # if(!is.null(feature_selection)){
+  #   if(is.null(n_princ_comp)) n_princ_comp <- floor(ncol(trj)/10)
+  #   trj <- select_features(trj, feature_selection = feature_selection, n_princ_comp = n_princ_comp)
+  #   n_xyz <- ncol(trj)
+  # }
 
 
   # -----------------------------------------------------------------------
@@ -166,7 +163,7 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL, clu_ra
     else warning("No or wrong entry for number of cores: using all of them -1")
 
     dim<-attributes(trj)$dim
-    if(dim>1000) warning('the computation could be incredibly long. We advise to use mode = "fortran" option')
+    if(dim>1000) stop('the computation could be incredibly long. Please use mode = "fortran" option')
 
     # Initiate cluster
     cl <- makeCluster(n_cores)
@@ -178,7 +175,7 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL, clu_ra
     adjl<-c()
     for(i in 1:dim[1]){
       # if(n_cores>1) clusterExport(cl, "i")
-      adjl<-c(adjl,parLapply(cl = cl,X = trj[(i+1):dim[1],],fun = function(x){
+      adjl<-c(adjl, parLapply(cl = cl,X = trj[(i+1):dim[1],],fun = function(x){
         bio3d::rmsd(trj[i,],x)
       }))
     }
@@ -366,10 +363,11 @@ mst_from_trj<-function(trj, distance_method = 5, distance_weights = NULL, clu_ra
                normalize_dis_in=as.logical(normalize_d),
                log_print_in=as.logical(logging),
                verbose_in=as.logical(TRUE)))
-    }else if(data_management=="h5fc"){
-      stop("still to-do")
-    }else{
-      stop("Data_management assigned to an unknown value. Please complain to the developers.")
+    # DEPRECATED
+    # }else if(data_management=="h5fc"){
+    #   stop("still to-do")
+    # }else{
+    #   stop("dump_to_netcdf assigned to an unknown value.")
     }
   }else{
       stop("Mode entry not correct.")
