@@ -14,6 +14,7 @@ LaTeX: pdfLaTeX
 
 BuildType: Package
 PackageUseDevtools: Yes
-PackageInstallArgs: --no-multiarch --with-keep.source --clean
+PackageInstallArgs: --no-multiarch --with-keep.source --clean --no-manual
 PackageBuildBinaryArgs: --with-campari
+PackageCheckArgs: --as-cran
 PackageRoxygenize: rd,namespace

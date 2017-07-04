@@ -6,8 +6,7 @@ output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{"Working with CampaRi"}
   %\VignetteEngine{knitr::rmarkdown}
-  # %\VignetteEncoding{UTF-8}
-  %\usepackage[UTF-8]{inputenc}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=FALSE}

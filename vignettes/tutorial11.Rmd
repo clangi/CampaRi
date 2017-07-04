@@ -6,8 +6,7 @@ output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{"Running the tutorial 11 using Fortran code and the package."}
   %\VignetteEngine{knitr::rmarkdown}
-  # %\VignetteEncoding{UTF-8}
-  %\usepackage[UTF-8]{inputenc} 
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=FALSE}
@@ -374,7 +373,7 @@ gg +
   ggplot2::annotate("text", x = rep(4000, 3), y = c(8.3, 8.80, 9.3), label = c("CCCH", "HCCC", "CCCC"))
 ```
 With the sapphire_plot() function we can get a SAPPHIRE plot such as the following:
-<div style="width:1150px; height=730px">
+<div style="width:300px; height=230px">
 ![](Rplot.png)
 </div>
 
