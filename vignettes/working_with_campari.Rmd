@@ -66,7 +66,7 @@ run_campari(trj = trj[1:20000,],
             FMCSC_CPROGINDMODE=1, #mst
             FMCSC_CCOLLECT=5, print_status = F,
             FMCSC_CMODE=4,
-            FMCSC_CDISTANCE=1, #rmsd without alignment 7 - dihedral distances need a complete analysis (pdb_format dcd pdb etc...) 
+            FMCSC_CDISTANCE=7, #rmsd without alignment 7 - dihedral distances need a complete analysis (pdb_format dcd pdb etc...) 
             FMCSC_CPROGINDSTART=21, #starting snapshot 
             # FMCSC_CPROGINDRMAX=1000, #search att
             # FMCSC_BIRCHHEIGHT=2, #birch height
