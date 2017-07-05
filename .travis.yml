@@ -49,6 +49,9 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libnetcdff5; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libnetcdf-dev; fi # must be specified
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install pandoc; fi # must be specified
+  #- Rscript -e 'source("http://bioconductor.org/biocLite.R"); biocLite(c("GO.db", "preprocessCore", "impute"))'
+
+
 
 
 # the following seems not necessary
@@ -85,11 +88,11 @@ r-packages:
   - Hmisc
   - distr
   - sfsmisc
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; WGCNA ; fi 
+#  - WGCNA 
   
 r_github_packages:
   - jimhester/covr
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; cran/WGCNA ; fi 
+  - cran/WGCNA
 
 after_script:
   - ls -lah
