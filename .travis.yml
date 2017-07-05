@@ -9,9 +9,6 @@ bioc_required: true
 
 os:
   - linux
-  r_packages:
-    - WGCNA
-
   - osx
 
 #dist: xenial #not working because only trusty is supported
@@ -49,9 +46,6 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libnetcdff5; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libnetcdf-dev; fi # must be specified
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install pandoc; fi # must be specified
-  #- Rscript -e 'source("http://bioconductor.org/biocLite.R"); biocLite(c("GO.db", "preprocessCore", "impute"))'
-
-
 
 
 # the following seems not necessary
@@ -88,11 +82,11 @@ r-packages:
   - Hmisc
   - distr
   - sfsmisc
-#  - WGCNA 
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; WGCNA ; fi 
   
 r_github_packages:
   - jimhester/covr
-  - cran/WGCNA
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; cran/WGCNA ; fi 
 
 after_script:
   - ls -lah
