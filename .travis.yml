@@ -9,6 +9,9 @@ bioc_required: true
 
 os:
   - linux
+  r_packages:
+    - WGCNA
+
   - osx
 
 #dist: xenial #not working because only trusty is supported
@@ -82,10 +85,11 @@ r-packages:
   - Hmisc
   - distr
   - sfsmisc
-  - WGCNA
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; WGCNA ; fi 
   
 r_github_packages:
   - jimhester/covr
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; cran/WGCNA ; fi 
 
 after_script:
   - ls -lah
