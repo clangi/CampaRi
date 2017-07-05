@@ -29,9 +29,9 @@
 #' @seealso
 #' \code{\link{adjl_from_progindex}}, \code{\link{gen_progindex}}, \code{\link{gen_annotation}}.
 #' @examples
-#' adjl <- mst_from_trj(trj = matrix(rnorm(1000), nrow = 100, ncol = 10))
 #'
 #' \dontrun{
+#' adjl <- mst_from_trj(trj = matrix(rnorm(1000), nrow = 100, ncol = 10))
 #' adjl <- mst_from_trj(trj = matrix(rnorm(1000),ncol=10,nrow=100),
 #' distance_method = 5, clu_radius = 100, clu_hardcut = 100,
 #' birch_clu = FALSE, mode = "fortran", logging = FALSE)

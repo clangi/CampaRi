@@ -16,8 +16,10 @@
 #' @details For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
 #'
 #' @examples 
+#' \dontrun{
 #' adjl <- mst_from_trj(trj = matrix(rnorm(1000), nrow = 100, ncol = 10))
 #' ret <- gen_progindex(adjl = adjl)
+#' }
 #' 
 #' @export gen_progindex
 #' @useDynLib CampaRi
