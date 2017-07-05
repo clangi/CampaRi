@@ -4,6 +4,8 @@
 #'      between pairwise snapshots.
 #'
 #' @param trj Input trajectory (variables on the columns and equal-time spaced snpashots on the row). It must be a \code{matrix} or a \code{data.frame} of numeric.
+#' @param dump_to_netcdf If \code{TRUE} the netcdf support will be used. The minimum spanning tree will be dumped to file for further analysis.
+#' @param mode It takes a string in input and can be either "fortran" (highly advised and default) or "R".
 #' @param distance_method Distance metric between snapshots. This value can be set 1 (dihedral angles) or 5 (root mean square deviation) or 11 (balistic distance).
 #' @param distance_weights Vector of weights to be applied in order to compute averaged weighted distance using multiple \code{distance_method}.
 #' Each value must be between 0 and 1. This option works only if \code{birch_clu=F} and is highly NOT reccomended.
@@ -13,7 +15,6 @@
 #' @param birch_clu A logical that indicates whether the algorithm will use a birch-tree like clustering step (short spanning tree - fast) or it will be generated
 #' using a simple leader clustering algorithm (minimum spanning tree).
 #' @param min_span_tree This option is used only with \code{birch_clu=F} and defines if the returning adjacency list must be a minimum spanning tree.
-#' @param mode It takes a string in input and can be either "fortran" (highly advised and default) or "R".
 #' @param rootmax_rad If \code{birch_clu=T} this option defines the maximum radius at the root level of the tree in the advanced clustering algorithm.
 #' @param tree_height If \code{birch_clu=T} this option defines the height of the tree in the advanced clustering algorithm.
 #' @param n_search_attempts If \code{birch_clu=T} a number of search attempts must be provided for the minimum spanning tree search.
@@ -71,21 +72,24 @@ mst_from_trj<-function(trj, dump_to_netcdf=TRUE, mode = "fortran",
     if(!is.data.frame(trj)) stop('trj input must be a matrix or a data.frame')
     trj <- as.matrix(trj)
   }
-  # Memory handling (data management checks)
-  data_management <- getOption("CampaRi.data_management")
-  if(data_management == "R") cat("Normal memory handling selected. Without hdf5/netcdf backend file management it will be difficult for R to handle big data-sets.\n")
-  else if(data_management == "netcdf") cat("Selected data support: netcdf data management.\n")
-  else stop("Invalid data management keyword inserted. Check the available methods on the guide.\n")
+  
+  # checking logicals
+  if(!is.logical(dump_to_netcdf))
+    stop("dump_to_netcdf mode must be activated using T/F inputs.")
+  
+  # Memory handling 
+  if(!dump_to_netcdf) cat("Normal memory handling selected. Without hdf5/netcdf backend file management it will be difficult for R to handle big data-sets.\n")
+  else cat("Selected data support: netcdf data management.\n")
 
-  if(data_management == "R") cat("To set new data_management method: options(list(CampaRi.data_management = 'R'))\n")
-
-  if(data_management != "R"){
-    # warning(paste0('The dumping filename will be ',getOption("CampaRi.data_filename"),'. If already existent it will be overwritten'))
-    # TODO in installing routine the check!!
-    #     cat("Checking for netcdf support...")
-    #     command_loc <- system(paste0("which ",data_management))
-    #     if(command_loc=="") stop("No support for hdf5. Please check installation and correct linkage of the command to your enviroment.")
-  }
+  # if(data_management == "R") cat("To set new data_management method: options(list(CampaRi.data_management = 'R'))\n")
+  # 
+  # if(data_management != "R"){
+  #   # warning(paste0('The dumping filename will be ',getOption("CampaRi.data_filename"),'. If already existent it will be overwritten'))
+  #   # TODO in installing routine the check!!
+  #   #     cat("Checking for netcdf support...")
+  #   #     command_loc <- system(paste0("which ",data_management))
+  #   #     if(command_loc=="") stop("No support for hdf5. Please check installation and correct linkage of the command to your enviroment.")
+  # }
 
   #Input setting
   n_snaps <- nrow(trj)
@@ -281,11 +285,44 @@ mst_from_trj<-function(trj, dump_to_netcdf=TRUE, mode = "fortran",
     # Main functions for internal calling of Fortran code
     #
     #
-
+    
+    # -------------
+    #    NetCDF
+    # -------------
+    if(dump_to_netcdf){
+      output_fin <- list()
+      #double Cstyle deginitions
+      attr(trj,"Csingle") <- TRUE
+      attr(distance_weights,"Csingle") <- TRUE
+      #main fortran talker
+      tryCatch(invisible(.Fortran("generate_neighbour_list_w", PACKAGE="CampaRi",
+                         #input
+                         trj_data=trj,
+                         n_xyz_in=as.integer(n_xyz),
+                         n_snaps_in=as.integer(n_snaps),
+                         clu_radius_in=as.single(clu_radius),
+                         clu_hardcut_in=as.single(clu_hardcut),
+                         #output
+                         #none -> it is printed to file
+                         #algorithm details
+                         dis_method_in=as.integer(distance_method),
+                         dis_weight_in=distance_weights,
+                         birch_in=as.logical(birch_clu),
+                         # mst_in=as.logical(min_span_tree), #no more specificable
+                         #sst details
+                         rootmax_rad_in=as.single(rootmax_rad),
+                         tree_height_in=as.integer(tree_height),
+                         n_search_attempts_in=as.integer(n_search_attempts),
+                         #modes
+                         normalize_dis_in=as.logical(normalize_d),
+                         log_print_in=as.logical(logging),
+                         verbose_in=as.logical(TRUE))), 
+               error = function(e) stop('ERROR: The netcdf dumping needs a working installation of CampaRi with netcdf4 support.'))
+    
     # -------------
     #    R - old
     # -------------
-    if(data_management == "R"){
+    }else{
       #input-output initialization
       if(n_snaps > 25000)
         stop("Using more than 25000 snapshots with no memory handling will generate a memory overflow (tested with 16gb).
@@ -331,43 +368,6 @@ mst_from_trj<-function(trj, dump_to_netcdf=TRUE, mode = "fortran",
       output_fin[[2]] <- output$adjl_ix[,1:output$max_degr]
       output_fin[[3]] <- output$adjl_dis[,1:output$max_degr]
       return(output_fin)
-
-    # -------------
-    #    NetCDF
-    # -------------
-    }else if(data_management=="netcdf"){
-      output_fin <- list()
-      #double Cstyle deginitions
-      attr(trj,"Csingle") <- TRUE
-      attr(distance_weights,"Csingle") <- TRUE
-      #main fortran talker
-      invisible(.Fortran("generate_neighbour_list_w", PACKAGE="CampaRi",
-               #input
-               trj_data=trj,
-               n_xyz_in=as.integer(n_xyz),
-               n_snaps_in=as.integer(n_snaps),
-               clu_radius_in=as.single(clu_radius),
-               clu_hardcut_in=as.single(clu_hardcut),
-               #output
-               #none -> it is printed to file
-               #algorithm details
-               dis_method_in=as.integer(distance_method),
-               dis_weight_in=distance_weights,
-               birch_in=as.logical(birch_clu),
-               # mst_in=as.logical(min_span_tree), #no more specificable
-               #sst details
-               rootmax_rad_in=as.single(rootmax_rad),
-               tree_height_in=as.integer(tree_height),
-               n_search_attempts_in=as.integer(n_search_attempts),
-               #modes
-               normalize_dis_in=as.logical(normalize_d),
-               log_print_in=as.logical(logging),
-               verbose_in=as.logical(TRUE)))
-    # DEPRECATED
-    # }else if(data_management=="h5fc"){
-    #   stop("still to-do")
-    # }else{
-    #   stop("dump_to_netcdf assigned to an unknown value.")
     }
   }else{
       stop("Mode entry not correct.")

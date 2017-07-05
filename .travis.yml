@@ -9,7 +9,7 @@ bioc_required: true
 
 os:
   - linux
-#  - osx
+  - osx
 
 #dist: xenial #not working because only trusty is supported
 

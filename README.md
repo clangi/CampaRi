@@ -5,11 +5,11 @@
 [![bioc](http://www.bioconductor.org/shields/years-in-bioc/TCGAbiolinks.svg)](http://bioconductor.org/packages/TCGAbiolinks/)
 [![bioc](http://bioconductor.org/shields/availability/devel/TCGAbiolinks.svg)](http://bioconductor.org/packages/TCGAbiolinks/)
 
+[![codecov](https://codecov.io/gh/Melkiades/CampaRi/branch/master/graph/badge.svg)](https://codecov.io/gh/Melkiades/CampaRi)
 -->
 [![Travis-CI Build Status](https://travis-ci.org/Melkiades/CampaRi.svg?branch=master)](https://travis-ci.org/Melkiades/CampaRi)
 [![DOI](https://zenodo.org/badge/68593949.svg)](https://zenodo.org/badge/latestdoi/68593949)
 [![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/CampaRi_chatroom/)
-[![codecov](https://codecov.io/gh/Melkiades/CampaRi/branch/master/graph/badge.svg)](https://codecov.io/gh/Melkiades/CampaRi)
 
 
 ------------------------------------------------------------------------

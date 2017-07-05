@@ -4,14 +4,18 @@
 \alias{mst_from_trj}
 \title{Create the minimum spanning tree from time series}
 \usage{
-mst_from_trj(trj, distance_method = 5, distance_weights = NULL,
-  clu_radius = NULL, clu_hardcut = NULL, normalize_d = TRUE,
-  birch_clu = FALSE, min_span_tree = TRUE, mode = "fortran",
-  rootmax_rad = NULL, tree_height = NULL, n_search_attempts = NULL,
-  cores = NULL, logging = FALSE, ...)
+mst_from_trj(trj, dump_to_netcdf = TRUE, mode = "fortran",
+  distance_method = 5, distance_weights = NULL, clu_radius = NULL,
+  clu_hardcut = NULL, normalize_d = TRUE, birch_clu = FALSE,
+  min_span_tree = TRUE, rootmax_rad = NULL, tree_height = NULL,
+  n_search_attempts = NULL, cores = NULL, logging = FALSE, ...)
 }
 \arguments{
 \item{trj}{Input trajectory (variables on the columns and equal-time spaced snpashots on the row). It must be a \code{matrix} or a \code{data.frame} of numeric.}
+
+\item{dump_to_netcdf}{If \code{TRUE} the netcdf support will be used. The minimum spanning tree will be dumped to file for further analysis.}
+
+\item{mode}{It takes a string in input and can be either "fortran" (highly advised and default) or "R".}
 
 \item{distance_method}{Distance metric between snapshots. This value can be set 1 (dihedral angles) or 5 (root mean square deviation) or 11 (balistic distance).}
 
@@ -28,8 +32,6 @@ Each value must be between 0 and 1. This option works only if \code{birch_clu=F}
 using a simple leader clustering algorithm (minimum spanning tree).}
 
 \item{min_span_tree}{This option is used only with \code{birch_clu=F} and defines if the returning adjacency list must be a minimum spanning tree.}
-
-\item{mode}{It takes a string in input and can be either "fortran" (highly advised and default) or "R".}
 
 \item{rootmax_rad}{If \code{birch_clu=T} this option defines the maximum radius at the root level of the tree in the advanced clustering algorithm.}
 

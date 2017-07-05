@@ -17,7 +17,7 @@ Imports:
   bio3d, ggplot2, WGCNA, parallel, data.table, Rcpp,
   distrEx, gplots, grDevices, graphics, outliers, pcaPP,
   prospectr, splus2R, stats, expm, Hmisc, distr, utils
-Suggests: knitr, rmarkdown
+Suggests: knitr, rmarkdown, testthat
 VignetteBuilder: knitr
 LinkingTo: Rcpp, RcppArmadillo
 LazyData: true

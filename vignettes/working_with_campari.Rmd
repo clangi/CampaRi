@@ -81,15 +81,11 @@ sapphire_plot(sap_file = "PROGIDX_000000000021.dat", title = "ORIGINAL CAMPARI -
 There is the possibility to use some internal replica of the main algorithms used for the metastable states recognition (basins in SAPPHIRE plots). The Minimum Spanning Tree, however, has memory limitation which are difficult to handle in R.
 
 ```{r, eval=FALSE}
-options(CampaRi.data_management = "netcdf") # R handling !!! ATTENTION MEMORY PROBLEMS ARE POSSIBLE FOR BIG DATA-SETS (USE NETCDF HANDLING)
-adjl <- mst_from_trj(trj = trj[1:1000,], mode = "fortran", normalize_d = FALSE, logging = F) # this will fail because it has a "safe" limit of 25000 snapshots
-
 # with 100k it is possible that also the netcdf option could exceede the memory availability
-# options(CampaRi.data_management = "netcdf") # netcdf handling
-# mst_from_trj(trj = trj[1:30000,], mode = "fortran", normalize_d = T, logging = F, distance_method = 1)
-# ret <- gen_progindex(nsnaps = 30000, snap_start = 10)
-# ret2 <- gen_annotation(ret, snap_start = 10)
-# sapphire_plot(sap_file = 'REPIX_000000000010.dat', title = "CAMPARI WRAPPER - MST", timeline = T, ann_trace = F)
+mst_from_trj(trj = trj[1:20000,], dump_to_netcdf = TRUE, mode = "fortran", normalize_d = T, logging = F, distance_method = 5)
+ret <- gen_progindex(nsnaps = 20000, snap_start = 21)
+ret2 <- gen_annotation(ret, snap_start = 21)
+sapphire_plot(sap_file = 'REPIX_000000000021.dat', title = "CAMPARI WRAPPER - MST")
 ```
 
 
