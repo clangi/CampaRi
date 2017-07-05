@@ -95,6 +95,6 @@ after_script:
 after_success:
   - Rscript -e 'library(covr); codecov()'
 
-r_build_args: --no-manual --clean
-r_check_args: --as-cran --no-manual --clean
+r_build_args: --no-manual
+r_check_args: --as-cran --no-manual 
 

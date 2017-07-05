@@ -10,21 +10,19 @@
 #' @param nsnaps Number of snashots in the trajectory. If \code{adjl} is inserted this specification is not necessary. Instead if the netcdf backend data handling
 #' is active this value will be necessary and precise in order to avoid unpredictable behaviours.
 #' @param snap_start The snapshot from which the progrex index will start.
-#' @param read_from_netcdf If \code{TRUE} the netcdf support will be used. The minimum spanning tree will be readed from file (see \code{\link{mst_from_trj}}).
+#' @param read_from_netcdf If \code{FALSE} the netcdf support will be used. The minimum spanning tree will be readed from file (see \code{\link{mst_from_trj}}).
 #' @return The output of this function MUST be used as input for the \code{\link{gen_annotation}} function.
 #'
 #' @details For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
 #'
 #' @examples 
-#' \dontrun{
 #' adjl <- mst_from_trj(trj = matrix(rnorm(1000), nrow = 100, ncol = 10))
 #' ret <- gen_progindex(adjl = adjl)
-#' }
 #' 
 #' @export gen_progindex
 #' @useDynLib CampaRi
 
-gen_progindex <- function(adjl=NULL, nsnaps = NULL, snap_start = 1, read_from_netcdf = TRUE){
+gen_progindex <- function(adjl=NULL, nsnaps = NULL, snap_start = 1, read_from_netcdf = FALSE){
   
   if(!is.logical(read_from_netcdf))
     stop('read_from_netcdf must be a logical.')

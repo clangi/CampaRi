@@ -5,7 +5,7 @@
 \title{Compute the progress index along with parent and distance-to-parent information}
 \usage{
 gen_progindex(adjl = NULL, nsnaps = NULL, snap_start = 1,
-  read_from_netcdf = TRUE)
+  read_from_netcdf = FALSE)
 }
 \arguments{
 \item{adjl}{A list of three elements: degree list, connectivity matrix and weights. This input must be a minimum spanning tree, otherwise
@@ -17,7 +17,7 @@ is active this value will be necessary and precise in order to avoid unpredictab
 
 \item{snap_start}{The snapshot from which the progrex index will start.}
 
-\item{read_from_netcdf}{If \code{TRUE} the netcdf support will be used. The minimum spanning tree will be readed from file (see \code{\link{mst_from_trj}}).}
+\item{read_from_netcdf}{If \code{FALSE} the netcdf support will be used. The minimum spanning tree will be readed from file (see \code{\link{mst_from_trj}}).}
 }
 \value{
 The output of this function MUST be used as input for the \code{\link{gen_annotation}} function.

@@ -4,7 +4,7 @@
 #'      between pairwise snapshots.
 #'
 #' @param trj Input trajectory (variables on the columns and equal-time spaced snpashots on the row). It must be a \code{matrix} or a \code{data.frame} of numeric.
-#' @param dump_to_netcdf If \code{TRUE} the netcdf support will be used. The minimum spanning tree will be dumped to file for further analysis.
+#' @param dump_to_netcdf If \code{FALSE} the netcdf support will be used. The minimum spanning tree will be dumped to file for further analysis.
 #' @param mode It takes a string in input and can be either "fortran" (highly advised and default) or "R".
 #' @param distance_method Distance metric between snapshots. This value can be set 1 (dihedral angles) or 5 (root mean square deviation) or 11 (balistic distance).
 #' @param distance_weights Vector of weights to be applied in order to compute averaged weighted distance using multiple \code{distance_method}.
@@ -29,9 +29,9 @@
 #' @seealso
 #' \code{\link{adjl_from_progindex}}, \code{\link{gen_progindex}}, \code{\link{gen_annotation}}.
 #' @examples
+#' adjl <- mst_from_trj(trj = matrix(rnorm(1000), nrow = 100, ncol = 10))
 #'
 #' \dontrun{
-#' adjl <- mst_from_trj(trj = matrix(rnorm(1000), nrow = 100, ncol = 10))
 #' adjl <- mst_from_trj(trj = matrix(rnorm(1000),ncol=10,nrow=100),
 #' distance_method = 5, clu_radius = 100, clu_hardcut = 100,
 #' birch_clu = FALSE, mode = "fortran", logging = FALSE)
@@ -47,7 +47,7 @@
 #' @export mst_from_trj
 #' @import parallel
 
-mst_from_trj<-function(trj, dump_to_netcdf=TRUE, mode = "fortran",
+mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
                        distance_method = 5, distance_weights = NULL, clu_radius = NULL, clu_hardcut = NULL, #inputs
                        normalize_d = TRUE, birch_clu = FALSE, min_span_tree = TRUE,  #algo modes
                        rootmax_rad = NULL, tree_height = NULL, n_search_attempts = NULL, #sst default
@@ -78,8 +78,8 @@ mst_from_trj<-function(trj, dump_to_netcdf=TRUE, mode = "fortran",
     stop("dump_to_netcdf mode must be activated using T/F inputs.")
   
   # Memory handling 
-  if(!dump_to_netcdf) cat("Normal memory handling selected. Without hdf5/netcdf backend file management it will be difficult for R to handle big data-sets.\n")
-  else cat("Selected data support: netcdf data management.\n")
+  if(!dump_to_netcdf) cat("Normal memory handling selected (dump_to_netcdf = FALSE). Without hdf5/netcdf backend file management it will be difficult for R to handle big data-sets.\n")
+  else cat("Selected data support: netcdf data management (dump_to_netcdf = TRUE).\n")
 
   # if(data_management == "R") cat("To set new data_management method: options(list(CampaRi.data_management = 'R'))\n")
   # 
