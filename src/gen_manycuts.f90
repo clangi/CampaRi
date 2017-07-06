@@ -2,8 +2,10 @@
 !-------------------------------------------------------------------------------
 !
 subroutine gen_manycuts(n_snaps,start,ntbrks2,&
-  pwidth,setis,distv,invvec,ivec2,trbrkslst)
-!
+  pwidth,setis,distv,invvec,ivec2,trbrkslst,mute_in)
+  use m_hw_fprintf
+  use gutenberg
+  use, INTRINSIC :: ISO_C_BINDING
   implicit none
 !
   integer, INTENT(IN) :: n_snaps, start
@@ -16,30 +18,50 @@ subroutine gen_manycuts(n_snaps,start,ntbrks2,&
 !
 !
   integer tmat(3,3),vv1(3),vv2(3),vv3(3)
-  integer pvo(5),pvn(5),iu,i,j,k,pwidth,ii,jj,kk,ll,tl2
-  integer freeunit !this is the return value of the function that looks for new units to use
+  integer pvo(5),pvn(5),i,j,k,pwidth,ii,jj,kk,ll,tl2
+  ! tl2
 !
-  integer, ALLOCATABLE:: cutv(:)
-  logical, ALLOCATABLE:: ibrkx(:)
+  integer, ALLOCATABLE :: cutv(:)
+  logical, ALLOCATABLE :: ibrkx(:)
 !
   character(12) nod2
-  character(250) fn
+  ! character(250) fn
   logical exists
+  integer iu, freeunit !this is the return value of the function that looks for new units to use
 
-  write(*,*) "Generating annotations..."
+  integer(c_int) :: retv        ! (C integer for return value)
+  integer(c_int) :: newline_sel ! (C integer for argument whether to print \n)
+  integer(c_int) :: i1,i3,setis1,cutv1,ivec21,&
+  invvec1,cutv12,vv11,vv21,vv31,vv12,vv22,vv32,vv13,vv23,vv33,ii1,jj1,kk1
+  real(c_double) :: distv1
+  integer i2
+!
+  character(c_char), TARGET :: fn(0:100) ! C character arrays (for const char*)
+  ! character(5000), TARGET :: ff3                    ! Fortran string
+  character(250) :: fcfd
+  logical mute_in
+  mute = mute_in
+  
+  call spr('------------------------------------------------------------')
+  call spr("Generating annotations...")
 
   tl2 = 12
   call int2str(start,nod2,tl2)
-  fn = 'REPIX_'//nod2(1:tl2)//'.dat'
-  inquire(file=fn(1:22),exist=exists)
+  ! for the filename
+  fcfd = 'REPIX_'//nod2(1:tl2)//'.dat'
+  inquire(file=fcfd(1:22),exist=exists)
   if(exists) then
     iu = freeunit()
-    open(unit=iu,file=fn(1:22),status='old',position='append')
-    close(unit=iu,status='delete')
+    open(unit=iu, file=fcfd(1:22), status='old')
+    close(unit=iu, status='delete')
   end if
-  iu=freeunit()
-  open(unit=iu,file=fn(1:22),status='new')
-!
+
+  do i2=1,LEN(TRIM(fcfd))
+    fn(i2-1) = fcfd(i2:i2)
+  end do
+  fn(LEN(TRIM(fcfd))) = C_NULL_CHAR
+  retv = 0
+
   allocate(cutv(n_snaps))
   allocate(ibrkx(n_snaps+1))
   ibrkx(:) = .false.
@@ -434,105 +456,59 @@ subroutine gen_manycuts(n_snaps,start,ntbrks2,&
     vv1(:) = tmat(1,:)
     vv2(:) = tmat(2,:)
     vv3(:) = tmat(3,:)
-    write(iu,666) i,n_snaps-i,setis(i),cutv(i),distv(i),ivec2(i),invvec(ivec2(i)+1),cutv(invvec(ivec2(i)+1)),vv1,vv2,vv3,ii,jj,kk
+    ! integer(c_int) :: i1,i3,setis1,cutv1,ivec21,&
+    ! invvec1,cutv1,vv11,vv21,vv31,ii1,jj1,kk1
+    ! real(c_double) :: distv1
+    ! write(ff3,666) i,n_snaps-i,setis(i),cutv(i),distv(i),ivec2(i),&
+    ! invvec(ivec2(i)+1),cutv(invvec(ivec2(i)+1)),vv1,vv2,vv3,ii,jj,kk
+    ! transcribe Fortran string into C character array (ff3 to f2)
+    ! do i2=1,LEN(TRIM(ff3))
+    !   f2(i2-1) = ff3(i2:i2)
+    ! end do
+    ! !
+    ! ! terminate C const char appropriately
+    ! f2(LEN(TRIM(ff3))) = C_NULL_CHAR
+
+    i1 = i
+    i3 = n_snaps-i
+    setis1 = setis(i)
+    cutv1 = cutv(i)
+    distv1 = distv(i)
+    ivec21 = ivec2(i)
+    invvec1 = invvec(ivec2(i)+1)
+    cutv12 = cutv(invvec(ivec2(i)+1))
+    vv11 = vv1(1)
+    vv21 = vv2(1)
+    vv31 = vv3(1)
+    vv12 = vv1(2)
+    vv22 = vv2(2)
+    vv32 = vv3(2)
+    vv13 = vv1(3)
+    vv23 = vv2(3)
+    vv33 = vv3(3)
+    ii1 = ii
+    jj1 = jj
+    kk1 = kk
+
+
+    ! invoke fprintf wrapper: the return value is that from the fprintf call
+    newline_sel = 1
+    retv = handwrapped_fprint(fn,i1,i3,setis1,cutv1,distv1,ivec21,&
+    invvec1,cutv12,vv11,vv21,vv31,vv12,vv22,vv32,vv13,vv23,vv33,ii1,jj1,kk1,&
+    newline_sel)
+
   end do
- 666 format(4(i10,1x),g12.5,1x,1000(i10,1x))
+ ! 666 format(4(i10,1x),g12.5,1x,1000(i10,1x))
 !
+  if(retv.ne.0) then
+    call spr("File written successfully...")
+  else
+    call spr("The file writing was not completely successful...")
+  end if
   deallocate(cutv)
   deallocate(ibrkx)
 !
-  close(unit=iu)
-  write(*,*) "DONE"
-!
+  ! close(unit=iu)
+  call spr("...done")
+  call spr('------------------------------------------------------------')!
 end
-
-!---------------------------------------------------------------------------------------
-!
-subroutine int2str(ii,string,strsz)
-  implicit none
-!
-  integer mx(0:16),leng,i,ii,strsz,minsz,cpy,sumi
-  character it(0:9)
-  character(*) string
-  logical just_r
-  data it /'0','1','2','3','4','5','6','7','8','9'/
-!
-  if (strsz.le.0) then
-    just_r = .true.
-    strsz = 1
-  else
-    just_r = .false.
-  end if
-  minsz = strsz
-  leng = len(string)
-!
-! invert sign if necessary (technically this routines only
-! processes unsigned integers)
-  if (ii .lt. 0) then
-    i = -ii
-  end if
-!
-! this is standard: the mx(...) are integers of course
-!
-  sumi = 0
-  do i=16,0,-1
-    mx(i) = (ii-sumi)/(10.0**i)
-    if (i.gt.0) then
-      sumi = sumi + (10.0**i) * mx(i)
-    end if
-  end do
-!
-! now we have the digits of our string in integer form (0 through 9)
-!
-! check for integer-size
-!
-  if ((mx(10).gt.0).OR.(mx(11).gt.0).OR.(mx(12).gt.0).OR.&
- &    (mx(13).gt.0).OR.&
- &    (mx(14).gt.0).OR.(mx(15).gt.0).OR.(mx(16).gt.0)) then
-    write(*,*) 'Warning. Possibly bad result from int2str(...) (inte&
- &ger overflow).'
-  end if
-!
-! find the final string length
-!
-  strsz = 1
-  do i=16,1,-1
-    if (mx(i).ne.0) then
-      strsz = i+1
-      exit
-    end if
-  end do
-!
-! correct if too large or small
-  strsz = min(strsz,leng)
-  strsz = max(strsz,minsz)
-!
-  if (strsz.gt.17) then
-    write(*,*) 'Warning. Possibly bad result from int2str(...) (digi&
- &t overflow).'
-  end if
-!
-! convert individual digits to a string of numeric characters
-!
-  do i=1,strsz
-    string(i:i) = it(mx(strsz-i))
-  end do
-!
-! left/right-justification
-!
-  if (just_r.EQV..true.) then
-    do i=strsz,1,-1
-      cpy = leng-strsz+i
-      string(cpy:cpy) = string(i:i)
-    end do
-    do i=1,leng-strsz
-      string(i:i) = ' '
-    end do
-  else
-    do i = strsz+1,leng
-      string(i:i) = ' '
-    end do
-  end if
-!
-end
-!

@@ -7,8 +7,6 @@
 #' @param dump_to_netcdf If \code{FALSE} the netcdf support will be used. The minimum spanning tree will be dumped to file for further analysis.
 #' @param mode It takes a string in input and can be either "fortran" (highly advised and default) or "R".
 #' @param distance_method Distance metric between snapshots. This value can be set 1 (dihedral angles) or 5 (root mean square deviation) or 11 (balistic distance).
-#' @param distance_weights Vector of weights to be applied in order to compute averaged weighted distance using multiple \code{distance_method}.
-#' Each value must be between 0 and 1. This option works only if \code{birch_clu=F} and is highly NOT reccomended.
 #' @param clu_radius This numeric argument is used in the clustering step in order to make clusters of the same radius at the base level.
 #' @param clu_hardcut This option is used only with \code{birch_clu=F} and defines the inter-clusters distance threshold.
 #' @param normalize_d A logical that indicates whether the distances must be normalized or not. Usually used with averaging.
@@ -19,8 +17,8 @@
 #' @param tree_height If \code{birch_clu=T} this option defines the height of the tree in the advanced clustering algorithm.
 #' @param n_search_attempts If \code{birch_clu=T} a number of search attempts must be provided for the minimum spanning tree search.
 #' @param cores If \code{mode="R"} a complete adjacency matrix can be created in parallel using multiple cores (anyhow slower than "fortran" mode).
-#' @param logging If \code{logging=T} the function will print to file the fortran messages ("campari.log").
-#' @param ... Various variables. Possible values are \code{c('pre_process', 'window', 'overlapping_reduction','wgcna_type', 'wgcna_power', 'wgcna_corOp','feature_selection', 'n_princ_comp')}
+#' @param mute_fortran If \code{mute_fortran=T} the function will silence the fortran code.
+#' @param ... Various variables not yet documented
 #'
 #' @details For more details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
 #'
@@ -48,10 +46,11 @@
 #' @import parallel
 
 mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
-                       distance_method = 5, distance_weights = NULL, clu_radius = NULL, clu_hardcut = NULL, #inputs
+                       distance_method = 5, clu_radius = NULL, clu_hardcut = NULL, #inputs
                        normalize_d = TRUE, birch_clu = FALSE, min_span_tree = TRUE,  #algo modes
                        rootmax_rad = NULL, tree_height = NULL, n_search_attempts = NULL, #sst default
-                       cores = NULL, logging = FALSE, ...){ #misc
+                       cores = NULL, mute_fortran = FALSE, ...){ #misc
+  
   # Checking additional inputs
   input_args <- list(...)
   avail_extra_argoments <- c()
@@ -75,7 +74,9 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
   
   # checking logicals
   if(!is.logical(dump_to_netcdf))
-    stop("dump_to_netcdf mode must be activated using T/F inputs.")
+    stop("dump_to_netcdf mode must be activated using T/F inputs only.")
+  if(!is.logical(mute_fortran))
+    stop("mute_fortran mode must be activated using T/F inputs only.")
   
   # Memory handling 
   if(!dump_to_netcdf) cat("Normal memory handling selected (dump_to_netcdf = FALSE). Without hdf5/netcdf backend file management it will be difficult for R to handle big data-sets.\n")
@@ -203,32 +204,21 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
     # --------------
 
     # Distance value
-    max_supported_dist <- 11
     sup_dist <- c(1, 5, 11)
-    tmp_dis <- distance_method
-    if(!birch_clu){
-      # The multiple distance insertion (and weights) are available only with MST
-      if(!is.numeric(tmp_dis) ||
-         (!all(tmp_dis %in% sup_dist)) || length(tmp_dis)>max_supported_dist)
-        stop("The distance values that have been inserted are not supported. The supported values can be checked in the documentation.")
-      if(length(tmp_dis) > 1) cat("More than one distance selected. They will be averaged (this feature is available only for MST).")
-    }else{
-      if(length(distance_method) != 1) stop('When using the birch clustering algorithm (SST) only one distance is available per time.')
-      if(!is.numeric(distance_method) || !(distance_method %in% sup_dist)) stop("The distance inserted is not valid. Check the documentation for precise values.")
-    }
-    distance_method <- rep(0, max_supported_dist)
-    distance_method[1:length(tmp_dis)] <- tmp_dis
+    if(length(distance_method) != 1) stop('When using the birch clustering algorithm (SST) only one distance is available per time.')
+    if(!is.numeric(distance_method) || !(distance_method %in% sup_dist)) stop("The distance inserted is not valid. Check the documentation for precise values.")
+    if(distance_method%%1 != 0) stop('distance_method must be an integer.')
 
     # Distance weights
-    if(!is.null(distance_weights)){
-      tmp_dis_w <- distance_weights
-      distance_weights <- rep(1,max_supported_dist)
-      if(!is.numeric(tmp_dis_w) || length(tmp_dis_w)>max_supported_dist || tmp_dis_w < 0 || tmp_dis_w > 1)
-        warning("Distances are not num or they are not in [0,1]. The option will be turned off")
-      else distance_weights[1:length(tmp_dis_w)] <- tmp_dis_w
-    }else{
-      distance_weights <- rep(1,max_supported_dist)
-    }
+    # if(!is.null(distance_weights)){
+    #   tmp_dis_w <- distance_weights
+    #   distance_weights <- rep(1,max_supported_dist)
+    #   if(!is.numeric(tmp_dis_w) || length(tmp_dis_w)>max_supported_dist || tmp_dis_w < 0 || tmp_dis_w > 1)
+    #     warning("Distances are not num or they are not in [0,1]. The option will be turned off")
+    #   else distance_weights[1:length(tmp_dis_w)] <- tmp_dis_w
+    # }else{
+    #   distance_weights <- rep(1,max_supported_dist)
+    # }
 
     # Thresholds for radius and inter radius values. This is MST leader clustering
     if(is.null(clu_radius) || clu_radius <= 0){
@@ -251,8 +241,8 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
       stop("MST must be enabled using T/F inputs. Using the SST (birch_clu) it is not needed.")
     if(!is.logical(birch_clu))
       stop("SST(birch_clu) mode must be enabled using T/F inputs.")
-    if(!is.logical(logging))
-      stop("logging mode must be a T/F input.")
+    # if(!is.logical(logging))
+    #   stop("logging mode must be a T/F input.")
     if(birch_clu&&min_span_tree)
       message("MST option is automatically used when birch_clu is activated.")
 
@@ -293,7 +283,7 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
       output_fin <- list()
       #double Cstyle deginitions
       attr(trj,"Csingle") <- TRUE
-      attr(distance_weights,"Csingle") <- TRUE
+      # attr(distance_weights,"Csingle") <- TRUE
       #main fortran talker
       tryCatch(invisible(.Fortran("generate_neighbour_list_w", PACKAGE="CampaRi",
                          #input
@@ -306,7 +296,7 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
                          #none -> it is printed to file
                          #algorithm details
                          dis_method_in=as.integer(distance_method),
-                         dis_weight_in=distance_weights,
+                         # dis_weight_in=distance_weights,
                          birch_in=as.logical(birch_clu),
                          # mst_in=as.logical(min_span_tree), #no more specificable
                          #sst details
@@ -315,8 +305,8 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
                          n_search_attempts_in=as.integer(n_search_attempts),
                          #modes
                          normalize_dis_in=as.logical(normalize_d),
-                         log_print_in=as.logical(logging),
-                         verbose_in=as.logical(TRUE))), 
+                         # log_print_in=as.logical(logging),
+                         mute_in=as.logical(mute_fortran))), 
                error = function(e) stop('ERROR: The netcdf dumping needs a working installation of CampaRi with netcdf4 support.'))
     
     # -------------
@@ -335,7 +325,7 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
       #double Cstyle deginitions
       attr(trj,"Csingle") <- TRUE
       attr(adj_dis,"Csingle") <- TRUE
-      attr(distance_weights,"Csingle") <- TRUE
+      # attr(distance_weights,"Csingle") <- TRUE
       #main fortran talker
       output<-.Fortran("generate_neighbour_list", PACKAGE="CampaRi",
                               #input
@@ -351,7 +341,7 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
                               max_degr=as.integer(max_d),
                               #algorithm details
                               dis_method_in=as.integer(distance_method),
-                              dis_weight_in=distance_weights,
+                              # dis_weight_in=distance_weights,
                               birch_in=as.logical(birch_clu),
                               mst_in=as.logical(min_span_tree),
                               #sst details
@@ -360,8 +350,8 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
                               n_search_attempts_in=as.integer(n_search_attempts),
                               #modes
                               normalize_dis_in=as.logical(normalize_d),
-                              log_print_in=as.logical(logging),
-                              verbose_in=as.logical(TRUE))
+                              # log_print_in=as.logical(logging),
+                              mute_in=as.logical(mute_fortran))
 
       #output adjustment
       output_fin[[1]] <- output$adjl_deg

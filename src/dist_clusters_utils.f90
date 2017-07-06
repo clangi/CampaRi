@@ -52,7 +52,7 @@ subroutine snap_to_cluster_d(val, it, sn2) !i={1:n_snaps}
     val = 0
   else
 
-    if (tmp_dis_method.eq.5.or.tmp_dis_method.eq.11.or.tmp_dis_method.eq.1) then
+    if (dis_method.eq.5.or.dis_method.eq.11.or.dis_method.eq.1) then
       vec1 = it%sums(1:n_xyz)/(1.0 * it%nmbrs) ! cluster center
     end if
     call distance(val,vec1,sn2) ! val=tmp_d, vec1=centroid, sn=snapshot
@@ -70,7 +70,7 @@ subroutine cluster_to_cluster_d(val, it1, it2)
   real vec1(n_xyz), vec2(n_xyz)
   real, INTENT(OUT) :: val
 
-  if (tmp_dis_method.eq.5.or.tmp_dis_method.eq.11.or.tmp_dis_method.eq.1) then
+  if (dis_method.eq.5.or.dis_method.eq.11.or.dis_method.eq.1) then
     vec1 = it1%sums(:)/(1.0 * it1%nmbrs) ! center it1
     vec2 = it2%sums(:)/(1.0 * it2%nmbrs) ! center it2
   end if
@@ -101,17 +101,17 @@ subroutine distance(val2, veci, vecj)
   hlp = 0.0
   hlp2 = 0.0
 
-  if (tmp_dis_method.eq.1) then
+  if (dis_method.eq.1) then
     do k=1,n_xyz
       hlp = abs(veci(k) - vecj(k))
       if (hlp.gt.180.0) hlp = abs(hlp - 360.0)
       val2 = val2 + hlp*hlp
     end do
     val2 = sqrt(val2/(1.0*n_xyz))
-  else if(tmp_dis_method.eq.5) then
+  else if(dis_method.eq.5) then
     hlp = sum((veci(1:n_xyz) - vecj(1:n_xyz))**2)
     val2 = sqrt((3.0 * hlp)/(1.0 * (n_xyz))) ! why *3????? number of coo
-  else if (tmp_dis_method.eq.11) then
+  else if (dis_method.eq.11) then
     hlp = ACOS(dot_product(vec_ref,veci)/&
     (dot_product(vec_ref,vec_ref) + &
     dot_product(veci,veci)))
@@ -198,7 +198,7 @@ subroutine cluster_addsnap(it,sn1,i)
   it%snaps(it%nmbrs) = i !add the snap
   clstsz = n_xyz
   !cludata = sn1
-  if(tmp_dis_method.eq.1) then
+  if(dis_method.eq.1) then
     if (it%nmbrs.gt.1) then
       normer2 = 1.0/(1.0*it%nmbrs-1.0)
     else
@@ -222,7 +222,7 @@ subroutine cluster_addsnap(it,sn1,i)
         it%sums(k) = it%sums(k) - it%nmbrs*360.0
       end if
     end do
-  else if((tmp_dis_method.eq.5.or.tmp_dis_method.eq.11)) then
+  else if((dis_method.eq.5.or.dis_method.eq.11)) then
     it%sums(1:n_xyz) = it%sums(1:n_xyz) + sn1(1:n_xyz) !
     it%sqsum = it%sqsum + dot_product(sn1(1:n_xyz),sn1(1:n_xyz))
   end if
@@ -273,7 +273,7 @@ subroutine join_clusters(itl,its)
 
   clstsz = n_xyz
 
-  if (tmp_dis_method.eq.1) then
+  if (dis_method.eq.1) then
     normer2 = 1.0/(1.0*itl%nmbrs)
     normer3 = 1.0/(1.0*its%nmbrs)
     normer = 1.0/(1.0*itl%nmbrs+its%nmbrs)
@@ -300,7 +300,7 @@ subroutine join_clusters(itl,its)
         itl%sums(k) = itl%sums(k) - (itl%nmbrs+its%nmbrs)*360.0
       end if
     end do
-  else if ((tmp_dis_method.eq.5).OR.(tmp_dis_method.eq.6)) then
+  else if ((dis_method.eq.5).OR.(dis_method.eq.6)) then
     itl%sums(1:n_xyz) = itl%sums(1:n_xyz) + its%sums(1:n_xyz)
     itl%sqsum = itl%sqsum + its%sqsum
   end if
@@ -351,9 +351,9 @@ subroutine preprocess_snapshot(trj3, i2, vecti2)
   real, intent(in) :: trj3(n_snaps,n_xyz)
   real, intent(inout) :: vecti2(n_xyz)
   integer,intent(in) :: i2
-  if(tmp_dis_method.eq.5.or.tmp_dis_method.eq.1) then
+  if(dis_method.eq.5.or.dis_method.eq.1) then
     vecti2 = trj3(i2,1:n_xyz)
-  else if(tmp_dis_method.eq.11) then
+  else if(dis_method.eq.11) then
     if(i2.eq.1) then !to avoid error I can double the first value
        vecti2 = trj3(i2+1,1:n_xyz) - trj3(i2,1:n_xyz)
     else
@@ -583,10 +583,10 @@ subroutine cluster_calc_params(it,targetsz)
   type (t_scluster) it
   real helper, targetsz
   ! this is occasionally inaccurate for mode 1 due to the approximate treatment of wraparound
-  if (tmp_dis_method.eq.1) then
+  if (dis_method.eq.1) then
     helper = (it%nmbrs*it%sqsum - dot_product(it%sums(:),it%sums(:)))/(1.0*n_xyz)
   !  this is approximate for all clusters exceeding size 2 if alignment is used
-  else if(tmp_dis_method.eq.5.or.tmp_dis_method.eq.11) then
+  else if(dis_method.eq.5.or.dis_method.eq.11) then
     helper = 3.0*(it%nmbrs*it%sqsum - dot_product(it%sums(1:n_xyz),it%sums(1:n_xyz)))&
     &              /(1.0*(n_xyz)) !sasdaafsjghdsviubwFB TODO
   end if
@@ -701,7 +701,7 @@ subroutine cluster_removesnap(it,i,vecti2)
   end if
 !
   clstsz = n_xyz
-  if (tmp_dis_method.eq.1) then
+  if (dis_method.eq.1) then
     if (it%nmbrs.gt.1) then
       normer2 = 1.0/(1.0*it%nmbrs+1.0)
     else
@@ -725,7 +725,7 @@ subroutine cluster_removesnap(it,i,vecti2)
         it%sums(k) = it%sums(k) - it%nmbrs*360.0
       end if
     end do
-  else if ((tmp_dis_method.eq.5).OR.(tmp_dis_method.eq.11)) then
+  else if ((dis_method.eq.5).OR.(dis_method.eq.11)) then
     it%sums(1:n_xyz) = it%sums(1:n_xyz) - vecti2(1:n_xyz)
     it%sqsum = it%sqsum - dot_product(vecti2(1:n_xyz),vecti2(1:n_xyz))
   end if

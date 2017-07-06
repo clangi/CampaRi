@@ -890,13 +890,13 @@ module m_mst_dumping
       end if
      587 format(' Weight of Short Spanning Tree: ',1x,g12.5,a)
       write(ilog,*)
-      if (tmp_dis_method.le.2) then
+      if (dis_method.le.2) then
         write(ilog,587) sum(lmstedges(1:n_snaps-1)),' degrees'
-      else if (tmp_dis_method.le.4) then
+      else if (dis_method.le.4) then
         write(ilog,587) sum(lmstedges(1:n_snaps-1)),' '
-      else if (tmp_dis_method.le.10) then
+      else if (dis_method.le.10) then
         write(ilog,587) sum(lmstedges(1:n_snaps-1)),' Angstrom'
-      else if (tmp_dis_method.eq.11) then
+      else if (dis_method.eq.11) then
         write(ilog,587) sum(lmstedges(1:n_snaps-1)),' degrees'
       end if
 

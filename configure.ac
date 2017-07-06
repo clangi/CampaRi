@@ -123,10 +123,12 @@ AC_MSG_WARN([NETCDF Fortran bindings not find. Memory handling will be limited t
 	NETCDF4_FC="$FC"
 	NETCDF4_FFLAGS=""
 	NETCDF4_FLIBS=""
-	SOURCES="m_variables_gen.f90 m_clustering.f90 m_gen_nbls.f90 m_mst.f90 main_clu_adjl_mst.f90 utilities.f90 dist_clusters_utils.f90 gen_progind.f90 gen_manycuts.f90 contract_mst.f90"
+	SOURCES="m_variables_gen.f90 m_gutenberg.f90 m_clustering.f90 m_gen_nbls.f90 m_mst.f90 fprintf_wrapper.c m_hw_fprintf.f90 main_clu_adjl_mst.f90 utilities.f90 dist_clusters_utils.f90 gen_progind.f90 gen_manycuts.f90 contract_mst.f90"
+	PREPROCFLAGS="-cpp"
 else
-	SOURCES="m_variables_gen.f90 m_clustering.f90 m_gen_nbls.f90 m_mst_netcdf.f90 m_mst.f90 main_clu_adjl_mst_netcdf.f90 main_clu_adjl_mst.f90 utilities_netcdf.f90 utilities.f90 dist_clusters_utils.f90 gen_progind.f90 gen_progind_netcdf.f90 gen_manycuts.f90 contract_mst.f90"
+	SOURCES="m_variables_gen.f90 m_gutenberg.f90 m_clustering.f90 m_gen_nbls.f90 m_mst_netcdf.f90 m_mst.f90 fprintf_wrapper.c m_hw_fprintf.f90 main_clu_adjl_mst.f90 utilities_netcdf.f90 utilities.f90 dist_clusters_utils.f90 gen_progind.f90 gen_progind_netcdf.f90 gen_manycuts.f90 contract_mst.f90"
 	options="$options netcdf4"
+	PREPROCFLAGS="-cpp -DLINK_NETCDF"
 fi
 
 dnl This part will be used to establish R variables
@@ -300,6 +302,8 @@ echo "" >& AS_MESSAGE_FD
 SECTION_TITLE([Important variables])
 # netcdf4
 # ---------------------------------------------------------------------------
+echo "PREPROCFLAGS=$PREPROCFLAGS" >& AS_MESSAGE_FD
+AC_SUBST(PREPROCFLAGS)
 AC_SUBST(HAVE_NETCDF4)
 AC_SUBST(NETCDF4_VERSION)
 AC_SUBST(SOURCES)

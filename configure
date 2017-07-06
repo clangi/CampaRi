@@ -626,6 +626,7 @@ LIBOBJS
 with_netcdf4_fortran
 SOURCES
 HAVE_NETCDF4
+PREPROCFLAGS
 NETCDF4_FLIBS
 NETCDF4_FFLAGS
 NETCDF4_FC
@@ -5230,10 +5231,12 @@ $as_echo "$as_me: WARNING: NETCDF Fortran bindings not find. Memory handling wil
 	NETCDF4_FC="$FC"
 	NETCDF4_FFLAGS=""
 	NETCDF4_FLIBS=""
-	SOURCES="m_variables_gen.f90 m_clustering.f90 m_gen_nbls.f90 m_mst.f90 main_clu_adjl_mst.f90 utilities.f90 dist_clusters_utils.f90 gen_progind.f90 gen_manycuts.f90 contract_mst.f90"
+	SOURCES="m_variables_gen.f90 m_gutenberg.f90 m_clustering.f90 m_gen_nbls.f90 m_mst.f90 fprintf_wrapper.c m_hw_fprintf.f90 main_clu_adjl_mst.f90 utilities.f90 dist_clusters_utils.f90 gen_progind.f90 gen_manycuts.f90 contract_mst.f90"
+	PREPROCFLAGS="-cpp"
 else
-	SOURCES="m_variables_gen.f90 m_clustering.f90 m_gen_nbls.f90 m_mst_netcdf.f90 m_mst.f90 main_clu_adjl_mst_netcdf.f90 main_clu_adjl_mst.f90 utilities_netcdf.f90 utilities.f90 dist_clusters_utils.f90 gen_progind.f90 gen_progind_netcdf.f90 gen_manycuts.f90 contract_mst.f90"
+	SOURCES="m_variables_gen.f90 m_gutenberg.f90 m_clustering.f90 m_gen_nbls.f90 m_mst_netcdf.f90 m_mst.f90 fprintf_wrapper.c m_hw_fprintf.f90 main_clu_adjl_mst.f90 utilities_netcdf.f90 utilities.f90 dist_clusters_utils.f90 gen_progind.f90 gen_progind_netcdf.f90 gen_manycuts.f90 contract_mst.f90"
 	options="$options netcdf4"
+	PREPROCFLAGS="-cpp -DLINK_NETCDF"
 fi
 
 
@@ -5255,7 +5258,8 @@ BLAS_LIBS=`"${R_HOME}/bin/R" CMD config BLAS_LIBS`
 LAPACK_LIBS=`"${R_HOME}/bin/R" CMD config LAPACK_LIBS`
 SAFE_FFLAGS=`"${R_HOME}/bin/R" CMD config SAFE_FFLAGS`
 
-R_PACKAGE_DIR=$PWD # TO DELETE
+# R_PACKAGE_DIR=$PWD # TO DELETE
+R_PACKAGE_DIR="." # TO DELETE
 CAMPARI_HOME="${R_PACKAGE_DIR}/inst/campari_lib"
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking if original version of CAMPARI must be installed" >&5
 $as_echo_n "checking if original version of CAMPARI must be installed... " >&6; }
@@ -5292,7 +5296,12 @@ fi
 #    CAMPARI to install
 # ---------------------------
 if test "${with_campari}" != "no"; then
-	as_fn_error $? "ATTENTION: THIS OPTION IS STILL NOT AVAILABLE BECAUSE UNDER DEV." "$LINENO" 5
+	as_fn_error $? "
+
+
+ATTENTION! The --with-campari option is still under development and it is not directly available.
+
+" "$LINENO" 5
 	campari_installed="0"
 
 		echo '   Original campari library installing...   ' | sed -e's/./-/g' >&6
@@ -5472,6 +5481,8 @@ echo "" >& 6
 
 # netcdf4
 # ---------------------------------------------------------------------------
+echo "PREPROCFLAGS=$PREPROCFLAGS" >& 6
+
 
 
 

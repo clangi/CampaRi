@@ -137,18 +137,16 @@ module m_clustering
       integer i, j, ii, u
       real vecti(n_xyz)
 
-      tmp_dis_method = dis_method(1) !This is hard. Can be eventually taylored
-
       n_clu_alc_sz_gen = 2 ! a priori initial cluster numbers
       allocate(scluster(n_clu_alc_sz_gen))
       scluster(:)%nmbrs = 0 ! number of elements in each cluster
       scluster(:)%alsz = 0 ! allocation size of each cluster
 
 
-      write(ilog,*)
-      write(ilog,*) '-----------------------------------'
-      write(ilog,*) 'Now using truncated leader algorithm for pre-clustering...'
-      write(ilog,*)
+      call sl()
+      call spr('-----------------------------------')
+      call spr('Now using truncated leader algorithm for pre-clustering...')
+      call sl()
 
       nclu = 0 !cluster index
       do i=1,n_snaps
@@ -162,9 +160,6 @@ module m_clustering
           ! it starts to shift on that limit forwards.
           call preprocess_snapshot(trj,i, vecti)
           call snap_to_cluster_d(tmp_d,scluster(j),vecti)
-          if(superver .and. (i.lt.10)) then
-            write(ilog,*) "The distance is : ",tmp_d
-          end if
           if (tmp_d.lt.radius) then
             call cluster_addsnap(scluster(j),vecti,i)
             ! add snapshot i in the cluster j
@@ -174,9 +169,6 @@ module m_clustering
         end do
         if (ii.eq.-1) then
           ! a new cluster is added to the cluster list because tmp_d .gt. radius
-          if(superver .and. (i.lt.10)) then
-            write(ilog,*) "new cluster created: n", nclu + 1
-          end if
           nclu = nclu + 1
           ! enlarge the size of the clusters array by the double
           if (nclu.gt.n_clu_alc_sz_gen) then
@@ -188,15 +180,8 @@ module m_clustering
         end if
       end do
 
-      write(ilog,*) '... done with initial cluster generation for distances &
-      &list with a total number of ', nclu , ' clusters'
-      if(superver) then
-        write(ilog,*) 'Number of elements per cluster: '
-        do u=1,nclu
-          write(ilog,*) 'Cl',u, ': nmbr of elements = ', scluster(u)%nmbrs
-          ! write(ilog,*) 'Snaps contained: ', scluster(u)%snaps
-        end do
-      end if
+      call sipr('... done with initial cluster generation for distances &
+      &list with a total number of clusters equal: ', nclu)
     end subroutine
 
 ! helper function to resize the cluster
@@ -261,7 +246,6 @@ module m_clustering
       integer cnhmax ! Toask: levels of the tree that are recalculated?
       integer max_show_clu ! maximum number of cl to show.
 
-      tmp_dis_method = dis_method(1) !This is hard. Can be eventually taylored
     ! NOT USED it seems
     !  33 format('ERROR B: ',i6,' could be part of ',i5,' at ',g14.7,' (last d',g14.6,')')
     !  34 format('NEXT HIGHER: ',i6,' could have been part of ',i5,' at ',g14.7,'.')
@@ -309,10 +293,10 @@ module m_clustering
       allocate(birchtree(1)%cls(1)%children(2))
       birchtree(1)%cls(1)%childr_alsz = 2
     !
-      write(ilog,*)
-      write(ilog,*) '---------------------------------------------------------------------'
-      write(ilog,*) 'Now performing tree-based clustering ...'
-      write(ilog,*)
+      call sl()
+      call spr('---------------------------------------------------------------------')
+      call spr('Now performing tree-based clustering ...')
+      call sl()
       cycit = .false.
       cnt1 = 0 !number of calculated distances
       cnt2 = 0
@@ -333,7 +317,7 @@ module m_clustering
               ll = birchtree(ii-1)%cls(kk)%children(j)
               cnt1 = cnt1 + 1 !number of calculated distances
               if ((birchtree(ii)%cls(ll)%center.le.0).OR.(birchtree(ii)%cls(ll)%center.gt.n_snaps)) then
-                write(ilog,*) "BUG: the center is not allocated. Please contact the admin."
+                call spr("BUG: the center is not allocated. Please contact the admin.")
                 call fexit()
               end if
               !distance between the one element i with all the children clusters ll
@@ -441,8 +425,8 @@ module m_clustering
       !     write(ilog,*) "center: ", birchtree(i)%cls(j)%center
       !   end do
       ! end do
-      write(ilog,*) "multi-passing..."
-      write(ilog,*)
+      call spr("multi-passing...")
+      call sl()
     !  multi-pass
       do cnhmax=c_nhier+1,min(c_nhier+1,max(3,c_nhier+1-c_multires)),-1
         if (cnhmax.lt.(c_nhier+1)) then !not done if == (always the case with c_multires = 0)
@@ -476,7 +460,7 @@ module m_clustering
                   !    write(ilog,*) "ii-lev/ll-childrenID(upperlev):",ii,ll
                   !    write(ilog,*) "number of elem:", birchtree(ii)%cls(ll)%nmbrs
                   !  end if
-                  write(ilog,*) "BUG: the center is not allocated. Please contact the admin."
+                  call spr("BUG: the center is not allocated. Please contact the admin.")
                   call fexit()
                 end if
                 call preprocess_snapshot(trj, i, vecti) !working
@@ -564,21 +548,24 @@ module m_clustering
       ! end do
 
       !PRINTING RESULTS
-      write(ilog,*) "--------------------------- TREE SUMMARY ----------------------------"
-     66 format('Level    #Clusters     Threshold      TotalSnaps    Tot Children')
-     67 format(i5,3x,i10,4x,g14.4,1x,i11,4x,i12)
-     68 format(i5,3x,i10,7x,a7,5x,i11,4x,i12)
-      write(ilog,66)
-      write(ilog,68) 1,birchtree(1)%ncls,'MAXIMAL',sum(birchtree(1)%cls(1:birchtree(1)%ncls)%nmbrs),&
-      sum(birchtree(1)%cls(1:birchtree(1)%ncls)%nchildren)
-      do i=2,c_nhier+1
-        write(ilog,67) i,birchtree(i)%ncls,scrcts(i),sum(birchtree(i)%cls(1:birchtree(i)%ncls)%nmbrs),&
-        sum(birchtree(i)%cls(1:birchtree(i)%ncls)%nchildren)
+      call spr("--------------------------- TREE SUMMARY ----------------------------")
+      call spr('Thresholds: ')
+      call rvpr(scrcts)
+      call spr('Level    #Clusters     Threshold      TotalSnaps    Tot Children')
+    !  67 format(i5,3x,i10,4x,g14.4,1x,i11,4x,i12)
+    !  68 format(i5,3x,i10,7x,a7,5x,i11,4x,i12)
+    !   write(ilog,66)
+    !   write(ilog,68) 1,birchtree(1)%ncls,'MAXIMAL',sum(birchtree(1)%cls(1:birchtree(1)%ncls)%nmbrs),&
+    !   sum(birchtree(1)%cls(1:birchtree(1)%ncls)%nchildren)
+      do i=1,c_nhier+1  ! i was 2 with MAXIMAL level
+        call clu_summary_linepr(i,birchtree(i)%ncls,&
+        sum(birchtree(i)%cls(1:birchtree(i)%ncls)%nmbrs),&
+        sum(birchtree(i)%cls(1:birchtree(i)%ncls)%nchildren))
       end do
-      write(ilog,*) '---------------------------------------------------------------------'
-      write(ilog,*)
-      write(ilog,*) '... done after a total of ',cnt1,' distance evaluations.'
-      write(ilog,*)
+      call spr('---------------------------------------------------------------------')
+      call sl()
+      call sipr('... done after total distance evaluations of: ',cnt1)
+      call sl()
 
     !
       ! do j=1,birchtree(c_nhier+1)%ncls
@@ -681,7 +668,7 @@ module m_clustering
       if(clu_summary) then
         63 format(i6,3x,g12.5,1x,i7,1x,i7,2x,i8,3x,2(1x,g11.5))
         ! 64 format(1000(g12.5,1x))
-        69 format('------------------------- CLUSTERS SUMMARY ---------------------------')
+        69 format('------------------------- CLUSTERS SUMMARY ---------------------------') !TODO
         70 format(' -> level ',i3,' has ',i7,' clusters with one element')
         write(ilog,69)
         write(ilog,*) 'level    threshold         #     No.    Center   Diameter      Radius      '
@@ -715,12 +702,12 @@ module m_clustering
             end if
           end do
           if(cl_one_elem.gt.0) then
-            write(ilog,70) k,cl_one_elem
+            write(ilog,70) k, cl_one_elem
           end if
 
         end do
-        write(ilog,*)
-        write(ilog,*)
+        call sl()
+        call sl()
         do k=2,c_nhier+1
           if(birchtree(k)%ncls.ne.n_snaps) then
             call quality_of_clustering(birchtree(k)%ncls,&

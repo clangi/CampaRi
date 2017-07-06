@@ -7,6 +7,7 @@
 #' @param ret_data This input must be the output from the function \code{gen_progindex}.
 #' @param local_cut_width This variable defines the width for a 3 groups annotation of the progrex index.
 #' @param snap_start Starting snapshot. It must be the same as in gen_progindex. Best to leave not assigned.
+#' @param mute If \code{TRUE} will mute the code messages
 #' @details For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
 #'
 #' @seealso 
@@ -22,8 +23,10 @@
 #' @export gen_annotation
 #' @useDynLib CampaRi
 
-gen_annotation <- function(ret_data, local_cut_width = NULL, snap_start = NULL){
-  warning("if you use an input different in format to the output of the other CampaRi functions there is an high probability of crashing")
+gen_annotation <- function(ret_data, local_cut_width = NULL, snap_start = NULL, mute = FALSE){
+  # warning("if you use an input different in format to the output of the other CampaRi functions there is an high probability of crashing")
+  if(!is.logical(mute))
+    stop('mute must be a logical.')
   # local_cut_widtg is a (potentially) new setting for the width for the local cut
   n_breaks <- 0 #not a clue ?
   brklst <- array(as.integer(0),c(1))
@@ -56,6 +59,7 @@ gen_annotation <- function(ret_data, local_cut_width = NULL, snap_start = NULL){
                         distv=as.single(o_distv),
                         invvec=as.integer(o_invvec),
                         ivec2=as.integer(o_iv2),
-                        trbrkslst=as.integer(brklst)) #?
+                        trbrkslst=as.integer(brklst), #?
+                        mute=as.logical(mute)) 
   invisible(ret_data2)
 }
