@@ -52,35 +52,38 @@ gen_progindex <- function(adjl=NULL, nsnaps = NULL, snap_start = 1, read_from_ne
   o_iv2 <- array(as.integer(0),c(nsnaps)) # mistery
   o_progind <- array(as.integer(0),c(nsnaps))
   o_distv <- array(as.single(0.0),c(nsnaps))
-  if(!read_from_netcdf){
+  if(read_from_netcdf){
+    if(!mute) cat("Going netcdf...\n")
+    if(.check_integer(nsnaps)) stop("For netcdf data management you must write the number of snapshots in your trj")
+    use_tree_from_r <- FALSE
+    adjl <- list()
+    maxnb <- 2
+    dfffo <- 2 # suppress assignment of the adjlist (reduce it)
+    adjl[[1]] <- 1:2
+    adjl[[2]] <- matrix(1:4,2,2)
+    adjl[[3]] <- matrix(1:4,2,2)
+  }else{
     # Working only if the graph it is complete -crash with not connected components
+    use_tree_from_r <- TRUE
     maxnb <- max(as.integer(adjl[[1]]))
-    adjl[[2]] <- matrix(as.integer(adjl[[2]]), nrow = nsnaps, ncol = maxnb)
+    dfffo <- nsnaps
+    adjl[[2]] <- matrix(as.integer(adjl[[2]]), nrow = dfffo, ncol = maxnb)
+  }
     attr(adjl[[3]],"Csingle") <- TRUE
     ret_data <- .Fortran("gen_progind_from_adjlst",
-                         n_snaps=as.integer(nsnaps),
-                         starter=as.integer(snap_start),
-                         mnb=as.integer(maxnb),
+                         n_snaps_in=as.integer(nsnaps),
+                         starting_snap=as.integer(snap_start),
+                         max_degree=as.integer(maxnb),
                          alnbs=as.integer(adjl[[1]]),
                          alst=adjl[[2]],
                          aldis=adjl[[3]],
                          progind=as.integer(o_progind),
                          distv=as.single(o_distv),
+                         dfffo=as.logical(dfffo),
                          invvec=as.integer(o_invvec),
                          iv2=as.integer(o_iv2),
-                         mute_in=as.logical(mute))
-  }else{
-    if(!mute) cat("Going netcdf...\n")
-    if(is.null(nsnaps) || !is.numeric(nsnaps)) stop("For netcdf data management you must write the number of snapshots in your trj")
-    ret_data <- tryCatch(.Fortran("gen_progind_from_adjlst_r",
-                                  n_snaps_in=as.integer(nsnaps),
-                                  starter=as.integer(snap_start),
-                                  progind=as.integer(o_progind),
-                                  distv=as.single(o_distv),
-                                  invvec=as.integer(o_invvec),
-                                  iv2=as.integer(o_iv2),
-                                  mute_in=as.logical(mute)),
-                         error = function(e) stop('ERROR: the read_from_netcdf mode is active but the CampaRi package was built without netcdf support'))
-  }
+                         mute_in=as.logical(mute),
+                         use_tree_from_r=as.logical(use_tree_from_r))
+                         # error = function(e) stop('ERROR: the read_from_netcdf mode is active but the CampaRi package was built without netcdf support'))
   return(ret_data)
 }

@@ -329,32 +329,32 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
     adj_dis <- matrix(as.single(rep(0.0,dfffo*dfffo)),dfffo,dfffo)
     attr(adj_dis,"Csingle") <- TRUE
     #main fortran talker
-    output<-tryCatch(.Fortran("generate_neighbour_list", PACKAGE="CampaRi",
-                              #input
-                              trj_data=trj,
-                              n_xyz_in=as.integer(n_xyz),
-                              n_snaps_in=as.integer(n_snaps),
-                              dfffo=as.integer(dfffo),
-                              clu_radius_in=as.single(clu_radius),
-                              clu_hardcut_in=as.single(clu_hardcut),
-                              #output
-                              adjl_deg=adj_deg,
-                              adjl_ix=adj_ix,
-                              adjl_dis=adj_dis,
-                              max_degr=as.integer(max_d),
-                              #algorithm details
-                              dis_method_in=as.integer(distance_method),
-                              birch_in=as.logical(birch_clu),
-                              mst_in=as.logical(min_span_tree),
-                              #sst details
-                              rootmax_rad_in=as.single(rootmax_rad),
-                              tree_height_in=as.integer(tree_height),
-                              n_search_attempts_in=as.integer(n_search_attempts),
-                              #modes
-                              normalize_dis_in=as.logical(normalize_d),
-                              return_tree_in_r=as.logical(return_tree_in_r),
-                              mute_in=as.logical(mute_fortran)),
-                     error = function(e) stop('ERROR: The netcdf dumping needs a working installation of CampaRi with netcdf4 support.'))
+    output <- .Fortran("generate_neighbour_list", PACKAGE="CampaRi",
+                        #input
+                        trj_data=trj,
+                        n_xyz_in=as.integer(n_xyz),
+                        n_snaps_in=as.integer(n_snaps),
+                        dfffo=as.integer(dfffo),
+                        clu_radius_in=as.single(clu_radius),
+                        clu_hardcut_in=as.single(clu_hardcut),
+                        #output
+                        adjl_deg=adj_deg,
+                        adjl_ix=adj_ix,
+                        adjl_dis=adj_dis,
+                        max_degr=as.integer(max_d),
+                        #algorithm details
+                        dis_method_in=as.integer(distance_method),
+                        birch_in=as.logical(birch_clu),
+                        mst_in=as.logical(min_span_tree),
+                        #sst details
+                        rootmax_rad_in=as.single(rootmax_rad),
+                        tree_height_in=as.integer(tree_height),
+                        n_search_attempts_in=as.integer(n_search_attempts),
+                        #modes
+                        normalize_dis_in=as.logical(normalize_d),
+                        return_tree_in_r=as.logical(return_tree_in_r),
+                        mute_in=as.logical(mute_fortran))
+                     # error = function(e) stop('ERROR: The netcdf dumping needs a working installation of CampaRi with netcdf4 support.'))
     if(!dump_to_netcdf){
       #output adjustment
       output_fin[[1]] <- output$adjl_deg

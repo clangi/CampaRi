@@ -37,6 +37,7 @@ module m_mst_dumping
     !
     subroutine gen_MST_from_nbl_w()
     !
+      use gutenberg
       use m_clustering
       use m_gen_nbls
       use m_variables_gen
@@ -312,6 +313,7 @@ module m_mst_dumping
     !
     subroutine gen_MST_from_treeclustering_w(trj2)
     !
+      use gutenberg
       use m_clustering
       use m_variables_gen
       ! use iounit

@@ -42,3 +42,4 @@
 # }
 
 .lt <- function(x) return(length(x))
+.check_integer <- function(x) return(is.null(x) || !is.numeric(x) || x%%1 != 0) # MUST not be null

@@ -29,7 +29,7 @@ subroutine gen_progind_from_adjlst(n_snaps_in, starting_snap, max_degree, &
   integer, INTENT(IN) :: n_snaps_in, dfffo, max_degree, starting_snap
   integer, INTENT(IN) :: alnbs(dfffo), alst(dfffo, max_degree)
   real, INTENT(IN) :: aldis(dfffo,max_degree)
-  logical, INTENT(IN) :: mute_in
+  logical, INTENT(IN) :: mute_in, use_tree_from_r
 !
   integer, INTENT(OUT) :: invvec(n_snaps_in+2),progind(n_snaps_in),iv2(n_snaps_in)
   real, INTENT(OUT) :: distv(n_snaps_in)
