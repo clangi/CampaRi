@@ -60,6 +60,6 @@ gen_annotation <- function(ret_data, local_cut_width = NULL, snap_start = NULL, 
                         invvec=as.integer(o_invvec),
                         ivec2=as.integer(o_iv2),
                         trbrkslst=as.integer(brklst), #?
-                        mute=as.logical(mute)) 
+                        mute_in=as.logical(mute)) 
   invisible(ret_data2)
 }

@@ -165,8 +165,8 @@ contains
     if ((mx(10).gt.0).OR.(mx(11).gt.0).OR.(mx(12).gt.0).OR.&
    &    (mx(13).gt.0).OR.&
    &    (mx(14).gt.0).OR.(mx(15).gt.0).OR.(mx(16).gt.0)) then
-      write(*,*) 'Warning. Possibly bad result from int2str(...) (inte&
-   &ger overflow).'
+    call spr('Warning. Possibly bad result from int2str(...) (inte&
+   &ger overflow).')
     end if
   !
   ! find the final string length
@@ -184,8 +184,8 @@ contains
     strsz = max(strsz,minsz)
   !
     if (strsz.gt.17) then
-      write(*,*) 'Warning. Possibly bad result from int2str(...) (digi&
-   &t overflow).'
+      call spr('Warning. Possibly bad result from int2str(...) (digi&
+   &t overflow).')
     end if
   !
   ! convert individual digits to a string of numeric characters

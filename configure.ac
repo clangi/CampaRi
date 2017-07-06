@@ -127,7 +127,7 @@ AC_MSG_WARN([NETCDF Fortran bindings not find. Memory handling will be limited t
 	SOURCES="m_variables_gen.f90 m_gutenberg.f90 m_clustering.f90 m_gen_nbls.f90 m_mst.f90 fprintf_wrapper.c m_hw_fprintf.f90 main_clu_adjl_mst.f90 utilities.f90 dist_clusters_utils.f90 gen_progind.f90 gen_manycuts.f90 contract_mst.f90"
 	PREPROCFLAGS="-cpp"
 else
-	SOURCES="m_variables_gen.f90 m_gutenberg.f90 m_clustering.f90 m_gen_nbls.f90 m_mst_netcdf.f90 m_mst.f90 fprintf_wrapper.c m_hw_fprintf.f90 main_clu_adjl_mst.f90 utilities_netcdf.f90 utilities.f90 dist_clusters_utils.f90 gen_progind.f90 gen_progind_netcdf.f90 gen_manycuts.f90 contract_mst.f90"
+	SOURCES="m_variables_gen.f90 m_gutenberg.f90 m_clustering.f90 m_gen_nbls.f90 m_mst_netcdf.f90 m_mst.f90 fprintf_wrapper.c m_hw_fprintf.f90 main_clu_adjl_mst.f90 utilities_netcdf.f90 utilities.f90 dist_clusters_utils.f90 gen_progind.f90 gen_manycuts.f90 contract_mst.f90"
 	options="$options netcdf4"
 	PREPROCFLAGS="-cpp -DLINK_NETCDF"
 fi

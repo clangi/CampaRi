@@ -12,7 +12,7 @@ vignette: >
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 knitr::opts_knit$set(progress = FALSE)
-# knitr::opts_knit$set(root.dir="vignettes/out_to_del/")
+# knitr::opts_knit$set(root.dir="out_to_del/")
 ```
 
 Lets try out some other feature of the package.
@@ -73,19 +73,19 @@ run_campari(trj = trj[1:2000,],
             FMCSC_CMAXRAD=6, #clustering
             FMCSC_CRADIUS=4,
             FMCSC_CCUTOFF=100,
-            FMCSC_CPROGINDWIDTH=1000) #local cut
+            FMCSC_CPROGINDWIDTH=1000) #local cut is automatically adjusted to 1/10 if it is too big (as here)
             #FMCSC_CPROGMSTFOLD 4 # b)
-sapphire_plot(sap_file = "PROGIDX_000000000021.dat", title = "ORIGINAL CAMPARI - MST")
+sapphire_plot(sap_file = "PROGIDX_000000000021.dat", timeline= T,title = "ORIGINAL CAMPARI - MST")
 ```
 
 There is the possibility to use some internal replica of the main algorithms used for the metastable states recognition (basins in SAPPHIRE plots). The Minimum Spanning Tree, however, has memory limitation which are difficult to handle in R.
 
 ```{r, eval=FALSE}
 # with 100k it is possible that also the netcdf option could exceede the memory availability
-mst_from_trj(trj = trj[1:2000,], dump_to_netcdf = TRUE, mode = "fortran", normalize_d = T distance_method = 5)
+mst_from_trj(trj = trj[1:2000,], dump_to_netcdf = TRUE, mode = "fortran", normalize_d = T, distance_method = 5)
 ret <- gen_progindex(nsnaps = 2000, read_from_netcdf = T, snap_start = 21)
-ret2 <- gen_annotation(ret, snap_start = 21)
-sapphire_plot(sap_file = 'REPIX_000000000021.dat', title = "CAMPARI WRAPPER - MST")
+ret2 <- gen_annotation(ret, snap_start = 21, local_cut_width = 200)
+sapphire_plot(sap_file = 'REPIX_000000000021.dat', timeline = T,title = "CAMPARI WRAPPER - MST")
 ```
 
 
@@ -93,12 +93,24 @@ It is however possible to use directly the R data system without the netcdf dump
 Let's see an example:
 ```{r, eval=FALSE}
 adjl <- mst_from_trj(trj=trj[1:2000,])
-
+# adjl2 <- contract_mst(adjl = adjl, n_fold = 5)
+ret <- gen_progindex(adjl = adjl2, snap_start = 21)
+# ret <- gen_progindex(nsnaps = 2000, read_from_netcdf = T, snap_start = 21)
+ret2 <- gen_annotation(ret_data = ret, local_cut_width = 200, snap_start = 21)
+sapphire_plot(sap_file = 'REPIX_000000000021.dat', timeline=T, title = "CAMPARI WRAPPER - MST")
 ```
 
 
 
+Now sst:
 
+```{r, eval=F}
+adjl <- mst_from_trj(trj=trj[1:2000,], birch_clu = T)
+ret <- gen_progindex(adjl = adjl2, snap_start = 21)
+# ret <- gen_progindex(nsnaps = 2000, read_from_netcdf = T, snap_start = 21)
+ret2 <- gen_annotation(ret_data = ret, local_cut_width = 200, snap_start = 21)
+sapphire_plot(sap_file = 'REPIX_000000000021.dat', timeline=T, title = "CAMPARI WRAPPER - MST")
+```
 
 
 

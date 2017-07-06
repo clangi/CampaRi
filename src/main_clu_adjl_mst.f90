@@ -101,14 +101,20 @@ subroutine generate_neighbour_list( &
   ! ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  ---
 #ifdef LINK_NETCDF
   if(return_tree_in_r) then
+    call sl()
+    call spr('------------------------------------------------------------------')
     call spr('ATTENTION: Even if CampaRi was installed using netcdf support, you selected &
     to use the R data management system. Both options will be followed at the same time.')
+    call spr('------------------------------------------------------------------')
   end if
 #else
   if(.not.return_tree_in_r) then
+    call sl()
+    call spr('------------------------------------------------------------------')
     call spr('ATTENTION: Even if CampaRi was installed without the netcdf support, &
     the user tried to use the netcdf dumping functionality. This run will follow the &
     usual flow without netcdf. If you want to use it install the full version of the package.')
+    call spr('------------------------------------------------------------------')
   end if
 #endif
   ! ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  ---

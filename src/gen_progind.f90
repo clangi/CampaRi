@@ -6,22 +6,79 @@
 ! per se (along with the minimal distance to the current set (distv), the inverse map (invvec)
 ! and the parent/source vector (iv2))
 !
-subroutine gen_progind_from_adjlst(n_snaps, starter, mnb, alnbs, alst, &
-  aldis, progind, distv, invvec, iv2)
+subroutine gen_progind_from_adjlst(n_snaps_in, starting_snap, max_degree, &
+  alnbs, alst, aldis, & !minimum spanning tree in input (not necessary in netcdf)
+  progind, distv, &
+  dfffo, invvec, iv2, mute_in, use_tree_from_r)
 
+  ! added that must be modified in R:
+  ! - dfffo
+  ! - mute_in
+  ! - use_tree_from_r
+  ! - n_snaps_in
+  ! TODO: check if the file is available and use it or R (if both inserted)
+  ! no probably better to keep using the r data -> better checks in R
+
+  use m_variables_gen
+#ifdef LINK_NETCDF
+  use m_mst_dumping
+#endif
+  use gutenberg
   implicit none
 !
-  integer, INTENT(IN):: n_snaps,mnb,starter,alnbs(n_snaps),alst(n_snaps,mnb)
-  real, INTENT(IN):: aldis(n_snaps,mnb)
+  integer, INTENT(IN) :: n_snaps_in, dfffo, max_degree, starting_snap
+  integer, INTENT(IN) :: alnbs(dfffo), alst(dfffo, max_degree)
+  real, INTENT(IN) :: aldis(dfffo,max_degree)
+  logical, INTENT(IN) :: mute_in
 !
-  integer, INTENT(OUT):: invvec(n_snaps+2),progind(n_snaps),iv2(n_snaps)
-  real, INTENT(OUT):: distv(n_snaps)
+  integer, INTENT(OUT) :: invvec(n_snaps_in+2),progind(n_snaps_in),iv2(n_snaps_in)
+  real, INTENT(OUT) :: distv(n_snaps_in)
 !
-  integer heapsize,lprogind,j
-  logical, ALLOCATABLE:: added(:), inprogind(:)
-  integer, ALLOCATABLE:: heap(:),hsource(:) !dynamic dimensions
-  real, ALLOCATABLE:: key(:)
-  write(*,*) "Generating progress index..."
+  integer heapsize, lprogind, j, i
+  real t4, t3 !timing variables
+  logical, ALLOCATABLE :: added(:), inprogind(:)
+  integer, ALLOCATABLE :: heap(:),hsource(:) !dynamic dimensions
+  real, ALLOCATABLE :: key(:)
+
+  mute = mute_in
+  n_snaps = n_snaps_in
+
+  ! CHEKS IF THE USER HAS WHAT HE WANTS - NETCDF
+  ! ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  ---
+#ifdef LINK_NETCDF
+  if(use_tree_from_r) then
+    call sl()
+    call spr('------------------------------------------------------------------')
+    call spr('ATTENTION: Even if CampaRi was installed using netcdf support, you selected &
+    to use the R data management system. Both options will be followed at the same time.')
+    call spr('------------------------------------------------------------------')
+  end if
+#else
+  if(.not.use_tree_from_r) then
+    call sl()
+    call spr('------------------------------------------------------------------')
+    call spr('ATTENTION: Even if CampaRi was installed without the netcdf support, &
+    the user tried to use the netcdf dumping functionality. This run will follow the &
+    usual flow without netcdf. If you want to use it install the full version of the package.')
+    call spr('------------------------------------------------------------------')
+  end if
+#endif
+  ! ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  ---
+
+  call spr('---------------------------------------------------------------------')
+#ifdef LINK_NETCDF
+  call spr("Generating progress index from netcdf file...")
+  call sl()
+  call spr('Reading mst from working directory file "MST_DUMPLING.nc"...')
+  call CPU_time(t3)
+  call read_nbl_nc()
+  call CPU_time(t4)
+  call srpr('...reading completed after (s) ',t4-t3)
+  call sl()
+#else
+  call spr("Generating progress index from inserted minimum spanning tree (no netcdf)...")
+#endif
+
   allocate(inprogind(n_snaps)) !the maximum length of these are the number of snapshot
   allocate(added(n_snaps))
   allocate(key(n_snaps))
@@ -36,13 +93,12 @@ subroutine gen_progind_from_adjlst(n_snaps, starter, mnb, alnbs, alst, &
   invvec(1) = 3*n_snaps !-> boundary conditions?
   invvec(n_snaps+2) = 6*n_snaps
 ! add first snapshot to progress index:
-  if (starter.le.n_snaps) then
-    progind(1) = starter
+  if (starting_snap.le.n_snaps) then
+    progind(1) = starting_snap
   else
     progind(1) = 1
-    write(*,*) 'Warning. The snapshot index requested is not available (there &
-    &are ',n_snaps,' snapshots in memory). &
-    &Using first one instead.'
+    call spr('Warning. The snapshot index requested as starting point is not available. &
+    Using first one instead.')
   end if
   lprogind = 1 !this is the position in the list of progind (it is the order)
   distv(lprogind) = 0.0
@@ -52,16 +108,45 @@ subroutine gen_progind_from_adjlst(n_snaps, starter, mnb, alnbs, alst, &
   iv2(lprogind) = progind(lprogind) !parent/source vector
 !
 ! build heap:
-  ! inizialization with the first point of the progress index (1 or starter)
+  ! inizialization with the first point of the progress index (1 or starting_snap)
+#ifdef LINK_NETCDF
+  heapsize = approxmst(progind(lprogind))%deg !number of connection of the first vertex
+  heap(1:heapsize) = approxmst(progind(lprogind))%adj(1:heapsize) !the specific connections indexes
+  key(1:heapsize) = approxmst(progind(lprogind))%dist(1:heapsize) !key is the value of the distances
+#else
   heapsize = alnbs(progind(lprogind)) !number of connection of the first vertex
   heap(1:heapsize) = alst(progind(lprogind),1:heapsize) !the specific connections indexes
   key(1:heapsize) = aldis(progind(lprogind),1:heapsize) !key is the value of the distances
+#endif
+
+
   hsource(1:heapsize) = progind(lprogind) !value of the prog index that is generating the connections
   call hbuild(heapsize,heap(1:heapsize),key(1:heapsize),hsource(1:heapsize))
+
+
+#ifdef LINK_NETCDF
+  do j=1,approxmst(progind(lprogind))%deg
+    added(approxmst(progind(lprogind))%adj(j)) = .true.
+  end do
+#else
   do j=1,alnbs(progind(lprogind))
     added(alst(progind(lprogind),j)) = .true.
   end do
+#endif
+
+
   do while (lprogind.lt.n_snaps)
+
+#ifdef LINK_NETCDF
+    do j=1,approxmst(progind(lprogind))%deg
+    !! add neighbors of last snapshot in progress index to heap
+      if (added(approxmst(progind(lprogind))%adj(j)).EQV..false.) then
+        call hinsert(heapsize,heap(1:(heapsize+1)),key(1:(heapsize+1)),hsource(1:(heapsize+1)),&
+    &                   approxmst(progind(lprogind))%adj(j),approxmst(progind(lprogind))%dist(j),progind(lprogind))
+        added(approxmst(progind(lprogind))%adj(j)) = .true.
+      end if
+    end do
+#else
     do j=1,alnbs(progind(lprogind))
 !! add neighbors of last snapshot in progress index to heap
       if (added(alst(progind(lprogind),j)).EQV..false.) then
@@ -70,6 +155,7 @@ subroutine gen_progind_from_adjlst(n_snaps, starter, mnb, alnbs, alst, &
         added(alst(progind(lprogind),j)) = .true.
       end if
     end do
+#endif
 ! append next snapshot to progind():
     lprogind = lprogind+1
     progind(lprogind) = heap(1)
@@ -96,7 +182,19 @@ subroutine gen_progind_from_adjlst(n_snaps, starter, mnb, alnbs, alst, &
   deallocate(inprogind)
   deallocate(heap)
   deallocate(hsource)
-  write(*,*) "DONE"
+#ifdef LINK_NETCDF
+  if (allocated(approxmst).EQV..true.) then
+    do i=1,size(approxmst)
+      if (allocated(approxmst(i)%adj).EQV..true.) deallocate(approxmst(i)%adj)
+      if (allocated(approxmst(i)%dist).EQV..true.) deallocate(approxmst(i)%dist)
+    end do
+    deallocate(approxmst)
+  end if
+#endif
+  call sl()
+  call spr("...progrex index generated")
+  call spr('---------------------------------------------------------------------')
+!
 !
 end
 !

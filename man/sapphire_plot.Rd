@@ -53,10 +53,10 @@ For details, please refer to the main documentation of the original campari soft
 }
 \examples{
 adjl <- mst_from_trj(trj = matrix(rnorm(1000), nrow = 100, ncol = 10))
-ret<-gen_progindex(adjl = adjl)
+ret <- gen_progindex(adjl = adjl)
 gen_annotation(ret_data = ret, local_cut_width = 10)
 \dontrun{
-zap_ggplot("REPIX_000000000001.dat")
+sapphire_plot("REPIX_000000000001.dat")
 }
 
 }
