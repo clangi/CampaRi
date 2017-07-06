@@ -52,7 +52,7 @@ subroutine generate_neighbour_list( &
   adjl_deg, adjl_ix, adjl_dis, max_degr, & !output
   dis_method_in, birch_in, mst_in, & !algorithm details
   rootmax_rad_in, tree_height_in, n_search_attempts_in,& !sst details
-  normalize_dis_in, mute_in) !modes
+  normalize_dis_in, return_tree_in_r, mute_in) !modes
 
   use gutenberg
   use m_variables_gen
@@ -77,13 +77,12 @@ subroutine generate_neighbour_list( &
   real, intent(in) :: clu_radius_in !defines the max cluster sizes
   real, intent(in) :: clu_hardcut_in !threshold between cluster snaps
   real, intent(in) :: rootmax_rad_in !first level (non-root) rad-thresh
-  logical, intent(in) :: mute_in !verbose terminal output
-  logical, intent(in) :: normalize_dis_in !flag for normalize the distance matrix
   logical, intent(in) :: birch_in !flag for birch clustering
-  ! to consider for netcdf
-
-  ! the mst option could generate an adjlist which was not an mst - only NO BIRCH
   logical, intent(in) :: mst_in !make already the ordered mst(true) or not?
+  logical, intent(in) :: normalize_dis_in !flag for normalize the distance matrix
+  logical, intent(in) :: return_tree_in_r !if I want to use R even if with netcdf..
+  logical, intent(in) :: mute_in !verbose terminal output
+  ! the mst option could generate an adjlist which was not an mst - only NO BIRCH
 
   ! HELPING AND DEBUGGING VARIABLES
   integer i ! helper variables
@@ -97,6 +96,22 @@ subroutine generate_neighbour_list( &
   integer, intent(inout) :: adjl_deg(dfffo)
   integer, intent(inout) :: adjl_ix(dfffo,dfffo)
   real, intent(inout) :: adjl_dis(dfffo,dfffo)
+
+  ! CHEKS IF THE USER HAS WHAT HE WANTS - NETCDF
+  ! ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  ---
+#ifdef LINK_NETCDF
+  if(return_tree_in_r) then
+    call spr('ATTENTION: Even if CampaRi was installed using netcdf support, you selected &
+    to use the R data management system. Both options will be followed at the same time.')
+  end if
+#else
+  if(.not.return_tree_in_r) then
+    call spr('ATTENTION: Even if CampaRi was installed without the netcdf support, &
+    the user tried to use the netcdf dumping functionality. This run will follow the &
+    usual flow without netcdf. If you want to use it install the full version of the package.')
+  end if
+#endif
+  ! ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  ---
 
   ! N B :
   ! clu_hardcut is used for distances between different clusters snapshos as
@@ -223,6 +238,7 @@ subroutine generate_neighbour_list( &
           adjl_deg(i) = cnblst(i)%nbs
           adjl_ix(i,:) = cnblst(i)%idx
           adjl_dis(i,:) = cnblst(i)%dis
+          ! the max search is again needed if not MST is built
           if(i .eq. 1 .OR. max_degr .lt. cnblst(i)%nbs) max_degr = cnblst(i)%nbs
           if (allocated(cnblst(i)%dis).EQV..true.) deallocate(cnblst(i)%dis)
           if (allocated(cnblst(i)%idx).EQV..true.) deallocate(cnblst(i)%idx)
@@ -260,7 +276,20 @@ subroutine generate_neighbour_list( &
   call CPU_time(t2)
   call sl()
   call srpr('Time elapsed for mst dumping (s): ',t2-t1)
-  ! #endif
+  call spr('...file-mst dumping done.')
+  if(return_tree_in_r) then
+    call sl()
+    call spr('As you have the R-based tree handling active, now the tree &
+    will return to the glorious hands of R...')
+    do i=1,n_snaps
+      adjl_deg(i) = approxmst(i)%deg
+      adjl_ix(i,:) = approxmst(i)%adj(1:approxmst(i)%deg)
+      adjl_dis(i,:) = approxmst(i)%dist(1:approxmst(i)%deg)
+      if(i .eq. 1 .OR. max_degr .lt. approxmst(i)%deg) max_degr = approxmst(i)%deg
+    end do
+    call spr('...done')
+  end if
+  ! deallcoating the sst used for dumping to netcdf
   if (allocated(approxmst).EQV..true.) then
     do i=1,size(approxmst)
       if (allocated(approxmst(i)%adj).EQV..true.) deallocate(approxmst(i)%adj)
@@ -268,7 +297,6 @@ subroutine generate_neighbour_list( &
     end do
     deallocate(approxmst)
   end if
-  call spr('...file-mst dumping done.')
   call spr('------------------------------------------------------------')
 #endif
   ! if(log_print) close(ilog)

@@ -5,7 +5,7 @@
 \title{Compute the progress index along with parent and distance-to-parent information}
 \usage{
 gen_progindex(adjl = NULL, nsnaps = NULL, snap_start = 1,
-  read_from_netcdf = FALSE)
+  read_from_netcdf = FALSE, mute = FALSE)
 }
 \arguments{
 \item{adjl}{A list of three elements: degree list, connectivity matrix and weights. This input must be a minimum spanning tree, otherwise
@@ -18,12 +18,14 @@ is active this value will be necessary and precise in order to avoid unpredictab
 \item{snap_start}{The snapshot from which the progrex index will start.}
 
 \item{read_from_netcdf}{If \code{FALSE} the netcdf support will be used. The minimum spanning tree will be readed from file (see \code{\link{mst_from_trj}}).}
+
+\item{mute}{If \code{TRUE} will mute the code messages}
 }
 \value{
 The output of this function MUST be used as input for the \code{\link{gen_annotation}} function.
 }
 \description{
-This function is able to create the progrex index of a time series from its minimum spanning tree of the distances. 
+This function is able to create the progrex index of a time series from its minimum spanning tree of the distances.
      In order to understand how the progrex index is generated please refer to \url{http://www.sciencedirect.com/science/article/pii/S0010465513002038}.
 }
 \details{

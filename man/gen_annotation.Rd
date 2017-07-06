@@ -4,7 +4,8 @@
 \alias{gen_annotation}
 \title{Compute the annotation of the progrex index}
 \usage{
-gen_annotation(ret_data, local_cut_width = NULL, snap_start = NULL)
+gen_annotation(ret_data, local_cut_width = NULL, snap_start = NULL,
+  mute = FALSE)
 }
 \arguments{
 \item{ret_data}{This input must be the output from the function \code{gen_progindex}.}
@@ -12,6 +13,8 @@ gen_annotation(ret_data, local_cut_width = NULL, snap_start = NULL)
 \item{local_cut_width}{This variable defines the width for a 3 groups annotation of the progrex index.}
 
 \item{snap_start}{Starting snapshot. It must be the same as in gen_progindex. Best to leave not assigned.}
+
+\item{mute}{If \code{TRUE} will mute the code messages}
 }
 \description{
 \code{gen_annotation} is able to annotate the progrex index using the mean first passage time between groups of snapshots on the progrex index.

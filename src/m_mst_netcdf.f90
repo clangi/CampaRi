@@ -324,7 +324,6 @@ module m_mst_dumping
 
       !my adds
       real, intent(in) :: trj2(n_snaps,n_xyz)
-      integer max_degree !made for successive cooperation with R wrapper
 
       integer i,j,k,ki,e,i1,i2,l,m,mm,ixx,ixx2,cursnp,thismode,b1,b2,mycl,cbnds(2)
       integer tlstsz,ishfx,kshfx

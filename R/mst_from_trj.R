@@ -311,23 +311,23 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
     # -------------
     if(dump_to_netcdf){
       dfffo <- 10 # dimensional_flag_for_fixed_out
+      return_tree_in_r <- FALSE # I need this to be consistent with the old pipeline
     # -------------
     #    R - old
     # -------------
     }else{
+      return_tree_in_r <- TRUE
       #input-output initialization
       dfffo <- n_snaps # dimensional_flag_for_fixed_out
       if(n_snaps > 25000)
         stop("Using more than 25000 snapshots with no memory handling will generate a memory overflow (tested with 16gb RAM).
              Please set the option dump_to_netcdf as TRUE.")
-      #double Cstyle deginitions
-      attr(adj_dis,"Csingle") <- TRUE
-      # attr(distance_weights,"Csingle") <- TRUE
     }
     # setting the input-output silly variables (R-Fortran communication needs)
     adj_deg <- as.integer(rep(0,dfffo))
     adj_ix <- matrix(as.integer(rep(0,dfffo*dfffo)),dfffo,dfffo)
     adj_dis <- matrix(as.single(rep(0.0,dfffo*dfffo)),dfffo,dfffo)
+    attr(adj_dis,"Csingle") <- TRUE
     #main fortran talker
     output<-tryCatch(.Fortran("generate_neighbour_list", PACKAGE="CampaRi",
                               #input
@@ -352,6 +352,7 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
                               n_search_attempts_in=as.integer(n_search_attempts),
                               #modes
                               normalize_dis_in=as.logical(normalize_d),
+                              return_tree_in_r=as.logical(return_tree_in_r),
                               mute_in=as.logical(mute_fortran)),
                      error = function(e) stop('ERROR: The netcdf dumping needs a working installation of CampaRi with netcdf4 support.'))
     if(!dump_to_netcdf){

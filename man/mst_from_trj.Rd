@@ -5,10 +5,10 @@
 \title{Create the minimum spanning tree from time series}
 \usage{
 mst_from_trj(trj, dump_to_netcdf = FALSE, mode = "fortran",
-  distance_method = 5, distance_weights = NULL, clu_radius = NULL,
-  clu_hardcut = NULL, normalize_d = TRUE, birch_clu = FALSE,
-  min_span_tree = TRUE, rootmax_rad = NULL, tree_height = NULL,
-  n_search_attempts = NULL, cores = NULL, logging = FALSE, ...)
+  distance_method = 5, clu_radius = NULL, clu_hardcut = NULL,
+  normalize_d = TRUE, birch_clu = FALSE, min_span_tree = TRUE,
+  rootmax_rad = NULL, tree_height = NULL, n_search_attempts = NULL,
+  cores = NULL, mute_fortran = FALSE, ...)
 }
 \arguments{
 \item{trj}{Input trajectory (variables on the columns and equal-time spaced snpashots on the row). It must be a \code{matrix} or a \code{data.frame} of numeric.}
@@ -18,9 +18,6 @@ mst_from_trj(trj, dump_to_netcdf = FALSE, mode = "fortran",
 \item{mode}{It takes a string in input and can be either "fortran" (highly advised and default) or "R".}
 
 \item{distance_method}{Distance metric between snapshots. This value can be set 1 (dihedral angles) or 5 (root mean square deviation) or 11 (balistic distance).}
-
-\item{distance_weights}{Vector of weights to be applied in order to compute averaged weighted distance using multiple \code{distance_method}.
-Each value must be between 0 and 1. This option works only if \code{birch_clu=F} and is highly NOT reccomended.}
 
 \item{clu_radius}{This numeric argument is used in the clustering step in order to make clusters of the same radius at the base level.}
 
@@ -41,9 +38,9 @@ using a simple leader clustering algorithm (minimum spanning tree).}
 
 \item{cores}{If \code{mode="R"} a complete adjacency matrix can be created in parallel using multiple cores (anyhow slower than "fortran" mode).}
 
-\item{logging}{If \code{logging=T} the function will print to file the fortran messages ("campari.log").}
+\item{mute_fortran}{If \code{mute_fortran=T} the function will silence the fortran code.}
 
-\item{...}{Various variables. Possible values are \code{c('pre_process', 'window', 'overlapping_reduction','wgcna_type', 'wgcna_power', 'wgcna_corOp','feature_selection', 'n_princ_comp')}}
+\item{...}{Various variables not yet documented}
 }
 \value{
 If no netcdf support is available the function will return a list with 3 arguments: node degrees, adjacency list and associated distances.
