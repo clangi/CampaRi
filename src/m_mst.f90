@@ -1,5 +1,4 @@
 module m_mst
-  logical mst
   type t_progindextree
     integer nsnaps ! number of snapshots in tree
     integer nsiblings ! number of trees to merge with

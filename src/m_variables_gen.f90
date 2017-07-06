@@ -3,6 +3,7 @@ module m_variables_gen
   logical normalize_dis !normalizing distances
   integer :: ilog = 6  !code reference to logging file
   logical birch
+  logical do_mst
   integer n_xyz ! allocation sizes of length of a snapshot array (xyz*3 in 3D)
   integer n_snaps ! global number of snapshots. It is necessary as alsz roof
   integer rand_seed !counts of the reliability of the random generation

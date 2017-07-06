@@ -130,6 +130,7 @@ module m_clustering
     !leader_clustering, gen_MST_from_nbl,do_prog_ind
     subroutine leader_clustering(trj)
       use m_variables_gen
+      use gutenberg
       implicit none
 
       real, intent(in) :: trj(n_snaps,n_xyz)
@@ -222,6 +223,7 @@ module m_clustering
     !scrcts(i) = cmaxrad - ((i-2.0)/(c_nhier-1.0))*(cmaxrad - cradius)
     subroutine birch_clustering(trj)
     !
+      use gutenberg
       use m_variables_gen
     !
       implicit none

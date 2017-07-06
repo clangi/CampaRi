@@ -79,8 +79,8 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
     stop("mute_fortran mode must be activated using T/F inputs only.")
   
   # Memory handling 
-  if(!dump_to_netcdf) cat("Normal memory handling selected (dump_to_netcdf = FALSE). Without hdf5/netcdf backend file management it will be difficult for R to handle big data-sets.\n")
-  else cat("Selected data support: netcdf data management (dump_to_netcdf = TRUE).\n")
+  if(!dump_to_netcdf) cat("\nNormal memory handling selected (dump_to_netcdf = FALSE). Without hdf5/netcdf backend file management it will be difficult for R to handle big data-sets.\n")
+  else cat("\nSelected data support: netcdf data management (dump_to_netcdf = TRUE).\n")
 
   # if(data_management == "R") cat("To set new data_management method: options(list(CampaRi.data_management = 'R'))\n")
   # 
@@ -223,13 +223,11 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
     # Thresholds for radius and inter radius values. This is MST leader clustering
     if(is.null(clu_radius) || clu_radius <= 0){
       clu_radius <- 214748364
-      warning(paste("clu_radius variable (a priori fixed clustering radius) has not been selected.
-              A standard value of", clu_radius, "will be used."))
+      warning(paste("clu_radius variable (a priori fixed clustering radius) has not been selected. A standard value of", clu_radius, "will be used."))
     }
     if(is.null(clu_hardcut) || clu_hardcut <= 0){
       clu_hardcut <- 214748364
-      warning(paste("clu_hardcut variable (a priori fixed distance threshold between different cluster members) has not been selected.
-              A standard value of", clu_hardcut, "will be used."))
+      warning(paste("clu_hardcut variable (a priori fixed distance threshold between different cluster members) has not been selected. A standard value of", clu_hardcut, "will be used."))
     }
     if(!is.numeric(clu_radius) || length(clu_radius)!=1 || !is.numeric(clu_hardcut) || length(clu_hardcut)!=1)
       stop("clu_radius and clu_hardcut must be a real number.")
@@ -243,8 +241,8 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
       stop("SST(birch_clu) mode must be enabled using T/F inputs.")
     # if(!is.logical(logging))
     #   stop("logging mode must be a T/F input.")
-    if(birch_clu&&min_span_tree)
-      message("MST option is automatically used when birch_clu is activated.")
+    if(birch_clu && !min_span_tree)
+      message("ATTENTION: MST option is automatically used when birch_clu is activated. min_span_tree can not be FALSE in this case.")
 
     # sst checks
     if(birch_clu){
@@ -276,62 +274,67 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
     #
     #
     
-    # -------------
-    #    NetCDF
-    # -------------
-    if(dump_to_netcdf){
-      output_fin <- list()
+      # output_fin <- list()
       #double Cstyle deginitions
-      attr(trj,"Csingle") <- TRUE
+      # attr(trj,"Csingle") <- TRUE
       # attr(distance_weights,"Csingle") <- TRUE
       #main fortran talker
-      tryCatch(invisible(.Fortran("generate_neighbour_list_w", PACKAGE="CampaRi",
-                         #input
-                         trj_data=trj,
-                         n_xyz_in=as.integer(n_xyz),
-                         n_snaps_in=as.integer(n_snaps),
-                         clu_radius_in=as.single(clu_radius),
-                         clu_hardcut_in=as.single(clu_hardcut),
-                         #output
-                         #none -> it is printed to file
-                         #algorithm details
-                         dis_method_in=as.integer(distance_method),
-                         # dis_weight_in=distance_weights,
-                         birch_in=as.logical(birch_clu),
-                         # mst_in=as.logical(min_span_tree), #no more specificable
-                         #sst details
-                         rootmax_rad_in=as.single(rootmax_rad),
-                         tree_height_in=as.integer(tree_height),
-                         n_search_attempts_in=as.integer(n_search_attempts),
-                         #modes
-                         normalize_dis_in=as.logical(normalize_d),
-                         # log_print_in=as.logical(logging),
-                         mute_in=as.logical(mute_fortran))), 
-               error = function(e) stop('ERROR: The netcdf dumping needs a working installation of CampaRi with netcdf4 support.'))
+      # tryCatch(invisible(.Fortran("generate_neighbour_list_w", PACKAGE="CampaRi",
+      #                    #input
+      #                    trj_data=trj,
+      #                    n_xyz_in=as.integer(n_xyz),
+      #                    n_snaps_in=as.integer(n_snaps),
+      #                    clu_radius_in=as.single(clu_radius),
+      #                    clu_hardcut_in=as.single(clu_hardcut),
+      #                    #output
+      #                    #none -> it is printed to file
+      #                    #algorithm details
+      #                    dis_method_in=as.integer(distance_method),
+      #                    # dis_weight_in=distance_weights,
+      #                    birch_in=as.logical(birch_clu),
+      #                    # mst_in=as.logical(min_span_tree), #no more specificable
+      #                    #sst details
+      #                    rootmax_rad_in=as.single(rootmax_rad),
+      #                    tree_height_in=as.integer(tree_height),
+      #                    n_search_attempts_in=as.integer(n_search_attempts),
+      #                    #modes
+      #                    normalize_dis_in=as.logical(normalize_d),
+      #                    # log_print_in=as.logical(logging),
+      #                    mute_in=as.logical(mute_fortran))), 
+      #          error = function(e) stop('ERROR: The netcdf dumping needs a working installation of CampaRi with netcdf4 support.'))
     
+    output_fin <- list()
+    max_d <- 0
+    attr(trj,"Csingle") <- TRUE
+    # -------------
+    #    NetCDF 
+    # -------------
+    if(dump_to_netcdf){
+      dfffo <- 10 # dimensional_flag_for_fixed_out
     # -------------
     #    R - old
     # -------------
     }else{
       #input-output initialization
+      dfffo <- n_snaps # dimensional_flag_for_fixed_out
       if(n_snaps > 25000)
-        stop("Using more than 25000 snapshots with no memory handling will generate a memory overflow (tested with 16gb).
-             Please set the option data.management to netcdf handler.")
-      output_fin <- list()
-      max_d <- 0
-      adj_deg <- as.integer(rep(0,n_snaps))
-      adj_ix <- matrix(as.integer(rep(0,n_snaps*n_snaps)),n_snaps,n_snaps)
-      adj_dis <- matrix(as.single(rep(0.0,n_snaps*n_snaps)),n_snaps,n_snaps)
+        stop("Using more than 25000 snapshots with no memory handling will generate a memory overflow (tested with 16gb RAM).
+             Please set the option dump_to_netcdf as TRUE.")
       #double Cstyle deginitions
-      attr(trj,"Csingle") <- TRUE
       attr(adj_dis,"Csingle") <- TRUE
       # attr(distance_weights,"Csingle") <- TRUE
-      #main fortran talker
-      output<-.Fortran("generate_neighbour_list", PACKAGE="CampaRi",
+    }
+    # setting the input-output silly variables (R-Fortran communication needs)
+    adj_deg <- as.integer(rep(0,dfffo))
+    adj_ix <- matrix(as.integer(rep(0,dfffo*dfffo)),dfffo,dfffo)
+    adj_dis <- matrix(as.single(rep(0.0,dfffo*dfffo)),dfffo,dfffo)
+    #main fortran talker
+    output<-tryCatch(.Fortran("generate_neighbour_list", PACKAGE="CampaRi",
                               #input
                               trj_data=trj,
                               n_xyz_in=as.integer(n_xyz),
                               n_snaps_in=as.integer(n_snaps),
+                              dfffo=as.integer(dfffo),
                               clu_radius_in=as.single(clu_radius),
                               clu_hardcut_in=as.single(clu_hardcut),
                               #output
@@ -341,7 +344,6 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
                               max_degr=as.integer(max_d),
                               #algorithm details
                               dis_method_in=as.integer(distance_method),
-                              # dis_weight_in=distance_weights,
                               birch_in=as.logical(birch_clu),
                               mst_in=as.logical(min_span_tree),
                               #sst details
@@ -350,9 +352,9 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
                               n_search_attempts_in=as.integer(n_search_attempts),
                               #modes
                               normalize_dis_in=as.logical(normalize_d),
-                              # log_print_in=as.logical(logging),
-                              mute_in=as.logical(mute_fortran))
-
+                              mute_in=as.logical(mute_fortran)),
+                     error = function(e) stop('ERROR: The netcdf dumping needs a working installation of CampaRi with netcdf4 support.'))
+    if(!dump_to_netcdf){
       #output adjustment
       output_fin[[1]] <- output$adjl_deg
       output_fin[[2]] <- output$adjl_ix[,1:output$max_degr]
@@ -360,6 +362,6 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
       return(output_fin)
     }
   }else{
-      stop("Mode entry not correct.")
-    }
+    stop("Mode entry not correct.")
+  }
 }

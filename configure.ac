@@ -16,6 +16,7 @@ SECTION_TITLE([CampaRi package, AC_PACKAGE_VERSION])
 AC_PROG_FC
 AC_PATH_PROG(WHICH, which)
 AC_PATH_PROG(ECHO, echo)
+AC_PATH_PROG(SED, sed)
 AC_PATH_PROG(BASH, bash)
 AC_PATH_PROG(RM, rm)
 AC_PATH_PROG(MV, mv)
@@ -131,6 +132,10 @@ else
 	PREPROCFLAGS="-cpp -DLINK_NETCDF"
 fi
 
+dnl creating the objects needed
+OBJECTS=$($ECHO "$SOURCES" | $SED 's/.f90/.o/g' | $SED 's/\.c/.o/g' )
+
+echo "$OBJECTS"
 dnl This part will be used to establish R variables
 
 dnl Now find the compiler and compiler flags to use
@@ -307,6 +312,7 @@ AC_SUBST(PREPROCFLAGS)
 AC_SUBST(HAVE_NETCDF4)
 AC_SUBST(NETCDF4_VERSION)
 AC_SUBST(SOURCES)
+AC_SUBST(OBJECTS)
 # AC_SUBST(NETCDF4_CC)
 # AC_SUBST(NETCDF4_CFLAGS)
 # AC_SUBST(NETCDF4_CPPFLAGS)

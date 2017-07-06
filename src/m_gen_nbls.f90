@@ -21,6 +21,7 @@ module m_gen_nbls
 
   contains
     subroutine gen_nb(trj)
+      use gutenberg
       use m_clustering
       use m_variables_gen
       implicit none
@@ -48,7 +49,6 @@ module m_gen_nbls
       testcnt = 0
       testcnt2 = 0
       overbounds = 0
-      dis_method = dis_method(h1)
       call sl()
       call sipr("Distance method: ", dis_method)
       call sl()

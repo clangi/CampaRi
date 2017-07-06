@@ -121,4 +121,95 @@ contains
     ! final call to string print
     if(.not.mute) call spr(str)
   end subroutine
+
+  !---------------------------------------------------------------------------------------
+  !
+  subroutine int2str(ii,string,strsz)
+    implicit none
+  !
+    integer mx(0:16),leng,i,ii,strsz,minsz,cpy,sumi
+    character it(0:9)
+    character(*) string
+    logical just_r
+    data it /'0','1','2','3','4','5','6','7','8','9'/
+  !
+    if (strsz.le.0) then
+      just_r = .true.
+      strsz = 1
+    else
+      just_r = .false.
+    end if
+    minsz = strsz
+    leng = len(string)
+  !
+  ! invert sign if necessary (technically this routines only
+  ! processes unsigned integers)
+    if (ii .lt. 0) then
+      i = -ii
+    end if
+  !
+  ! this is standard: the mx(...) are integers of course
+  !
+    sumi = 0
+    do i=16,0,-1
+      mx(i) = (ii-sumi)/(10.0**i)
+      if (i.gt.0) then
+        sumi = sumi + (10.0**i) * mx(i)
+      end if
+    end do
+  !
+  ! now we have the digits of our string in integer form (0 through 9)
+  !
+  ! check for integer-size
+  !
+    if ((mx(10).gt.0).OR.(mx(11).gt.0).OR.(mx(12).gt.0).OR.&
+   &    (mx(13).gt.0).OR.&
+   &    (mx(14).gt.0).OR.(mx(15).gt.0).OR.(mx(16).gt.0)) then
+      write(*,*) 'Warning. Possibly bad result from int2str(...) (inte&
+   &ger overflow).'
+    end if
+  !
+  ! find the final string length
+  !
+    strsz = 1
+    do i=16,1,-1
+      if (mx(i).ne.0) then
+        strsz = i+1
+        exit
+      end if
+    end do
+  !
+  ! correct if too large or small
+    strsz = min(strsz,leng)
+    strsz = max(strsz,minsz)
+  !
+    if (strsz.gt.17) then
+      write(*,*) 'Warning. Possibly bad result from int2str(...) (digi&
+   &t overflow).'
+    end if
+  !
+  ! convert individual digits to a string of numeric characters
+  !
+    do i=1,strsz
+      string(i:i) = it(mx(strsz-i))
+    end do
+  !
+  ! left/right-justification
+  !
+    if (just_r.EQV..true.) then
+      do i=strsz,1,-1
+        cpy = leng-strsz+i
+        string(cpy:cpy) = string(i:i)
+      end do
+      do i=1,leng-strsz
+        string(i:i) = ' '
+      end do
+    else
+      do i = strsz+1,leng
+        string(i:i) = ' '
+      end do
+    end if
+  !
+  end
+  !
 end module

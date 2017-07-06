@@ -48,7 +48,7 @@
 !
 !
 subroutine generate_neighbour_list( &
-  trj_data, n_xyz_in, n_snaps_in, clu_radius_in, clu_hardcut_in, & !input
+  trj_data, n_xyz_in, n_snaps_in, dfffo, clu_radius_in, clu_hardcut_in, & !input
   adjl_deg, adjl_ix, adjl_dis, max_degr, & !output
   dis_method_in, birch_in, mst_in, & !algorithm details
   rootmax_rad_in, tree_height_in, n_search_attempts_in,& !sst details
@@ -69,6 +69,7 @@ subroutine generate_neighbour_list( &
   ! INPUT VARIABLES
   integer, intent(in) :: n_xyz_in !numbers of xyz (atoms*3)
   integer, intent(in) :: n_snaps_in !number of snapshots in input
+  integer, intent(in) :: dfffo !dimensional_flag_for_fixed_out (netcdf workaround)
   integer, intent(in) :: dis_method_in !distance method
   integer, intent(in) :: tree_height_in !number of levels in the tree
   integer, intent(in) :: n_search_attempts_in !number of search attempts in sst
@@ -93,9 +94,9 @@ subroutine generate_neighbour_list( &
 
   ! OUTPUT VARIABLES !strict output collaboration with R ! TODO: dummy var to lower memory need
   integer, intent(inout) :: max_degr !maximum degree of the adjlist
-  integer, intent(inout) :: adjl_deg(n_snaps_in)
-  integer, intent(inout) :: adjl_ix(n_snaps_in,n_snaps_in)
-  real, intent(inout) :: adjl_dis(n_snaps_in,n_snaps_in)
+  integer, intent(inout) :: adjl_deg(dfffo)
+  integer, intent(inout) :: adjl_ix(dfffo,dfffo)
+  real, intent(inout) :: adjl_dis(dfffo,dfffo)
 
   ! N B :
   ! clu_hardcut is used for distances between different clusters snapshos as
@@ -151,7 +152,13 @@ subroutine generate_neighbour_list( &
   ! end if
 
 
-  call spr("Starting analysis in Fortran [no netcdf]...")
+  call sl()
+  call sl()
+#ifdef LINK_NETCDF
+  call spr("Starting analysis in Fortran [with netcdf dumping]...")
+#else
+  call spr("Starting analysis in Fortran [no netcdf dumping]...")
+#endif
   call spr('------------------------------------------------------------')
   call sipr("Selected distance: ",dis_method)
   call sl()
@@ -245,14 +252,14 @@ subroutine generate_neighbour_list( &
 
   ! Dumping to netcdf if necessary
 #ifdef LINK_NETCDF
-  if(.not.mute) call intpr('DUMPING THE MST/SST to netcdf...',-1,0,0)
-  if(.not.mute) call realpr(" ",-1,0,0)
+  call spr('DUMPING THE MST/SST to netcdf...')
+  call sl()
   ! #ifdef LINK_NETCDF
   call CPU_time(t1)
   call dump_nbl_nc()
   call CPU_time(t2)
-  if(.not.mute) call realpr(" ",-1,0,0)
-  if(.not.mute) call intpr('Time elapsed for mst dumping (s): ',-1,t2-t1,1)
+  call sl()
+  call srpr('Time elapsed for mst dumping (s): ',t2-t1)
   ! #endif
   if (allocated(approxmst).EQV..true.) then
     do i=1,size(approxmst)
@@ -261,8 +268,8 @@ subroutine generate_neighbour_list( &
     end do
     deallocate(approxmst)
   end if
-  if(.not.mute) call intpr('...file-mst dumping done.',-1,0,0)
-  if(.not.mute) call intpr('------------------------------------------------------------',-1,0,0)
+  call spr('...file-mst dumping done.')
+  call spr('------------------------------------------------------------')
 #endif
   ! if(log_print) close(ilog)
   firstcall = .false.
