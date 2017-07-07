@@ -320,22 +320,16 @@ end
 !
 ! fatal exit: call when encountering an internal problem
 !
-subroutine fexit()
-!
-!
+subroutine fexit(emessage)
   use gutenberg
   implicit none
-!
+  character(*) :: emessage
   call sl()
   call spr('------------------------------------------------>')
-  call sl()
   call spr('CAMPARI CRASHED UNEXPECTEDLY. PLEASE RECORD ANY ')
-  call spr(' INFORMATION ABOUT THE PROBLEM PROVIDED ABOVE.')
-  call sl()
+  call spr(' INFORMATION ABOUT THE PROBLEM PROVIDED BELOW.')
   call spr('<------------------------------------------------')
-!
-  ! stop 98
-!
+  call rexit(trim(emessage))
 end
 !
 !-----------------------------------------------------------------------

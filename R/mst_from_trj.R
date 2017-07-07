@@ -29,16 +29,13 @@
 #' @examples
 #' adjl <- mst_from_trj(trj = matrix(rnorm(1000), nrow = 100, ncol = 10))
 #'
-#' \dontrun{
 #' adjl <- mst_from_trj(trj = matrix(rnorm(1000),ncol=10,nrow=100),
 #' distance_method = 5, clu_radius = 100, clu_hardcut = 100,
-#' birch_clu = FALSE, mode = "fortran", logging = FALSE)
-#'
-#' adjl <- adjl_from_trj(trj = matrix(rnorm(1000),ncol=10,nrow=100),
+#' birch_clu = FALSE, mode = "fortran")
+#' adjl <- mst_from_trj(trj = matrix(rnorm(1000),ncol=10,nrow=100),
 #' distance_method = 5, clu_radius = 0.1,
-#' birch_clu = TRUE, mode = "fortran", rootmax_rad = 1.3, logging = FALSE,
+#' birch_clu = TRUE, mode = "fortran", rootmax_rad = 1.3,
 #' tree_height = 5, n_search_attempts = 50)
-#' }
 #'
 #'
 #' @importFrom bio3d rmsd

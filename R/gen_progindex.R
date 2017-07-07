@@ -79,7 +79,7 @@ gen_progindex <- function(adjl=NULL, nsnaps = NULL, snap_start = 1, read_from_ne
                          aldis=adjl[[3]],
                          progind=as.integer(o_progind),
                          distv=as.single(o_distv),
-                         dfffo=as.logical(dfffo),
+                         dfffo=as.integer(dfffo),
                          invvec=as.integer(o_invvec),
                          iv2=as.integer(o_iv2),
                          mute_in=as.logical(mute),

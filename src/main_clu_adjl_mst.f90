@@ -103,18 +103,21 @@ subroutine generate_neighbour_list( &
   if(return_tree_in_r) then
     call sl()
     call spr('------------------------------------------------------------------')
-    call spr('ATTENTION: Even if CampaRi was installed using netcdf support, you selected &
-    to use the R data management system. Both options will be followed at the same time.')
+    call spr('ATTENTION: Even if CampaRi was installed using netcdf support, you')
+    call spr('selected to use the R data management system. Both options will be')
+    call spr('followed at the same time.')
     call spr('------------------------------------------------------------------')
   end if
 #else
   if(.not.return_tree_in_r) then
     call sl()
     call spr('------------------------------------------------------------------')
-    call spr('ATTENTION: Even if CampaRi was installed without the netcdf support, &
-    the user tried to use the netcdf dumping functionality. This run will follow the &
-    usual flow without netcdf. If you want to use it install the full version of the package.')
+    call spr('ATTENTION: Even if CampaRi was installed without the netcdf support')
+    call spr('the user tried to use the netcdf dumping functionality. This run ')
+    call spr('will follow the usual flow without netcdf. If you want to use it ')
+    call spr('install the full version of the package.')
     call spr('------------------------------------------------------------------')
+    call fexit('Please be sure about the modality of analysis')
   end if
 #endif
   ! ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  ---

@@ -49,35 +49,38 @@ subroutine gen_progind_from_adjlst(n_snaps_in, starting_snap, max_degree, &
   if(use_tree_from_r) then
     call sl()
     call spr('------------------------------------------------------------------')
-    call spr('ATTENTION: Even if CampaRi was installed using netcdf support, you selected &
-    to use the R data management system. Both options will be followed at the same time.')
+    call spr('ATTENTION: Even if CampaRi was installed using netcdf support, you selected')
+    call spr('to use the R data management system. Only R option will be followed.')
     call spr('------------------------------------------------------------------')
   end if
 #else
   if(.not.use_tree_from_r) then
     call sl()
     call spr('------------------------------------------------------------------')
-    call spr('ATTENTION: Even if CampaRi was installed without the netcdf support, &
-    the user tried to use the netcdf dumping functionality. This run will follow the &
-    usual flow without netcdf. If you want to use it install the full version of the package.')
+    call spr('ATTENTION: Even if CampaRi was installed without the netcdf support')
+    call spr('the user tried to use the netcdf dumping functionality. This run ')
+    call spr('will follow the usual flow without netcdf. If you want to use it ')
+    call spr('install the full version of the package.')
     call spr('------------------------------------------------------------------')
+    call fexit('Please be sure about the modality of analysis')
   end if
 #endif
   ! ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  ---
-
   call spr('---------------------------------------------------------------------')
 #ifdef LINK_NETCDF
-  call spr("Generating progress index from netcdf file...")
-  call sl()
-  call spr('Reading mst from working directory file "MST_DUMPLING.nc"...')
-  call CPU_time(t3)
-  call read_nbl_nc()
-  call CPU_time(t4)
-  call srpr('...reading completed after (s) ',t4-t3)
-  call sl()
-#else
-  call spr("Generating progress index from inserted minimum spanning tree (no netcdf)...")
+  if(.not.use_tree_from_r) then
+    call spr("Generating progress index from netcdf file...")
+    call sl()
+    call spr('Reading mst from working directory file "MST_DUMPLING.nc"...')
+    call CPU_time(t3)
+    call read_nbl_nc()
+    call CPU_time(t4)
+    call srpr('...reading completed after (s) ',t4-t3)
+    call sl()
+  end if
 #endif
+   if(use_tree_from_r) call spr("Generating progress index from inserted minimum &
+   spanning tree (no netcdf)...")
 
   allocate(inprogind(n_snaps)) !the maximum length of these are the number of snapshot
   allocate(added(n_snaps))
@@ -106,38 +109,57 @@ subroutine gen_progind_from_adjlst(n_snaps_in, starting_snap, max_degree, &
   inprogind(progind(lprogind)) = .true. !what is the difference with the above?
   invvec(progind(lprogind)+1) = 1 !inverse map
   iv2(lprogind) = progind(lprogind) !parent/source vector
-!
 ! build heap:
   ! inizialization with the first point of the progress index (1 or starting_snap)
 #ifdef LINK_NETCDF
-  heapsize = approxmst(progind(lprogind))%deg !number of connection of the first vertex
-  heap(1:heapsize) = approxmst(progind(lprogind))%adj(1:heapsize) !the specific connections indexes
-  key(1:heapsize) = approxmst(progind(lprogind))%dist(1:heapsize) !key is the value of the distances
-#else
-  heapsize = alnbs(progind(lprogind)) !number of connection of the first vertex
-  heap(1:heapsize) = alst(progind(lprogind),1:heapsize) !the specific connections indexes
-  key(1:heapsize) = aldis(progind(lprogind),1:heapsize) !key is the value of the distances
+  if(.not.use_tree_from_r) then
+    heapsize = approxmst(progind(lprogind))%deg !number of connection of the first vertex
+    heap(1:heapsize) = approxmst(progind(lprogind))%adj(1:heapsize) !the specific connections indexes
+    key(1:heapsize) = approxmst(progind(lprogind))%dist(1:heapsize) !key is the value of the distances
+  end if
 #endif
-
-
+  if(use_tree_from_r) then
+    heapsize = alnbs(progind(lprogind)) !number of connection of the first vertex
+    heap(1:heapsize) = alst(progind(lprogind),1:heapsize) !the specific connections indexes
+    key(1:heapsize) = aldis(progind(lprogind),1:heapsize) !key is the value of the distances
+  end if
   hsource(1:heapsize) = progind(lprogind) !value of the prog index that is generating the connections
   call hbuild(heapsize,heap(1:heapsize),key(1:heapsize),hsource(1:heapsize))
 
 
 #ifdef LINK_NETCDF
-  do j=1,approxmst(progind(lprogind))%deg
-    added(approxmst(progind(lprogind))%adj(j)) = .true.
-  end do
-#else
-  do j=1,alnbs(progind(lprogind))
-    added(alst(progind(lprogind),j)) = .true.
-  end do
+  if(.not.use_tree_from_r) then
+    do j=1,approxmst(progind(lprogind))%deg
+      added(approxmst(progind(lprogind))%adj(j)) = .true.
+    end do
+  end if
 #endif
-
-
+  if(use_tree_from_r) then
+    do j=1,alnbs(progind(lprogind))
+      added(alst(progind(lprogind),j)) = .true.
+    end do
+  end if
+  ! call spr('======================================================')
+  ! call spr('Starting the loop of the devil!')
+  ! call spr('alnbs: ')
+  ! write(*,*) alnbs(:)
+  ! call spr('alst:')
+  ! write(*,*) alst(:,:)
+  ! call spr('aldis:')
+  ! write(*,*) aldis(:,:)
+  ! write(*,*) 'dfffo:', dfffo
+  ! write(*,*) 'max_degr:', max_degree
+  ! call spr('======================================================')
   do while (lprogind.lt.n_snaps)
-
+    ! call spr('PRE---------------------------------')
+    ! call sipr('lprogind:', lprogind)
+    ! call sipr('progind(lprogind): ', progind(lprogind))
+    ! call spr('progind status pre:')
+    ! call ivpr(progind)
+    ! call spr('heap status pre: ')
+    ! call ivpr(heap)
 #ifdef LINK_NETCDF
+  if(.not.use_tree_from_r) then
     do j=1,approxmst(progind(lprogind))%deg
     !! add neighbors of last snapshot in progress index to heap
       if (added(approxmst(progind(lprogind))%adj(j)).EQV..false.) then
@@ -146,27 +168,40 @@ subroutine gen_progind_from_adjlst(n_snaps_in, starting_snap, max_degree, &
         added(approxmst(progind(lprogind))%adj(j)) = .true.
       end if
     end do
-#else
+  end if
+#endif
+  if(use_tree_from_r) then
     do j=1,alnbs(progind(lprogind))
+      call ivpr((/j,lprogind, progind(lprogind), alnbs(progind(lprogind))/))
 !! add neighbors of last snapshot in progress index to heap
       if (added(alst(progind(lprogind),j)).EQV..false.) then
         call hinsert(heapsize,heap(1:(heapsize+1)),key(1:(heapsize+1)),hsource(1:(heapsize+1)),&
- &                   alst(progind(lprogind),j),aldis(progind(lprogind),j),progind(lprogind))
+        alst(progind(lprogind),j),aldis(progind(lprogind),j),progind(lprogind))
         added(alst(progind(lprogind),j)) = .true.
       end if
     end do
-#endif
+  end if
 ! append next snapshot to progind():
     lprogind = lprogind+1
     progind(lprogind) = heap(1)
+    call ivpr(heap)
     iv2(lprogind) = hsource(1)
     distv(lprogind) = key(1)
     invvec(heap(1)+1) = lprogind
-    inprogind(progind(lprogind)) = .true.
-! remove added snapshot from heap:
+    inprogind(progind(lprogind)) = .true. !nsnaps
+    ! call spr('POST---------------------------------')
+    ! call sipr('lprogind:', lprogind)
+    ! call sipr('progind(lprogind): ', progind(lprogind))
+    ! call spr('progind status POST:')
+    ! call ivpr(progind)
+    ! call spr('heap status POST: ')
+    ! call ivpr(heap)
+
+    ! remove added snapshot from heap:
     call hremovemin(heapsize,heap(1:heapsize),key(1:heapsize),hsource(1:heapsize))
   end do
 !
+call rvpr(distv)
   do j=1,n_snaps
     if (distv(j).lt.0.0) then
       if (distv(j).ge.-10.0*TINY(distv(j))) then
@@ -176,19 +211,21 @@ subroutine gen_progind_from_adjlst(n_snaps_in, starting_snap, max_degree, &
       end if
     end if
   end do
-!
+
   deallocate(key)
   deallocate(added)
   deallocate(inprogind)
   deallocate(heap)
   deallocate(hsource)
 #ifdef LINK_NETCDF
-  if (allocated(approxmst).EQV..true.) then
-    do i=1,size(approxmst)
-      if (allocated(approxmst(i)%adj).EQV..true.) deallocate(approxmst(i)%adj)
-      if (allocated(approxmst(i)%dist).EQV..true.) deallocate(approxmst(i)%dist)
-    end do
-    deallocate(approxmst)
+  if(.not.use_tree_from_r) then
+    if (allocated(approxmst).EQV..true.) then
+      do i=1,size(approxmst)
+        if (allocated(approxmst(i)%adj).EQV..true.) deallocate(approxmst(i)%adj)
+        if (allocated(approxmst(i)%dist).EQV..true.) deallocate(approxmst(i)%dist)
+      end do
+      deallocate(approxmst)
+    end if
   end if
 #endif
   call sl()

@@ -13,6 +13,7 @@ vignette: >
 knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 knitr::opts_knit$set(progress = FALSE)
 # knitr::opts_knit$set(root.dir="out_to_del/")
+# library(CampaRi)
 ```
 
 Lets try out some other feature of the package.
@@ -94,7 +95,7 @@ Let's see an example:
 ```{r, eval=FALSE}
 adjl <- mst_from_trj(trj=trj[1:2000,])
 # adjl2 <- contract_mst(adjl = adjl, n_fold = 5)
-ret <- gen_progindex(adjl = adjl2, snap_start = 21)
+ret <- gen_progindex(adjl = adjl, snap_start = 21)
 # ret <- gen_progindex(nsnaps = 2000, read_from_netcdf = T, snap_start = 21)
 ret2 <- gen_annotation(ret_data = ret, local_cut_width = 200, snap_start = 21)
 sapphire_plot(sap_file = 'REPIX_000000000021.dat', timeline=T, title = "CAMPARI WRAPPER - MST")

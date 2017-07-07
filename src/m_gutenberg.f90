@@ -14,18 +14,51 @@ contains
     integer :: int
     if(.not.mute) call intpr('',-1,int,1)
   end subroutine
+  ! integer vector print
+  subroutine ivpr(intr)
+    implicit none
+    integer :: intr(:)
+    if(.not.mute) call intpr('',-1,intr,size(intr))
+  end subroutine
   ! real print
   subroutine rpr(re)
     implicit none
-    real :: re
-    if(.not.mute) call realpr('',-1,re,1)
+    real, intent(in) :: re
+    real :: re_help
+    character(255) :: strR, strL, str_fin
+    integer int, n_digits, counted_digits
+    n_digits = 4
+    int = floor(re)
+    call count_digits_int(int, counted_digits)
+    call int2str(int, strR, counted_digits)
+    re_help = re - int*1.0
+    re_help = re_help*(10**n_digits)
+    int = floor(re_help)
+    call count_digits_int(int, counted_digits)
+    call int2str(int, strL, counted_digits)
+    str_fin = trim(strR)//'.'//trim(strL)
+    call spr(trim(str_fin))
   end subroutine
-  ! string + real print -> TODO: making it on the same line
+  ! string + real print
   subroutine srpr(str, re)
     implicit none
-    character(*) :: str
-    real :: re
-    if(.not.mute) call realpr(str,-1,re,1)
+    character(*), intent(in) :: str
+    real, intent(in) :: re
+    real :: re_help
+    character(255) :: strR, strL, str_fin
+    integer int, n_digits, counted_digits
+    n_digits = 4
+    ! thi routine will split the real in 2 integers (per side of .)
+    int = floor(re)
+    call count_digits_int(int, counted_digits)
+    call int2str(int, strR, counted_digits)
+    re_help = re - int*1.0
+    re_help = re_help*(10**n_digits)
+    int = floor(re_help)
+    call count_digits_int(int, counted_digits)
+    call int2str(int, strL, counted_digits)
+    str_fin = trim(str)//' '//trim(strR)//'.'//trim(strL)
+    call spr(trim(str_fin))
   end subroutine
   ! real vector print
   subroutine rvpr(re)
@@ -52,19 +85,7 @@ contains
     implicit none
     if(.not.mute) call intpr(' ',-1,0,0)
   end subroutine
-  ! counts the digits in int
-  subroutine count_digits_int(int,dig)
-    integer, intent(in) :: int
-    integer, intent(in out) :: dig
-    real :: to_floor
-    integer :: to_flooi
-    do dig = 1,300
-      to_floor = to_flooi/10
-      if(dig.eq.1) to_floor = int/10
-      to_flooi = floor(to_floor)
-      if(to_flooi.eq.0) exit
-    end do
-  end subroutine
+
 
   ! original struncture of cluster summary
   ! 67 format(i5,3x,i10,4x,g14.4,1x,i11,4x,i12)
@@ -83,45 +104,59 @@ contains
     integer, intent(in) :: int5, int10, int11, int12
     character(255) :: strint
     character(255) :: str
-    integer :: counted_digits, l
-
+    character(255) :: str_tmp
+    integer :: counted_digits
+    str = ''
     ! int5
     call count_digits_int(int5,counted_digits)
     call int2str(int5,strint,counted_digits)
-    str = ''
-    do l=1,(5-counted_digits) !adding white space in front
-      str = str//' '
-    end do
-    str = str//trim(strint)//'   '
-
+    str_tmp = trim(strint)
+    call add_spaces_in_front(str_tmp, 5-counted_digits)
+    str = trim(trim(str)//trim(str_tmp))
     ! int10
     call count_digits_int(int10,counted_digits)
     call int2str(int10,strint,counted_digits)
-    do l=1,(10-counted_digits) !adding white space in front
-      str = str//' '
-    end do
-    str = str//trim(strint)//'     '
-
+    str_tmp = trim(strint)
+    call add_spaces_in_front(str_tmp, 13-counted_digits)
+    str = trim(trim(str)//trim(str_tmp))
     ! int11
     call count_digits_int(int11,counted_digits)
     call int2str(int11,strint,counted_digits)
-    do l=1,(11-counted_digits) !adding white space in front
-      str = str//' '
-    end do
-    str = str//trim(strint)//'    '
-
+    str_tmp = trim(strint)
+    call add_spaces_in_front(str_tmp, 16-counted_digits)
+    str = trim(trim(str)//trim(str_tmp))
     ! int12
     call count_digits_int(int12,counted_digits)
     call int2str(int12,strint,counted_digits)
-    do l=1,(11-counted_digits) !adding white space in front
-      str = str//' '
-    end do
-    str = str//trim(strint)
-
+    str_tmp = trim(strint)
+    call add_spaces_in_front(str_tmp, 16-counted_digits)
+    str = trim(trim(str)//trim(str_tmp))
     ! final call to string print
-    if(.not.mute) call spr(str)
+    call spr(trim(str))
   end subroutine
-
+  ! add space in front of a string
+  subroutine add_spaces_in_front(str, n_spaces)
+    implicit none
+    character(*) :: str
+    integer :: l,n_spaces
+    do l=1,n_spaces !adding white space in front
+      str = ' '//str
+    end do
+    str = trim(str)
+  end subroutine
+  ! counts the digits in int
+  subroutine count_digits_int(int,dig)
+    integer, intent(in) :: int
+    integer, intent(in out) :: dig
+    real :: to_floor
+    integer :: to_flooi
+    do dig = 1,300
+      to_floor = to_flooi/10
+      if(dig.eq.1) to_floor = int/10
+      to_flooi = floor(to_floor)
+      if(to_flooi.eq.0) exit
+    end do
+  end subroutine
   !---------------------------------------------------------------------------------------
   !
   subroutine int2str(ii,string,strsz)
