@@ -553,7 +553,7 @@ module m_clustering
       call spr("--------------------------- TREE SUMMARY ----------------------------")
       call spr('Thresholds: ')
       call rvpr(scrcts)
-      ! call spr('Level    #Clusters     Threshold      TotalSnaps    Tot Children')
+      call spr('Level    #Clusters     Threshold      TotalSnaps    Tot Children')
       call spr('Level    #Clusters      TotalSnaps    Tot Children')
     !  67 format(i5,3x,i10,4x,g14.4,1x,i11,4x,i12)
     !  68 format(i5,3x,i10,7x,a7,5x,i11,4x,i12)

@@ -44,20 +44,9 @@ contains
     implicit none
     character(*), intent(in) :: str
     real, intent(in) :: re
-    real :: re_help
-    character(255) :: strR, strL, str_fin
-    integer int, n_digits, counted_digits
-    n_digits = 4
-    ! thi routine will split the real in 2 integers (per side of .)
-    int = floor(re)
-    call count_digits_int(int, counted_digits)
-    call int2str(int, strR, counted_digits)
-    re_help = re - int*1.0
-    re_help = re_help*(10**n_digits)
-    int = floor(re_help)
-    call count_digits_int(int, counted_digits)
-    call int2str(int, strL, counted_digits)
-    str_fin = trim(str)//' '//trim(strR)//'.'//trim(strL)
+    character(255) :: str_h, str_fin
+    call re2str(re, 4, str_h)
+    str_fin = trim(str)//' '//trim(str_h)
     call spr(trim(str_fin))
   end subroutine
   ! real vector print
@@ -85,7 +74,23 @@ contains
     implicit none
     if(.not.mute) call intpr(' ',-1,0,0)
   end subroutine
-
+  subroutine re2str(re, n_digits, str)
+    character(*), intent(in) :: str
+    real, intent(in) :: re
+    real :: re_help
+    character(255) :: strR, strL
+    integer int, n_digits, counted_digits
+    ! thi routine will split the real in 2 integers (per side of .)
+    int = floor(re)
+    call count_digits_int(int, counted_digits)
+    call int2str(int, strR, counted_digits)
+    re_help = re - int*1.0
+    re_help = re_help*(10**n_digits)
+    int = floor(re_help)
+    call count_digits_int(int, counted_digits)
+    call int2str(int, strL, counted_digits)
+    str = trim(strR)//'.'//trim(strL)
+  end subroutine
 
   ! original struncture of cluster summary
   ! 67 format(i5,3x,i10,4x,g14.4,1x,i11,4x,i12)
@@ -119,6 +124,7 @@ contains
     str_tmp = trim(strint)
     call add_spaces_in_front(str_tmp, 13-counted_digits)
     str = trim(trim(str)//trim(str_tmp))
+    ! real7 + 7spaces
     ! int11
     call count_digits_int(int11,counted_digits)
     call int2str(int11,strint,counted_digits)
