@@ -235,7 +235,7 @@ subroutine generate_neighbour_list( &
       call CPU_time(t1)
       call gen_MST_from_nbl_w()
       call CPU_time(t2)
-      if(.not.mute) call intpr( 'TIME elapsed for MST building (s): ',-1,t2-t1,1)
+      call srpr('TIME elapsed for MST building (s): ',t2-t1)
 #else
       if(do_mst) then
         call CPU_time(t1)

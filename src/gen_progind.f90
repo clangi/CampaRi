@@ -49,8 +49,9 @@ subroutine gen_progind_from_adjlst(n_snaps_in, starting_snap, max_degree, &
   if(use_tree_from_r) then
     call sl()
     call spr('------------------------------------------------------------------')
-    call spr('ATTENTION: Even if CampaRi was installed using netcdf support, you selected')
-    call spr('to use the R data management system. Only R option will be followed.')
+    call spr('ATTENTION: Even if CampaRi was installed using netcdf support, but')
+    call spr('you selected to use the R data management system. Only R option ')
+    call spr('will be followed.')
     call spr('------------------------------------------------------------------')
   end if
 #else
@@ -141,12 +142,17 @@ subroutine gen_progind_from_adjlst(n_snaps_in, starting_snap, max_degree, &
   end if
   ! call spr('======================================================')
   ! call spr('Starting the loop of the devil!')
+  ! do j=1,n_snaps
   ! call spr('alnbs: ')
-  ! write(*,*) alnbs(:)
+  ! ! write(*,*) alnbs(:)
+  ! write(*,*) approxmst(j)%deg
   ! call spr('alst:')
-  ! write(*,*) alst(:,:)
+  ! ! write(*,*) alst(:,:)
+  ! write(*,*) approxmst(j)%adj
   ! call spr('aldis:')
-  ! write(*,*) aldis(:,:)
+  ! ! write(*,*) aldis(:,:)
+  ! write(*,*) approxmst(j)%dist
+  ! end do
   ! write(*,*) 'dfffo:', dfffo
   ! write(*,*) 'max_degr:', max_degree
   ! call spr('======================================================')
@@ -172,7 +178,6 @@ subroutine gen_progind_from_adjlst(n_snaps_in, starting_snap, max_degree, &
 #endif
   if(use_tree_from_r) then
     do j=1,alnbs(progind(lprogind))
-      call ivpr((/j,lprogind, progind(lprogind), alnbs(progind(lprogind))/))
 !! add neighbors of last snapshot in progress index to heap
       if (added(alst(progind(lprogind),j)).EQV..false.) then
         call hinsert(heapsize,heap(1:(heapsize+1)),key(1:(heapsize+1)),hsource(1:(heapsize+1)),&
@@ -184,7 +189,6 @@ subroutine gen_progind_from_adjlst(n_snaps_in, starting_snap, max_degree, &
 ! append next snapshot to progind():
     lprogind = lprogind+1
     progind(lprogind) = heap(1)
-    call ivpr(heap)
     iv2(lprogind) = hsource(1)
     distv(lprogind) = key(1)
     invvec(heap(1)+1) = lprogind
@@ -201,7 +205,7 @@ subroutine gen_progind_from_adjlst(n_snaps_in, starting_snap, max_degree, &
     call hremovemin(heapsize,heap(1:heapsize),key(1:heapsize),hsource(1:heapsize))
   end do
 !
-call rvpr(distv)
+! call rvpr(distv)
   do j=1,n_snaps
     if (distv(j).lt.0.0) then
       if (distv(j).ge.-10.0*TINY(distv(j))) then

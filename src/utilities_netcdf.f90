@@ -44,7 +44,7 @@ subroutine dump_nbl_nc()
   attstring(1:10) = "     "
 ! define (not set) variables to hold distance and type of distance information
   attstring(1:9) = "snapshots"
-  call check_err( nf90_def_var(ncid, attstring(1:9), NF90_INT, cnc_ids(1), cnc_ids(2)) )
+  call check_err( nf90_def_var(ncid, attstring(1:9), NF90_INT, cnc_ids(1), cnc_ids(2)) ) ! last one is the return id
   attstring(1:9) = "neighbors"
   call check_err( nf90_def_var(ncid, attstring(1:9), NF90_INT, cnc_ids(1), cnc_ids(3)) )
   attstring(1:9) = "distances"
@@ -157,6 +157,7 @@ subroutine read_nbl_nc()
   integer, ALLOCATABLE :: vdeg(:), vsnp(:)
   real, ALLOCATABLE :: vdist(:)
   integer :: cnc_ids(10)
+  integer :: n_snaps_from_nc
 !
   dumpfile = 'MST_DUMPLING.nc'
   inquire(file=dumpfile,exist=exists)
@@ -174,6 +175,7 @@ subroutine read_nbl_nc()
   nframes = 0
   do i=1,NF90_MAX_DIMS
     ret = nf90_inquire_dimension(ncid,i,trystr,dimlen)
+    ! write(*,*) ret
     if (ret.eq.NF90_NOERR) then
       ucstr(1:15) = trystr(1:15)
       call toupper(ucstr(1:15))
@@ -202,6 +204,8 @@ subroutine read_nbl_nc()
 !
 ! now find the necessary variables, only coordinates are required
   ret = nf90_inq_varid(ncid,"snapshots",cnc_ids(2))
+  write(*,*) ret
+  write(*,*) nframes
   if (ret.eq.NF90_NOERR) then
 !   do nothing
   else if (ret.eq.NF90_ENOTVAR) then
@@ -209,7 +213,7 @@ subroutine read_nbl_nc()
       ). Use NetCDFs ncdump utility to check file.')
     call fexit()
   else
-    call check_err( nf90_inq_varid(ncid,"snapshots",cnc_ids(2)) )
+    call check_err(nf90_inq_varid(ncid,"snapshots",cnc_ids(2)) )
   end if
   ret = nf90_inq_varid(ncid,"neighbors",cnc_ids(3))
   if (ret.eq.NF90_NOERR) then
@@ -232,6 +236,13 @@ subroutine read_nbl_nc()
     call check_err( nf90_inq_varid(ncid,"distances",cnc_ids(4)) )
   end if
 !
+  ! N_SNAPS global check on the number of snapshots (it will throw an error if not ==)
+  ret = nf90_get_var(ncid, cnc_ids(2), n_snaps_from_nc, start=(/nframes/))
+  if(n_snaps_from_nc.ne.n_snaps) then
+    call fexit('Fatal. The number of snapshots inserted in the gen_progind function was &
+    different from the one found in the netcdf file.')
+  end if
+
   allocate(vdeg(nframes))
   allocate(vdist(nframes))
   allocate(vsnp(nframes))
@@ -263,6 +274,7 @@ subroutine read_nbl_nc()
     end do
     approxmst(vsnp(i))%deg = i - ilast
     approxmst(vsnp(i))%alsz = approxmst(vsnp(i))%deg
+    ! write(*,*) i, approxmst(vsnp(i))%deg
     if (approxmst(vsnp(i))%deg.gt.0) then
       allocate(approxmst(vsnp(i))%adj(approxmst(vsnp(i))%deg))
       allocate(approxmst(vsnp(i))%dist(approxmst(vsnp(i))%deg))

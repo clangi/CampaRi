@@ -181,8 +181,7 @@ module m_clustering
         end if
       end do
 
-      call sipr('... done with initial cluster generation for distances &
-      &list with a total number of clusters equal: ', nclu)
+      call sipr('... done with total number of clusters equal: ', nclu)
     end subroutine
 
 ! helper function to resize the cluster
@@ -551,19 +550,25 @@ module m_clustering
 
       !PRINTING RESULTS
       call spr("--------------------------- TREE SUMMARY ----------------------------")
-      call spr('Thresholds: ')
-      call rvpr(scrcts)
+      ! call spr('Thresholds: ')
+      ! call rvpr(scrcts)
       call spr('Level    #Clusters     Threshold      TotalSnaps    Tot Children')
-      call spr('Level    #Clusters      TotalSnaps    Tot Children')
+      ! call spr('Level    #Clusters      TotalSnaps    Tot Children')
     !  67 format(i5,3x,i10,4x,g14.4,1x,i11,4x,i12)
     !  68 format(i5,3x,i10,7x,a7,5x,i11,4x,i12)
     !   write(ilog,66)
     !   write(ilog,68) 1,birchtree(1)%ncls,'MAXIMAL',sum(birchtree(1)%cls(1:birchtree(1)%ncls)%nmbrs),&
     !   sum(birchtree(1)%cls(1:birchtree(1)%ncls)%nchildren)
       do i=1,c_nhier+1  ! i was 2 with MAXIMAL level
-        call clu_summary_linepr(i,birchtree(i)%ncls,&
-        sum(birchtree(i)%cls(1:birchtree(i)%ncls)%nmbrs),&
-        sum(birchtree(i)%cls(1:birchtree(i)%ncls)%nchildren))
+        if(i.eq.1) then
+          call clu_summary_maximal(i,birchtree(i)%ncls,"MAXIMAL",&
+          sum(birchtree(i)%cls(1:birchtree(i)%ncls)%nmbrs),&
+          sum(birchtree(i)%cls(1:birchtree(i)%ncls)%nchildren))
+        else
+          call clu_summary_linepr(i,birchtree(i)%ncls,scrcts(i),&
+          sum(birchtree(i)%cls(1:birchtree(i)%ncls)%nmbrs),&
+          sum(birchtree(i)%cls(1:birchtree(i)%ncls)%nchildren))
+        end if
       end do
       call spr('---------------------------------------------------------------------')
       call sl()
@@ -669,12 +674,8 @@ module m_clustering
       ! call cluster_getcenter(birchtree(1)%cls(1),trj)
       ! call cluster_calc_params(birchtree(1)%cls(1),huge(scrcts(k)))
       if(clu_summary) then
-        63 format(i6,3x,g12.5,1x,i7,1x,i7,2x,i8,3x,2(1x,g11.5))
-        ! 64 format(1000(g12.5,1x))
-        69 format('------------------------- CLUSTERS SUMMARY ---------------------------') !TODO
-        70 format(' -> level ',i3,' has ',i7,' clusters with one element')
-        write(ilog,69)
-        write(ilog,*) 'level    threshold         #     No.    Center   Diameter      Radius      '
+        call spr('------------------------- CLUSTERS SUMMARY ---------------------------')
+        call spr('level    threshold         #     No.    Center   Diameter      Radius      ')
         do k=1,c_nhier+1
           cl_one_elem = 0
           j = 0
@@ -691,13 +692,15 @@ module m_clustering
           do i=1,birchtree(k)%ncls
             if(birchtree(k)%cls(i)%nmbrs.ne.1) then
               if(j.le.max_show_clu) then
-                if(k.eq.1) then
-                  write(ilog,63) k,"",i,birchtree(k)%cls(i)%nmbrs,birchtree(k)%cls(i)%center,&
-                  birchtree(k)%cls(i)%diam,birchtree(k)%cls(i)%radius
-                else
-                  write(ilog,63) k,scrcts(k),i,birchtree(k)%cls(i)%nmbrs,birchtree(k)%cls(i)%center,&
-                  birchtree(k)%cls(i)%diam,birchtree(k)%cls(i)%radius
-                end if
+                ! 63 format(i6,3x,g12.5,1x,i7,1x,i7,2x,i8,3x,2(1x,g11.5))
+                ! if(k.eq.1) then
+                !   write(ilog,63) k,"",i,birchtree(k)%cls(i)%nmbrs,birchtree(k)%cls(i)%center,&
+                !   birchtree(k)%cls(i)%diam,birchtree(k)%cls(i)%radius
+                ! else
+                call clu_summary_details_pr(k,scrcts(k),i,birchtree(k)%cls(i)%nmbrs,&
+                birchtree(k)%cls(i)%center,&
+                birchtree(k)%cls(i)%diam,birchtree(k)%cls(i)%radius)
+                ! end if
                 j = j + 1
               end if
             else
@@ -705,10 +708,12 @@ module m_clustering
             end if
           end do
           if(cl_one_elem.gt.0) then
-            write(ilog,70) k, cl_one_elem
+            ! 70 format(' -> level ',i3,' has ',i7,' clusters with one element')
+            call sivpr(' -> level, number of 1-elem clusters: ',(/k, cl_one_elem/))
+            ! write(ilog,70) k, cl_one_elem
           end if
-
         end do
+
         call sl()
         call sl()
         do k=2,c_nhier+1

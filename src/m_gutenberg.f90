@@ -15,31 +15,71 @@ contains
     if(.not.mute) call intpr('',-1,int,1)
   end subroutine
   ! integer vector print
-  subroutine ivpr(intr)
+  ! subroutine ivpr(intv) ! DEPRECATED
+  !   implicit none
+  !   integer :: intv(:)
+  !   if(.not.mute) call intpr('',-1,intv,size(intv))
+  ! end subroutine
+  ! integer vector print
+  subroutine ivpr(intv)
     implicit none
-    integer :: intr(:)
-    if(.not.mute) call intpr('',-1,intr,size(intr))
+    integer, intent(in) :: intv(:)
+    character(255) :: strint, str_of_vint
+    integer :: counted_digits, i
+    str_of_vint = ""
+    do i=1,size(intv)
+      call count_digits_int(intv(i),counted_digits)
+      call int2str(intv(i),strint,counted_digits)
+      str_of_vint = trim(trim(str_of_vint)//", "//trim(strint))
+    end do
+    ! print it
+    if(.not.mute) call spr(trim(str_of_vint))
+  end subroutine
+  ! string integer vector print
+  subroutine sivpr(str,intv)
+    implicit none
+    character(*), intent(in) :: str
+    integer, intent(in) :: intv(:)
+    character(255) :: strint, str_of_vint
+    integer :: counted_digits, i
+    str_of_vint = ""
+    do i=1,size(intv)
+      call count_digits_int(intv(i),counted_digits)
+      call int2str(intv(i),strint,counted_digits)
+      str_of_vint = trim(trim(str_of_vint)//", "//trim(strint))
+    end do
+    ! print it
+    if(.not.mute) call spr(trim(trim(str)//" "//trim(str_of_vint)))
   end subroutine
   ! real print
   subroutine rpr(re)
     implicit none
     real, intent(in) :: re
-    real :: re_help
-    character(255) :: strR, strL, str_fin
-    integer int, n_digits, counted_digits
-    n_digits = 4
-    int = floor(re)
-    call count_digits_int(int, counted_digits)
-    call int2str(int, strR, counted_digits)
-    re_help = re - int*1.0
-    re_help = re_help*(10**n_digits)
-    int = floor(re_help)
-    call count_digits_int(int, counted_digits)
-    call int2str(int, strL, counted_digits)
-    str_fin = trim(strR)//'.'//trim(strL)
+    character(255) :: str_fin
+    call re2str(re,4,str_fin)
     call spr(trim(str_fin))
   end subroutine
-  ! string + real print
+  ! real vector print
+  subroutine rvpr(rev)
+    implicit none
+    real, intent(in) :: rev(:)
+    character(255) :: str_fin, str_tmp
+    integer i
+    str_fin = ''
+    do i=1,size(rev)
+      call re2str(rev(i),4,str_tmp)
+      str_fin = trim(trim(str_fin)//trim(str_tmp))
+    end do
+    call spr(trim(str_fin))
+  end subroutine
+  ! real vector print
+  ! subroutine rvpr(re) !DEPRECATED
+  !   implicit none
+  !   real, intent(in) :: re(:)
+  !   if(.not.mute) call realpr('',-1,re,size(re))
+  ! end subroutine
+  ! print a string like "gimaica: ",int
+  ! string real print
   subroutine srpr(str, re)
     implicit none
     character(*), intent(in) :: str
@@ -49,13 +89,22 @@ contains
     str_fin = trim(str)//' '//trim(str_h)
     call spr(trim(str_fin))
   end subroutine
-  ! real vector print
-  subroutine rvpr(re)
+  ! string real vector print
+  subroutine srvpr(str,rev)
     implicit none
-    real, intent(in) :: re(:)
-    if(.not.mute) call realpr('',-1,re,size(re))
-  end subroutine
-  ! print a string like "gimaica: ",int
+    real, intent(in) :: rev(:)
+    character(*), intent(in) :: str
+    character(255) :: str_fin, str_tmp
+    integer i
+    str_fin = ''
+    do i=1,size(rev)
+      call re2str(rev(i),4,str_tmp)
+      str_fin = trim(trim(str_fin)//trim(str_tmp))
+    end do
+    str_fin = trim(trim(str)//' '//trim(str_fin))
+    call spr(trim(str_fin))
+  end subroutine srvpr
+  ! strin integer print
   subroutine sipr(str, int)
     implicit none
     character(*), intent(in) :: str
@@ -74,23 +123,6 @@ contains
     implicit none
     if(.not.mute) call intpr(' ',-1,0,0)
   end subroutine
-  subroutine re2str(re, n_digits, str)
-    character(*), intent(in) :: str
-    real, intent(in) :: re
-    real :: re_help
-    character(255) :: strR, strL
-    integer int, n_digits, counted_digits
-    ! thi routine will split the real in 2 integers (per side of .)
-    int = floor(re)
-    call count_digits_int(int, counted_digits)
-    call int2str(int, strR, counted_digits)
-    re_help = re - int*1.0
-    re_help = re_help*(10**n_digits)
-    int = floor(re_help)
-    call count_digits_int(int, counted_digits)
-    call int2str(int, strL, counted_digits)
-    str = trim(strR)//'.'//trim(strL)
-  end subroutine
 
   ! original struncture of cluster summary
   ! 67 format(i5,3x,i10,4x,g14.4,1x,i11,4x,i12)
@@ -104,9 +136,10 @@ contains
   ! end do
 
   ! SPECIAL prints: cluster summary
-  subroutine clu_summary_linepr(int5, int10, int11, int12)
+  subroutine clu_summary_maximal(int5, int10, str_in, int11, int12)
     implicit none
     integer, intent(in) :: int5, int10, int11, int12
+    character(*), intent(in) :: str_in
     character(255) :: strint
     character(255) :: str
     character(255) :: str_tmp
@@ -124,7 +157,10 @@ contains
     str_tmp = trim(strint)
     call add_spaces_in_front(str_tmp, 13-counted_digits)
     str = trim(trim(str)//trim(str_tmp))
-    ! real7 + 7spaces
+    ! ONLY DIFFERENCE -> string for maximal
+    str_tmp = str_in
+    call add_spaces_in_front(str_tmp, 7)
+    str = trim(trim(str)//trim(str_tmp))
     ! int11
     call count_digits_int(int11,counted_digits)
     call int2str(int11,strint,counted_digits)
@@ -136,6 +172,107 @@ contains
     call int2str(int12,strint,counted_digits)
     str_tmp = trim(strint)
     call add_spaces_in_front(str_tmp, 16-counted_digits)
+    str = trim(trim(str)//trim(str_tmp))
+    ! final call to string print
+    call spr(trim(str))
+  end subroutine
+  subroutine clu_summary_linepr(int5, int10, re14_4, int11, int12)
+    implicit none
+    integer, intent(in) :: int5, int10, int11, int12
+    real, intent(in) :: re14_4
+    character(255) :: strint
+    character(255) :: str
+    character(255) :: str_tmp
+    integer :: counted_digits, int_h
+    str = ''
+    ! int5
+    call count_digits_int(int5,counted_digits)
+    call int2str(int5,strint,counted_digits)
+    str_tmp = trim(strint)
+    call add_spaces_in_front(str_tmp, 5-counted_digits)
+    str = trim(trim(str)//trim(str_tmp))
+    ! int10
+    call count_digits_int(int10,counted_digits)
+    call int2str(int10,strint,counted_digits)
+    str_tmp = trim(strint)
+    call add_spaces_in_front(str_tmp, 13-counted_digits)
+    str = trim(trim(str)//trim(str_tmp))
+    ! real14 + 4spaces
+    call re2str(re14_4, 4, strint)
+    str_tmp = trim(strint)
+    int_h = floor(re14_4)
+    call count_digits_int(int_h, counted_digits)
+    call add_spaces_in_front(str_tmp, 18-counted_digits)
+    str = trim(trim(str)//trim(str_tmp))
+    ! int11
+    call count_digits_int(int11,counted_digits)
+    call int2str(int11,strint,counted_digits)
+    str_tmp = trim(strint)
+    call add_spaces_in_front(str_tmp, 16-counted_digits)
+    str = trim(trim(str)//trim(str_tmp))
+    ! int12
+    call count_digits_int(int12,counted_digits)
+    call int2str(int12,strint,counted_digits)
+    str_tmp = trim(strint)
+    call add_spaces_in_front(str_tmp, 16-counted_digits)
+    str = trim(trim(str)//trim(str_tmp))
+    ! final call to string print
+    call spr(trim(str))
+  end subroutine
+  !         63 format(i6,3x,g12.5,1x,i7,1x,i7,2x,i8,3x,2(1x,g11.5))
+  subroutine clu_summary_details_pr(int6, re12_5, int7, int7_2, int8, re11_5, re11_5_2)
+    implicit none
+    integer, intent(in) :: int6, int7, int7_2, int8
+    real, intent(in) :: re12_5, re11_5, re11_5_2
+    character(255) :: strint
+    character(255) :: str
+    character(255) :: str_tmp
+    integer :: counted_digits, int_h
+    str = ''
+    ! int6
+    call count_digits_int(int6,counted_digits)
+    call int2str(int6,strint,counted_digits)
+    str_tmp = trim(strint)
+    call add_spaces_in_front(str_tmp, 6-counted_digits)
+    str = trim(trim(str)//trim(str_tmp))
+    ! real12 + 3spaces
+    call re2str(re12_5, 5, strint)
+    str_tmp = trim(strint)
+    int_h = floor(re12_5)
+    call count_digits_int(int_h, counted_digits)
+    call add_spaces_in_front(str_tmp, 15-counted_digits)
+    str = trim(trim(str)//trim(str_tmp))
+    ! int7
+    call count_digits_int(int7,counted_digits)
+    call int2str(int7,strint,counted_digits)
+    str_tmp = trim(strint)
+    call add_spaces_in_front(str_tmp, 8-counted_digits)
+    str = trim(trim(str)//trim(str_tmp))
+    ! int7
+    call count_digits_int(int7_2,counted_digits)
+    call int2str(int7_2,strint,counted_digits)
+    str_tmp = trim(strint)
+    call add_spaces_in_front(str_tmp, 8-counted_digits)
+    str = trim(trim(str)//trim(str_tmp))
+    ! int8
+    call count_digits_int(int8,counted_digits)
+    call int2str(int8,strint,counted_digits)
+    str_tmp = trim(strint)
+    call add_spaces_in_front(str_tmp, 10-counted_digits)
+    str = trim(trim(str)//trim(str_tmp))
+    ! real11 + 1spaces
+    call re2str(re11_5, 5, strint)
+    str_tmp = trim(strint)
+    int_h = floor(re11_5)
+    call count_digits_int(int_h, counted_digits)
+    call add_spaces_in_front(str_tmp, 12-counted_digits)
+    str = trim(trim(str)//trim(str_tmp))
+    ! real11 + 1spaces
+    call re2str(re11_5_2, 5, strint)
+    str_tmp = trim(strint)
+    int_h = floor(re11_5_2)
+    call count_digits_int(int_h, counted_digits)
+    call add_spaces_in_front(str_tmp, 12-counted_digits)
     str = trim(trim(str)//trim(str_tmp))
     ! final call to string print
     call spr(trim(str))
@@ -165,6 +302,23 @@ contains
   end subroutine
   !---------------------------------------------------------------------------------------
   !
+  subroutine re2str(re, n_digits, str)
+    character(*), intent(inout) :: str
+    real, intent(in) :: re
+    real :: re_help
+    character(255) :: strR, strL
+    integer int, n_digits, counted_digits
+    ! thi routine will split the real in 2 integers (per side of .)
+    int = floor(re)
+    call count_digits_int(int, counted_digits)
+    call int2str(int, strR, counted_digits)
+    re_help = re - int*1.0
+    re_help = re_help*(10**n_digits)
+    int = floor(re_help)
+    call count_digits_int(int, counted_digits)
+    call int2str(int, strL, counted_digits)
+    str = trim(trim(strR)//'.'//trim(strL))
+  end subroutine
   subroutine int2str(ii,string,strsz)
     implicit none
   !

@@ -119,8 +119,8 @@ subroutine distance(val2, veci, vecj)
     (dot_product(vec_ref,vec_ref) + &
     dot_product(vecj,vecj)))
     val2 = hlp2 - hlp
-    if(val2.gt.20.or.val2.lt.(-20)) write(ilog,*) "ATTENTION: an angle out of &
-    &control = ", val2
+    ! if(val2.gt.20.or.val2.lt.(-20)) write(ilog,*) "ATTENTION: an angle out of &
+    ! &control = ", val2
   end if
 end
 
@@ -575,6 +575,7 @@ end
 !
 subroutine cluster_calc_params(it,targetsz)
 !
+  use gutenberg
   use m_clustering
   use m_variables_gen
 !
@@ -605,13 +606,13 @@ subroutine cluster_calc_params(it,targetsz)
     it%radius = 0.0
 ! because of FPE/vectorization, this number can occasionally be small and negative if the real variance is zero
   else if (abs(helper)/radius.le.1.0e-8) then
-    write(ilog,*) "this happened"
+    ! write(ilog,*) "this happened"
     it%diam = 0.0
     it%quality = 1.0
     it%radius = 0.0
   else
-    write(ilog,*) 'Warning. Encountered bad numbers in simplified computation of cluster &
- &parameters in cluster_calc_params(...).'
+    call spr('Warning. Encountered bad numbers in simplified computation of cluster &
+ &parameters in cluster_calc_params(...).')
     it%diam = HUGE(it%diam)
     it%radius = HUGE(it%radius)
     it%quality = 0.0
@@ -623,6 +624,7 @@ end
 !
 subroutine quality_of_clustering(ncls,it,radcrit,quals)
 !
+  use gutenberg
   use m_clustering
   use m_variables_gen
 !
@@ -644,8 +646,6 @@ subroutine quality_of_clustering(ncls,it,radcrit,quals)
     val2 = val2 + it(i)%nmbrs/(1.0*alln)*log(it(i)%nmbrs/(1.0*alln))
   end do
 !
- 44 format('Quality of clustering at threshold of ',g12.5,':',/,'Tightness: ',g12.5,/,'Singles  : '&
- &,g12.5,/,'Entropy  : ',g12.5,/,'Total    : ',g12.5,/)
   if (normer.gt.0) then
     quals(1) = 1.0 - val1/(normer*radcrit)
   else
@@ -657,7 +657,10 @@ subroutine quality_of_clustering(ncls,it,radcrit,quals)
   else
     quals(3) = 1.0 - val2/unif
   end if
-  write(ilog,44) radcrit,quals(:),sum(quals)/3.0
+  ! 44 format('Quality of clustering at threshold of ',g12.5,':',/,'Tightness: ',g12.5,/,'Singles  : '&
+  ! &,g12.5,/,'Entropy  : ',g12.5,/,'Total    : ',g12.5,/)
+  call srpr('Quality of clustering at threshold of ', radcrit)
+  call srvpr('Tightness, Singles, Entropy, Total   :   ', (/quals(:),sum(quals)/3.0/) )
 !
 end
 !
@@ -665,6 +668,7 @@ end
 !
 subroutine cluster_removesnap(it,i,vecti2)
 !
+  use gutenberg
   use m_clustering
   use m_variables_gen
 !
@@ -682,8 +686,8 @@ subroutine cluster_removesnap(it,i,vecti2)
     if (it%snaps(k).eq.i) exit
   end do
   if (k.gt.it%nmbrs) then
-    write(ilog,*) 'Fatal. Attempting to remove snap from cluster that is not a member of that cluster.&
- & This is a bug.'
+    call spr('Fatal. Attempting to remove snap from cluster that is not a member of that cluster.&
+ & This is a bug.')
     call fexit()
   end if
   it%snaps(k) = it%snaps(it%nmbrs) !is it removed like this?
