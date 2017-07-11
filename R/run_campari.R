@@ -138,7 +138,8 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
       if(!silent) cat('ANALYSIS MODE (for manual insertion of FMCSC_NCDM_* keyword)\n')
       if('FMCSC_NCDM_ASFILE' %in% args_names && 'FMCSC_NCDM_NCFILE' %in% args_names)
         stop('Use only one between FMCSC_NCDM_ASFILE and FMCSC_NCDM_NCFILE (or use data_file input).')
-      # if('FMCSC_NCDM_ASFILE')
+      if('FMCSC_NCDM_ASFILE' %in% args_names) data_file <- args_list[['FMCSC_NCDM_ASFILE']]
+      if('FMCSC_NCDM_NCFILE' %in% args_names) data_file <- args_list[['FMCSC_NCDM_NCFILE']]
       if('FMCSC_NCDM_ASFILE' %in% args_names) ascii_mode <- TRUE
       if('FMCSC_NCDM_NCFILE' %in% args_names) netcdf_mode <- TRUE
     }else{
