@@ -61,8 +61,8 @@ module m_mst
       type(t_scluster), ALLOCATABLE :: it(:)
       logical notdone
     !
-      write(ilog,*)
-      write(ilog,*) 'Now creating global sorted list of neighbor pairs ...'
+      call sl()
+      call spr('Now creating global sorted list of neighbor pairs ...')
     !
       notdone = .true. !
       allnbs = sum(cnblst(1:n_snaps)%nbs)/2 ! Total number of unique connections
@@ -150,10 +150,10 @@ module m_mst
       deallocate(ix)
       deallocate(Tix)
       deallocate(Talldiss)
-      write(ilog,*) '... done.'
-      write(ilog,*)
+      call spr('... done.')
+      call sl()
     !
-      write(ilog,*) 'Now generating MST by considering shortest remaining link and merging ...'
+      call spr('Now generating MST by considering shortest remaining link and merging ...')
       allocate(iv1(n_snaps))
       ! variables initialization
       iv1(:) = 0 !empty index vector
@@ -217,8 +217,8 @@ module m_mst
       end do
     !
       if (nlnks.ne.(n_snaps-1)) then
-        write(ilog,*) 'Fatal. Neighbor list is insufficient to create minimum spanning tree. &
-     &Increase relevant thresholds.'
+        call spr('Fatal. Neighbor list is insufficient to create minimum spanning tree. &
+     &Increase relevant thresholds.')
       end if
     !
       deallocate(iv1)
@@ -234,8 +234,8 @@ module m_mst
       deallocate(alldiss)
       deallocate(alllnks)
 
-      write(ilog,*) '... done.'
-      write(ilog,*)
+      call spr('... done.')
+      call sl()
     !
   end subroutine gen_MST_from_nbl
     !--------------------------------------------------------------------------------
@@ -348,8 +348,8 @@ module m_mst
     allocate(mstedges(2,n_snaps-1))
     allocate(lmstedges(n_snaps-1))
   !
-    write(ilog,*)
-    write(ilog,*) 'Now generating approximate MST (SST) based on tree-based clustering ...'
+    call sl()
+    call spr('Now generating approximate MST (SST) based on tree-based clustering ...')
     do i=1,ntrees !ntrees is initialized with number of snapshots (cstored)
       allocate(tmptree(i)%snaps(1)) !there are n_snaps trees allocated. For each the first snap is allocated
       tmptree(i)%snaps(1) = i
@@ -607,9 +607,9 @@ module m_mst
                     csnap2tree_ik_eq_cnt = csnap2tree_ik_eq_cnt + 1
                     !TODO
                     if(csnap2tree_ik_eq_cnt.gt.100) then
-                      write(ilog,*) "FATAL : Something went wrong. &
+                      call spr("FATAL : Something went wrong. &
                       &csnap2tree has similar i-k. &
-                      &Please consider changing tree height"
+                      &Please consider changing tree height")
                       ! cycle
                       call fexit()
                     end if
@@ -768,9 +768,8 @@ module m_mst
   ! add corresponding edge to approximate minimum spanning tree:
           nmstedges = nmstedges+1
           if (nmstedges.ge.n_snaps) then
-            write(ilog,*) 'Fatal. The number of edges in the approximate minimum spanning tree is not correct. Please report &
-   &this bug.'
-            call fexit()
+            call fexit('Fatal. The number of edges in the approximate minimum spanning &
+            &tree is not correct. Please report this bug.')
           end if
           mstedges(1,nmstedges) = tmptree(e)%mine(1) ! edgelst(e,1)
           mstedges(2,nmstedges) = tmptree(e)%mine(2) ! edgelst(e,2)
@@ -835,14 +834,14 @@ module m_mst
         end do
       end do
   !
-   567 format('... time for Boruvka stage ',i4,': ',g11.3,'s ...')
       ! write(ilog,*) "ntrees:", ntrees
   !  456 format(i4,8(g12.4,1x),i10,i10,i6,i6,1x,g12.4,g12.4,g12.4)
       call CPU_time(tmvars(2))
-      write(ilog,567) boruvkasteps, tmvars(2)-tmvars(1)
+      call sipr('Boruvka stage: ',boruvkasteps)
+      call srpre('Time needed: ', tmvars(2)-tmvars(1))
       tmvars(1) = tmvars(2)
       if(csnap2tree_ik_eq_cnt.gt.0) then
-        write(ilog,*) "Warning: we found exit flags for csnap2tree identity. Amount:", csnap2tree_ik_eq_cnt
+        call sipr("Warning: we found exit flags for csnap2tree identity. Amount:", csnap2tree_ik_eq_cnt)
       end if
   !
     end do
@@ -856,25 +855,23 @@ module m_mst
     deallocate(tmpix)
   !
     if (n_snaps-1.ne.nmstedges) then
-      write(ilog,*) 'Fatal. The number of edges in the approximate minimum spanning tree is not correct. Please report &
-   &this bug.'
-      call fexit()
+      call fexit('Fatal. The number of edges in the approximate minimum spanning &
+      &tree is not correct. Please report this bug.')
     end if
   !
     ! allocate(approxmst(n_snaps))
     ! approxmst(1:n_snaps)%deg = 0
-   587 format(' Weight of Short Spanning Tree: ',1x,g12.5,a)
-    write(ilog,*)
+    call sl()
     if (dis_method.le.2) then
-      write(ilog,587) sum(lmstedges(1:n_snaps-1)),' degrees'
+      call srpr(' Weight of Short Spanning Tree (degrees): ',sum(lmstedges(1:n_snaps-1)))
     else if (dis_method.le.4) then
-      write(ilog,587) sum(lmstedges(1:n_snaps-1)),' '
+      call srpr(' Weight of Short Spanning Tree: ',sum(lmstedges(1:n_snaps-1)))
     else if (dis_method.le.10) then
-      write(ilog,587) sum(lmstedges(1:n_snaps-1)),' Angstrom'
+      call srpr(' Weight of Short Spanning Tree (Angstrom): ',sum(lmstedges(1:n_snaps-1)))
     else if (dis_method.eq.11) then
-      write(ilog,587) sum(lmstedges(1:n_snaps-1)),' degrees'
+      call srpr(' Weight of Short Spanning Tree (degrees): ',sum(lmstedges(1:n_snaps-1)))
     end if
-    write(ilog,*)
+    call sl()
     ! call gen_MST(mstedges,lmstedges,approxmst)
     ! call gen_MST(adjl_deg2,adjl_ix2,adjl_dis2,&
     ! &alllnks(:,1:(n_snaps-1)),alldiss(1:(n_snaps-1)),max_degree)
@@ -903,8 +900,8 @@ module m_mst
     end if
   !
   !  77 format(a,20(i18,1x))
-    write(ilog,*) '... done after ',cdevalcnt,' additional distance evaluations.'
-    write(ilog,*)
+    call sipr('... done after the following additional distances evaluations: ',cdevalcnt)
+    call sl()
   !
   end
   !
