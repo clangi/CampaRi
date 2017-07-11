@@ -204,8 +204,6 @@ subroutine read_nbl_nc()
 !
 ! now find the necessary variables, only coordinates are required
   ret = nf90_inq_varid(ncid,"snapshots",cnc_ids(2))
-  write(*,*) ret
-  write(*,*) nframes
   if (ret.eq.NF90_NOERR) then
 !   do nothing
   else if (ret.eq.NF90_ENOTVAR) then

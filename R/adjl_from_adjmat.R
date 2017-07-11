@@ -10,7 +10,6 @@
 #' @seealso
 #' \code{\link{gen_progindex}}, \code{\link{mst_from_trj}}.
 #' @export adjl_from_adjmat
-#' @useDynLib CampaRi
 adjl_from_adjmat<-function(adj_m){ #deprecated
   # extract the SST or MST from the output of the analysis already made with campari.
   # Here we will reconstruct a bit of the tree in order to be able to find again the MST/SST

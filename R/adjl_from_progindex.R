@@ -20,7 +20,6 @@
 #'
 #' @importFrom data.table fread
 #' @export adjl_from_progindex
-#' @useDynLib CampaRi
 
 adjl_from_progindex <- function(prog_index_file){
   # extract the SST or MST from the output of the analysis already made with campari.

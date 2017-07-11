@@ -21,7 +21,7 @@
 #' 
 #' 
 #' @export gen_annotation
-#' @useDynLib CampaRi
+#' @useDynLib CampaRi, .registration = TRUE
 
 gen_annotation <- function(ret_data, local_cut_width = NULL, snap_start = NULL, mute = FALSE){
   # warning("if you use an input different in format to the output of the other CampaRi functions there is an high probability of crashing")

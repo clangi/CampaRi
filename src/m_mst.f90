@@ -27,6 +27,7 @@ module m_mst
     !
     subroutine gen_MST_from_nbl(adjl_deg2,adjl_ix2,adjl_dis2,max_degree)
     !
+      use gutenberg
       use m_clustering
       use m_gen_nbls
       use m_variables_gen
@@ -283,6 +284,7 @@ module m_mst
   !
   subroutine gen_MST_from_treeclustering(adjl_deg2,adjl_ix2,adjl_dis2,max_degree,trj2)
   !
+    use gutenberg
     use m_clustering
     use m_variables_gen
     ! use iounit
@@ -838,7 +840,7 @@ module m_mst
   !  456 format(i4,8(g12.4,1x),i10,i10,i6,i6,1x,g12.4,g12.4,g12.4)
       call CPU_time(tmvars(2))
       call sipr('Boruvka stage: ',boruvkasteps)
-      call srpre('Time needed: ', tmvars(2)-tmvars(1))
+      call srpr('Time needed: ', tmvars(2)-tmvars(1))
       tmvars(1) = tmvars(2)
       if(csnap2tree_ik_eq_cnt.gt.0) then
         call sipr("Warning: we found exit flags for csnap2tree identity. Amount:", csnap2tree_ik_eq_cnt)

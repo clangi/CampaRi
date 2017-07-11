@@ -2,7 +2,7 @@
 ! This function aims to reduce the fringe regions by collapsing the tree leaves
 ! on their branches. In this way we have less grouping of fringe regions
 !
-subroutine contract_mst(n_snaps,mnb,alnbs,alst,aldis,nrnds,istats)
+subroutine contract_mst_fortran(n_snaps,mnb,alnbs,alst,aldis,nrnds,istats)
 !
   implicit none
 !

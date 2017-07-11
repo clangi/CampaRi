@@ -1,6 +1,6 @@
 #' @title Compute the contraction of the leaves in the minimum spanning tree extreme branches
 #' @description
-#'      This function aims to reduce the fringe regions by collapsing the tree leaves 
+#'      This function aims to reduce the fringe regions by collapsing the tree leaves
 #'      on their branches. In this way we have less grouping of fringe regions.
 #'
 #' @param adjl A list of three elements: degree list, connectivity matrix and weights.
@@ -9,13 +9,13 @@
 #'
 #'
 #' @return This function will return an adjacency list modified.
-#' @examples 
+#' @examples
 #' adjl <- mst_from_trj(trj = matrix(rnorm(1000), nrow = 100, ncol = 10))
 #' adjl2 <- contract_mst(adjl = adjl)
 #'
 #' @export contract_mst
-#' @useDynLib CampaRi
- 
+#' @useDynLib CampaRi, .registration = TRUE
+
 contract_mst <- function(adjl, n_fold = 1){
   # n_fold is number of leaf-folding operations (FMCSC_CPROGMSTFOLD)
   nsnaps <- nrow(adjl[[2]]) # Working only if the graph it is complete -crash with not connected components
@@ -24,14 +24,14 @@ contract_mst <- function(adjl, n_fold = 1){
   output_fin <- list()
   o_istats <- array(as.integer(0),c(2))
   attr(adjl[[3]],"Csingle") <- TRUE
-  output <- .Fortran("contract_mst", PACKAGE="CampaRi",
-                       n_snaps=as.integer(nsnaps),
-                       mnb=as.integer(maxnb),
-                       alnbs=as.integer(adjl[[1]]), 
-                       alst=matrix(as.integer(adjl[[2]]), nrow = nsnaps, ncol = maxnb),
-                       aldis=adjl[[3]],
-                       nrnds=as.integer(n_fold),
-                       istats=as.integer(o_istats))
+  output <- .Fortran("contract_mst_fortran", PACKAGE="CampaRi",
+                     n_snaps=as.integer(nsnaps),
+                     mnb=as.integer(maxnb),
+                     alnbs=as.integer(adjl[[1]]),
+                     alst=matrix(as.integer(adjl[[2]]), nrow = nsnaps, ncol = maxnb),
+                     aldis=adjl[[3]],
+                     nrnds=as.integer(n_fold),
+                     istats=as.integer(o_istats))
   cat(sum(output$aldis==adjl[[3]])*100.0/(nsnaps*maxnb)); cat("% are the same")
   output_fin[[1]] <- output$alnbs
   output_fin[[2]] <- output$alst[,1:output$mnb]

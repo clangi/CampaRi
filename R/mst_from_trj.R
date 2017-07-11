@@ -41,6 +41,7 @@
 #' @importFrom bio3d rmsd
 #' @export mst_from_trj
 #' @import parallel
+#' @useDynLib CampaRi, .registration = TRUE
 
 mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
                        distance_method = 5, clu_radius = NULL, clu_hardcut = NULL, #inputs

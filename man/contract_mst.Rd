@@ -15,7 +15,7 @@ contract_mst(adjl, n_fold = 1)
 This function will return an adjacency list modified.
 }
 \description{
-This function aims to reduce the fringe regions by collapsing the tree leaves 
+This function aims to reduce the fringe regions by collapsing the tree leaves
      on their branches. In this way we have less grouping of fringe regions.
 }
 \details{

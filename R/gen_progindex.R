@@ -21,7 +21,7 @@
 #' ret <- gen_progindex(adjl = adjl)
 #'
 #' @export gen_progindex
-#' @useDynLib CampaRi
+#' @useDynLib CampaRi, .registration = TRUE
 
 gen_progindex <- function(adjl=NULL, nsnaps = NULL, snap_start = 1, read_from_netcdf = FALSE, mute = FALSE){
 
