@@ -47,7 +47,6 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   netcdf_mode <- FALSE
   analysis_mode <- FALSE
   simulation_mode <- FALSE
-  particular_analy <- FALSE
   nvars <- NULL
   
   # set upper case for args names
@@ -82,9 +81,14 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
     run_in_background <- FALSE
   }
     
-  
+  # checks on nsnaps and eventual other inputs.
   if(!is.null(nsnaps) && (!is.numeric(nsnaps) || nsnaps%%1 != 0))
     stop('nsnaps must be an integer.')
+  if(!is.null(nsnaps) && ("FMCSC_NCDM_NRFRMS" %in% args_names || "FMCSC_NRSTEPS" %in% args_names))
+    stop('Please define nsnaps without using also FMCSC_NCDM_NRFRMS or FMCSC_NRSTEPS. With nsnaps the number of steps will be selected accordingly to the type of input dataset.')
+  if("FMCSC_NCDM_NRFRMS" %in% args_names && "FMCSC_NRSTEPS" %in% args_names)
+    stop('Only one between FMCSC_NCDM_NRFRMS and FMCSC_NRSTEPS vars must be provided.')  
+  
   if(!is.null(data_file) && (!is.character(data_file) || length(nchar(data_file)) > 1))
     stop('data_file must be a single character string.')
   if(!is.null(trj) && (!is.numeric(trj) || length(dim(trj)) != 2))
@@ -122,7 +126,29 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
     if(is.null(nvars)) nvars <- ncol(trj) 
     if(!silent) message('Input trajectory dimensions: (', nsnaps, ', ', nvars, ')')
     analysis_mode <- TRUE
-  }else if(!is.null(data_file)){
+    if(!silent) cat('ANALYSIS MODE\n')
+  }else{
+    if(any(c('FMCSC_PDB_FORMAT') %in% args_names)){
+      analysis_mode <- TRUE
+      warning('We found analysis keywords while no trj nor data_file was supplied. All the checks for the analysis inputs will be disabled. No NCMINER mode active.')
+      if(!silent) cat('ANALYSIS MODE (for manual insertion of FMCSC_PDB_FORMAT keyword)\n')
+    }else if(any(c('FMCSC_NCDM_ASFILE', 'FMCSC_NCDM_NCFILE') %in% args_names)){
+      analysis_mode <- TRUE
+      warning('We found analysis keywords while no trj nor data_file was supplied. All the checks for the analysis inputs will be disabled. NCMINER mode active.')
+      if(!silent) cat('ANALYSIS MODE (for manual insertion of FMCSC_NCDM_* keyword)\n')
+      if('FMCSC_NCDM_ASFILE' %in% args_names && 'FMCSC_NCDM_NCFILE' %in% args_names)
+        stop('Use only one between FMCSC_NCDM_ASFILE and FMCSC_NCDM_NCFILE (or use data_file input).')
+      # if('FMCSC_NCDM_ASFILE')
+      if('FMCSC_NCDM_ASFILE' %in% args_names) ascii_mode <- TRUE
+      if('FMCSC_NCDM_NCFILE' %in% args_names) netcdf_mode <- TRUE
+    }else{
+      simulation_mode <- TRUE
+      if(!silent) cat('SIMULATION RUN: time series (trj) or trajectory file (data_file) not inserted.\n')
+    }
+  }
+  
+  if(!is.null(data_file)){
+    analysis_mode <- TRUE
     if(!file.exists(data_file))
       stop('Inserted file for the analysis is not present in the directory.')
     if(is.null(nsnaps) && file_ext(data_file) %in% c('tsv', 'dat')) 
@@ -130,33 +156,15 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
     if(is.null(nvars) && file_ext(data_file) %in% c('tsv', 'dat')) 
       nvars <- as.numeric(strsplit(x = suppressWarnings(system(paste0('wc -n1 ', base_name, '| wc -l '), intern = TRUE)), split =  " ")[[1]][1])
     if(is.null(nsnaps) && "FMCSC_NCDM_NRFRMS" %in% args_names) nsnaps <- args_list[["FMCSC_NCDM_NRFRMS"]]
+    if(is.null(nsnaps) && "FMCSC_NRSTEPS" %in% args_names) nsnaps <- args_list[["FMCSC_NRSTEPS"]]
     if(is.null(nsnaps) && !"FMCSC_NRSTEPS" %in% args_names)
       stop('FMCSC_NCDM_NRFRMS or nsnaps must be provided for non-ASCII file data analysis.')
-    analysis_mode <- TRUE
-  }else{
-    if(any(c('FMCSC_PDB_FORMAT') %in% args_names)){
-      warning('We found analysis keywords while no trj nor data_file was supplied. All the checks for the analysis inputs will be disabled. No NCMINER mode active.')
-      if(!silent) cat('ANALYSIS MODE (for manual insertion of FMCSC_PDB_FORMAT keyword)\n')
-      particular_analy <- TRUE
-    }
-    if(any(c('FMCSC_NCDM_ASFILE', 'FMCSC_NCDM_NCFILE') %in% args_names)){
-      warning('We found analysis keywords while no trj nor data_file was supplied. All the checks for the analysis inputs will be disabled. NCMINER mode active.')
-      if(!silent) cat('ANALYSIS MODE (for manual insertion of FMCSC_NCDM_* keyword)\n')
-      particular_analy <- TRUE
-      if('FMCSC_NCDM_ASFILE' %in% args_names) ascii_mode <- TRUE
-      if('FMCSC_NCDM_NCFILE' %in% args_names) netcdf_mode <- TRUE
-    }
-    simulation_mode <- TRUE
-  }
-  
-  # printing the running mode
-  if(simulation_mode && !particular_analy)
-    if(!silent) cat('SIMULATION RUN: time series (trj) or trajectory file (data_file) not inserted.\n')
-  if(analysis_mode)
     if(!silent) cat('ANALYSIS MODE\n')
-  
+  }
+
+
   # -----------------------
-  # checking analysis mode file specifics
+  # checking analysis mode file specifics # reduntant
   if(analysis_mode){
     if(is.null(trj) && is.null(data_file))
       stop('Either a trajectory table or a data_file character must be supplied if in analysis mode.')
@@ -177,7 +185,7 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
         if(!silent) message('File mode: PDB (consider changing pdb convention with FMCSC_PDB_R_CONV)')
         args_list <- c(args_list, 
                        FMCSC_PDBFILE=data_file,
-                       FMCSC_PDB_FORMAT=1) # option two not ready                
+                       FMCSC_PDB_FORMAT=1) # option two not ready           
       }else if(file_ext(data_file) %in% c('xtc')){
         if(!silent) message('File mode: XTC (gromacs convention)')
         args_list <- c(args_list, 
@@ -198,8 +206,10 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
         netcdf_mode <- TRUE
       }
     }
-  }else if(simulation_mode && !particular_analy){
+  }else if(simulation_mode){
     warning('All the check for the simulation mode are shallow and the real error messages are delivered directly by the campari library.')
+  }else{
+    stop('mode not valid')
   }
   
   # -----------------------

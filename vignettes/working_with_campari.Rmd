@@ -63,7 +63,7 @@ trj <- data.table::fread("NBU.fyc", header = F, skip = 1, data.table = FALSE)[,-
 trj <- sapply(trj, as.numeric) # always be sure that it is numeric!
 hist(trj[,2]) # this should have 3 peaks per diheadral angle
 
-run_campari(trj = trj[1:2000,],
+run_campari(trj = trj[1:2000,], base_name = "ascii_based_analysis",
             FMCSC_CPROGINDMODE=1, #mst
             FMCSC_CCOLLECT=1, print_status = T,
             FMCSC_CMODE=4,
@@ -131,7 +131,7 @@ run_campari(FMCSC_SEQFILE="nbu.in", # you must have it defined according to CAMP
             FMCSC_TEMP=400.0,
             FMCSC_NRSTEPS=10000000,
             FMCSC_EQUIL=0,
-            FMCSC_XYZOUT=100,
+            FMCSC_XYZOUT=1000,
             FMCSC_XYZPDB=4,
             FMCSC_TOROUT=100,
             FMCSC_COVCALC=20000000,
@@ -148,6 +148,35 @@ run_campari(FMCSC_SEQFILE="nbu.in", # you must have it defined according to CAMP
 system('mv NBU_traj.xtc NBU.xtc')
 system('mv FYC.dat NBU.fyc')
 ```
+
+
+Now let's use classical campari to analyze it
+
+```{r,eval=F}
+run_campari(data_file = "NBU.xtc", nsnaps = 10000, base_name = "xtc_based_analysis",
+            FMCSC_PDBANALYZE =1,
+            FMCSC_SEQFILE = "nbu.in",
+            FMCSC_CPROGINDMODE=1, #mst
+            FMCSC_CCOLLECT=1, print_status = T,
+            FMCSC_CMODE=4,
+            FMCSC_EQUIL=0,
+            FMCSC_CDISTANCE=7, #rmsd without alignment 7 - dihedral distances need a complete analysis (pdb_format dcd pdb etc...) 
+            FMCSC_CPROGINDSTART=22, #starting snapshot 
+            # FMCSC_CPROGINDRMAX=1000, #search att
+            # FMCSC_BIRCHHEIGHT=2, #birch height
+            FMCSC_CMAXRAD=6, #clustering
+            FMCSC_CRADIUS=4,
+            FMCSC_CCUTOFF=100,
+            FMCSC_CPROGINDWIDTH=1000,
+            FMCSC_XYZOUT="20000000", FMCSC_TOROUT="20000000", FMCSC_COVCALC="20000000", FMCSC_SAVCALC="20000000", FMCSC_POLCALC="20000000", FMCSC_RHCALC="20000000", FMCSC_INTCALC="20000000", FMCSC_POLOUT="20000000", FMCSC_ENSOUT="20000000", FMCSC_ENOUT="20000000", FMCSC_RSTOUT="20000000") #local cut is automatically adjusted to 1/10 if it is too big (as here)
+            #FMCSC_CPROGMSTFOLD 4 # b)
+sapphire_plot(sap_file = "PROGIDX_000000000022.dat", timeline= T,title = "ORIGINAL CAMPARI - MST")
+```
+
+
+
+
+
 
 
 
