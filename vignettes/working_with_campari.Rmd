@@ -32,7 +32,7 @@ run_campari(FMCSC_SEQFILE="nbu.in", # you must have it defined according to CAMP
             FMCSC_FRICTION=3.0,
             FMCSC_TIMESTEP=0.005,
             FMCSC_TEMP=400.0,
-            FMCSC_NRSTEPS=10000000,
+            FMCSC_NRSTEPS=1000000,
             FMCSC_EQUIL=0,
             FMCSC_XYZOUT=100,
             FMCSC_XYZPDB=3,
@@ -106,11 +106,11 @@ sapphire_plot(sap_file = 'REPIX_000000000021.dat', timeline=T, title = "CAMPARI 
 Now sst:
 
 ```{r, eval=F}
-adjl <- mst_from_trj(trj=trj[1:2000,], birch_clu = T)
-ret <- gen_progindex(adjl = adjl2, snap_start = 21)
+adjl <- mst_from_trj(trj=trj[1:2000,], birch_clu = T, n_search_attempts = 2000) # if n_search_attempts = 20000 -> same as mst!!
+ret <- gen_progindex(adjl = adjl, snap_start = 22)
 # ret <- gen_progindex(nsnaps = 2000, read_from_netcdf = T, snap_start = 21)
-ret2 <- gen_annotation(ret_data = ret, local_cut_width = 200, snap_start = 21)
-sapphire_plot(sap_file = 'REPIX_000000000021.dat', timeline=T, title = "CAMPARI WRAPPER - MST")
+ret2 <- gen_annotation(ret_data = ret, local_cut_width = 200, snap_start = 22)
+sapphire_plot(sap_file = 'REPIX_000000000022.dat', timeline=T, title = "CAMPARI WRAPPER - MST")
 ```
 
 
@@ -119,7 +119,7 @@ let's do everything again with .xtc (starting from simulation even):
 
 ```{r,eval=F}
 # standard run of the simulation in tutarial 11 - In this case we copy pasted the nbu_simulation.key
-run_campari(FMCSC_SEQFILE="nbu.in", # you must have it defined according to CAMPARI's rules
+run_campari(seq_in = "nbu.in",# you must have it defined according to CAMPARI's rules
             # FMCSC_BASENAME="NBU", # lets try the base_name option
             base_name = "NBU", print_status = F, # it will take 55 s in background ~
             PARAMETERS="oplsaal.prm", # if this variable it is not supplied will be automatically assigned to <full path to folder>/campari/params/abs3.2_opls.prm
@@ -129,10 +129,10 @@ run_campari(FMCSC_SEQFILE="nbu.in", # you must have it defined according to CAMP
             FMCSC_FRICTION=3.0,
             FMCSC_TIMESTEP=0.005,
             FMCSC_TEMP=400.0,
-            FMCSC_NRSTEPS=10000000,
+            FMCSC_NRSTEPS=1000000,
             FMCSC_EQUIL=0,
-            FMCSC_XYZOUT=1000,
-            FMCSC_XYZPDB=4,
+            FMCSC_XYZOUT=100,
+            FMCSC_XYZPDB=4, # xtc
             FMCSC_TOROUT=100,
             FMCSC_COVCALC=20000000,
             FMCSC_SAVCALC=20000000,
@@ -154,12 +154,10 @@ Now let's use classical campari to analyze it
 
 ```{r,eval=F}
 run_campari(data_file = "NBU.xtc", nsnaps = 10000, base_name = "xtc_based_analysis",
-            FMCSC_PDBANALYZE =1,
             FMCSC_SEQFILE = "nbu.in",
             FMCSC_CPROGINDMODE=1, #mst
             FMCSC_CCOLLECT=1, print_status = T,
             FMCSC_CMODE=4,
-            FMCSC_EQUIL=0,
             FMCSC_CDISTANCE=7, #rmsd without alignment 7 - dihedral distances need a complete analysis (pdb_format dcd pdb etc...) 
             FMCSC_CPROGINDSTART=22, #starting snapshot 
             # FMCSC_CPROGINDRMAX=1000, #search att
@@ -167,15 +165,44 @@ run_campari(data_file = "NBU.xtc", nsnaps = 10000, base_name = "xtc_based_analys
             FMCSC_CMAXRAD=6, #clustering
             FMCSC_CRADIUS=4,
             FMCSC_CCUTOFF=100,
-            FMCSC_CPROGINDWIDTH=1000,
-            FMCSC_XYZOUT="20000000", FMCSC_TOROUT="20000000", FMCSC_COVCALC="20000000", FMCSC_SAVCALC="20000000", FMCSC_POLCALC="20000000", FMCSC_RHCALC="20000000", FMCSC_INTCALC="20000000", FMCSC_POLOUT="20000000", FMCSC_ENSOUT="20000000", FMCSC_ENOUT="20000000", FMCSC_RSTOUT="20000000") #local cut is automatically adjusted to 1/10 if it is too big (as here)
+            FMCSC_CPROGINDWIDTH=1000) #local cut is automatically adjusted to 1/10 if it is too big (as here)
             #FMCSC_CPROGMSTFOLD 4 # b)
 sapphire_plot(sap_file = "PROGIDX_000000000022.dat", timeline= T,title = "ORIGINAL CAMPARI - MST")
 ```
 
 
-
-
+Lets try again with the package:
+```{r,eval=F}
+trj <- bio3d::read.dcd("NBU.dcd")
+mst_from_trj(trj = trj, dump_to_netcdf = TRUE, mode = "fortran", normalize_d = T, distance_method = 1)
+ret <- gen_progindex(nsnaps = 10000, read_from_netcdf = T, snap_start = 22)
+ret2 <- gen_annotation(ret, snap_start = 22, local_cut_width = 200) # error!! to check BUUUUUUG
+sapphire_plot(sap_file = 'REPIX_000000000021.dat', timeline = T,title = "CAMPARI WRAPPER - MST")
+```
+```{r,eval=F}
+trj <- data.table::fread("NBU.fyc", header = F, skip = 1, data.table = FALSE)[,-1]
+trj <- sapply(trj, as.numeric) # always be sure that it is numeric!
+hist(trj[,2]) # this should have 3 peaks per diheadral angle
+mst_from_trj(trj = trj, dump_to_netcdf = TRUE, mode = "fortran", normalize_d = T, distance_method = 1)
+ret <- gen_progindex(nsnaps = 10000, read_from_netcdf = T, snap_start = 22)
+ret2 <- gen_annotation(ret, snap_start = 22, local_cut_width = 200) # error!! to check BUUUUUUG
+sapphire_plot(sap_file = 'REPIX_000000000021.dat', timeline = T,title = "CAMPARI WRAPPER - MST")
+```
+```{r,eval=F}
+adjl <- mst_from_trj(trj=trj)
+# adjl2 <- contract_mst(adjl = adjl, n_fold = 5)
+ret <- gen_progindex(adjl = adjl, snap_start = 21)
+# ret <- gen_progindex(nsnaps = 2000, read_from_netcdf = T, snap_start = 21)
+ret2 <- gen_annotation(ret_data = ret, local_cut_width = 200, snap_start = 21)
+sapphire_plot(sap_file = 'REPIX_000000000021.dat', timeline=T, title = "CAMPARI WRAPPER - MST")
+```
+```{r,eval=F}
+adjl <- mst_from_trj(trj=trj, birch_clu = T)
+ret <- gen_progindex(adjl = adjl, snap_start = 21)
+# ret <- gen_progindex(nsnaps = 2000, read_from_netcdf = T, snap_start = 21)
+ret2 <- gen_annotation(ret_data = ret, local_cut_width = 200, snap_start = 21)
+sapphire_plot(sap_file = 'REPIX_000000000021.dat', timeline=T, title = "CAMPARI WRAPPER - MST")
+```
 
 
 

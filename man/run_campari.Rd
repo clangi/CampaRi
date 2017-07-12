@@ -5,7 +5,7 @@
 \title{Frontend for the original CAMPARI library}
 \usage{
 run_campari(trj = NULL, base_name = "base_name", data_file = NULL,
-  nsnaps = NULL, multi_threading = FALSE, mpi = FALSE,
+  nsnaps = NULL, seq_in = NULL, multi_threading = FALSE, mpi = FALSE,
   print_status = TRUE, run_in_background = FALSE, key_file_input = NULL,
   return_log = FALSE, silent = FALSE, ...)
 }
@@ -17,6 +17,9 @@ run_campari(trj = NULL, base_name = "base_name", data_file = NULL,
 \item{data_file}{Input file (e.g. \code{trajectory.dcd}) location. This or \code{trj} must be set.}
 
 \item{nsnaps}{Number of snapshots in the trajectory file. If the data_file format is not ASCII this variable must be set to the number of snapshots in the trajectory.}
+
+\item{seq_in}{This input file specifies the sequence of the system to be simulated or analyzed. Every residue (the base organizational unit) occupies one line and uses a base three-letter representation.
+This file is needed only in case of a simulation run or a non-ncminer(also ascii then) run.}
 
 \item{multi_threading}{Default to \code{FALSE}. It will run campari_threads with openmp directives if installed.}
 

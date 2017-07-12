@@ -30,7 +30,11 @@ contains
     do i=1,size(intv)
       call count_digits_int(intv(i),counted_digits)
       call int2str(intv(i),strint,counted_digits)
-      str_of_vint = trim(trim(str_of_vint)//", "//trim(strint))
+      if(i.eq.1) then
+        str_of_vint = trim(trim(str_of_vint)//trim(strint))
+      else
+        str_of_vint = trim(trim(str_of_vint)//', '//trim(strint))
+      end if
     end do
     ! print it
     if(.not.mute) call spr(trim(str_of_vint))
@@ -46,7 +50,11 @@ contains
     do i=1,size(intv)
       call count_digits_int(intv(i),counted_digits)
       call int2str(intv(i),strint,counted_digits)
-      str_of_vint = trim(trim(str_of_vint)//", "//trim(strint))
+      if(i.eq.1) then
+        str_of_vint = trim(trim(str_of_vint)//trim(strint))
+      else
+        str_of_vint = trim(trim(str_of_vint)//', '//trim(strint))
+      end if
     end do
     ! print it
     if(.not.mute) call spr(trim(trim(str)//" "//trim(str_of_vint)))
@@ -68,7 +76,11 @@ contains
     str_fin = ''
     do i=1,size(rev)
       call re2str(rev(i),4,str_tmp)
-      str_fin = trim(trim(str_fin)//trim(str_tmp))
+      if(i.eq.1) then
+        str_fin = trim(trim(str_fin)//trim(str_tmp))
+      else
+        str_fin = trim(trim(str_fin)//', '//trim(str_tmp))
+      end if
     end do
     call spr(trim(str_fin))
   end subroutine
@@ -99,7 +111,11 @@ contains
     str_fin = ''
     do i=1,size(rev)
       call re2str(rev(i),4,str_tmp)
-      str_fin = trim(trim(str_fin)//trim(str_tmp))
+      if(i.eq.1) then
+        str_fin = trim(trim(str_fin)//' '//trim(str_tmp))
+      else
+        str_fin = trim(trim(str_fin)//', '//trim(str_tmp))
+      end if
     end do
     str_fin = trim(trim(str)//' '//trim(str_fin))
     call spr(trim(str_fin))
@@ -198,11 +214,11 @@ contains
     call add_spaces_in_front(str_tmp, 13-counted_digits)
     str = trim(trim(str)//trim(str_tmp))
     ! real14 + 4spaces
-    call re2str(re14_4, 4, strint)
+    call re2str(re14_4, 2, strint) !4
     str_tmp = trim(strint)
     int_h = floor(re14_4)
     call count_digits_int(int_h, counted_digits)
-    call add_spaces_in_front(str_tmp, 18-counted_digits)
+    call add_spaces_in_front(str_tmp, 11-counted_digits) ! it was 18 without digits 4 for error?
     str = trim(trim(str)//trim(str_tmp))
     ! int11
     call count_digits_int(int11,counted_digits)
@@ -236,11 +252,11 @@ contains
     call add_spaces_in_front(str_tmp, 6-counted_digits)
     str = trim(trim(str)//trim(str_tmp))
     ! real12 + 3spaces
-    call re2str(re12_5, 5, strint)
+    call re2str(re12_5, 2, strint) !5
     str_tmp = trim(strint)
     int_h = floor(re12_5)
     call count_digits_int(int_h, counted_digits)
-    call add_spaces_in_front(str_tmp, 15-counted_digits)
+    call add_spaces_in_front(str_tmp, 10-counted_digits) !15 !3 for I don't know
     str = trim(trim(str)//trim(str_tmp))
     ! int7
     call count_digits_int(int7,counted_digits)
@@ -261,18 +277,18 @@ contains
     call add_spaces_in_front(str_tmp, 10-counted_digits)
     str = trim(trim(str)//trim(str_tmp))
     ! real11 + 1spaces
-    call re2str(re11_5, 5, strint)
+    call re2str(re11_5, 2, strint) !5
     str_tmp = trim(strint)
     int_h = floor(re11_5)
     call count_digits_int(int_h, counted_digits)
-    call add_spaces_in_front(str_tmp, 12-counted_digits)
+    call add_spaces_in_front(str_tmp, 10-counted_digits) !12
     str = trim(trim(str)//trim(str_tmp))
     ! real11 + 1spaces
-    call re2str(re11_5_2, 5, strint)
+    call re2str(re11_5_2, 2, strint) !5
     str_tmp = trim(strint)
     int_h = floor(re11_5_2)
     call count_digits_int(int_h, counted_digits)
-    call add_spaces_in_front(str_tmp, 12-counted_digits)
+    call add_spaces_in_front(str_tmp, 10-counted_digits) !5
     str = trim(trim(str)//trim(str_tmp))
     ! final call to string print
     call spr(trim(str))
@@ -306,18 +322,25 @@ contains
     character(*), intent(inout) :: str
     real, intent(in) :: re
     real :: re_help
-    character(255) :: strR, strL
+    character(255) :: strR, strL, str_h
     integer int, n_digits, counted_digits
+    integer d ! looping var
     ! thi routine will split the real in 2 integers (per side of .)
     int = floor(re)
     call count_digits_int(int, counted_digits)
-    call int2str(int, strR, counted_digits)
+    call int2str(int, strL, counted_digits)
     re_help = re - int*1.0
     re_help = re_help*(10**n_digits)
     int = floor(re_help)
     call count_digits_int(int, counted_digits)
-    call int2str(int, strL, counted_digits)
-    str = trim(trim(strR)//'.'//trim(strL))
+    call int2str(int, strR, counted_digits)
+    if(counted_digits .le. n_digits) then
+      do d=0,(n_digits - counted_digits)
+        str_h = strR
+        strR = trim(str_h//'0')
+      end do
+    end if
+    str = trim(trim(strL)//'.'//trim(strR))
   end subroutine
   subroutine int2str(ii,string,strsz)
     implicit none
