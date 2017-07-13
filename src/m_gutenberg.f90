@@ -218,7 +218,7 @@ contains
     str_tmp = trim(strint)
     int_h = floor(re14_4)
     call count_digits_int(int_h, counted_digits)
-    call add_spaces_in_front(str_tmp, 11-counted_digits) ! it was 18 without digits 4 for error?
+    call add_spaces_in_front(str_tmp, 10-counted_digits) ! it was 18 without digits 4 for error?
     str = trim(trim(str)//trim(str_tmp))
     ! int11
     call count_digits_int(int11,counted_digits)
@@ -256,13 +256,13 @@ contains
     str_tmp = trim(strint)
     int_h = floor(re12_5)
     call count_digits_int(int_h, counted_digits)
-    call add_spaces_in_front(str_tmp, 10-counted_digits) !15 !3 for I don't know
+    call add_spaces_in_front(str_tmp, 8-counted_digits) !15
     str = trim(trim(str)//trim(str_tmp))
     ! int7
     call count_digits_int(int7,counted_digits)
     call int2str(int7,strint,counted_digits)
     str_tmp = trim(strint)
-    call add_spaces_in_front(str_tmp, 8-counted_digits)
+    call add_spaces_in_front(str_tmp, 10-counted_digits)
     str = trim(trim(str)//trim(str_tmp))
     ! int7
     call count_digits_int(int7_2,counted_digits)
@@ -288,7 +288,7 @@ contains
     str_tmp = trim(strint)
     int_h = floor(re11_5_2)
     call count_digits_int(int_h, counted_digits)
-    call add_spaces_in_front(str_tmp, 10-counted_digits) !5
+    call add_spaces_in_front(str_tmp, 8-counted_digits) !5
     str = trim(trim(str)//trim(str_tmp))
     ! final call to string print
     call spr(trim(str))
@@ -322,9 +322,9 @@ contains
     character(*), intent(inout) :: str
     real, intent(in) :: re
     real :: re_help
-    character(255) :: strR, strL, str_h
+    character(255) :: strR, strL, str_h, str_0
     integer int, n_digits, counted_digits
-    integer d ! looping var
+    integer d, d2 ! looping var
     ! thi routine will split the real in 2 integers (per side of .)
     int = floor(re)
     call count_digits_int(int, counted_digits)
@@ -334,6 +334,14 @@ contains
     int = floor(re_help)
     call count_digits_int(int, counted_digits)
     call int2str(int, strR, counted_digits)
+    do d2=1,n_digits
+      if(int .lt. 10**d2) then
+        str_h = strR
+        str_0 = "0"
+        strR = trim(trim(str_0)//trim(str_h))
+        counted_digits = counted_digits + 1
+      end if
+    end do
     if(counted_digits .le. n_digits) then
       do d=0,(n_digits - counted_digits)
         str_h = strR

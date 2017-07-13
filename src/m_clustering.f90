@@ -674,8 +674,8 @@ module m_clustering
       ! call cluster_getcenter(birchtree(1)%cls(1),trj)
       ! call cluster_calc_params(birchtree(1)%cls(1),huge(scrcts(k)))
       if(clu_summary) then
-        call spr('------------------------- CLUSTERS SUMMARY ---------------------------')
-        call spr('level    threshold         #     No.    Center   Diameter      Radius      ')
+        call spr('------------------------- CLUSTERS SUMMARY -----------------------------')
+        call spr('level    threshold         #     No.    Center      Diameter      Radius      ')
         do k=1,c_nhier+1
           cl_one_elem = 0
           j = 0
@@ -693,14 +693,17 @@ module m_clustering
             if(birchtree(k)%cls(i)%nmbrs.ne.1) then
               if(j.le.max_show_clu) then
                 ! 63 format(i6,3x,g12.5,1x,i7,1x,i7,2x,i8,3x,2(1x,g11.5))
-                ! if(k.eq.1) then
-                !   write(ilog,63) k,"",i,birchtree(k)%cls(i)%nmbrs,birchtree(k)%cls(i)%center,&
-                !   birchtree(k)%cls(i)%diam,birchtree(k)%cls(i)%radius
-                ! else
-                call clu_summary_details_pr(k,scrcts(k),i,birchtree(k)%cls(i)%nmbrs,&
-                birchtree(k)%cls(i)%center,&
-                birchtree(k)%cls(i)%diam,birchtree(k)%cls(i)%radius)
-                ! end if
+                if(k.eq.1) then
+                  ! write(ilog,63) k,"",i,birchtree(k)%cls(i)%nmbrs,birchtree(k)%cls(i)%center,&
+                  ! birchtree(k)%cls(i)%diam,birchtree(k)%cls(i)%radius
+                  call clu_summary_details_pr(k,0.0,i,birchtree(k)%cls(i)%nmbrs,&
+                  birchtree(k)%cls(i)%center,&
+                  birchtree(k)%cls(i)%diam, birchtree(k)%cls(i)%radius)
+                else
+                  call clu_summary_details_pr(k,scrcts(k),i,birchtree(k)%cls(i)%nmbrs,&
+                  birchtree(k)%cls(i)%center,&
+                  birchtree(k)%cls(i)%diam,birchtree(k)%cls(i)%radius)
+                end if
                 j = j + 1
               end if
             else

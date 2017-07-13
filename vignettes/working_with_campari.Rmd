@@ -174,9 +174,9 @@ sapphire_plot(sap_file = "PROGIDX_000000000022.dat", timeline= T,title = "ORIGIN
 Lets try again with the package:
 ```{r,eval=F}
 trj <- bio3d::read.dcd("NBU.dcd")
-mst_from_trj(trj = trj, dump_to_netcdf = TRUE, mode = "fortran", normalize_d = T, distance_method = 1)
+mst_from_trj(trj = trj, dump_to_netcdf = TRUE, mode = "fortran", normalize_d = T, distance_method = 5)
 ret <- gen_progindex(nsnaps = 10000, read_from_netcdf = T, snap_start = 22)
-ret2 <- gen_annotation(ret, snap_start = 22, local_cut_width = 200) # error!! to check BUUUUUUG
+ret2 <- gen_annotation(ret, snap_start = 22, local_cut_width = 200) # error!! to check BUUUUUUG WITH DISTANCE 1
 sapphire_plot(sap_file = 'REPIX_000000000021.dat', timeline = T,title = "CAMPARI WRAPPER - MST")
 ```
 ```{r,eval=F}
