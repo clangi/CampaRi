@@ -468,7 +468,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
                                   y = rep(ann_init, length(xx))[seq(1, Nsnap, sub_sampling_factor)],
                                   xend = xx, 
                                   yend = rep(ann_init + background_height, length(xx))[seq(1, Nsnap, sub_sampling_factor)]),
-                              col = ann_tr[seq(1, Nsnap, sub_sampling_factor)],
+                              col = ann_tr[seq(1, Nsnap, sub_sampling_factor)], # color must be out if no palette is used
                               size = 0.1*general_size_annPoints)
     # specific color palette
     }else{
@@ -508,11 +508,27 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
     }else{
       if(rescaling_ann_col)
         stop('The specific insertion of a palette collides with the rescaling of the colors. Please turn it off to use the specific palette option.')
-      gg <- gg + geom_segment(aes(xx, 
-                                  y = rep(ann_init, length(xx))[seq(1, Nsnap, sub_sampling_factor)],
-                                  xend = xx,
-                                  yend = rep(ann_init + background_height, length(xx))[seq(1, Nsnap, sub_sampling_factor)],
-                                  col = ann_tr[seq(1, Nsnap, sub_sampling_factor)]), # col is INSIDE aes
+      # here I need a loop for the specific palette
+      # gg <- gg + geom_segment(aes(x = c(x_multilines),
+      #                             y = c(t(y_multilines)),
+      #                             xend = c(x_multilines),
+      #                             yend = c(t(y_multilines) + height_one_band)),
+      #                             col = c(t(ann_tr)), # WRONG must go inside the aes 
+      #                         size = 0.1*general_size_annPoints)
+      # for(i in 1:n_lines_annotation){
+      #   gg + geom_segment(aes(x = c(x_multilines)[(1:Nsnap)*i],
+      #                         y = c(t(y_multilines))[(1:Nsnap)*i],
+      #                         xend = c(x_multilines)[(1:Nsnap)*i],
+      #                         yend = c(t(y_multilines) + height_one_band)[(1:Nsnap)*i], 
+      #                         col = c(t(ann_tr))[(1:Nsnap)*i]),
+      #                     size = 0.1*general_size_annPoints)
+      #   gg <- gg + scale_color_gradientn(colours = specific_palette, guide = FALSE) #  guide_legend(title = "Days")
+      # }
+      gg <- gg + geom_segment(aes(x = c(x_multilines),
+                                  y = c(t(y_multilines)),
+                                  xend = c(x_multilines),
+                                  yend = c(t(y_multilines) + height_one_band),
+                                  col = c(t(ann_tr))), # WRONG must go inside the aes
                               size = 0.1*general_size_annPoints)
       gg <- gg + scale_color_gradientn(colours = specific_palette, guide = FALSE) #  guide_legend(title = "Days")
     } 

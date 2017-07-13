@@ -13,6 +13,7 @@ vignette: >
 knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_knit$set(progress = FALSE)
 # knitr::opts_knit$set(root.dir="out_to_del/")
+# print(getwd())
 ```
 
 
@@ -367,6 +368,8 @@ sapphire_plot('PROGIDX_000000000001.dat', local_cut = FALSE, ann_trace = ann) # 
 
 # the advanced option -> adding layers to the gg object
 gg <- sapphire_plot('PROGIDX_000000000001.dat', return_plot = TRUE, local_cut = FALSE, ann_trace = ann) # without the local cut
+gg <- sapphire_plot('PROGIDX_000000000001.dat', return_plot = TRUE, local_cut = FALSE, ann_trace = ann, 
+                    rescaling_ann_col=F, specific_palette= c("#b47b00", "#000000")) # without the local cut
 # add theme classic and text
 gg + 
   ggplot2::theme_classic() + 
