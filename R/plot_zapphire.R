@@ -448,11 +448,11 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
     y_local_cut = 2.5 - (1./3.)*log((pin[,10] + pin[,12]) / Nsnap)
     if(any(is.na(y_local_cut))){ # is na check. what about the inf?
       warning('Attention: the basic annotation generated NAs during the -log(it) in number equal to ', sum(is.na(y_local_cut)),'. they will be set to the min (without them).')
-      y_cut[is.na(y_local_cut)] <- min(y_local_cut[!is.na(y_local_cut)])
+      y_local_cut[is.na(y_local_cut)] <- min(y_local_cut[!is.na(y_local_cut)])
     }
     if(any(is.infinite(y_local_cut))){ # is na check. what about the inf?
       warning('Attention: the basic annotation generated Infs during the -log(it) in number equal to ', sum(is.infinite(y_local_cut)),'. they will be set to the max (without them).')
-      y_cut[is.infinite(y_local_cut)] <- max(y_local_cut[!is.infinite(y_local_cut)])
+      y_local_cut[is.infinite(y_local_cut)] <- max(y_local_cut[!is.infinite(y_local_cut)])
     }
   }
   if(local_cut) ymax_local_cut = max(y_local_cut)
