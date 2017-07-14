@@ -63,6 +63,8 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
                              'timeline_proportion',
                              'background_height',
                              'ann_initial_point', # annotation trace initial point (between 0 and 1)
+                             'localcutbasin_prop_height',
+                             'basin_prop_height',
                              'horiz_lines_on_timeline', 
                              'horiz_colored_areas',
                              'points_on_timeline', 
@@ -87,6 +89,8 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   
   if(!('timeline_proportion' %in% names(input_args))) timeline_proportion <- NULL else timeline_proportion <- input_args[['timeline_proportion']]
   if(!('background_height' %in% names(input_args))) background_height <- NULL else background_height <- input_args[['background_height']]
+  if(!('localcutbasin_prop_height' %in% names(input_args))) localcutbasin_prop_height <- NULL else localcutbasin_prop_height <- input_args[['localcutbasin_prop_height']]
+  if(!('basin_prop_height' %in% names(input_args))) basin_prop_height <- NULL else basin_prop_height <- input_args[['basin_prop_height']]
   if(!('ann_initial_point' %in% names(input_args))) ann_initial_point <- NULL else ann_initial_point <- input_args[['ann_initial_point']]
   if(!('horiz_lines_on_timeline' %in% names(input_args))) horiz_lines_on_timeline <- NULL else horiz_lines_on_timeline <- input_args[['horiz_lines_on_timeline']]
   if(!('horiz_colored_areas' %in% names(input_args))) horiz_colored_areas <- NULL else horiz_colored_areas <- input_args[['horiz_colored_areas']]
@@ -431,11 +435,55 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   xx <- seq(from=1, by=1, to=Nsnap)[seq(1, Nsnap, sub_sampling_factor)]
   
   ymin = 0
-  ymax_cut = -log(pin[,4]/Nsnap)
-  ymax_local_cut = 2.5 - (1./3.)*log((pin[,10] + pin[,12]) / Nsnap)
-  ymax_cut = ymax_cut[!is.infinite(ymax_cut)&!is.na(ymax_cut)]
-  ymax_local_cut = ymax_local_cut[!is.infinite(ymax_local_cut)&!is.na(ymax_local_cut)]
-  ymax = max(ymax_cut, ymax_local_cut)
+  y_cut = -log(pin[,4]/Nsnap)
+  if(any(is.na(y_cut))){ # is na check. what about the inf?
+    warning('Attention: the basic annotation generated NAs during the -log(it) in number equal to ', sum(is.na(y_cut)),'. they will be set to the min (without them).')
+    y_cut[is.na(y_cut)] <- min(y_cut[!is.na(y_cut)])
+  }
+  if(any(is.infinite(y_cut))){ # is na check. what about the inf?
+    warning('Attention: the basic annotation generated Inf during the -log(it) in number equal to ', sum(is.infinite(y_cut)),'. they will be set to the max (without them).')
+    y_cut[is.infinite(y_cut)] <- max(y_cut[!is.infinite(y_cut)])
+  }
+  if(local_cut) {
+    y_local_cut = 2.5 - (1./3.)*log((pin[,10] + pin[,12]) / Nsnap)
+    if(any(is.na(y_local_cut))){ # is na check. what about the inf?
+      warning('Attention: the basic annotation generated NAs during the -log(it) in number equal to ', sum(is.na(y_local_cut)),'. they will be set to the min (without them).')
+      y_cut[is.na(y_local_cut)] <- min(y_local_cut[!is.na(y_local_cut)])
+    }
+    if(any(is.infinite(y_local_cut))){ # is na check. what about the inf?
+      warning('Attention: the basic annotation generated Infs during the -log(it) in number equal to ', sum(is.infinite(y_local_cut)),'. they will be set to the max (without them).')
+      y_cut[is.infinite(y_local_cut)] <- max(y_local_cut[!is.infinite(y_local_cut)])
+    }
+  }
+  if(local_cut) ymax_local_cut = max(y_local_cut)
+  ymax_cut = max(y_cut)
+  if(local_cut) ymax = max(c(ymax_cut, ymax_local_cut))
+  else ymax = max(ymax_cut)
+  
+  # baseline of the local cut and basin cut
+  if(local_cut){
+    if(!is.null(localcutbasin_prop_height) && is.numeric(localcutbasin_prop_height) && length(localcutbasin_prop_height) == 1L){
+      if(localcutbasin_prop_height >= 1 || localcutbasin_prop_height < 0){
+        warning("Inserted initial annotation point too small or too big (between 0-1).")
+        localcutbasin_prop_height <- ymax_local_cut*1/4.
+      }
+      localcutbasin_prop_height <- localcutbasin_prop_height*ymax_local_cut
+    }else{
+      localcutbasin_prop_height <- ymax_local_cut*1/4.
+    }
+  }
+  if(!is.null(basin_prop_height) && is.numeric(basin_prop_height) && length(basin_prop_height) == 1L){
+    if(basin_prop_height >= 1 || basin_prop_height < 0){
+      warning("Inserted initial annotation point too small or too big (between 0-1).")
+      basin_prop_height <- ymax_cut*1/4.
+    }
+    basin_prop_height <- basin_prop_height*ymax_cut
+  }else{
+    basin_prop_height <- ymax_cut*1/4.
+  }
+  
+  if(local_cut) y_local_cut = y_local_cut - localcutbasin_prop_height
+  y_cut = y_cut - basin_prop_height
   
   # ---------------------
   # initial creation of the plot
@@ -716,16 +764,15 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   # basic annotation (principal cut)
   if(!only_timeline){
     main_col <- 'darkblue'
-    if((timeline && (min(-log((pin[,4]/Nsnap))) < tp*ymax)) || (!no_trace && (background_height > ymax/2.1)))
+    if((timeline && (min(y_cut) < tp*ymax)) || (!no_trace && (background_height > ymax/2.1)))
       main_col <- 'dodgerblue'
-    gg <- gg + geom_line(aes(x = xx, y = -log((pin[,4]/Nsnap))), color=main_col, size=0.8)
+    gg <- gg + geom_line(aes(x = xx, y = y_cut), color=main_col, size=0.8) # SHALL WE KEEP THE NAs?
   }
   
   # local cut
   if(!only_timeline)
     if(local_cut) gg <- gg + 
-      geom_point(mapping = aes(x=xx,y=2.5 - (1./3.)*log((pin[,10] + pin[,12]) / Nsnap)), 
-                 color="red3", size=0.08) 
+      geom_point(mapping = aes(x=xx,y=y_local_cut), color="red3", size=0.08) 
   
   
   
