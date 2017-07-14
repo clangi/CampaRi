@@ -3,6 +3,8 @@ context('mst')
 test_that('Building a minimum spanning tree', {
 	adjl <- mst_from_trj(trj = matrix(rnorm(1000), nrow = 100, ncol = 10), dump_to_netcdf = FALSE)
 	expect_true(!is.null(adjl))
+	adjl2 <- contract_mst(adjl, n_fold = 2)
+	expect_true(!is.null(adjl2))
 	ret <- gen_progindex(adjl, snap_start = 21)
 	expect_true(!is.null(ret))
 	ret2 <- gen_annotation(ret, snap_start = 21)
@@ -25,4 +27,14 @@ test_that('Building a minimum spanning tree', {
 	                        reorder_annotation=TRUE,reorder_horizline_on_timeline=TRUE, points_on_timeline=c(2,10))
 	expect_true(!is.null(plottt))
 	
+})
+
+test_that('Keyfile handling', {
+  a <- keywords_from_keyfile(key_file_input='KEYWORD 123', return_table=TRUE, return_string_of_arguments=FALSE,
+                        keyword_list_first=TRUE, key_file_is_keywords=TRUE)
+  expect_true(!is.null(a))
+  a <- keywords_from_keyfile(key_file_input='KEYWORD 123', return_table=FALSE, return_string_of_arguments=TRUE,
+                        keyword_list_first=FALSE, key_file_is_keywords=TRUE)
+  expect_true(!is.null(a))
+  
 })
