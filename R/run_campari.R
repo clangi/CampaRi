@@ -227,7 +227,7 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
       if(file_ext(data_file) %in% c('pdb')){
         if(!silent) cat('File mode: PDB (consider changing pdb convention with FMCSC_PDB_R_CONV)\n')
         args_list <- c(args_list, FMCSC_PDBFILE=data_file)
-        if(!'FMCSC_PDB_FORMAT' %in% args_name){
+        if(!'FMCSC_PDB_FORMAT' %in% args_names){
           warning('Selected option 1 for FMCSC_PDB_FORMAT because it was not provided.\n')
           args_list <- c(args_list, FMCSC_PDB_FORMAT=1)  
         }

@@ -62,7 +62,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
                              
                              'timeline_proportion',
                              'background_height',
-                             'ann_initial_point',
+                             'ann_initial_point', # annotation trace initial point (between 0 and 1)
                              'horiz_lines_on_timeline', 
                              'horiz_colored_areas',
                              'points_on_timeline', 

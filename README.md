@@ -9,7 +9,7 @@
 -->
 [![Travis-CI Build Status](https://travis-ci.org/Melkiades/CampaRi.svg?branch=master)](https://travis-ci.org/Melkiades/CampaRi)
 [![DOI](https://zenodo.org/badge/68593949.svg)](https://zenodo.org/badge/latestdoi/68593949)
-[![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/CampaRi_chatroom/)
+[![Gitter](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/CampaRi_chatroom/)
 
 
 ------------------------------------------------------------------------
