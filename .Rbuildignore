@@ -8,4 +8,5 @@ CONTRIBUTING\.md
 ISSUE_TEMPLATE\.md
 ^vignettes/rsconnect/*$
 ^vignettes/rsconnect/$
+^vignettes/to_d$
 ^inst/doc/$

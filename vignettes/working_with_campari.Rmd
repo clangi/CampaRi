@@ -12,8 +12,7 @@ vignette: >
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 knitr::opts_knit$set(progress = FALSE)
-# knitr::opts_knit$set(root.dir="out_to_del/")
-# library(CampaRi)
+# knitr::opts_knit$set(root.dir="to_d/")
 ```
 
 Lets try out some other feature of the package.
@@ -167,7 +166,7 @@ run_campari(data_file = "NBU.xtc", nsnaps = 10000, base_name = "xtc_based_analys
             FMCSC_CCUTOFF=100,
             FMCSC_CPROGINDWIDTH=1000) #local cut is automatically adjusted to 1/10 if it is too big (as here)
             #FMCSC_CPROGMSTFOLD 4 # b)
-sapphire_plot(sap_file = "PROGIDX_000000000022.dat", timeline= T,title = "ORIGINAL CAMPARI - MST")
+sapphire_plot(sap_file = "PROGIDX_000000000022.dat", timeline= T, title = "ORIGINAL CAMPARI - MST")
 ```
 
 

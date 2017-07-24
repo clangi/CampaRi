@@ -52,6 +52,12 @@ gen_progindex <- function(adjl=NULL, nsnaps = NULL, snap_start = 1, read_from_ne
   o_iv2 <- array(as.integer(0),c(nsnaps)) # mistery
   o_progind <- array(as.integer(0),c(nsnaps))
   o_distv <- array(as.single(0.0),c(nsnaps))
+  
+  # checking the netcdf possibilities
+  read_from_netcdf <- .Fortran('check_netcdf_installation', PACKAGE="CampaRi",
+                             wanting_r_backend=as.logical(!read_from_netcdf))
+  read_from_netcdf <- !read_from_netcdf$wanting_r_backend
+  
   if(read_from_netcdf){
     if(!mute) cat("Going netcdf...\n")
     if(.check_integer(nsnaps)) stop("For netcdf data management you must write the number of snapshots in your trj")

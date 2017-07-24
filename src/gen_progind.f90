@@ -43,30 +43,10 @@ subroutine gen_progind_from_adjlst(n_snaps_in, starting_snap, max_degree, &
   mute = mute_in
   n_snaps = n_snaps_in
 
-  ! CHEKS IF THE USER HAS WHAT HE WANTS - NETCDF
-  ! ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  ---
-#ifdef LINK_NETCDF
-  if(use_tree_from_r) then
-    call sl()
-    call spr('------------------------------------------------------------------')
-    call spr('ATTENTION: Even if CampaRi was installed using netcdf support, but')
-    call spr('you selected to use the R data management system. Only R option ')
-    call spr('will be followed.')
-    call spr('------------------------------------------------------------------')
-  end if
-#else
-  if(.not.use_tree_from_r) then
-    call sl()
-    call spr('------------------------------------------------------------------')
-    call spr('ATTENTION: Even if CampaRi was installed without the netcdf support')
-    call spr('the user tried to use the netcdf dumping functionality. This run ')
-    call spr('will follow the usual flow without netcdf. If you want to use it ')
-    call spr('install the full version of the package.')
-    call spr('------------------------------------------------------------------')
-    call fexit('Please be sure about the modality of analysis')
-  end if
-#endif
-  ! ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  ---  ---
+  ! ! checking netcdf
+  ! call check_netcdf_installation(use_tree_from_r)
+
+
   call spr('---------------------------------------------------------------------')
 #ifdef LINK_NETCDF
   if(.not.use_tree_from_r) then

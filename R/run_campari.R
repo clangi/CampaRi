@@ -33,7 +33,7 @@
 #'
 #' @importFrom data.table fread
 #' @importFrom tools file_ext
-#' 
+#' @importFrom parallel detectCores
 #' @export run_campari
 #' 
 
@@ -363,6 +363,21 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   # -----------------------
   # set the default directory
   camp_home <- strsplit(campari_main_exe, split = "bin")[[1]][1]
+  # -----------------------
+  # defining number of cores
+  if(multi_threading){
+    n_cores <- parallel::detectCores()
+    if("FMCSC_NRTHREADS" %in% args_names){
+      if(!silent) cat('The number of threads defined for the openMP run has been set manually to:', args_list[["FMCSC_NRTHREADS"]], '\n')
+      if(args_list[["FMCSC_NRTHREADS"]] > n_cores || args_list[["FMCSC_NRTHREADS"]] < 2 || !is.numeric(args_list[["FMCSC_NRTHREADS"]])){
+        warning('Selected more/less/notcorrectly cores than the available number of units. It will be set to n_cores - 1')
+        args_list <- c(args_list, FMCSC_NRTHREADS=n_cores-1)
+      }
+    }else{
+      if(!silent) cat('Not finding the variable FMCSC_NRTHREADS it will be assigned to n_cores - 1:', n_cores - 1, '\n')
+      args_list <- c(args_list, FMCSC_NRTHREADS=n_cores-1)
+    }
+  }
   
   # -----------------------
   # must exist checks - PARAMETERS

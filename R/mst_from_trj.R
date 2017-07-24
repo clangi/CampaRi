@@ -48,7 +48,7 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
                        normalize_d = TRUE, birch_clu = FALSE, min_span_tree = TRUE,  #algo modes
                        rootmax_rad = NULL, tree_height = NULL, n_search_attempts = NULL, #sst default
                        cores = NULL, mute_fortran = FALSE, ...){ #misc
-  
+
   # Checking additional inputs
   input_args <- list(...)
   avail_extra_argoments <- c()
@@ -59,7 +59,7 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
   # if(!('pre_process' %in% names(input_args))) pre_process <- NULL else pre_process <- input_args[['pre_process']]
   # if(!('window' %in% names(input_args))) window <- NULL else window <- input_args[['window']]
   # if(!('overlapping_reduction' %in% names(input_args))) overlapping_reduction <- NULL else overlapping_reduction <- input_args[['overlapping_reduction']]
-  # 
+  #
   # # feature selection
   # if(!('feature_selection' %in% names(input_args))) feature_selection <- NULL else feature_selection <- input_args[['feature_selection']]
   # if(!('n_princ_comp' %in% names(input_args))) n_princ_comp <- NULL else n_princ_comp <- input_args[['n_princ_comp']]
@@ -69,19 +69,19 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
     if(!is.data.frame(trj)) stop('trj input must be a matrix or a data.frame')
     trj <- as.matrix(trj)
   }
-  
+
   # checking logicals
   if(!is.logical(dump_to_netcdf))
     stop("dump_to_netcdf mode must be activated using T/F inputs only.")
   if(!is.logical(mute_fortran))
     stop("mute_fortran mode must be activated using T/F inputs only.")
-  
-  # Memory handling 
+
+  # Memory handling
   if(!dump_to_netcdf) cat("\nNormal memory handling selected (dump_to_netcdf = FALSE). Without hdf5/netcdf backend file management it will be difficult for R to handle big data-sets.\n")
   else cat("\nSelected data support: netcdf data management (dump_to_netcdf = TRUE).\n")
 
   # if(data_management == "R") cat("To set new data_management method: options(list(CampaRi.data_management = 'R'))\n")
-  # 
+  #
   # if(data_management != "R"){
   #   # warning(paste0('The dumping filename will be ',getOption("CampaRi.data_filename"),'. If already existent it will be overwritten'))
   #   # TODO in installing routine the check!!
@@ -103,7 +103,7 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
   #
   #
   #
-# 
+#
 #   preprocessing_opts <- c('wgcna', 'multiplication')
 #   if(!is.null(pre_process) && (length(pre_process)!=1 || !is.character(pre_process) || !(pre_process %in% preprocessing_opts)))
 #     stop('Inserted preprocessing method (string) not valid.')
@@ -131,7 +131,7 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
 #     trj <- multiplicate_trj(trj, window)
 #     n_xyz <- ncol(trj)
 #   }
-# 
+#
 
   # -----------------------------------------------------------------------
   # Feature selection
@@ -271,7 +271,7 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
     # Main functions for internal calling of Fortran code
     #
     #
-    
+
       # output_fin <- list()
       #double Cstyle deginitions
       # attr(trj,"Csingle") <- TRUE
@@ -298,14 +298,18 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
       #                    #modes
       #                    normalize_dis_in=as.logical(normalize_d),
       #                    # log_print_in=as.logical(logging),
-      #                    mute_in=as.logical(mute_fortran))), 
+      #                    mute_in=as.logical(mute_fortran))),
       #          error = function(e) stop('ERROR: The netcdf dumping needs a working installation of CampaRi with netcdf4 support.'))
-    
+
     output_fin <- list()
     max_d <- 0
     attr(trj,"Csingle") <- TRUE
+    # checking the netcdf possibilities
+    dump_to_netcdf <- .Fortran('check_netcdf_installation', PACKAGE="CampaRi",
+                                wanting_r_backend=as.logical(!dump_to_netcdf))
+    dump_to_netcdf <- !dump_to_netcdf$wanting_r_backend
     # -------------
-    #    NetCDF 
+    #    NetCDF
     # -------------
     if(dump_to_netcdf){
       dfffo <- 10 # dimensional_flag_for_fixed_out

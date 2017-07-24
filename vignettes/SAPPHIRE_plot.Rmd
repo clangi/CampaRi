@@ -1,0 +1,101 @@
+---
+title: "Using SAPPHIRE plots"
+author: "Davide Garolini"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Using SAPPHIRE plots}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
+knitr::opts_knit$set(progress = FALSE)
+# knitr::opts_knit$set(root.dir="to_d/")
+```
+
+In this vignette we will describe roughly how to use the function sapphire_plot on the common output file of CAMPARI and CampaRi.
+
+In general, the only object which is needed is a file structured like `PROGIDX_xxxxxxxxxxx.dat` or `REPIX_xxxxxxxxxxxxx.dat`. 
+In order to know precisely which is the content of this file I would read the original documentation (output files). 
+The following text has been copied from the above mentioned documentation. Note: to use the function `sapphire_plot()` none of this knowledge is fundamental if not for a complete understanding of the studied system.
+
+#### PROGIDX_xxxxxxxxxxxx.dat
+
+This file is produced if the progress-index based algorithm (→ FMCSC_CMODE) within CAMPARI's structural clustering facility (→ FMCSC_CCOLLECT) has been executed successfully. It contains the progress index itself (columns 1-3), various annotations functions along with auxiliary information (columns 4 and 9-20), and information regarding the structure of the underlying (approximate) minimum spanning tree (MST) in columns 5-8.
+
+Format: There are NT rows (see below) each formatted as 4(i10,1x),g12.5,1x,15(i10,1x))
+
+The name of the file is dependent on the starting snapshot the progress index was constructed upon. The twelve-digit number of said snapshot (with leading zeros) makes up the part of the filename indicated by "xxxxxxxxxxxx". Note that the numbering refers to the series of snapshots that were present in memory at the time of analysis, i.e., it may not correspond to the numbering in a putative input trajectory or to the numbering of elementary simulation steps. The correspondence depends on the settings for FMCSC_CCOLLECT, FMCSC_EQUIL, and FMCSC_RESTART.
+To understand the output better, the concept of partitions of snapshots is introduced. Suppose you have a trajectory in memory composed of NT snapshots (see comments above regarding relative numbering), ti. By selecting successive snapshots according to a well-defined sequence that relies on the underlying MST (→ FMCSC_CMODE), two partitions are created, a set A of all ti that have already been added and a set B of all ti that have not yet been added. The indices of the snapshots themselves with reference to the trajectory in memory (i.e., the progress index) are printed out in column 3. In this simplified annotation (each snapshot is either in state A or B), the original input trajectory describes a (putative) Markov chain. The number of transitions, t(B→B), t(A→B), t(B→A), and t(B→B) yields the two-state Markov model's transition matrix. The mean first passage time (MFPT) from state A to state B can then (for example) be computed as n(A)/t(A→B). For each row in the file, column 1 holds the current n(A), column 2 the current n(B), and column 4 the sum of t(A→B) and t(B→A). We assume boundary conditions of state B, and therefore the number in column 4 is i) always even (t(A→B)=t(A→B)) and ii), the value is "2" for the last snapshot having been added. This is true unless the user requests transitions to be removed (not counted toward the transition matrix). In this latter case, uneven numbers may be produced. A plot of the data in column 1 vs. column 4 represents kinetic information. Whenever the transition counts are (locally) minimal, we may suspect that a barrier between higher density regions has been encountered. This is conditional upon the requirement that this barrier not be crossed arbitrarily fast at the given time (increment) resolution of the trajectory.
+Alternatively, we consider an auxiliary annotation function, in which the global A/B model is replaced by an A/B/C model. Essentially, given a specific ordering of the snapshots (progress index), at each given point, we define a partition A as the last lp snapshots having been added, a partition B as the next lp snapshots to be added, and a partition C as all the other snapshots. As before, we can presume that the simplified sequence of states (A, B, or C) defines a (in this case) three-state Markov model. Columns 9-17 specify the transition counts the transition matrix can be constructed from in the order of t(A→A), t(A→B), t(A→C), t(B→A), t(B→B), t(B→C), t(C→A), t(C→B), and t(C→C). Columns 18-20 give the current partition sizes n(A), n(B), and n(C). The parameter lp is controllable through keyword FMCSC_CPROGINDWIDTH. Again, transitions flagged by the user as spurious do not count toward the transition matrix.
+Lastly, there is some information on the underlying (approximate) MST printed out. Column 6 has the index of the snapshot that the current snapshot was closest to with reference to the trajectory in memory. In terms of the MST, this snapshot is the actual neighbor of the current one. Column 5 has the length of the corresponding edge, i.e., the distance between the snapshot in column 3 and the snapshot in column 6. Note that this distance is the correct one irrespective of the setting for FMCSC_CPROGMSTFOLD. Column 7 has the position of the snapshot in column 6 within the progress index. Naturally this number must always be smaller than the number in column 1 (exempting the very first snapshot which has no "parent" in this sense). Finally, column 8 has the value of the standard annotation function for the snapshot in column 6. A dot plot of columns 1 vs. 7 is a useful annotation function as well.
+As a final comment, the data in column 3 are primarily useful in conjunction with standard instantaneous output. For example, the progress index determined for folding simulations of small proteins could be annotated by residue-level DSSP assignments available through output file DSSP_RUNNING.dat.
+
+#### Further details on the local cut can be gound in the following:
+
+Suppose there are 20 snapshots arranged in the progress index as:
+`3  6  18  2  16  15  14  9  12  10  1  17  20  8  5  13  11  19  7  4`
+
+Then, for example, at the 6th position, the global cut function considers a two‐state model where
+snapshots 3, 6, 18, 2, 16, and 15 are set B and the rest constitutes set A, and the value of the cut
+function is the average of the mean first passage times A->B and B->A. The localized cut function, and
+this is what the “distance” or width applies to, refers to a 3‐state model that introduces as an additional
+state the immediate progress index history. For example, with a width of 3 and the sequence above,
+the 6th position would have snapshot 18, 2, and 16 be set B, snapshots 15, 14, and 9 be set C, and the
+remainder constituting set A. The cut function is the mean of the first passage times C->B and B->C.
+In a favourable scenario, the localized cut function can have much better resolution because transitions
+between the two sets that are far away in progress index no longer “dilute” the signal. In general, the
+information content in this cut function depends on choosing an appropriate width primarily in
+response to the sizes of basins (in terms of numbers of snapshots). To illustrate this point, consider a
+homogeneous basin of 20000 states: a localized cut function with a width of 100 will no longer be
+available to “see” beyond the edges of this basin for most of it. The cut function for most points in the
+basin will flatten out, and the contrast to the barriers will be inherently limited (although the
+fundamental information is still there). Conversely, consider a basin of 100 snapshots and a width of
+20000. Here, the localized cut function will incorporate plenty of information not directly related to
+the basin in question, and thus be very similar to the global cut function. This is generally a safer limit
+to operate in, and so one should set the width such that the first problem is unlikely to play a role.
+
+### Hands on
+
+Finally it is possible to show some examples of sapphire plots using the R CampaRi package.
+NOTE: use "working with campari" to generate the PROGIDX_000000000022.dat.
+
+
+```{r, eval=FALSE}
+# Classic plots 
+# ------------------------------
+sapphire_plot('PROGIDX_000000000022.dat') # baseline and local cut
+sapphire_plot('PROGIDX_000000000022.dat', timeline = TRUE) # with the timeline at the bottom # the dot size can be reduced internally
+sapphire_plot('PROGIDX_000000000022.dat', local_cut = FALSE) # without the local cut
+
+# Annotation preprocessing
+# ------------------------------
+# lets create the annotation (using NBU.fyc) and use it in the matrix like format (layersxn_snapshots) in sapphire_plot()
+# nota: to make 3 lines it is enough to create a matrix of 3Xnumber_of_snapshots with the colors (they are usually rescaled in grey)
+trj_fyc <- read.table("NBU.fyc")[,-1]
+prog_index_table <- read.table('PROGIDX_000000000022.dat')[,3]
+ann <- t((trj_fyc[prog_index_table, ] %% 360 < 120) + (trj_fyc[prog_index_table, ] %% 360 < 240) + 1)
+# lets plot it!!!
+sapphire_plot('PROGIDX_000000000022.dat', local_cut = FALSE, ann_trace = ann) # with ANNOTATION!!
+sapphire_plot('PROGIDX_000000000022.dat', local_cut = FALSE, ann_trace = ann, annotate_snap_dist = T) # with distance values
+
+# the advanced option -> adding layers to the gg object
+# ------------------------------
+gg <- sapphire_plot('PROGIDX_000000000022.dat', return_plot = TRUE, local_cut = FALSE, ann_trace = ann) # without the local cut
+gg <- sapphire_plot('PROGIDX_000000000022.dat', return_plot = TRUE, local_cut = FALSE, ann_trace = ann, 
+                    rescaling_ann_col=F, specific_palette_annotation= c("#b47b00", "#000000"))  # ADD a specific palette!
+# add theme classic and text
+gg + 
+  ggplot2::theme_classic() + # changing the theme
+  ggplot2::annotate("text", x = rep(4000, 3), y = c(8.3, 8.80, 9.3), label = c("CCCH", "HCCC", "CCCC")) # annotate some text
+
+# Showing only the temporal annotation
+sapphire_plot('PROGIDX_000000000022.dat', only_timeline = T)
+sapphire_plot('PROGIDX_000000000022.dat', only_timeline = T, horiz_lines_on_timeline = c(2000,4000,6000,8000))
+sapphire_plot('PROGIDX_000000000022.dat', only_timeline = T, horiz_lines_on_timeline = c(2000,4000,6000,8000), horiz_colored_areas = c(1,1,2,1,2))
+sapphire_plot('PROGIDX_000000000022.dat', only_timeline = T, sub_sampling_factor = 3) # subsampling the timeline of a factor 3
+sapphire_plot('PROGIDX_000000000022.dat', only_timeline = T, points_on_timeline = c(2000,4000,6000,8000)) # green points on the timeline
+
+```
