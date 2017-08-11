@@ -36,7 +36,7 @@ PKG_PROG_PKG_CONFIG([0.20])
 # AC_PATH_PROG(PKG_CONFIG, pkg-config)
 
 dnl list of all possible optional components
-all_options="netcdf4 campari"
+all_options="netcdf4 campari LAPACK BLAS ARPACK"
 
 dnl When a component is found, append it here
 options=
@@ -124,10 +124,10 @@ AC_MSG_WARN([NETCDF Fortran bindings not find. Memory handling will be limited t
 	NETCDF4_FC="$FC"
 	NETCDF4_FFLAGS=""
 	NETCDF4_FLIBS=""
-	SOURCES="CampaRi_init.c m_variables_gen.f90 m_gutenberg.f90 check_netcdf_installation.f90 m_clustering.f90 m_gen_nbls.f90 m_mst.f90 fprintf_wrapper.c m_hw_fprintf.f90 main_clu_adjl_mst.f90 utilities.f90 dist_clusters_utils.f90 gen_progind.f90 gen_manycuts.f90 contract_mst.f90"
+	SOURCES="CampaRi_init.c m_variables_gen.f90 m_gutenberg.f90 check_netcdf_installation.f90 arpack_eig.f90 optimization_maha_metric.f90 find_mahalanobis.f90 m_clustering.f90 m_gen_nbls.f90 m_mst.f90 fprintf_wrapper.c m_hw_fprintf.f90 main_clu_adjl_mst.f90 utilities.f90 dist_clusters_utils.f90 gen_progind.f90 gen_manycuts.f90 contract_mst.f90"
 	PREPROCFLAGS="-cpp"
 else
-	SOURCES="CampaRi_init.c m_variables_gen.f90 m_gutenberg.f90 check_netcdf_installation.f90 m_clustering.f90 m_gen_nbls.f90 m_mst_netcdf.f90 m_mst.f90 fprintf_wrapper.c m_hw_fprintf.f90 main_clu_adjl_mst.f90 utilities_netcdf.f90 utilities.f90 dist_clusters_utils.f90 gen_progind.f90 gen_manycuts.f90 contract_mst.f90"
+	SOURCES="CampaRi_init.c m_variables_gen.f90 m_gutenberg.f90 check_netcdf_installation.f90 arpack_eig.f90 optimization_maha_metric.f90 find_mahalanobis.f90 m_clustering.f90 m_gen_nbls.f90 m_mst_netcdf.f90 m_mst.f90 fprintf_wrapper.c m_hw_fprintf.f90 main_clu_adjl_mst.f90 utilities_netcdf.f90 utilities.f90 dist_clusters_utils.f90 gen_progind.f90 gen_manycuts.f90 contract_mst.f90"
 	options="$options netcdf4"
 	PREPROCFLAGS="-cpp -DLINK_NETCDF"
 fi
@@ -156,6 +156,17 @@ FLIBS=`"${R_HOME}/bin/R" CMD config FLIBS`
 BLAS_LIBS=`"${R_HOME}/bin/R" CMD config BLAS_LIBS`
 LAPACK_LIBS=`"${R_HOME}/bin/R" CMD config LAPACK_LIBS`
 SAFE_FFLAGS=`"${R_HOME}/bin/R" CMD config SAFE_FFLAGS`
+
+if test -z $BLAS_LIBS; then
+AC_MSG_ERROR([BLAS_LIBS are necessary. Install them for R (they are linked using R CMD config BLAS_LIBS)])
+else
+options="$options BLAS"
+fi
+if test -z $LAPACK_LIBS; then
+	AC_MSG_ERROR([LAPACK_LIBS are necessary. Install them for R (they are linked using R CMD config LAPACK_LIBS)])
+else
+	options="$options LAPACK"
+fi
 
 # R_PACKAGE_DIR=$PWD # TO DELETE
 R_PACKAGE_DIR="." # TO DELETE
@@ -281,6 +292,14 @@ Please copy them from inst/campari_lib.
 	fi
 fi
 
+# -------------------------------
+#       Checking ARPACK libs
+# -------------------------------
+SECTION_TITLE([Checking for ARPACK libraries])
+m4_include([tools/m4/ax_arpack.m4])
+AX_ARPACK([AC_MSG_NOTICE([ARPACK libraries found.])],
+[AC_MSG_ERROR([Unable to find arpack libraries. Please consider linking them using --with-arpack=<lib>.])])
+options="${options} ARPACK"
 
 
 
@@ -297,10 +316,6 @@ echo >& AS_MESSAGE_FD
 
 echo "Missing options:" >& AS_MESSAGE_FD
 echo "$options" "$all_options" | tr ' ' '\n' | sort | uniq -u | tr '\n' ' ' >& AS_MESSAGE_FD
-
-
-
-
 
 
 echo "" >& AS_MESSAGE_FD
@@ -335,9 +350,14 @@ else
 	echo "NO NETCDF4 ACTIVE" >& AS_MESSAGE_FD
 	echo '--' >& AS_MESSAGE_FD
 fi
-
+AC_SUBST(ARPACK_LIBS)
+echo "ARPACK_LIBS=$ARPACK_LIBS" >& AS_MESSAGE_FD
+echo '--' >& AS_MESSAGE_FD
 echo ' ' >& AS_MESSAGE_FD
 echo "From R session:" >& AS_MESSAGE_FD
+AC_SUBST(BLAS_LIBS)
+AC_SUBST(LAPACK_LIBS)
+AC_SUBST(FLIBS)
 echo ' ' >& AS_MESSAGE_FD
 echo "FC=$FC" >& AS_MESSAGE_FD
 echo "FCFLAGS=$FCFLAGS" >& AS_MESSAGE_FD

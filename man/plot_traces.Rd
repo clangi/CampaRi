@@ -5,7 +5,8 @@
 \title{Trace plotting (neural mainly)}
 \usage{
 plot_traces(voltage_traces_mat, return_plot = F, sub_sampling_factor = NULL,
-  title = "", size_line = 1, nrows_to_plot = NULL)
+  title = "", xlab = "", ylab = "", highlight_rows = NULL,
+  size_line = 1, nrows_to_plot = NULL)
 }
 \arguments{
 \item{voltage_traces_mat}{A logical indicating whether to write the plot to file.}
@@ -15,6 +16,12 @@ plot_traces(voltage_traces_mat, return_plot = F, sub_sampling_factor = NULL,
 \item{sub_sampling_factor}{factor of subsampling.}
 
 \item{title}{Title of the plot (default "")}
+
+\item{xlab}{x-axis label of the plot (default "")}
+
+\item{ylab}{y-axis label of the plot (default "")}
+
+\item{highlight_rows}{which rows should be highlighted in dark red.}
 
 \item{size_line}{size of the plotted line.}
 

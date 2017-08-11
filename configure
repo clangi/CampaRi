@@ -623,11 +623,15 @@ ac_includes_default="\
 
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+FLIBS
+LAPACK_LIBS
+BLAS_LIBS
 with_netcdf4_fortran
 OBJECTS
 SOURCES
 HAVE_NETCDF4
 PREPROCFLAGS
+ARPACK_LIBS
 NETCDF4_FLIBS
 NETCDF4_FFLAGS
 NETCDF4_FC
@@ -711,6 +715,7 @@ ac_user_opts='
 enable_option_checking
 with_netcdf4
 with_campari
+with_arpack
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1352,6 +1357,7 @@ Optional Packages:
   --with-campari=yes/<dir>
                           install original campari in <dir>. If yes <dir> is
                           defaulted to ${R_PACKAGE_DIR}/inst/campari_lib
+  --with-arpack=<lib>     use arpack library <lib>
 
 Some influential environment variables:
   FC          Fortran compiler command
@@ -1776,6 +1782,73 @@ fi
   as_fn_set_status $ac_retval
 
 } # ac_fn_c_try_link
+
+# ac_fn_c_check_func LINENO FUNC VAR
+# ----------------------------------
+# Tests whether FUNC exists, setting the cache variable VAR accordingly
+ac_fn_c_check_func ()
+{
+  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $2" >&5
+$as_echo_n "checking for $2... " >&6; }
+if eval \${$3+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+/* Define $2 to an innocuous variant, in case <limits.h> declares $2.
+   For example, HP-UX 11i <limits.h> declares gettimeofday.  */
+#define $2 innocuous_$2
+
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char $2 (); below.
+    Prefer <limits.h> to <assert.h> if __STDC__ is defined, since
+    <limits.h> exists even on freestanding compilers.  */
+
+#ifdef __STDC__
+# include <limits.h>
+#else
+# include <assert.h>
+#endif
+
+#undef $2
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char $2 ();
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined __stub_$2 || defined __stub___$2
+choke me
+#endif
+
+int
+main ()
+{
+return $2 ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  eval "$3=yes"
+else
+  eval "$3=no"
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+eval ac_res=\$$3
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
+
+} # ac_fn_c_check_func
 cat >config.log <<_ACEOF
 This file contains any messages produced by compilers while
 running configure, to aid debugging if configure makes a mistake.
@@ -3244,7 +3317,7 @@ $as_echo "no" >&6; }
 fi
 # AC_PATH_PROG(PKG_CONFIG, pkg-config)
 
-all_options="netcdf4 campari"
+all_options="netcdf4 campari LAPACK BLAS ARPACK"
 
 options=
 
@@ -5272,10 +5345,10 @@ $as_echo "$as_me: WARNING: NETCDF Fortran bindings not find. Memory handling wil
 	NETCDF4_FC="$FC"
 	NETCDF4_FFLAGS=""
 	NETCDF4_FLIBS=""
-	SOURCES="CampaRi_init.c m_variables_gen.f90 m_gutenberg.f90 check_netcdf_installation.f90 m_clustering.f90 m_gen_nbls.f90 m_mst.f90 fprintf_wrapper.c m_hw_fprintf.f90 main_clu_adjl_mst.f90 utilities.f90 dist_clusters_utils.f90 gen_progind.f90 gen_manycuts.f90 contract_mst.f90"
+	SOURCES="CampaRi_init.c m_variables_gen.f90 m_gutenberg.f90 check_netcdf_installation.f90 arpack_eig.f90 optimization_maha_metric.f90 find_mahalanobis.f90 m_clustering.f90 m_gen_nbls.f90 m_mst.f90 fprintf_wrapper.c m_hw_fprintf.f90 main_clu_adjl_mst.f90 utilities.f90 dist_clusters_utils.f90 gen_progind.f90 gen_manycuts.f90 contract_mst.f90"
 	PREPROCFLAGS="-cpp"
 else
-	SOURCES="CampaRi_init.c m_variables_gen.f90 m_gutenberg.f90 check_netcdf_installation.f90 m_clustering.f90 m_gen_nbls.f90 m_mst_netcdf.f90 m_mst.f90 fprintf_wrapper.c m_hw_fprintf.f90 main_clu_adjl_mst.f90 utilities_netcdf.f90 utilities.f90 dist_clusters_utils.f90 gen_progind.f90 gen_manycuts.f90 contract_mst.f90"
+	SOURCES="CampaRi_init.c m_variables_gen.f90 m_gutenberg.f90 check_netcdf_installation.f90 arpack_eig.f90 optimization_maha_metric.f90 find_mahalanobis.f90 m_clustering.f90 m_gen_nbls.f90 m_mst_netcdf.f90 m_mst.f90 fprintf_wrapper.c m_hw_fprintf.f90 main_clu_adjl_mst.f90 utilities_netcdf.f90 utilities.f90 dist_clusters_utils.f90 gen_progind.f90 gen_manycuts.f90 contract_mst.f90"
 	options="$options netcdf4"
 	PREPROCFLAGS="-cpp -DLINK_NETCDF"
 fi
@@ -5301,6 +5374,17 @@ FLIBS=`"${R_HOME}/bin/R" CMD config FLIBS`
 BLAS_LIBS=`"${R_HOME}/bin/R" CMD config BLAS_LIBS`
 LAPACK_LIBS=`"${R_HOME}/bin/R" CMD config LAPACK_LIBS`
 SAFE_FFLAGS=`"${R_HOME}/bin/R" CMD config SAFE_FFLAGS`
+
+if test -z $BLAS_LIBS; then
+as_fn_error $? "BLAS_LIBS are necessary. Install them for R (they are linked using R CMD config BLAS_LIBS)" "$LINENO" 5
+else
+options="$options BLAS"
+fi
+if test -z $LAPACK_LIBS; then
+	as_fn_error $? "LAPACK_LIBS are necessary. Install them for R (they are linked using R CMD config LAPACK_LIBS)" "$LINENO" 5
+else
+	options="$options LAPACK"
+fi
 
 # R_PACKAGE_DIR=$PWD # TO DELETE
 R_PACKAGE_DIR="." # TO DELETE
@@ -5494,6 +5578,221 @@ Please copy them from inst/campari_lib.
 	fi
 fi
 
+# -------------------------------
+#       Checking ARPACK libs
+# -------------------------------
+
+		echo '   Checking for ARPACK libraries   ' | sed -e's/./-/g' >&6
+	echo '   Checking for ARPACK libraries' >& 6
+	echo '   Checking for ARPACK libraries   ' | sed -e's/./-/g' >&6
+
+# ===========================================================================
+#        https://www.gnu.org/software/autoconf-archive/ax_lapack.html
+# ===========================================================================
+#
+
+
+# NOTE: this is the same as AX_LAPACK but for ARPACK
+
+
+# SYNOPSIS
+#
+#   AX_ARPACK([ACTION-IF-FOUND[, ACTION-IF-NOT-FOUND]])
+#
+# DESCRIPTION
+#
+#   This macro looks for a library that implements the LAPACK linear-algebra
+#   interface (see http://www.netlib.org/lapack/). On success, it sets the
+#   LAPACK_LIBS output variable to hold the requisite library linkages.
+#
+#   To link with LAPACK, you should link with:
+#
+#     $LAPACK_LIBS $BLAS_LIBS $LIBS $FLIBS
+#
+#   in that order. BLAS_LIBS is the output variable of the AX_BLAS macro,
+#   called automatically. FLIBS is the output variable of the
+#   AC_F77_LIBRARY_LDFLAGS macro (called if necessary by AX_BLAS), and is
+#   sometimes necessary in order to link with F77 libraries. Users will also
+#   need to use AC_F77_DUMMY_MAIN (see the autoconf manual), for the same
+#   reason.
+#
+#   The user may also use --with-lapack=<lib> in order to use some specific
+#   LAPACK library <lib>. In order to link successfully, however, be aware
+#   that you will probably need to use the same Fortran compiler (which can
+#   be set via the F77 env. var.) as was used to compile the LAPACK and BLAS
+#   libraries.
+#
+#   ACTION-IF-FOUND is a list of shell commands to run if a LAPACK library
+#   is found, and ACTION-IF-NOT-FOUND is a list of commands to run it if it
+#   is not found. If ACTION-IF-FOUND is not specified, the default action
+#   will define HAVE_LAPACK.
+#
+# LICENSE
+#
+#   Copyright (c) 2009 Steven G. Johnson <stevenj@alum.mit.edu>
+#
+#   This program is free software: you can redistribute it and/or modify it
+#   under the terms of the GNU General Public License as published by the
+#   Free Software Foundation, either version 3 of the License, or (at your
+#   option) any later version.
+#
+#   This program is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+#   Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License along
+#   with this program. If not, see <https://www.gnu.org/licenses/>.
+#
+#   As a special exception, the respective Autoconf Macro's copyright owner
+#   gives unlimited permission to copy, distribute and modify the configure
+#   scripts that are the output of Autoconf when processing the Macro. You
+#   need not follow the terms of the GNU General Public License when using
+#   or distributing such scripts, even though portions of the text of the
+#   Macro appear in them. The GNU General Public License (GPL) does govern
+#   all other use of the material that constitutes the Autoconf Macro.
+#
+#   This special exception to the GPL applies to versions of the Autoconf
+#   Macro released by the Autoconf Archive. When you make and distribute a
+#   modified version of the Autoconf Macro, you may extend this special
+#   exception to the GPL to apply to your modified version as well.
+
+#serial 8
+
+
+
+ax_arpack_ok=no
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: asdsadsad" >&5
+$as_echo "$as_me: asdsadsad" >&6;}
+
+# Check whether --with-arpack was given.
+if test "${with_arpack+set}" = set; then :
+  withval=$with_arpack;
+fi
+
+case $with_arpack in
+        yes | "") ;;
+        no) ax_arpack_ok=disable ;;
+        -* | */* | *.a | *.so | *.so.* | *.o) ARPACK_LIBS="$with_arpack" ;;
+        *) ARPACK_LIBS="-l$with_arpack" ;;
+esac
+snaupd="snaupd_"
+# Get fortran linker name of ARPACK function to check for.
+# AC_F77_FUNC(snaupd)
+# First, check ARPACK_LIBS environment variable
+if test "x$ARPACK_LIBS" != x; then
+        save_LIBS="$LIBS"; LIBS="$ARPACK_LIBS $LAPACK_LIBS $LIBS $FLIBS"
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $snaupd in $ARPACK_LIBS" >&5
+$as_echo_n "checking for $snaupd in $ARPACK_LIBS... " >&6; }
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char $snaupd ();
+int
+main ()
+{
+return $snaupd ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ax_arpack_ok=yes
+else
+  ARPACK_LIBS=""
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ax_arpack_ok" >&5
+$as_echo "$ax_arpack_ok" >&6; }
+        LIBS="$save_LIBS"
+        if test $ax_arpack_ok = no; then
+                ARPACK_LIBS=""
+        fi
+fi
+
+# ARPACK linked to by default?  (is sometimes included in LAPACK lib)
+if test $ax_arpack_ok = no; then
+        save_LIBS="$LIBS"; LIBS="$LIBS $LAPACK_LIBS $FLIBS"
+        as_ac_var=`$as_echo "ac_cv_func_$snaupd" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$snaupd" "$as_ac_var"
+if eval test \"x\$"$as_ac_var"\" = x"yes"; then :
+  ax_arpack_ok=yes
+fi
+
+        LIBS="$save_LIBS"
+fi
+
+# Generic ARPACK library?
+for arpack in arpack arpack_rs6k; do # I don't know if it is meaningful
+        if test $ax_arpack_ok = no; then
+                save_LIBS="$LIBS"; LIBS="$LAPACK_LIBS $LIBS"
+                as_ac_Lib=`$as_echo "ac_cv_lib_$arpack''_$snaupd" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $snaupd in -l$arpack" >&5
+$as_echo_n "checking for $snaupd in -l$arpack... " >&6; }
+if eval \${$as_ac_Lib+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-l$arpack $FLIBS $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char $snaupd ();
+int
+main ()
+{
+return $snaupd ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  eval "$as_ac_Lib=yes"
+else
+  eval "$as_ac_Lib=no"
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+eval ac_res=\$$as_ac_Lib
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+if eval test \"x\$"$as_ac_Lib"\" = x"yes"; then :
+  ax_arpack_ok=yes; ARPACK_LIBS="-l$arpack"
+fi
+
+                LIBS="$save_LIBS"
+        fi
+done
+
+
+
+# Finally, execute ACTION-IF-FOUND/ACTION-IF-NOT-FOUND:
+if test x"$ax_arpack_ok" = xyes; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: ARPACK libraries found." >&5
+$as_echo "$as_me: ARPACK libraries found." >&6;}
+        :
+else
+        ax_arpack_ok=no
+        as_fn_error $? "Unable to find arpack libraries. Please consider linking them using --with-arpack=<lib>." "$LINENO" 5
+fi
+
+options="${options} ARPACK"
 
 
 
@@ -5511,10 +5810,6 @@ echo >& 6
 
 echo "Missing options:" >& 6
 echo "$options" "$all_options" | tr ' ' '\n' | sort | uniq -u | tr '\n' ' ' >& 6
-
-
-
-
 
 
 echo "" >& 6
@@ -5554,8 +5849,13 @@ else
 	echo '--' >& 6
 fi
 
+echo "ARPACK_LIBS=$ARPACK_LIBS" >& 6
+echo '--' >& 6
 echo ' ' >& 6
 echo "From R session:" >& 6
+
+
+
 echo ' ' >& 6
 echo "FC=$FC" >& 6
 echo "FCFLAGS=$FCFLAGS" >& 6
