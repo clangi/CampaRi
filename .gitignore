@@ -17,6 +17,9 @@ src/*.mod
 src/a.out
 src/REPIX
 src/Makevars
+src/to_del*
+src/lapack_eig.f90
+
 
 man/.Rd2pdf21998/
 

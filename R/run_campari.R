@@ -94,8 +94,10 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   
   if(!is.null(data_file) && (!is.character(data_file) || length(nchar(data_file)) > 1))
     stop('data_file must be a single character string.')
-  if(!is.null(trj) && (!is.numeric(trj) || length(dim(trj)) != 2))
+  if(!is.null(trj) && (length(dim(trj)) != 2))
     stop("trj must be a numeric dataframe/matrix (2 rank).")
+  if(!is.null(trj) && !all(all(sapply(trj[1,], is.numeric))))
+    stop("The test on the first row found non numeric values")
   if(!is.null(trj) && nrow(trj) < ncol(trj))
     warning('The inserted trajectory has more variables (columns) than snapshots (rows). Please consider checking again the input data.\n')
   

@@ -18,27 +18,27 @@ contains
     real, intent(out) :: rho_out
     real :: help_v(n_features, 1)
     real :: help_v2(n_features, 1)
-    real :: help_v3(n_features, 1)
     real :: ave_distance(n_triplets)
     integer iter
-    help_v3(:,1) = i_k(:,which)
-    help_v = matmul(X_k, help_v3) ! to check the which
-    help_v3(:,1) = i_j(:,which)
-    help_v2 = matmul(X_k, help_v3)
+    ! help_v3(:,1) = i_k(:,which) ! deprecated to i_k(:,which:which)
+    help_v = matmul(X_k, i_k(:, which:which))
+    help_v2 = matmul(X_k, i_j(:,which:which))
     rho_out = dot_product(i_k(:, which), help_v(:,1)) - dot_product(i_j(:, which), help_v2(:,1))
+
+    ! I want to print the components (sum of the distances)
     if (print_rho_components)then
       do iter=1, n_triplets
         help_v3(:,1) = i_k(:,iter)
         help_v = matmul(X_k, help_v3) ! to check the which
         ave_distance(iter) = dot_product(i_k(:, iter), help_v(:,1))
       end do
-      print *, "i_k distance(mean): ", sum(ave_distance)/(n_triplets*1.0)
+      print *, sum(ave_distance)/(n_triplets*1.0), " : different clusters(i_k) distance(mean) "
       do iter=1, n_triplets
         help_v3(:,1) = i_j(:,iter)
         help_v = matmul(X_k, help_v3) ! to check the which
         ave_distance(iter) = dot_product(i_j(:, iter), help_v(:,1))
       end do
-      print *, "i_j distance(mean): ", sum(ave_distance)/(n_triplets*1.0)
+      print *, sum(ave_distance)/(n_triplets*1.0), " : same cluster(i_j) distance(mean) "
     end if
   end subroutine
 
@@ -52,23 +52,6 @@ contains
     real :: loss_ou
     call huber_loss(rho_k, loss_ou)
     obj_f_out = rho_k - loss_ou
-  end subroutine
-
-!-------------------------------------------------------------------------------
-! gradient of the objective function (is a matrix it depends only on X_k)
-!
-  subroutine grad_obj_f(rho_k, grad_obj_f_out)
-    implicit none
-    real, intent(in) :: rho_k
-    real, dimension(n_features, n_features), intent(out) :: grad_obj_f_out
-    integer gi, gj !iterations for the matrix
-    real deriv_loss_ou
-    do gi=1,n_features
-      do gj=1,n_features
-        call huber_loss_deriv(rho_k, gi, gj, deriv_loss_ou)
-        grad_obj_f_out(gi,gj) = - deriv_loss_ou
-      end do
-    end do
   end subroutine
 
 !-------------------------------------------------------------------------------
@@ -92,7 +75,7 @@ contains
       if(delta_rho.ge.h) then
         helper = 0.0
       else if(delta_rho.gt.(-h) .and. delta_rho.lt.h) then
-        helper = (h-delta_rho**2)/(4*h)
+        helper = (h - delta_rho**2)/(4*h)
       else if(delta_rho.le.(-h)) then
         helper = -delta_rho
       end if
@@ -100,6 +83,23 @@ contains
     end do
     loss_out = C * sum(loss_out_v)
   end subroutine
+
+!-------------------------------------------------------------------------------
+! gradient of the objective function (is a matrix it depends only on X_k)
+!
+  subroutine grad_obj_f(rho_k, grad_obj_f_out)
+    implicit none
+    real, intent(in) :: rho_k
+    real, dimension(n_features, n_features), intent(out) :: grad_obj_f_out
+    integer gi, gj !iterations for the matrix
+    real deriv_loss_ou
+    do gi=1,n_features
+        call huber_loss_deriv(rho_k, gi, gj, deriv_loss_ou)
+        grad_obj_f_out(gi,gj) = - deriv_loss_ou
+      end do
+    end do
+  end subroutine
+
 
 !-------------------------------------------------------------------------------
 ! HUBER loss derivative
@@ -153,43 +153,56 @@ contains
     real  cond2(n_features, n_features)
     real  m1(n_features, n_features)
     real  step, c1, c2
-    real  a
+    real  a, amax ! amax maximum step size
     real  f1, f2
     integer count
-    c1 = 0.0001!0 < c1 < c2 < 1
-    c2 = 0.9999
+
+    ! Some parameter and code is inspired by scipy implementation (not true)
+    c1 = 0.0001 ! 0 < c1 < c2 < 1
+    c2 = 0.9
+    amax = 50 ! in my case if it is over 1.0 it is exploding
     step = 0.8
-    alpha_fin = 1
+    alpha_fin = 1 ! std for final alpha
     a = 1.0/step
-    cond1 = -1
+    ! a = amax ! NaN and Inf
+    cond1 = -1 ! default to enter the condition
     cond2 = -1
     count = 1
+
+    ! Calculating X_i and saving X_k for the end
     call obj_f(rho_in, f1) ! X_i, rho_i
     x_supertemp = X_k
+
+    ! main Wolfe condition loop
     do while (any(cond1 .lt. 0.0) .or. any(cond2 .lt. 0.0))
       ! X_i + alpha*p_i
       a = a*step
-      ! print *, "----- ----- ----- -----"
-      ! print *, "----- a:", a
-      ! print *, "----- ----- ----- -----"
       X_k = x_supertemp + a*search_dir
+
+      ! Calculate the new X_k to use (with new direction)
       call obj_f(rho_in, f2)
       call grad_obj_f(rho_in,m1)
+
+      ! Calculate the condition (on one single side)
       cond1 = c1*a*matmul(transpose(search_dir), gradient_f) + f1 - f2
       cond2 = c2*abs(matmul(transpose(search_dir), gradient_f)) - &
       & abs(matmul(transpose(search_dir), m1))
       ! print *, "cond1:", cond1
       ! print *, count, ": ", any(cond1 .lt. 0.0), any(cond2 .lt. 0.0)
       ! print *, "cond2:", cond2
-      count = count + 1
-      if(count .eq. 50) then
-        ! print *, "max count 50 reached"
+
+      ! Counting the number of iterations
+      if(count .eq. 10) then
+        ! print *, "max count 10 reached"
         exit
       end if
+      count = count + 1
     end do
+
+    ! putting back the matrix and defining the alpha_fin for return
     X_k = x_supertemp
     alpha_fin = a
-    alpha_fin = 0.8
-    ! print *, "======= a_fin:", alpha_fin, "(count=",count,")"
+    ! alpha_fin = 0.8
+    print *, "======= a_fin:", alpha_fin, "(count=",count,")"
   end subroutine
 end module

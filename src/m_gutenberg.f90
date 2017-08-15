@@ -316,40 +316,50 @@ contains
       if(to_flooi.eq.0) exit
     end do
   end subroutine
-  !---------------------------------------------------------------------------------------
-  !
+
+! ------------------------------------------------------------------------------
+! Real to string with n_digits
+!
   subroutine re2str(re, n_digits, str)
     character(*), intent(inout) :: str
     real, intent(in) :: re
     real :: re_help
     character(255) :: strR, strL, str_h, str_0
     integer int, n_digits, counted_digits
+    logical has_minus
     integer d, d2 ! looping var
+    has_minus = .false.
     ! thi routine will split the real in 2 integers (per side of .)
-    int = floor(re)
+    if(re .lt. 0) has_minus = .true.
+    int = floor(abs(re))
     call count_digits_int(int, counted_digits)
     call int2str(int, strL, counted_digits)
-    re_help = re - int*1.0
+    re_help = abs(re) - int*1.0
     re_help = re_help*(10**n_digits)
     int = floor(re_help)
     call count_digits_int(int, counted_digits)
     call int2str(int, strR, counted_digits)
-    do d2=1,n_digits
-      if(int .lt. 10**d2) then
-        str_h = strR
-        str_0 = "0"
-        strR = trim(trim(str_0)//trim(str_h))
-        counted_digits = counted_digits + 1
-      end if
-    end do
-    if(counted_digits .le. n_digits) then
+    ! do d2=1,n_digits
+    !   if(int .lt. 10**d2) then
+    !     str_h = strR
+    !     strR = trim(trim(str_0)//trim(str_h))
+    !     counted_digits = counted_digits + 1
+    !   end if
+    ! end do
+    if(counted_digits .lt. n_digits) then
       do d=0,(n_digits - counted_digits)
         str_h = strR
-        strR = trim(str_h//'0')
+        str_0 = '0'
+        strR = trim(trim(str_0)//trim(str_h))
       end do
     end if
     str = trim(trim(strL)//'.'//trim(strR))
+    if(has_minus) str = trim('-'//trim(str))
   end subroutine
+
+! ------------------------------------------------------------------------------
+! Integer to string
+!
   subroutine int2str(ii,string,strsz)
     implicit none
   !
