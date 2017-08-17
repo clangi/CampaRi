@@ -28,14 +28,12 @@ contains
     ! I want to print the components (sum of the distances)
     if (print_rho_components)then
       do iter=1, n_triplets
-        help_v3(:,1) = i_k(:,iter)
-        help_v = matmul(X_k, help_v3) ! to check the which
+        help_v = matmul(X_k, i_k(:, iter:iter))
         ave_distance(iter) = dot_product(i_k(:, iter), help_v(:,1))
       end do
       print *, sum(ave_distance)/(n_triplets*1.0), " : different clusters(i_k) distance(mean) "
       do iter=1, n_triplets
-        help_v3(:,1) = i_j(:,iter)
-        help_v = matmul(X_k, help_v3) ! to check the which
+        help_v = matmul(X_k, i_j(:,iter:iter))
         ave_distance(iter) = dot_product(i_j(:, iter), help_v(:,1))
       end do
       print *, sum(ave_distance)/(n_triplets*1.0), " : same cluster(i_j) distance(mean) "
@@ -91,13 +89,8 @@ contains
     implicit none
     real, intent(in) :: rho_k
     real, dimension(n_features, n_features), intent(out) :: grad_obj_f_out
-    integer gi, gj !iterations for the matrix
-    real deriv_loss_ou
-    do gi=1,n_features
-        call huber_loss_deriv(rho_k, gi, gj, deriv_loss_ou)
-        grad_obj_f_out(gi,gj) = - deriv_loss_ou
-      end do
-    end do
+    call huber_loss_deriv(rho_k, grad_obj_f_out)
+    grad_obj_f_out = - grad_obj_f_out
   end subroutine
 
 
@@ -105,66 +98,90 @@ contains
 ! HUBER loss derivative
 ! In comparison to the python code here the derivative of the linear matrix is
 ! not simply 1 but it depends on the constant matrix in front (e.g. i_k*i_k)
-  subroutine huber_loss_deriv(rho_k, gi1, gj1, deriv_loss_out)
+  subroutine huber_loss_deriv(rho_k, deriv_loss_out)
     implicit none
     real, intent(in) :: rho_k
-    integer, intent(in) :: gi1, gj1
-    real, dimension(n_triplets) :: deriv_loss_out_v
-    real, intent(out) :: deriv_loss_out
+    real, dimension(n_features, n_features), intent(out) :: deriv_loss_out
+    real, dimension(n_features, n_features) :: dlo_tmp
+    real, dimension(n_features, n_features) :: A_r_mat
+    real :: helper
     real :: delta_rho
     real :: Ar_dot_X_deriv
     real :: C, h
-    real helper
-    integer sum1, sum2
     integer ii
     C = 1
     h = 0.5
     do ii=1, n_triplets
-      Ar_dot_X_deriv = i_k(gi1, ii) * X_k(gi1, gj1) * i_k(gj1, ii) - &
-                      & i_j(gi1, ii) * X_k(gi1, gj1) * i_j(gj1, ii)
+      ! print *, "ii", ii
+      A_r_mat = matmul(i_k(:,ii:ii), transpose(i_k(:,ii:ii))) - &
+      & matmul(i_j(:,ii:ii), transpose(i_j(:,ii:ii)))
+      ! print *, "ARMAT", A_r_mat
+      call rho_f(ii, Ar_dot_X_deriv)
       delta_rho = Ar_dot_X_deriv - rho_k
-      if(delta_rho.ge.h) then
+      ! this condition must be calculated GENERALLY
+      ! Ar_dot_X_deriv = i_k(gi1, ii) * X_k(gi1, gj1) * i_k(gj1, ii) - &
+      !                 & i_j(gi1, ii) * X_k(gi1, gj1) * i_j(gj1, ii)
+      ! delta_rho = Ar_dot_X_deriv - rho_k
+      if(delta_rho .ge. h) then
         helper = 0.0
-      else if(delta_rho.gt.(-h) .and. delta_rho.lt.h) then
+      else if(delta_rho .gt. (-h) .and. delta_rho .lt. h) then
         helper = (-delta_rho)/(2*h)
-      else if(delta_rho.le.(-h)) then
-        helper = - (i_k(gi1, ii) * 1 * i_k(gj1, ii) - &
-                  & i_j(gi1, ii) * 1 * i_j(gj1, ii))
-        ! print *, helper
-        ! helper = -1 ! POSSIBLE MODIFICATION
+      else if(delta_rho .le. (-h)) then
+        ! helper = - (i_k(gi1, ii) * 1 * i_k(gj1, ii) - &
+        !           & i_j(gi1, ii) * 1 * i_j(gj1, ii))
+        helper = -1
       end if
-      deriv_loss_out_v(ii) = helper
+      if(ii .eq. 1) then
+        dlo_tmp = helper*A_r_mat
+      else
+        dlo_tmp = deriv_loss_out + helper*A_r_mat
+      end if
+      deriv_loss_out = dlo_tmp
+      ! print *, 'helper', helper
+      ! print *, 'deriv_loss_out', deriv_loss_out
     end do
-    deriv_loss_out = C * sum(deriv_loss_out_v)
+    deriv_loss_out = C * deriv_loss_out
   end subroutine
 
 !-------------------------------------------------------------------------------
 ! Backtracking line search algorithm to find the best alpha
 ! The wolfe condition are indicated by cond1 and cond2
 !
-  subroutine line_search_alpha(alpha_fin, gradient_f, rho_in, search_dir)
+! For this implementation (as from the paper) the Wolfe conditions seems not
+! to work correctly, i.e. they never stop the loop.
+! For this reason I added conditions on alpha that will respect the positiveness
+! of the X_k matrix, and they will converge faster (at a certain point even
+! only 2 iterations). Even with these modification the Wolfe conditions are
+! not effectively exiting the loop.
+!
+!
+  subroutine line_search_alpha(alpha_dir, gradient_f, rho_in, search_dir, &
+    & must_positive)
     implicit none
-    real, intent(out) :: alpha_fin
     real, intent(in) :: gradient_f(n_features, n_features)
     real, intent(in) :: search_dir(n_features, n_features)
     real, intent(in) :: rho_in
+    ! alpha dir (output) is alpha*search_dir
+    real, dimension(n_features, n_features), intent(out) :: alpha_dir
     real  x_supertemp(n_features, n_features)
     real  cond1(n_features, n_features)
     real  cond2(n_features, n_features)
     real  m1(n_features, n_features)
     real  step, c1, c2
-    real  a, amax ! amax maximum step size
+    real, dimension(n_features, n_features) :: a, amax
     real  f1, f2
-    integer count
+    integer count, count_max
+    logical must_positive
+    count_max = 50
+    if(.not. must_positive) count_max = 1
 
-    ! Some parameter and code is inspired by scipy implementation (not true)
+    ! Some parameter is inspired by scipy implementation
     c1 = 0.0001 ! 0 < c1 < c2 < 1
     c2 = 0.9
-    amax = 50 ! in my case if it is over 1.0 it is exploding
-    step = 0.8
-    alpha_fin = 1 ! std for final alpha
-    a = 1.0/step
-    ! a = amax ! NaN and Inf
+    amax = 1.0 ! amax maximum step size (if >1.0 it is exploding here)
+    step = 0.9
+    alpha_dir = amax/step ! std for final alpha
+    a = 0
     cond1 = -1 ! default to enter the condition
     cond2 = -1
     count = 1
@@ -176,33 +193,61 @@ contains
     ! main Wolfe condition loop
     do while (any(cond1 .lt. 0.0) .or. any(cond2 .lt. 0.0))
       ! X_i + alpha*p_i
-      a = a*step
-      X_k = x_supertemp + a*search_dir
+      where(a .eq. 0) alpha_dir = alpha_dir*step
+      X_k = x_supertemp + alpha_dir*search_dir
+
+      ! Blocking a from going down more than 0.01 (useless)
+      if(any(alpha_dir .lt. 0.01)) then
+        where(alpha_dir .lt. 0.01) alpha_dir = 0
+        where(alpha_dir .lt. 0.01) a = 1
+      end if
+
+      ! if the X_k is positive after the first alpha -> found
+      where(X_k .gt. 0.0) a = 1
+
+      ! Check to avoid useless loops (original x small and negative direction)
+      if(any(x_supertemp .lt. 0.01 .and. search_dir .lt. 0.0) ) then
+        where(x_supertemp .lt. 0.01 .and. search_dir .lt. 0.0) a = 1
+        where(x_supertemp .lt. 0.01 .and. search_dir .lt. 0.0) alpha_dir = 0
+      end if
+
+      ! faster convergence of a to 0 if it is next to 0
+      if(any(a .eq. 0 .and. alpha_dir .lt. 0.25)) step = 0.6
+      ! if(any(a .eq. 0 .and. alpha_dir .lt. 0.25)) print *, "step to 0.6"
+      if(any(a .eq. 0 .and. alpha_dir .lt. 0.1)) step = 0.3
+      ! if(any(a .eq. 0 .and. alpha_dir .lt. 0.1)) print *, "step to 0.3"
 
       ! Calculate the new X_k to use (with new direction)
       call obj_f(rho_in, f2)
-      call grad_obj_f(rho_in,m1)
+      call grad_obj_f(rho_in, m1)
 
       ! Calculate the condition (on one single side)
-      cond1 = c1*a*matmul(transpose(search_dir), gradient_f) + f1 - f2
+      cond1 = c1*alpha_dir*matmul(transpose(search_dir), gradient_f) +&
+      & f1 - f2
       cond2 = c2*abs(matmul(transpose(search_dir), gradient_f)) - &
       & abs(matmul(transpose(search_dir), m1))
       ! print *, "cond1:", cond1
-      ! print *, count, ": ", any(cond1 .lt. 0.0), any(cond2 .lt. 0.0)
       ! print *, "cond2:", cond2
+      ! print *, count, ": ", any(cond1 .lt. 0.0), any(cond2 .lt. 0.0)
+
+      ! Exit condition for a positive X (a == 1 means that alpha found is right)
+      if(all(X_k .gt. 0.0) .and. all(a .eq. 1)) exit
 
       ! Counting the number of iterations
-      if(count .eq. 10) then
-        ! print *, "max count 10 reached"
+      if(count .eq. count_max) then
         exit
       end if
       count = count + 1
     end do
 
-    ! putting back the matrix and defining the alpha_fin for return
+    ! If we do not need the metric to be stricly positive we can do this
+    if(.not. must_positive) alpha_dir = 0.2
+
+    ! putting back the matrix and defining the alpha_dir for return
     X_k = x_supertemp
-    alpha_fin = a
-    ! alpha_fin = 0.8
-    print *, "======= a_fin:", alpha_fin, "(count=",count,")"
+    alpha_dir = alpha_dir*search_dir
+
+    ! Eventual print
+    ! print *, "======= a_fin:", alpha_dir, "(count=", count, ")"
   end subroutine
 end module
