@@ -1,3 +1,33 @@
+! ==============================================================================
+! ==============================================================================
+!
+! NOTE ON THIS WRAPPER USE -----------------------------------------------------
+! This code has been adapted from an already existing example.
+! In this implementation you must only set the matrix A (must be allocated) to
+! your eigenproblem and call the function:
+!
+!             call find_eigens(eigval, eigvec, nx, nev, which)
+!
+! In this case (inputs):
+! nx = number of columns and rows of A
+! nev = number of eigenvalues/eigenvectors to calculate
+! which = 'LM' for Largest magnitude
+!
+! (outputs):
+! eigval(nx,3) = eigenvalues with Re, Im and residual
+! eigvec(nev,nx) = eigenvectors
+!
+!
+! Compilation needs -larpack (-lblas -llapack)
+!
+! To use the full functionality of ARPACK it is possible to change the function
+! av(...) according to your specific Ax problem.
+!
+! ==============================================================================
+! ==============================================================================
+
+
+
 !*******************************************************************************
 !
 !! SNSIMP is a simple program to call ARPACK for a symmetric eigenproblem.
@@ -171,38 +201,38 @@ module arpack_eig
   logical :: superverbose = .false.
   logical :: verbose = .false.
   real, allocatable :: A(:,:)
-  integer nx ! dimension of matrix A
   integer maxn ! maximum number of dimensions for A
   integer maxnev ! maximum number of requested eigenvalues
   integer maxncv ! maximum number of requested eigenvectors
   integer ldv ! maxn
   parameter (maxn=25600, maxnev=1200, maxncv=3000, ldv=maxn) !256,12,30
-  integer nev ! number of eigenvalues
-  integer ncv ! length of the Arnoldi factorization
   real zero
   real tol ! tolerance for convergence. If <=0 machine precision
   parameter (zero = 0.0E+0)
-  character bmat*1, which*2 ! another way to initialize it!
-  ! 'LM' -> want the NEV eigenvalues of largest magnitude.
-  ! 'SM' -> want the NEV eigenvalues of smallest magnitude.
-  ! 'LR' -> want the NEV eigenvalues of largest real part.
-  ! 'SR' -> want the NEV eigenvalues of smallest real part.
-  ! 'LI' -> want the NEV eigenvalues of largest imaginary part.
-  ! 'SI' -> want the NEV eigenvalues of smallest imaginary part.
+  character bmat*1 ! another way to initialize it!
 
   ! At present there is no a-priori analysis to guide the selection
   ! of NCV relative to NEV.  The only formal requrement is that NCV > NEV + 2.
   ! However, it is recommended that NCV .ge. 2*NEV+1.
 
   contains
-    subroutine find_eigens(eigval, eigvec)
+    subroutine find_eigens(eigval, eigvec, nx, nev, which)
     ! implicit none !it is craching with some arpack definition
 
     !     %--------------%
     !     | input variab |
     !     %--------------%
-          real eigval(nev,3), eigvec(nev, nx)
-
+          integer, intent(in) :: nx ! dimension of matrix A
+          real, intent(out) :: eigval(nev,3), eigvec(nev, nx)
+          character, intent(in) :: which*2
+          integer, intent(in) :: nev ! number of eigenvalues
+          integer ncv ! length of the Arnoldi factorization
+          ! 'LM' -> want the NEV eigenvalues of largest magnitude.
+          ! 'SM' -> want the NEV eigenvalues of smallest magnitude.
+          ! 'LR' -> want the NEV eigenvalues of largest real part.
+          ! 'SR' -> want the NEV eigenvalues of smallest real part.
+          ! 'LI' -> want the NEV eigenvalues of largest imaginary part.
+          ! 'SI' -> want the NEV eigenvalues of smallest imaginary part.
     !     %--------------%
     !     | Local Arrays |
     !     %--------------%
@@ -232,12 +262,12 @@ module arpack_eig
     !     | The following sets dimensions for this problem. |
     !     %-------------------------------------------------%
           n = nx*nx
+          ncv = 2*nev + 1
     !     %-------------------------%
     !     | Some check for the vars |
     !     %-------------------------%
 
           bmat  = 'I'
-          which = 'LM' !order? largest major
           tol    = zero
           if ( n > maxn ) then
              print *, ' ERROR with _NSIMP: N is greater than MAXN '

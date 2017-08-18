@@ -5,7 +5,9 @@
 \title{Multiple pre-processing methods for feature selection}
 \usage{
 select_features(trj, feature_selection = "pca",
-  n_princ_comp = floor(ncol(trj)/10), pca_method = "R")
+  n_princ_comp = floor(ncol(trj)/10), pca_method = "R", plotit = FALSE,
+  frameit = FALSE, return_plot = FALSE, cluster_vector = NULL,
+  plotly_it = FALSE)
 }
 \arguments{
 \item{trj}{Input trajectory (variables on the columns and equal-time spaced snpashots on the row). It must be a \code{matrix} or a \code{data.frame} of numeric.}
@@ -15,6 +17,15 @@ select_features(trj, feature_selection = "pca",
 \item{n_princ_comp}{number of principal components to use}
 
 \item{pca_method}{If set 'R' (default) it will use \code{\link{princomp}}. The other (slower) option is 'robust' which is using \code{\link{PCAproj}}.}
+
+\item{plotit}{Plot the PCA components if two are selected.}
+
+\item{frameit}{Add a frame (shaded clustering) of the whole performed PCA.}
+
+\item{return_plot}{This option is usually used to add layers to the ggplot (made using autoplot).}
+
+\item{cluster_vector}{This option can be used to set the clusters you want and show them with different colors (and shades if \code{frameit = TRUE}). 
+Please set this option with the same dimensionality of the trj (n_snapshots) and use integer numbers (to define the clusters).}
 }
 \value{
 It will return a modified trajectory matrix and print the principal components vector.

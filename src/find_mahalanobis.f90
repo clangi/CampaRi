@@ -87,7 +87,7 @@ subroutine find_mahalanobis_F(clu1e1, clu1e2, clu2, n_feature, n_elements, X_MA,
   epsilon = 0.00001
   print_rho_components = .false.
   mute = .false.
-  must_be_positive = .false.
+  must_be_positive = .true.
 
   ! K LOOP ---------------------------------------------------------------------
   do ki=1,K
@@ -146,10 +146,10 @@ subroutine find_mahalanobis_F(clu1e1, clu1e2, clu2, n_feature, n_elements, X_MA,
 
       ! Find first eigenvalue (and first eigenvector)
       A = grad_obj_fu
-      nx = n_features ! Dimension of the eigen-problem
-      nev = 1 ! number of eigenvalues to calculate
-      ncv = 2*nev + 1 ! helping variable for the Ritz vectors
-      call find_eigens(eig_i, eigv_i)
+      ! n_features = Dimension of the eigen-problem
+      ! 1 = number of eigenvalues to calculate
+      ! 'LM' = largest magnitude
+      call find_eigens(eig_i, eigv_i, n_features, 1, 'LM')
       ! print *, '=------------------------'
       ! print *, 'eigenvalue ', eig_i(1,1)
       ! print *, '=------------------------'
@@ -173,10 +173,10 @@ subroutine find_mahalanobis_F(clu1e1, clu1e2, clu2, n_feature, n_elements, X_MA,
       call line_search_alpha(alpha_dir, grad_obj_fu, rho(2), search_dir, &
       & must_be_positive)
       ! line search alpha_dir convergence
-      do kkk=1,n_features
-        print *, 'alpha*search_dir: ', alpha_dir(kkk,:)
-      end do
-      if(all(abs(alpha_dir) .lt. 0.02)) then
+      ! do kkk=1,n_features
+      !   print *, 'alpha*search_dir: ', alpha_dir(kkk,:)
+      ! end do
+      if(all(alpha_dir .lt. 0.01)) then
         print *, '-------------------------------&
         &-------------------------- Alpha made convergence'
         exit
@@ -218,7 +218,9 @@ subroutine find_mahalanobis_F(clu1e1, clu1e2, clu2, n_feature, n_elements, X_MA,
   print *, ""
   do k=1,n_features
     ! call rvpr(X(k,:))
-    print *, X(k,:)
+    kkk = n_features
+    if(n_features .gt. 10) kkk = 10
+    print *, X(k,1:kkk)
   end do
   print *, '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
   print *, "Resulting summed learned distance for Internal/External elements: "

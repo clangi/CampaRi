@@ -22,6 +22,7 @@
 # @param background_height Defines the height on which to put the annotation (integer between 1 and 14).
 # @param ann_names_L Vector of characther strings indicating, from top on the left, the names of the annotation horizontal bars.
 # @param ann_names_R Vector of characther strings indicating, from top on the right, the names of the annotation horizontal bars.
+#' @param use_plotly This option, if turned on will use the plotly format to represent the plot which is usually generated using ggplot2 only
 #' @param title Title of the plot (default "")
 #' @param ... Other options are: 'only_timeline', 'reorder_annotation', 'annotate_snap_dist', 'rescaling_ann_col', 'reorder_horizline_on_timeline', 
 #' 'reorder_points_on_timeline', 'timeline_proportion', 'background_height', 'ann_initial_point', 'horiz_lines_on_timeline',  'horiz_colored_areas', 'points_on_timeline',  
@@ -45,10 +46,11 @@
 #' @importFrom graphics hist plot 
 #' @export sapphire_plot
 #' @import ggplot2
+#' @import plotly
 
 
 sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPlot = "plots/", return_plot = F, local_cut = TRUE,
-                          timeline = FALSE, sub_sampling_factor = NULL, ann_trace = FALSE, return_ann_trace = FALSE,
+                          timeline = FALSE, sub_sampling_factor = NULL, ann_trace = FALSE, return_ann_trace = FALSE, use_plotly = FALSE,
                           title = "", ...){
   
   # Analysis of extra args
@@ -141,6 +143,8 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
     stop('reorder_horizline_on_timeline must be a logical.')
   if(!is.logical(rescaling_ann_col))
     stop('rescaling_ann_col must be a logical.')
+  if(!is.logical(use_plotly))
+    stop('use_plotly must be a logical.')
 
   # --------------------- 
   # putting on timeline if only timeline is on
@@ -512,16 +516,16 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   }else{
     ann_init <- ymax*3/4.
   }
-  
+
   # ---------------------
   # main trace - plotting
   # one line trace
   if(!no_trace && one_line_trace && !annotate_snap_dist){
     if(is.null(specific_palette_annotation)){
       gg <- gg + geom_segment(aes(xx, 
-                                  y = rep(ann_init, length(xx))[seq(1, Nsnap, sub_sampling_factor)],
+                                  y = rep(ann_init, length(xx)),
                                   xend = xx, 
-                                  yend = rep(ann_init + background_height, length(xx))[seq(1, Nsnap, sub_sampling_factor)]),
+                                  yend = rep(ann_init + background_height, length(xx))),
                               col = ann_tr[seq(1, Nsnap, sub_sampling_factor)], # color must be out if no palette is used
                               size = 0.1*general_size_annPoints)
     # specific color palette
@@ -529,9 +533,9 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
       if(rescaling_ann_col)
         stop('The specific insertion of a palette collides with the rescaling of the colors. Please turn it off to use the specific palette option.')
       gg <- gg + geom_segment(aes(xx, 
-                                  y = rep(ann_init, length(xx))[seq(1, Nsnap, sub_sampling_factor)],
+                                  y = rep(ann_init, length(xx)),
                                   xend = xx, 
-                                  yend = rep(ann_init + background_height, length(xx))[seq(1, Nsnap, sub_sampling_factor)], 
+                                  yend = rep(ann_init + background_height, length(xx)), 
                                   col = ann_tr[seq(1, Nsnap, sub_sampling_factor)]), # col is INSIDE aes
                               size = 0.1*general_size_annPoints)
       gg <- gg + scale_color_gradientn(colours = specific_palette_annotation, guide = FALSE) #  guide_legend(title = "Days")
@@ -546,7 +550,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
       x_multilines <- rep(xx, n_lines_annotation)
       # sequential add of the height of the horizontal band
       for(i in 1:n_lines_annotation){
-        y_multilines[i,] <- rep(ann_init, length(xx))[seq(1, Nsnap, sub_sampling_factor)] + height_one_band*(i-1)
+        y_multilines[i,] <- rep(ann_init, length(xx)) + height_one_band*(i-1)
         if(sub_sampling_factor!=1)
           ann_tr[i,] <- ann_tr[i,][seq(1, Nsnap, sub_sampling_factor)]
       }
@@ -604,7 +608,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   if(annotate_snap_dist){
     max_snap_dist <- max(pin[,5])
     gg <- gg + geom_segment(aes(xx,
-                                y = rep(ann_init , length(xx))[seq(1, Nsnap, sub_sampling_factor)],
+                                y = rep(ann_init , length(xx)),
                                 xend = xx, 
                                 yend = ((pin[,5]*1.*background_height)/max_snap_dist + ann_init)[seq(1, Nsnap, sub_sampling_factor)]),
                             col = single_line_general_ann[seq(1, Nsnap, sub_sampling_factor)],
@@ -764,15 +768,15 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   # basic annotation (principal cut)
   if(!only_timeline){
     main_col <- 'darkblue'
-    if((timeline && (min(y_cut) < tp*ymax)) || (!no_trace && (background_height > ymax/2.1)))
+    if((timeline && (min(y_cut[seq(1, Nsnap, sub_sampling_factor)]) < tp*ymax)) || (!no_trace && (background_height > ymax/2.1)))
       main_col <- 'dodgerblue'
-    gg <- gg + geom_line(aes(x = xx, y = y_cut), color=main_col, size=0.8) # SHALL WE KEEP THE NAs?
+    gg <- gg + geom_line(aes(x = xx, y = y_cut[seq(1, Nsnap, sub_sampling_factor)]), color=main_col, size=0.8) # SHALL WE KEEP THE NAs?
   }
   
   # local cut
   if(!only_timeline)
     if(local_cut) gg <- gg + 
-      geom_point(mapping = aes(x=xx,y=y_local_cut), color="red3", size=0.08) 
+      geom_point(mapping = aes(x=xx,y=y_local_cut[seq(1, Nsnap, sub_sampling_factor)]), color="red3", size=0.08) 
   
   
   
@@ -781,6 +785,8 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   # title and theme
   gg <- gg + ggtitle(title) + theme_minimal()
   
+  
+  # writing options should be checked TODO
   if(write) {
     jpeg_file <- 'rplot.jpg'
     jpeg_file_tm <- 0
@@ -795,6 +801,10 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
     plot(gg)
     dev.off()
   }
+  
+  # Plotly options
+  if(use_plotly) gg <- ggplotly(gg)
+  
   # returning and/or plotting
   if(return_plot){
     if(return_ann_trace) warning('No returning of ann_trace is possible if return_plot option is activated')

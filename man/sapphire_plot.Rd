@@ -7,7 +7,7 @@
 sapphire_plot(sap_file = NULL, sap_table = NULL, write = F,
   folderPlot = "plots/", return_plot = F, local_cut = TRUE,
   timeline = FALSE, sub_sampling_factor = NULL, ann_trace = FALSE,
-  return_ann_trace = FALSE, title = "", ...)
+  return_ann_trace = FALSE, use_plotly = FALSE, title = "", ...)
 }
 \arguments{
 \item{sap_file}{Annotated progrex index file. This can be left unused if \code{sap_table} is used instead.
@@ -34,6 +34,8 @@ Instead if a matrix have been inserted it will be a plotted as it is on the top 
 produce a gray scale horizontal annotation.}
 
 \item{return_ann_trace}{If \code{TRUE} the annotation vector is returned. This option can be really useful for adding layers and specific text using \code{ggplot2}.}
+
+\item{use_plotly}{This option, if turned on will use the plotly format to represent the plot which is usually generated using ggplot2 only}
 
 \item{title}{Title of the plot (default "")}
 
