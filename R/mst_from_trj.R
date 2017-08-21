@@ -6,7 +6,8 @@
 #' @param trj Input trajectory (variables on the columns and equal-time spaced snpashots on the row). It must be a \code{matrix} or a \code{data.frame} of numeric.
 #' @param dump_to_netcdf If \code{FALSE} the netcdf support will be used. The minimum spanning tree will be dumped to file for further analysis.
 #' @param mode It takes a string in input and can be either "fortran" (highly advised and default) or "R".
-#' @param distance_method Distance metric between snapshots. This value can be set 1 (dihedral angles) or 5 (root mean square deviation) or 11 (balistic distance).
+#' @param distance_method Distance metric between snapshots. This value can be set 1 (dihedral angles) or 5 (root mean square deviation) or 11 (balistic distance) 
+#' or 12 (mahalanobis distance - matrix to be inserted).
 #' @param clu_radius This numeric argument is used in the clustering step in order to make clusters of the same radius at the base level.
 #' @param clu_hardcut This option is used only with \code{birch_clu=F} and defines the inter-clusters distance threshold.
 #' @param normalize_d A logical that indicates whether the distances must be normalized or not. Usually used with averaging.
@@ -18,7 +19,7 @@
 #' @param n_search_attempts If \code{birch_clu=T} a number of search attempts must be provided for the minimum spanning tree search.
 #' @param cores If \code{mode="R"} a complete adjacency matrix can be created in parallel using multiple cores (anyhow slower than "fortran" mode).
 #' @param mute_fortran If \code{mute_fortran=T} the function will silence the fortran code.
-#' @param ... Various variables not yet documented
+#' @param ... Various variables in addition (XMAHA - mahalanobis distance matrix to preprocess the trj.)
 #'
 #' @details For more details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
 #'
@@ -51,12 +52,12 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
 
   # Checking additional inputs
   input_args <- list(...)
-  avail_extra_argoments <- c()
+  avail_extra_argoments <- c(XMAHA)
   if(any(!(names(input_args) %in% avail_extra_argoments)))
     warning('There is a probable mispelling in one of the inserted variables. Please check the available extra input arguments.')
 
-  # # wgcna and multiplication pre-processing
-  # if(!('pre_process' %in% names(input_args))) pre_process <- NULL else pre_process <- input_args[['pre_process']]
+  # Mahalanobis distance preprocessing
+  if(!('XMAHA' %in% names(input_args))) XMAHA <- NULL else XMAHA <- input_args[['XMAHA']]
   # if(!('window' %in% names(input_args))) window <- NULL else window <- input_args[['window']]
   # if(!('overlapping_reduction' %in% names(input_args))) overlapping_reduction <- NULL else overlapping_reduction <- input_args[['overlapping_reduction']]
   #

@@ -4,12 +4,14 @@
 \alias{find_mahalanobis}
 \title{Find the mahalanobis distance for a set of triplets}
 \usage{
-find_mahalanobis(clu1e1, clu1e2, clu2)
+find_mahalanobis(clu1e1, clu1e2, clu2, must_be_positive = TRUE)
 }
 \arguments{
 \item{clu1e1}{Elements of the first clustering. Needed shape: (features, number of vectors). n_vectors must be > of features.}
 
 \item{clu2}{As above. The number of elements should be identical for clu1e1, clu1e2 and clu2}
+
+\item{must_be_positive}{If FALSE, it will consider also negative values for the Mahalanobis distance (the convergence can be much longer).}
 
 \item{clu1}{Elements of the first clustering. Needed shape: (features, number of vectors). n_vectors must be > of features.}
 }

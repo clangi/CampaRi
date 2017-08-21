@@ -40,7 +40,7 @@ using a simple leader clustering algorithm (minimum spanning tree).}
 
 \item{mute_fortran}{If \code{mute_fortran=T} the function will silence the fortran code.}
 
-\item{...}{Various variables not yet documented}
+\item{...}{Various variables in addition (none for the moment)}
 }
 \value{
 If no netcdf support is available the function will return a list with 3 arguments: node degrees, adjacency list and associated distances.

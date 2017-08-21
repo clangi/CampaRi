@@ -1,4 +1,5 @@
-subroutine find_mahalanobis_F(clu1e1, clu1e2, clu2, n_feature, n_elements, X_MA, mute_it)
+subroutine find_mahalanobis_F(clu1e1, clu1e2, clu2, &
+  &n_feature, n_elements, X_MA, must_be_positive, mute_it)
 
   ! imports
   ! use gutenberg
@@ -12,10 +13,10 @@ subroutine find_mahalanobis_F(clu1e1, clu1e2, clu2, n_feature, n_elements, X_MA,
   real, dimension(n_feature, n_elements), intent(in) :: clu2
   real, dimension(n_feature, n_feature), intent(inout) :: X_MA
   logical, intent(in) :: mute_it
+  logical, intent(in) :: must_be_positive ! the distance function must or not be positive
 
   ! stuff that will be in input (maybe)
   logical mute ! to comment when in R
-  logical must_be_positive ! the distance function must or not be positive
 
   ! internal variables
   real, dimension(:,:), allocatable :: grad_obj_fu
@@ -87,7 +88,6 @@ subroutine find_mahalanobis_F(clu1e1, clu1e2, clu2, n_feature, n_elements, X_MA,
   epsilon = 0.00001
   print_rho_components = .false.
   mute = .false.
-  must_be_positive = .true.
 
   ! K LOOP ---------------------------------------------------------------------
   do ki=1,K

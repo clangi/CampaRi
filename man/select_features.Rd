@@ -7,7 +7,7 @@
 select_features(trj, feature_selection = "pca",
   n_princ_comp = floor(ncol(trj)/10), pca_method = "R", plotit = FALSE,
   frameit = FALSE, return_plot = FALSE, cluster_vector = NULL,
-  plotly_it = FALSE)
+  plotly_it = FALSE, points_size = 1)
 }
 \arguments{
 \item{trj}{Input trajectory (variables on the columns and equal-time spaced snpashots on the row). It must be a \code{matrix} or a \code{data.frame} of numeric.}
@@ -26,6 +26,8 @@ select_features(trj, feature_selection = "pca",
 
 \item{cluster_vector}{This option can be used to set the clusters you want and show them with different colors (and shades if \code{frameit = TRUE}). 
 Please set this option with the same dimensionality of the trj (n_snapshots) and use integer numbers (to define the clusters).}
+
+\item{points_size}{It must be a number and it defines the size of the points.}
 }
 \value{
 It will return a modified trajectory matrix and print the principal components vector.

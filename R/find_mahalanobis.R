@@ -6,6 +6,7 @@
 #' @param clu1 Elements of the first clustering. Needed shape: (features, number of vectors). n_vectors must be > of features.
 #' @param clu1e1 Elements of the first clustering. Needed shape: (features, number of vectors). n_vectors must be > of features.
 #' @param clu2 As above. The number of elements should be identical for clu1e1, clu1e2 and clu2
+#' @param must_be_positive If FALSE, it will consider also negative values for the Mahalanobis distance (the convergence can be much longer).
 # @param ... Various variables. Possible values are \code{c('wgcna_type', 'wgcna_power', 'wgcna_corOp')}.
 #' 
 #' @details For more details on the SAPPHIRE plot, please refer to the main documentation of the original 
@@ -19,7 +20,7 @@
 #' @export find_mahalanobis
 #' @useDynLib CampaRi, .registration = TRUE
 
-find_mahalanobis <- function(clu1e1, clu1e2, clu2){
+find_mahalanobis <- function(clu1e1, clu1e2, clu2, must_be_positive = TRUE){
   
   
   # -----------------------------
