@@ -17,7 +17,8 @@ mst_from_trj(trj, dump_to_netcdf = FALSE, mode = "fortran",
 
 \item{mode}{It takes a string in input and can be either "fortran" (highly advised and default) or "R".}
 
-\item{distance_method}{Distance metric between snapshots. This value can be set 1 (dihedral angles) or 5 (root mean square deviation) or 11 (balistic distance).}
+\item{distance_method}{Distance metric between snapshots. This value can be set 1 (dihedral angles) or 5 (root mean square deviation) or 11 (balistic distance) 
+or 12 (mahalanobis distance - matrix to be inserted).}
 
 \item{clu_radius}{This numeric argument is used in the clustering step in order to make clusters of the same radius at the base level.}
 
@@ -40,7 +41,7 @@ using a simple leader clustering algorithm (minimum spanning tree).}
 
 \item{mute_fortran}{If \code{mute_fortran=T} the function will silence the fortran code.}
 
-\item{...}{Various variables in addition (none for the moment)}
+\item{...}{Various variables in addition (XMAHA - mahalanobis distance matrix to preprocess the trj.)}
 }
 \value{
 If no netcdf support is available the function will return a list with 3 arguments: node degrees, adjacency list and associated distances.

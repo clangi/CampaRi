@@ -41,6 +41,8 @@ find_mahalanobis <- function(clu1e1, clu1e2, clu2, must_be_positive = TRUE){
     stop('The input matrices must have same number of rows (features).')
   if(ncol(clu1e1) != ncol(clu1e2) || ncol(clu1e1) != ncol(clu2))
     stop('The input matrices must have same number of cols (elements).')
+  if(!is.logical(must_be_positive))
+    stop('must_be_positive must be a logical.')
   
   
   # Long calculation warning
@@ -67,6 +69,7 @@ find_mahalanobis <- function(clu1e1, clu1e2, clu2, must_be_positive = TRUE){
                      clu2=clu2,
                      n_feature=as.integer(n_features),
                      n_elements=as.integer(n_elements),
+                     must_be_positive=as.logical(must_be_positive),
                      #output
                      X_MA=X_MA)
   return(output$X_MA)
