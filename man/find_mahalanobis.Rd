@@ -4,7 +4,8 @@
 \alias{find_mahalanobis}
 \title{Find the mahalanobis distance for a set of triplets}
 \usage{
-find_mahalanobis(clu1e1, clu1e2, clu2, must_be_positive = TRUE)
+find_mahalanobis(clu1e1, clu1e2, clu2, must_be_positive = TRUE,
+  mute_fortran = FALSE)
 }
 \arguments{
 \item{clu1e1}{Elements of the first clustering. Needed shape: (features, number of vectors). n_vectors must be > of features.}
@@ -25,6 +26,9 @@ It will return a matrix n_features*n_features.
 \details{
 For more details on the SAPPHIRE plot, please refer to the main documentation of the original 
 campari software \url{http://campari.sourceforge.net/documentation.html}.
+}
+\examples{
+
 }
 \seealso{
 \code{\link{adjl_from_progindex}}, \code{\link{gen_progindex}}, \code{\link{gen_annotation}}.

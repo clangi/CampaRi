@@ -51,10 +51,8 @@ subroutine snap_to_cluster_d(val, it, sn2) !i={1:n_snaps}
   if(it%nmbrs.eq.0) then
     val = 0
   else
-
-    if (dis_method.eq.5.or.dis_method.eq.11.or.dis_method.eq.1) then
-      vec1 = it%sums(1:n_xyz)/(1.0 * it%nmbrs) ! cluster center
-    end if
+    ! dis_method can be dependent on this
+    vec1 = it%sums(1:n_xyz)/(1.0 * it%nmbrs) ! cluster center
     call distance(val,vec1,sn2) ! val=tmp_d, vec1=centroid, sn=snapshot
   end if
 end
@@ -70,10 +68,9 @@ subroutine cluster_to_cluster_d(val, it1, it2)
   real vec1(n_xyz), vec2(n_xyz)
   real, INTENT(OUT) :: val
 
-  if (dis_method.eq.5.or.dis_method.eq.11.or.dis_method.eq.1) then
-    vec1 = it1%sums(:)/(1.0 * it1%nmbrs) ! center it1
-    vec2 = it2%sums(:)/(1.0 * it2%nmbrs) ! center it2
-  end if
+  ! dis_method can be dependent on this
+  vec1 = it1%sums(:)/(1.0 * it1%nmbrs) ! center it1
+  vec2 = it2%sums(:)/(1.0 * it2%nmbrs) ! center it2
   call distance(val, vec1, vec2)
 end
 !
@@ -81,6 +78,7 @@ end
 !
 subroutine distance(val2, veci, vecj)
   use m_variables_gen
+  use m_clustering
 ! CALLED from:
 ! vec1 = it%sums(1:n_xyz,1)/(1.0*it%nmbrs)
 ! call distance(val,vec1,trj_data(1:n_xyz,i)) !val=tmp_d,it=scluster(j),i=i
@@ -91,10 +89,11 @@ subroutine distance(val2, veci, vecj)
   implicit none
 
   real, INTENT(IN) :: veci(n_xyz), vecj(n_xyz)
+  real, INTENT(OUT) :: val2
   real vec_ref(n_xyz)
   real  hlp, hlp2
-  real, INTENT(OUT) :: val2
   integer k
+  real :: vec_temp(n_xyz,2)
 
   vec_ref = 1
   val2 = 0.0
@@ -110,7 +109,7 @@ subroutine distance(val2, veci, vecj)
     val2 = sqrt(val2/(1.0*n_xyz))
   else if(dis_method.eq.5) then
     hlp = sum((veci(1:n_xyz) - vecj(1:n_xyz))**2)
-    val2 = sqrt((3.0 * hlp)/(1.0 * (n_xyz))) ! why *3????? number of coo
+    val2 = sqrt((1.0 * hlp)/(1.0 * (n_xyz))) ! why *3????? number of coo
   else if (dis_method.eq.11) then
     hlp = ACOS(dot_product(vec_ref,veci)/&
     (dot_product(vec_ref,vec_ref) + &
@@ -121,6 +120,15 @@ subroutine distance(val2, veci, vecj)
     val2 = hlp2 - hlp
     ! if(val2.gt.20.or.val2.lt.(-20)) write(ilog,*) "ATTENTION: an angle out of &
     ! &control = ", val2
+  else if(dis_method .eq. 12) then
+    ! this method is an inner product simply. It is better to use the eucl?
+    ! vec_temp(1:n_xyz,1) = vecj(1:n_xyz)
+    ! vec_temp(1:n_xyz,2) = matmul(distance_mat, vec_temp(1:n_xyz,1))
+    ! val2 = dot_product(veci(1:n_xyz), vec_temp(1:n_xyz,2))
+    vec_temp(1:n_xyz,1) = veci(1:n_xyz) - vecj(1:n_xyz)
+    vec_temp(1:n_xyz,2) = matmul(distance_mat, vec_temp(1:n_xyz,1))
+    hlp = dot_product(veci(1:n_xyz) - vecj(1:n_xyz), vec_temp(1:n_xyz,2))
+    val2 = sqrt(hlp/(1.0 * n_xyz))
   end if
 end
 
@@ -222,9 +230,10 @@ subroutine cluster_addsnap(it,sn1,i)
         it%sums(k) = it%sums(k) - it%nmbrs*360.0
       end if
     end do
-  else if((dis_method.eq.5.or.dis_method.eq.11)) then
+  else if(dis_method .eq. 5 .or. dis_method .eq. 11 &
+    & .or. dis_method .eq. 12) then
     it%sums(1:n_xyz) = it%sums(1:n_xyz) + sn1(1:n_xyz) !
-    it%sqsum = it%sqsum + dot_product(sn1(1:n_xyz),sn1(1:n_xyz))
+    it%sqsum = it%sqsum + dot_product(sn1(1:n_xyz), sn1(1:n_xyz))
   end if
 end
 !
@@ -300,7 +309,8 @@ subroutine join_clusters(itl,its)
         itl%sums(k) = itl%sums(k) - (itl%nmbrs+its%nmbrs)*360.0
       end if
     end do
-  else if ((dis_method.eq.5).OR.(dis_method.eq.6)) then
+  else if(dis_method .eq. 5 .or. dis_method .eq. 11 &
+    & .or. dis_method .eq. 12) then
     itl%sums(1:n_xyz) = itl%sums(1:n_xyz) + its%sums(1:n_xyz)
     itl%sqsum = itl%sqsum + its%sqsum
   end if
@@ -351,7 +361,7 @@ subroutine preprocess_snapshot(trj3, i2, vecti2)
   real, intent(in) :: trj3(n_snaps,n_xyz)
   real, intent(inout) :: vecti2(n_xyz)
   integer,intent(in) :: i2
-  if(dis_method.eq.5.or.dis_method.eq.1) then
+  if(dis_method .eq. 5 .or. dis_method .eq. 1 .or. dis_method .eq. 12) then
     vecti2 = trj3(i2,1:n_xyz)
   else if(dis_method.eq.11) then
     if(i2.eq.1) then !to avoid error I can double the first value
@@ -584,11 +594,11 @@ subroutine cluster_calc_params(it,targetsz)
   type (t_scluster) it
   real helper, targetsz
   ! this is occasionally inaccurate for mode 1 due to the approximate treatment of wraparound
-  if (dis_method.eq.1) then
+  if (dis_method .eq. 1 .or. dis_method .eq. 12) then
     helper = (it%nmbrs*it%sqsum - dot_product(it%sums(:),it%sums(:)))/(1.0*n_xyz)
   !  this is approximate for all clusters exceeding size 2 if alignment is used
   else if(dis_method.eq.5.or.dis_method.eq.11) then
-    helper = 3.0*(it%nmbrs*it%sqsum - dot_product(it%sums(1:n_xyz),it%sums(1:n_xyz)))&
+    helper = (it%nmbrs*it%sqsum - dot_product(it%sums(1:n_xyz),it%sums(1:n_xyz)))&
     &              /(1.0*(n_xyz)) !sasdaafsjghdsviubwFB TODO
   end if
 
@@ -715,23 +725,24 @@ subroutine cluster_removesnap(it,i,vecti2)
   !   this is approximate: the average mustn't shift very much and/or the points need to be well-clustered
     do k=1,clstsz
       incr = 0.0
-      if (vecti2(k)-normer2*it%sums(k).lt.-180.0) incr = 360.0
-      if (vecti2(k)-normer2*it%sums(k).gt.180.0) incr = -360.0
+      if(vecti2(k)-normer2*it%sums(k) .lt. -180.0) incr = 360.0
+      if(vecti2(k)-normer2*it%sums(k) .gt. 180.0) incr = -360.0
       incr = -incr - vecti2(k)
       it%sums(k) = it%sums(k) + incr
       it%sqsum = it%sqsum + incr*incr
-      if (normer*it%sums(k).lt.-180.0) then
+      if(normer*it%sums(k) .lt. -180.0) then
         it%sqsum = it%sqsum + it%nmbrs*360.0*360.0 + 720.0*it%sums(k)
         it%sums(k) = it%sums(k) + it%nmbrs*360.0
       end if
-      if (normer*it%sums(k).gt.180.0) then
+      if(normer*it%sums(k) .gt. 180.0) then
         it%sqsum = it%sqsum + it%nmbrs*360.0*360.0 - 720.0*it%sums(k)
         it%sums(k) = it%sums(k) - it%nmbrs*360.0
       end if
     end do
-  else if ((dis_method.eq.5).OR.(dis_method.eq.11)) then
+  else if(dis_method .eq. 5 .or. dis_method .eq. 11 &
+    & .or. dis_method .eq. 12) then
     it%sums(1:n_xyz) = it%sums(1:n_xyz) - vecti2(1:n_xyz)
-    it%sqsum = it%sqsum - dot_product(vecti2(1:n_xyz),vecti2(1:n_xyz))
+    it%sqsum = it%sqsum - dot_product(vecti2(1:n_xyz), vecti2(1:n_xyz))
   end if
 !
 end

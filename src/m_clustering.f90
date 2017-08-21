@@ -78,7 +78,11 @@
 ! ntlnks             : management of user-requested link additions (count)
 !
 module m_clustering
+  
+  ! distance matrix must be allocatable
+  real, allocatable :: distance_mat(:,:)
 
+  ! cluster object
   type t_scluster
     integer nmbrs, alsz !alsz is the allocation size of the snaps principally
     real sqsum

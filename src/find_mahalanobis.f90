@@ -87,7 +87,8 @@ subroutine find_mahalanobis_F(clu1e1, clu1e2, clu2, &
   ! sensibility
   epsilon = 0.00001
   print_rho_components = .false.
-  mute = .false.
+  detailed_print_rho = .false.
+  mute = mute_it
 
   ! K LOOP ---------------------------------------------------------------------
   do ki=1,K
@@ -149,9 +150,9 @@ subroutine find_mahalanobis_F(clu1e1, clu1e2, clu2, &
       ! n_features = Dimension of the eigen-problem
       ! 1 = number of eigenvalues to calculate
       ! 'LM' = largest magnitude
+      print *, '=------------------------'
       call find_eigens(eig_i, eigv_i, n_features, 1, 'LM')
-      ! print *, '=------------------------'
-      ! print *, 'eigenvalue ', eig_i(1,1)
+      print *, 'eigenvalue ', eig_i(1,1)
       ! print *, '=------------------------'
       ! print *, 'eigenvector ', eigv_i(1,:)
       ! print *, '=------------------------'
@@ -163,7 +164,7 @@ subroutine find_mahalanobis_F(clu1e1, clu1e2, clu2, &
 
       ! compute search direction p_i
       search_dir = matmul(transpose(eigv_i(1:1,:)),eigv_i(1:1,:)) - X_k
-      ! print *, '=------------------------'
+      print *, '=------------------------'
       ! do kkk=1,n_features
       !   print *, "Direction: ", search_dir(kkk,:)
       ! end do
@@ -225,6 +226,7 @@ subroutine find_mahalanobis_F(clu1e1, clu1e2, clu2, &
   print *, '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
   print *, "Resulting summed learned distance for Internal/External elements: "
   print_rho_components = .true.
+  detailed_print_rho = .true. ! the not detailed one was WRONG
   X_k = X
   call rho_f(1,rho(1))
   print *, ' ----------------------------------- '

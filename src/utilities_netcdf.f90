@@ -56,6 +56,12 @@ subroutine dump_nbl_nc()
   else if (dis_method.eq.5) then
     xlen = 21
     attstring(1:xlen) = "unaligned atomic RMSD"
+  else if (dis_method.eq.11) then
+    xlen = 26
+    attstring(1:xlen) = "balistic distance (angles)"
+  else if (dis_method.eq.12) then
+    xlen = 20
+    attstring(1:xlen) = "Mahalanobis distance"
   else
     call spr('Fatal. Unsupported distance criterion in dump_nbl_nc(...). This is an omission bug.')
     call fexit()
@@ -69,6 +75,9 @@ subroutine dump_nbl_nc()
   else if (dis_method.eq.5) then
     attstring(6:13) = "angstrom"
     call check_err( nf90_put_att(ncid, cnc_ids(1), attstring(1:5), attstring(6:13)) )
+  else if (dis_method .eq. 11 .or. dis_method .eq. 12) then
+    attstring(6:10) = "a.u."
+    call check_err( nf90_put_att(ncid, cnc_ids(1), attstring(1:5), attstring(6:10)) )
   end if
   attstring(1:13) = "               "
 ! quit define mode

@@ -58,7 +58,8 @@ module m_gen_nbls
           k = scluster(i)%snaps(kk)
           do ll=kk+1,scluster(i)%nmbrs ! for each l != k snapshot
             l = scluster(i)%snaps(ll)
-            if(dis_method.eq.5) then
+            if(dis_method .eq. 5 .or. dis_method .eq. 1 &
+            & .or. dis_method .eq. 12) then
               vecti = trj(k,1:n_xyz)
               vectj = trj(l,1:n_xyz)
             else if(dis_method.eq.11) then
@@ -105,7 +106,8 @@ module m_gen_nbls
           end if
           do kk=1,scluster(mi)%nmbrs
             k = scluster(mi)%snaps(kk)
-            if(dis_method.eq.5) then
+            if(dis_method .eq. 5 .or. dis_method .eq. 1 &
+            & .or. dis_method .eq. 12) then
               vecti = trj(k,1:n_xyz)
             else if(dis_method.eq.11) then
               if(k.eq.1) then !to avoid error I can double the first value
@@ -118,7 +120,8 @@ module m_gen_nbls
             !all the minorcluster snaps vs the mjcluster center
             do ll=1,scluster(mj)%nmbrs
               l = scluster(mj)%snaps(ll)
-              if(dis_method.eq.5) then
+              if(dis_method .eq. 5 .or. dis_method .eq. 1 &
+              & .or. dis_method .eq. 12) then
                 vectj = trj(l,1:n_xyz)
               else if(dis_method.eq.11) then
                 if(l.eq.1) then !to avoid error I can double the first value
@@ -154,7 +157,8 @@ module m_gen_nbls
 
       ! Normalizing
       if(normalize_dis) then
-        call srpr("Normalization mode active. Max value:", maxx)
+        call srpr("Normalization mode active. Max value that will be &
+        & used to normalize (in abs):", maxx)
         call sl()
         do i=1,n_snaps
           do u=1,n_snaps
@@ -169,7 +173,7 @@ module m_gen_nbls
               end if
             end if
           end do
-          cnblst(i)%dis = cnblst(i)%dis/maxx
+          cnblst(i)%dis = cnblst(i)%dis / abs(maxx)
         end do
       end if
       if(overbounds.gt.0) call sipr('Out of bounds variables:', overbounds)

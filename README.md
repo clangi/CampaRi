@@ -40,6 +40,8 @@ Please note that to unlock some fundamental analysis functions you need to insta
 This library must be installed --with-fortran bindings (it is possible to check this using the nc-config or nf-config commands (with --all option)).
 Netcdf4 can be installed as following (this is the simple way):
 
+The arpack library is needed at this moment. It will be made optional in the future.
+
 ```sh
 # osx
 brew update
@@ -48,10 +50,12 @@ brew install netcdf --with-fortran
 # linux
 sudo apt update 
 sudo apt install libnetcdff-dev # xenial
+sudo apt install libarpack2-dev # xenial
 
 sudo apt-get update 
-sudo apt-get isntall libnetcdff5 # trusty
-sudo apt-get isntall libnetcdf-dev # trusty
+sudo apt-get install libnetcdff5 # trusty
+sudo apt-get install libnetcdf-dev # trusty
+sudo apt-get install libarpack2-dev # trusty? 
 ```
 
 ------------------------------------------------------------------------

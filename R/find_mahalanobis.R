@@ -7,6 +7,7 @@
 #' @param clu1e1 Elements of the first clustering. Needed shape: (features, number of vectors). n_vectors must be > of features.
 #' @param clu2 As above. The number of elements should be identical for clu1e1, clu1e2 and clu2
 #' @param must_be_positive If FALSE, it will consider also negative values for the Mahalanobis distance (the convergence can be much longer).
+#' @param mute_fortran If TRUE, the fortran code will be silent.
 # @param ... Various variables. Possible values are \code{c('wgcna_type', 'wgcna_power', 'wgcna_corOp')}.
 #' 
 #' @details For more details on the SAPPHIRE plot, please refer to the main documentation of the original 
@@ -15,12 +16,12 @@
 #' @return It will return a matrix n_features*n_features.
 #' @seealso
 #' \code{\link{adjl_from_progindex}}, \code{\link{gen_progindex}}, \code{\link{gen_annotation}}.
-# @examples
+#' @examples
 #' 
 #' @export find_mahalanobis
 #' @useDynLib CampaRi, .registration = TRUE
 
-find_mahalanobis <- function(clu1e1, clu1e2, clu2, must_be_positive = TRUE){
+find_mahalanobis <- function(clu1e1, clu1e2, clu2, must_be_positive = TRUE, mute_fortran = FALSE){
   
   
   # -----------------------------
@@ -43,6 +44,8 @@ find_mahalanobis <- function(clu1e1, clu1e2, clu2, must_be_positive = TRUE){
     stop('The input matrices must have same number of cols (elements).')
   if(!is.logical(must_be_positive))
     stop('must_be_positive must be a logical.')
+  if(!is.logical(mute_fortran))
+    stop('mute_fortran must be a logical.')
   
   
   # Long calculation warning
@@ -55,7 +58,7 @@ find_mahalanobis <- function(clu1e1, clu1e2, clu2, must_be_positive = TRUE){
   clu1e1 <- matrix(as.single(clu1e1), nrow = n_features, ncol = n_elements)
   clu1e2 <- matrix(as.single(clu1e2), nrow = n_features, ncol = n_elements)
   clu2 <- matrix(as.single(clu2), nrow = n_features, ncol = n_elements)
-  X_MA <- matrix(as.single(rep(0.0,n_features*n_features)), nrow = n_features, ncol = n_features)
+  X_MA <- matrix(as.single(rep(0.0, n_features*n_features)), nrow = n_features, ncol = n_features)
   attr(clu1e1, "Csingle") <- TRUE
   attr(clu1e2, "Csingle") <- TRUE
   attr(clu2, "Csingle") <- TRUE
@@ -69,8 +72,10 @@ find_mahalanobis <- function(clu1e1, clu1e2, clu2, must_be_positive = TRUE){
                      clu2=clu2,
                      n_feature=as.integer(n_features),
                      n_elements=as.integer(n_elements),
-                     must_be_positive=as.logical(must_be_positive),
                      #output
-                     X_MA=X_MA)
+                     X_MA=X_MA,
+                     #logicals
+                     must_be_positive=as.logical(must_be_positive),
+                     mute_it=as.logical(mute_fortran))
   return(output$X_MA)
 }

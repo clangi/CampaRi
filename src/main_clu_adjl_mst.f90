@@ -50,7 +50,7 @@
 subroutine generate_neighbour_list( &
   trj_data, n_xyz_in, n_snaps_in, dfffo, clu_radius_in, clu_hardcut_in, & !input
   adjl_deg, adjl_ix, adjl_dis, max_degr, & !output
-  dis_method_in, birch_in, mst_in, & !algorithm details
+  dis_method_in, distance_matrix_in, birch_in, mst_in, & !algorithm details
   rootmax_rad_in, tree_height_in, n_search_attempts_in,& !sst details
   normalize_dis_in, return_tree_in_r, mute_in) !modes
 
@@ -71,6 +71,7 @@ subroutine generate_neighbour_list( &
   integer, intent(in) :: n_snaps_in !number of snapshots in input
   integer, intent(in) :: dfffo !dimensional_flag_for_fixed_out (netcdf workaround)
   integer, intent(in) :: dis_method_in !distance method
+  real, intent(in) :: distance_matrix_in(n_xyz_in, n_xyz_in) !distance mat input
   integer, intent(in) :: tree_height_in !number of levels in the tree
   integer, intent(in) :: n_search_attempts_in !number of search attempts in sst
   real, intent(in) :: trj_data(n_snaps_in, n_xyz_in) !trajectory input
@@ -102,6 +103,7 @@ subroutine generate_neighbour_list( &
   ! a threshold in leader clusting (MST).
   ! If the intent is in this cannot be an ALLOCATABLE variable
 
+
   n_xyz = n_xyz_in
   n_snaps = n_snaps_in
   mute = mute_in
@@ -110,6 +112,12 @@ subroutine generate_neighbour_list( &
   birch = birch_in
   do_mst = mst_in
   normalize_dis = normalize_dis_in
+
+  ! set the distance matrix if mode is 12
+  if(dis_method .eq. 12) then
+    allocate(distance_mat(n_xyz, n_xyz))
+    distance_mat = distance_matrix_in
+  end if
 
   ! Internal defaults
   if (hardcut.lt.radius) hardcut = 2.0*radius
@@ -283,7 +291,9 @@ subroutine generate_neighbour_list( &
   end if
   call spr('------------------------------------------------------------')
 #endif
-  ! if(log_print) close(ilog)
-  firstcall = .false.
 
+  ! deallocate the distance matrix if mode is 12
+  if(dis_method .eq. 12) deallocate(distance_mat)
+
+  firstcall = .false.
 end

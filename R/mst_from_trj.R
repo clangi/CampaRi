@@ -52,12 +52,12 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
 
   # Checking additional inputs
   input_args <- list(...)
-  avail_extra_argoments <- c(XMAHA)
+  avail_extra_argoments <- c('distance_matrix')
   if(any(!(names(input_args) %in% avail_extra_argoments)))
     warning('There is a probable mispelling in one of the inserted variables. Please check the available extra input arguments.')
 
   # Mahalanobis distance preprocessing
-  if(!('XMAHA' %in% names(input_args))) XMAHA <- NULL else XMAHA <- input_args[['XMAHA']]
+  if(!('distance_matrix' %in% names(input_args))) distance_matrix <- NULL else distance_matrix <- input_args[['distance_matrix']]
   # if(!('window' %in% names(input_args))) window <- NULL else window <- input_args[['window']]
   # if(!('overlapping_reduction' %in% names(input_args))) overlapping_reduction <- NULL else overlapping_reduction <- input_args[['overlapping_reduction']]
   #
@@ -65,13 +65,13 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
   # if(!('feature_selection' %in% names(input_args))) feature_selection <- NULL else feature_selection <- input_args[['feature_selection']]
   # if(!('n_princ_comp' %in% names(input_args))) n_princ_comp <- NULL else n_princ_comp <- input_args[['n_princ_comp']]
 
-  # checking trajectory input
+  # Checking trajectory input
   if(!is.matrix(trj)){
     if(!is.data.frame(trj)) stop('trj input must be a matrix or a data.frame')
     trj <- as.matrix(trj)
   }
 
-  # checking logicals
+  # Checking logicals
   if(!is.logical(dump_to_netcdf))
     stop("dump_to_netcdf mode must be activated using T/F inputs only.")
   if(!is.logical(mute_fortran))
@@ -90,12 +90,32 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
   #   #     command_loc <- system(paste0("which ",data_management))
   #   #     if(command_loc=="") stop("No support for hdf5. Please check installation and correct linkage of the command to your enviroment.")
   # }
-
-  #Input setting
+  
+  # Input setting
   n_snaps <- nrow(trj)
   n_xyz <- ncol(trj)
 
-
+  # Checking distance value
+  sup_dist <- c(1, 5, 11, 12)
+  if(length(distance_method) != 1) stop('When using the birch clustering algorithm (SST) only one distance is available per time.')
+  if(!is.numeric(distance_method) || !(distance_method %in% sup_dist)) stop("The distance inserted is not valid. Check the documentation for precise values.")
+  if(distance_method%%1 != 0) stop('distance_method must be an integer.')
+  
+  # Checking the Mahalanobis distance insertion
+  if(!is.null(distance_matrix)){
+    if(!is.numeric(distance_matrix))
+      stop('distance_matrix must be a numerical vector. ')
+    if(nrow(distance_matrix) != ncol(distance_matrix))
+      stop('distance_matrix must be a squared matrix. ')
+    if(nrow(distance_matrix) != n_xyz)
+      stop('distance_matrix must have same rows and columns as the number of features in input (columns of trj).')
+    cat('Mahalanobis distance inserted for generic euclidean distance metric use. 
+        This method will use the input matrix distance_matrix to compute the sapphire pipeline.\n')
+    if(distance_method != 12) stop('Please insert the distance_method accordingly to the Mahalanobis distance_matrix mode.')
+  }else{
+    if(distance_method == 12) stop('Please insert a proper distance_matrix if you want to use distance_method == 12 which activates the Mahalanobis distance.')
+    distance_matrix <- diag(1, n_xyz, n_xyz) # create Identity matrix
+  }
 
   # -----------------------------------------------------------------------
   # Preprocessing
@@ -202,11 +222,6 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
     # Default vars
     # --------------
 
-    # Distance value
-    sup_dist <- c(1, 5, 11)
-    if(length(distance_method) != 1) stop('When using the birch clustering algorithm (SST) only one distance is available per time.')
-    if(!is.numeric(distance_method) || !(distance_method %in% sup_dist)) stop("The distance inserted is not valid. Check the documentation for precise values.")
-    if(distance_method%%1 != 0) stop('distance_method must be an integer.')
 
     # Distance weights
     # if(!is.null(distance_weights)){
@@ -321,23 +336,23 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
     }else{
       return_tree_in_r <- TRUE
       #input-output initialization
-      dfffo <- n_snaps # dimensional_flag_for_fixed_out
       if(n_snaps > 25000)
         stop("Using more than 25000 snapshots with no memory handling will generate a memory overflow (tested with 16gb RAM).
              Please set the option dump_to_netcdf as TRUE.")
     }
     # setting the input-output silly variables (R-Fortran communication needs)
-    adj_deg <- as.integer(rep(0,dfffo))
-    adj_ix <- matrix(as.integer(rep(0,dfffo*dfffo)),dfffo,dfffo)
-    adj_dis <- matrix(as.single(rep(0.0,dfffo*dfffo)),dfffo,dfffo)
-    attr(adj_dis,"Csingle") <- TRUE
+    adj_deg <- as.integer(rep(0,n_snaps))
+    adj_ix <- matrix(as.integer(rep(0,n_snaps*n_snaps)),n_snaps,n_snaps)
+    adj_dis <- matrix(as.single(rep(0.0,n_snaps*n_snaps)),n_snaps,n_snaps)
+    attr(adj_dis, "Csingle") <- TRUE
+    attr(distance_matrix, 'Csingle') <- TRUE
     #main fortran talker
     output <- .Fortran("generate_neighbour_list", PACKAGE="CampaRi",
                         #input
                         trj_data=trj,
                         n_xyz_in=as.integer(n_xyz),
                         n_snaps_in=as.integer(n_snaps),
-                        dfffo=as.integer(dfffo),
+                        dfffo=as.integer(n_snaps), # dimensional_flag_for_fixed_out
                         clu_radius_in=as.single(clu_radius),
                         clu_hardcut_in=as.single(clu_hardcut),
                         #output
@@ -347,6 +362,7 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
                         max_degr=as.integer(max_d),
                         #algorithm details
                         dis_method_in=as.integer(distance_method),
+                        distance_matrix_in=distance_matrix,
                         birch_in=as.logical(birch_clu),
                         mst_in=as.logical(min_span_tree),
                         #sst details

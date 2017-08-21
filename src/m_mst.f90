@@ -864,14 +864,14 @@ module m_mst
     ! allocate(approxmst(n_snaps))
     ! approxmst(1:n_snaps)%deg = 0
     call sl()
-    if (dis_method.le.2) then
+    if (dis_method .le. 2) then
       call srpr(' Weight of Short Spanning Tree (degrees): ',sum(lmstedges(1:n_snaps-1)))
-    else if (dis_method.le.4) then
+    else if (dis_method .le. 4) then
       call srpr(' Weight of Short Spanning Tree: ',sum(lmstedges(1:n_snaps-1)))
-    else if (dis_method.le.10) then
+    else if (dis_method .le. 10) then
       call srpr(' Weight of Short Spanning Tree (Angstrom): ',sum(lmstedges(1:n_snaps-1)))
-    else if (dis_method.eq.11) then
-      call srpr(' Weight of Short Spanning Tree (degrees): ',sum(lmstedges(1:n_snaps-1)))
+    else if (dis_method .le. 12) then
+      call srpr(' Weight of Short Spanning Tree (a.u.): ',sum(lmstedges(1:n_snaps-1)))
     end if
     call sl()
     ! call gen_MST(mstedges,lmstedges,approxmst)

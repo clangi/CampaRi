@@ -1,6 +1,6 @@
 module optimization_maha_metric
   ! main variables
-  logical :: print_rho_components
+  logical :: print_rho_components, detailed_print_rho
   integer n_features
   integer n_triplets
   real, allocatable :: i_j(:,:), i_k(:,:) ! i-j internal vectors, i-k external
@@ -19,23 +19,46 @@ contains
     real :: help_v(n_features, 1)
     real :: help_v2(n_features, 1)
     real :: ave_distance(n_triplets)
-    integer iter
+    integer iter, iter2
+
     ! help_v3(:,1) = i_k(:,which) ! deprecated to i_k(:,which:which)
     help_v = matmul(X_k, i_k(:, which:which))
     help_v2 = matmul(X_k, i_j(:,which:which))
     rho_out = dot_product(i_k(:, which), help_v(:,1)) - dot_product(i_j(:, which), help_v2(:,1))
 
     ! I want to print the components (sum of the distances)
-    if (print_rho_components)then
+    ! ------------------------------ I_K (external clusters)
+    if (print_rho_components) then
       do iter=1, n_triplets
-        help_v = matmul(X_k, i_k(:, iter:iter))
-        ave_distance(iter) = dot_product(i_k(:, iter), help_v(:,1))
+        if(detailed_print_rho) then
+          do iter2=1, n_triplets
+            help_v = matmul(X_k, i_j(:, iter:iter) - i_k(:,iter2:iter2))
+            ave_distance(iter) = ave_distance(iter) + &
+            & dot_product(i_j(:, iter) - i_k(:,iter2), help_v(:,1))
+          end do
+          ave_distance(iter) = ave_distance(iter) / (n_triplets*1.0)
+        else
+          help_v = matmul(X_k, i_k(:, iter:iter))
+          ave_distance(iter) = dot_product(i_k(:, iter), help_v(:,1))
+        end if
       end do
+      ! print it
       print *, sum(ave_distance)/(n_triplets*1.0), " : different clusters(i_k) distance(mean) "
+      ! ------------------------------ I_J (internal clusters)
       do iter=1, n_triplets
-        help_v = matmul(X_k, i_j(:,iter:iter))
-        ave_distance(iter) = dot_product(i_j(:, iter), help_v(:,1))
+        if(detailed_print_rho) then
+          do iter2=1, n_triplets
+            help_v = matmul(X_k, i_j(:,iter:iter) - i_j(:,iter:iter))
+            ave_distance(iter) = ave_distance(iter) + &
+            & dot_product(i_j(:, iter) - i_j(:, iter2), help_v(:,1))
+          end do
+          ave_distance(iter) = ave_distance(iter) / (n_triplets*1.0)
+        else
+          help_v = matmul(X_k, i_j(:,iter:iter))
+          ave_distance(iter) = dot_product(i_j(:, iter), help_v(:,1))
+        end if
       end do
+      ! print it
       print *, sum(ave_distance)/(n_triplets*1.0), " : same cluster(i_j) distance(mean) "
     end if
   end subroutine
