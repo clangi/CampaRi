@@ -92,7 +92,41 @@ gg +
   ggplot2::annotate("text", x = rep(10500, 3), y = c(6.55, 6.9, 7.28), label = c("CCCH", "HCCC", "CCCC")) # annotate some text
 
 # legend adding
+sapphire_plot('PROGIDX_000000000022.dat', return_plot = F, local_cut = T, ann_trace = ann, timeline = T,
+rescaling_ann_col=F, specific_palette_annotation= c("#b47b00", "#000000", "#C70039"),
+annotation_type = 'discrete', legend_title = "Pot en min", legend_labels = c('gauche+', 'gauche-', 'anti'))
+sapphire_plot('PROGIDX_000000000022.dat', return_plot = F, local_cut = T, ann_trace = ann, timeline = T,
+rescaling_ann_col=F, specific_palette_annotation= c("#b47b00", "#000000"),
+annotation_type = 'continuous', legend_title = "Pot en min", legend_labels = c('gauche+', 'gauche-', 'anti')) 
+sapphire_plot('PROGIDX_000000000022.dat', return_plot = F, local_cut = T, ann_trace = ann[1,], timeline = T, # plot only the first line!
+rescaling_ann_col=F, specific_palette_annotation= c("#b47b00", "#000000", "#C70039"),
+annotation_type = 'discrete', legend_title = "Pot en min", legend_labels = c('gauche+', 'gauche-', 'anti'))  
+sapphire_plot('PROGIDX_000000000022.dat', return_plot = F, local_cut = T, ann_trace = ann[1,], timeline = T,
+rescaling_ann_col=F, annotation_type = 'discrete', legend_title = "Pot en min", legend_labels = c('gauche+', 'gauche-', 'anti'))  
+sapphire_plot('PROGIDX_000000000022.dat', return_plot = F, local_cut = T, ann_trace = ann[1,], timeline = T,
+rescaling_ann_col=T, annotation_type = 'discrete', legend_title = "Pot en min", legend_labels = c('gauche+', 'gauche-', 'anti')) 
+sapphire_plot('PROGIDX_000000000022.dat', return_plot = F, local_cut = T, ann_trace = ann[1,], timeline = T,
+rescaling_ann_col=F, annotation_type = 'discrete', legend_title = "Pot en min", legend_labels = c('gauche+', 'gauche-', 'anti'))  
+sapphire_plot('PROGIDX_000000000022.dat', return_plot = F, local_cut = T, ann_trace = ann[1,], timeline = T,
+rescaling_ann_col=T, annotation_type = 'discrete', legend_title = "Pot en min", legend_labels = c('gauche+', 'gauche-', 'anti'))  
 
+sapphire_plot('PROGIDX_000000000022.dat', return_plot = F, local_cut = T, ann_trace = ann[1,], timeline = T,
+rescaling_ann_col=F, annotation_type = 'continuous', legend_title = "Pot en min", legend_labels = c('gauche+', 'gauche-', 'anti'))
+
+# can I do it with only charachters?
+char_annotation <- factor(ann[1,])
+levels(char_annotation) <- c("#b47b00", "#000000", "#C70039")
+char_annotation <- as.character(char_annotation)
+sapphire_plot('PROGIDX_000000000022.dat', return_plot = F, local_cut = T, ann_trace = char_annotation, timeline = T,
+rescaling_ann_col=T, annotation_type = 'discrete', legend_title = "Pot en min", legend_labels = c('gauche+', 'gauche-', 'anti'))
+
+# what is winning? rescaling_ann_col, charachter annotation or palette? # palette over charachter over rescaling
+char_annotation <- factor(ann[1,])
+levels(char_annotation) <- c("#b47b00", "#02AB1E", "#C70039")
+char_annotation <- as.character(char_annotation)
+sapphire_plot('PROGIDX_000000000022.dat', return_plot = F, local_cut = T, ann_trace = char_annotation, timeline = T,
+rescaling_ann_col=T,specific_palette_annotation= c("#b47b00", "#000000", "#C70039"),
+annotation_type = 'discrete', legend_title = "Pot en min", legend_labels = c('gauche+', 'gauche-', 'anti'))
 
 # Showing only the temporal annotation
 sapphire_plot('PROGIDX_000000000022.dat', only_timeline = T)

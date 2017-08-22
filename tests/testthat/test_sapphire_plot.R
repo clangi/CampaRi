@@ -20,7 +20,8 @@ expect_that(sapphire_plot('REPIX_000000000021.dat', local_cut = FALSE), not(thro
 
 # Annotation preprocessing
 # ------------------------------
-ann <- matrix(sample(c(rep(1,100), rep(2,100))), nrow = 2, ncol = 100)
+# ann <- matrix(sample(c(rep(1,100), rep(2,100))), nrow = 2, ncol = 100)
+ann <- matrix(sample(c(1, 2, 3), size = 200, replace = T), nrow = 2, ncol = 100)
 # lets plot it!!!
 expect_that(sapphire_plot('REPIX_000000000021.dat', local_cut = FALSE, ann_trace = ann, reorder_annotation = T), not(throws_error())) # with ANNOTATION!!
 expect_that(sapphire_plot('REPIX_000000000021.dat', local_cut = FALSE, ann_trace = ann, annotate_snap_dist = T), not(throws_error())) # with distance values
@@ -45,45 +46,41 @@ expect_that(sapphire_plot('REPIX_000000000021.dat', only_timeline = T, horiz_lin
 expect_that(sapphire_plot('REPIX_000000000021.dat', only_timeline = T, horiz_lines_on_timeline = c(20,40,60,80), horiz_colored_areas = c(1,1,2,1,2)), not(throws_error()))
 expect_that(sapphire_plot('REPIX_000000000021.dat', only_timeline = T, sub_sampling_factor = 3), not(throws_error())) # subsampling the timeline of a factor 3
 expect_that(sapphire_plot('REPIX_000000000021.dat', only_timeline = T, points_on_timeline = c(20,40,60,80)), not(throws_error())) # green points on the timeline
+
+# legend stuff
+expect_that(sapphire_plot('REPIX_000000000021.dat', return_plot = F, local_cut = T, ann_trace = ann, timeline = T,
+                          rescaling_ann_col=F, specific_palette_annotation= c("#b47b00", "#000000"),
+                          annotation_type = 'continuous', legend_title = "Pot en min", legend_labels = c('gauche+', 'gauche-', 'anti')), not(throws_error()))
+expect_that(sapphire_plot('REPIX_000000000021.dat', return_plot = F, local_cut = T, ann_trace = ann, timeline = T,
+                          rescaling_ann_col=F, specific_palette_annotation= c("#b47b00", "#000000"),
+                          annotation_type = 'continuous', legend_title = "Pot en min", legend_labels = c('gauche+', 'gauche-', 'anti')), not(throws_error()))
+expect_that(sapphire_plot('REPIX_000000000021.dat', return_plot = F, local_cut = T, ann_trace = ann[1,], timeline = T,
+              rescaling_ann_col=F, specific_palette_annotation= c("#b47b00", "#000000", "#C70039"),
+              annotation_type = 'discrete', legend_title = "Pot en min", legend_labels = c('gauche+', 'gauche-', 'anti')), not(throws_error()))
+
+expect_that(sapphire_plot('REPIX_000000000021.dat', return_plot = F, local_cut = T, ann_trace = ann[1,], timeline = T,
+              rescaling_ann_col=F, specific_palette_annotation= c("#b47b00", "#000000"),
+              annotation_type = 'continuous', legend_title = "Pot en min", legend_labels = c('gauche+', 'gauche-', 'anti')), not(throws_error()))
+expect_that(sapphire_plot('REPIX_000000000021.dat', return_plot = F, local_cut = T, ann_trace = ann[1,], timeline = T,
+              rescaling_ann_col=F, annotation_type = 'discrete', legend_title = "Pot en min", legend_labels = c('gauche+', 'gauche-', 'anti')), not(throws_error()))  
+expect_that(sapphire_plot('REPIX_000000000021.dat', return_plot = F, local_cut = T, ann_trace = ann[1,], timeline = T,
+              rescaling_ann_col=T, annotation_type = 'discrete', legend_title = "Pot en min", legend_labels = c('gauche+', 'gauche-', 'anti')), not(throws_error()))  
+
+expect_that(sapphire_plot('REPIX_000000000021.dat', return_plot = F, local_cut = T, ann_trace = ann[1,], timeline = T,
+              rescaling_ann_col=F, annotation_type = 'continuous', legend_title = "Pot en min", legend_labels = c('gauche+', 'gauche-', 'anti')), not(throws_error()))
+
+# can I do it with only charachters?
+char_annotation <- factor(ann[1,])
+levels(char_annotation) <- c("#b47b00", "#000000", "#C70039")
+char_annotation <- as.character(char_annotation)
+expect_that(sapphire_plot('REPIX_000000000021.dat', return_plot = F, local_cut = T, ann_trace = char_annotation, timeline = T,
+              rescaling_ann_col=T, annotation_type = 'discrete', legend_title = "Pot en min", legend_labels = c('gauche+', 'gauche-', 'anti')), not(throws_error()))
+
+# what is winning? rescaling_ann_col, charachter annotation or palette? # palette over charachter over rescaling
+char_annotation <- factor(ann[1,])
+levels(char_annotation) <- c("#b47b00", "#02AB1E", "#C70039")
+char_annotation <- as.character(char_annotation)
+expect_that(sapphire_plot('REPIX_000000000021.dat', return_plot = F, local_cut = T, ann_trace = char_annotation, timeline = T,
+              rescaling_ann_col=T,specific_palette_annotation= c("#b47b00", "#000000", "#C70039"),
+              annotation_type = 'discrete', legend_title = "Pot en min", legend_labels = c('gauche+', 'gauche-', 'anti')), not(throws_error()))
 })
-
-
-
-
-
-
-
-
-
-
-
-
-# setwd('../../CampaRi/vignettes/to_d/')
-
-
-
-
-sapphire_plot('PROGIDX_000000000022.dat', return_plot = F, local_cut = T, ann_trace = ann, timeline = T,
-rescaling_ann_col=F, specific_palette_annotation= c("#b47b00", "#000000"),
-annotation_type = 'continuous', legend_title = "Nalegenda", legend_labels = c('marimba', 'surrioga', 'katanga', 'supergyoza'))  # ADD a specific palette!
-
-sapphire_plot('PROGIDX_000000000022.dat', return_plot = F, local_cut = T, ann_trace = ann, timeline = T,
-rescaling_ann_col=F, specific_palette_annotation= c("#b47b00", "#000000"),
-annotation_type = 'discrete', legend_title = "Nalegenda", legend_labels = c('marimba', 'katanga', 'supergyoza'))  # ADD a specific palette!
-traceback()
-
-
-xa <- seq(1,20000)
-ya <- rep(0, length(xa))
-anna <- as.factor(sample(c(1,2), size = length(xa), replace = T))
-ggplot() + geom_segment(aes(x = xa, y = ya, xend = xa, yend = ya + 1,
-                            col = ann), 
-                        size = 0.1) +
-  scale_color_manual(name = "tit", values = c("#b47b00", "#000000"),
-                     labels = c('bels1', 'bels2'))
-
-
-
-
-
-
