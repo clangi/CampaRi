@@ -1,0 +1,97 @@
+---
+title: "Mahalanobis distance"
+author: "Davide Garolini"
+date: "August 22, 2017"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{"Working with CampaRi"}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
+knitr::opts_knit$set(progress = FALSE)
+# knitr::opts_knit$set(root.dir="to_d/")```
+```
+## Finding the mahalanobis to enhance inter/intracluster distance
+
+This vignette will show the minimum code to enhance the SAPPHIRE plot using the metric optimization algorithm (find_mahalanobis).
+
+```{r}
+library(CampaRi)
+######################################## test mahalanobis distance
+# vars definitions
+n_elem <- 1000
+n_feat <- 3
+shift <- 1
+which_feat_to_shift <- 2:3
+
+# random initiatialization
+a <- matrix(rnorm(n_elem*n_feat), nrow = n_feat, ncol = n_elem) # gaussian N(0,1)
+b <- matrix(rnorm(n_elem*n_feat), nrow = n_feat, ncol = n_elem)
+c <- matrix(rnorm(n_elem*n_feat), nrow = n_feat, ncol = n_elem)
+# shifting
+a[which_feat_to_shift,] <- a[which_feat_to_shift,] + shift
+b[which_feat_to_shift,] <- b[which_feat_to_shift,] + shift
+c[which_feat_to_shift,] <- c[which_feat_to_shift,] - shift
+# normalizing
+a <- a/max(a)
+b <- b/max(b)
+c <- c/max(c)
+
+# run without mahalanobis
+tra <- cbind(a,b,c)
+adjl <- mst_from_trj(trj = t(tra), distance_method = 5)
+ret <- gen_progindex(adjl)
+gen_annotation(ret)
+sapphire_plot('itsoutput!', ann=c(rep(1,2*n_elem),rep(2,n_elem)), timeline = T, reorder_annotation=T)
+
+# find the distance
+Xad <- find_mahalanobis(a,b,c)
+
+# run with the found distance metric Xad
+tra <- cbind(a,b,c)
+adjl <- mst_from_trj(trj = t(tra), distance_method = 12, distance_matrix = Xad)
+ret <- gen_progindex(adjl)
+gen_annotation(ret)
+sapphire_plot('itsoutput2!', ann=c(rep(1,2*n_elem),rep(2,n_elem)), timeline = T, reorder_annotation=T)
+```
+
+
+You can also plot what happened to the random point data-set using plotly:
+```{r}
+# plotting it
+library(plotly)
+
+# classical (first plot these, after the transformed points)
+ap <- data.frame(t(a))
+bp <- data.frame(t(b))
+cp <- data.frame(t(c))
+
+# -----------------------------------------------------------------------------------
+# transformed in the new metric space (it is not a correct action for the lack of rotations)
+# let's transform the coordinate space 
+p_transform <- sqrt(diag(Xad))
+at <- sweep(x = a, MARGIN = 1, STATS = p_transform, FUN = `*`)
+bt <- sweep(x = b, MARGIN = 1, STATS = p_transform, FUN = `*`)
+ct <- sweep(x = c, MARGIN = 1, STATS = p_transform, FUN = `*`)
+ap <- data.frame(t(at))
+bp <- data.frame(t(bt))
+cp <- data.frame(t(ct))
+# -----------------------------------------------------------------------------------
+
+# plotting the points using plotly
+df <- rbind(ap,bp,cp)
+names(df) <- c('x','y','z')
+df <- cbind(df, cluster = c(rep('Cluster 1a', n_elem),rep('Cluster 1b', n_elem), rep('Cluster 2', n_elem)))
+
+df$cluster <- as.factor(df$cluster)
+
+p <- plot_ly(df, x = ~x, y = ~y, z = ~z, color = ~cluster, colors = c('#BF382A', '#0C4B8E')) %>%
+  add_markers() %>%
+  layout(scene = list(xaxis = list(title = 'x', range = c(-1, 1)),
+                      yaxis = list(title = 'y'),
+                      zaxis = list(title = 'z')))
+p
+```

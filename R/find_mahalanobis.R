@@ -23,7 +23,6 @@
 
 find_mahalanobis <- function(clu1e1, clu1e2, clu2, must_be_positive = TRUE, mute_fortran = FALSE){
   
-  
   # -----------------------------
   # input checks
   if(!is.numeric(clu1e1))

@@ -103,6 +103,10 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
   
   # Checking the Mahalanobis distance insertion
   if(!is.null(distance_matrix)){
+    if(!is.matrix(distance_matrix)){
+      if(!is.data.frame(distance_matrix)) stop('distance_matrix input must be a matrix or a data.frame')
+      distance_matrix <- as.matrix(distance_matrix)
+    }
     if(!is.numeric(distance_matrix))
       stop('distance_matrix must be a numerical vector. ')
     if(nrow(distance_matrix) != ncol(distance_matrix))
@@ -330,6 +334,9 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
     if(dump_to_netcdf){
       dfffo <- 10 # dimensional_flag_for_fixed_out
       return_tree_in_r <- FALSE # I need this to be consistent with the old pipeline
+      adj_deg <- 0
+      adj_ix <- 0
+      adj_dis <- 0.0
     # -------------
     #    R - old
     # -------------
@@ -339,11 +346,11 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
       if(n_snaps > 25000)
         stop("Using more than 25000 snapshots with no memory handling will generate a memory overflow (tested with 16gb RAM).
              Please set the option dump_to_netcdf as TRUE.")
+      adj_deg <- as.integer(rep(0,n_snaps))
+      adj_ix <- matrix(as.integer(rep(0,n_snaps*n_snaps)),n_snaps,n_snaps)
+      adj_dis <- matrix(as.single(rep(0.0,n_snaps*n_snaps)),n_snaps,n_snaps)
     }
     # setting the input-output silly variables (R-Fortran communication needs)
-    adj_deg <- as.integer(rep(0,n_snaps))
-    adj_ix <- matrix(as.integer(rep(0,n_snaps*n_snaps)),n_snaps,n_snaps)
-    adj_dis <- matrix(as.single(rep(0.0,n_snaps*n_snaps)),n_snaps,n_snaps)
     attr(adj_dis, "Csingle") <- TRUE
     attr(distance_matrix, 'Csingle') <- TRUE
     #main fortran talker

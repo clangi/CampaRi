@@ -44,9 +44,9 @@
 #' @importFrom data.table fread
 #' @importFrom grDevices dev.off jpeg
 #' @importFrom graphics hist plot 
+#' @importFrom plotly ggplotly
 #' @export sapphire_plot
 #' @import ggplot2
-#' @import plotly
 
 
 sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPlot = "plots/", return_plot = F, local_cut = TRUE,
@@ -803,7 +803,12 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   }
   
   # Plotly options
-  if(use_plotly) gg <- ggplotly(gg)
+  if(use_plotly) {
+    if(length(xx) > 15000)
+      warning('time-points (on the x downsampled eventually) are more than 15000. Ggplotly would be stupidly slow and crash. It will plotted normally.')
+    else
+      gg <- ggplotly(gg)
+  }
   
   # returning and/or plotting
   if(return_plot){

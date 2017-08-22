@@ -28,8 +28,8 @@
 #' @importFrom pcaPP PCAproj
 #' @importFrom stats princomp
 #' @importFrom stats loadings
+#' @importFrom plotly ggplotly
 #' @import ggplot2
-#' @import plotly
 #' 
 
 select_features <- function(trj, feature_selection = 'pca', n_princ_comp = floor(ncol(trj)/10), pca_method = 'R',
@@ -102,8 +102,12 @@ select_features <- function(trj, feature_selection = 'pca', n_princ_comp = floor
     # plotting it eventually
     if(plotit) appca <- autoplot(pcahah, data = cbind(trj, clusters = cluster_vector), colour = col, size=0.1*points_size, frame=frameit) + theme_minimal()
     if(return_plot) appca <- autoplot(pcahah, data = cbind(trj, clusters = cluster_vector), colour = col, size=0.1*points_size, frame=frameit) + theme_minimal()
-    if(plotly_it) appca <- ggplotly(appca)
-    
+    if(plotly_it) {
+      if(nrow(trj) > 15000)
+        warning('nrow(trj) is more than 15000. Ggplotly would be stupidly slow and crash. Consider reducing the dimensionality. It will plotted normally.')
+      else
+        appca <- ggplotly(appca)
+    }
     # Printing simple output and to file
     cat('PCA performed successfully.\n')
     cat('The most indipendent values selected are:', more_selected)
