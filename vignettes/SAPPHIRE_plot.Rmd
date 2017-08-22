@@ -12,7 +12,7 @@ vignette: >
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 knitr::opts_knit$set(progress = FALSE)
-# knitr::opts_knit$set(root.dir="to_d/")
+knitr::opts_knit$set(root.dir="to_d/")
 ```
 
 In this vignette we will describe roughly how to use the function sapphire_plot on the common output file of CAMPARI and CampaRi.
@@ -89,7 +89,10 @@ gg <- sapphire_plot('PROGIDX_000000000022.dat', return_plot = TRUE, local_cut = 
 # add theme classic and text
 gg + 
   ggplot2::theme_classic() + # changing the theme
-  ggplot2::annotate("text", x = rep(4000, 3), y = c(8.3, 8.80, 9.3), label = c("CCCH", "HCCC", "CCCC")) # annotate some text
+  ggplot2::annotate("text", x = rep(10500, 3), y = c(6.55, 6.9, 7.28), label = c("CCCH", "HCCC", "CCCC")) # annotate some text
+
+# legend adding
+
 
 # Showing only the temporal annotation
 sapphire_plot('PROGIDX_000000000022.dat', only_timeline = T)

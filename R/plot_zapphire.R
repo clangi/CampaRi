@@ -61,6 +61,9 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
                              'rescaling_ann_col', # if true the numerical ann are rescaled in grey
                              'reorder_horizline_on_timeline',
                              'reorder_points_on_timeline',
+                             'plot_legend', # plot the legend for the annotation
+                             'use_plotly',
+                             'uniform_color_timeline', # to put the timeline (and the distance annotation trace) in a simple black
                              
                              'timeline_proportion',
                              'background_height',
@@ -73,6 +76,10 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
                              'vertical_barriers_points', 
                              'specific_palette_timeline', 
                              'specific_palette_annotation',
+                             
+                             'legend_title',
+                             'legend_labels',
+                             'annotation_type',
                              
                              'general_size_annPoints',
                              'size_points_on_timeline')
@@ -88,6 +95,9 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   if(!('rescaling_ann_col' %in% names(input_args))) rescaling_ann_col <- TRUE  else rescaling_ann_col <- input_args[['rescaling_ann_col']]
   if(!('reorder_horizline_on_timeline' %in% names(input_args))) reorder_horizline_on_timeline <- FALSE else reorder_horizline_on_timeline <- input_args[['reorder_horizline_on_timeline']]
   if(!('reorder_points_on_timeline' %in% names(input_args))) reorder_points_on_timeline <- FALSE  else reorder_points_on_timeline <- input_args[['reorder_points_on_timeline']]
+  if(!('plot_legend' %in% names(input_args))) plot_legend <- FALSE  else plot_legend <- input_args[['plot_legend']]
+  if(!('use_plotly' %in% names(input_args))) use_plotly <- FALSE  else use_plotly <- input_args[['use_plotly']]
+  if(!('uniform_color_timeline' %in% names(input_args))) uniform_color_timeline <- FALSE  else use_plotly <- input_args[['uniform_color_timeline']]
   
   if(!('timeline_proportion' %in% names(input_args))) timeline_proportion <- NULL else timeline_proportion <- input_args[['timeline_proportion']]
   if(!('background_height' %in% names(input_args))) background_height <- NULL else background_height <- input_args[['background_height']]
@@ -100,6 +110,9 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   if(!('vertical_barriers_points' %in% names(input_args))) vertical_barriers_points <- NULL else vertical_barriers_points <- input_args[['vertical_barriers_points']]
   if(!('specific_palette_timeline' %in% names(input_args))) specific_palette_timeline <- NULL else specific_palette_timeline <- input_args[['specific_palette_timeline']]
   if(!('specific_palette_annotation' %in% names(input_args))) specific_palette_annotation <- NULL else specific_palette_annotation <- input_args[['specific_palette_annotation']]
+  if(!('legend_title' %in% names(input_args))) legend_title <- NULL else legend_title <- input_args[['legend_title']]
+  if(!('legend_labels' %in% names(input_args))) legend_labels <- NULL else legend_labels <- input_args[['legend_labels']]
+  if(!('annotation_type' %in% names(input_args))) annotation_type <- NULL else annotation_type <- input_args[['annotation_type']]
   
   if(!('general_size_annPoints' %in% names(input_args))) general_size_annPoints <- 1. else general_size_annPoints <- input_args[['general_size_annPoints']]
   if(!('size_points_on_timeline' %in% names(input_args))) size_points_on_timeline <- 0.01 else size_points_on_timeline <- input_args[['size_points_on_timeline']]
@@ -145,7 +158,11 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
     stop('rescaling_ann_col must be a logical.')
   if(!is.logical(use_plotly))
     stop('use_plotly must be a logical.')
-
+  if(!is.logical(plot_legend))
+    stop('plot_legend must be a logical.')
+  if(!is.logical(uniform_color_timeline))
+    stop('uniform_color_timeline must be a logical.')
+  
   # --------------------- 
   # putting on timeline if only timeline is on
   if(only_timeline && !timeline)
@@ -240,6 +257,42 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   if(!is.null(specific_palette_annotation) &&
      (!all(is.character(specific_palette_annotation)) || !all(nchar(specific_palette_annotation)==7) || !all(sapply(specific_palette_annotation, function(x){substring(x,1,1)}) == "#")))
     stop('specific_palette_annotation must be of the type "#b47b00", "#D9E000" (7 characters starting with #')
+  
+  
+  # ---------------------
+  # checking assignments for legend title and legend labels
+  leg_tit <- NULL
+  leg_lab <- NULL
+  if(!plot_legend && (!is.null(legend_title) || !is.null(legend_labels) || !is.null(annotation_type))){
+    warning('Inserted legend_title or legend_labels or annotation_type variables WITHOUT activating plot_legend. This option will be turned on automatically.')
+    plot_legend <- TRUE
+  }
+  if(plot_legend){
+    
+    # checking the legend title
+    if(!is.null(legend_title)){
+      if(!is.character(legend_title))
+        stop('legend_title must be a character.')
+      if(length(legend_title) != 1)
+        stop('legend_title must be a SINGLE character.')
+      
+      leg_tit <- legend_title
+    }else{
+      leg_tit <- 'Legend'
+    }
+    
+    # checking the labels
+    if(!is.null(legend_labels)){
+      if(!is.character(legend_labels))
+        stop('legend_labels must be a vector of characters.')
+      if(!is.null(dim(legend_labels)))
+         stop('legend_labels must be a vector of characters (found more than 1 dimension).')
+      leg_lab <- c(legend_labels)
+    }else{
+      warning('No label inserted for the legend. they will be assigned to integers.')
+      leg_lab <- NULL
+    }
+  }
   
   # ---------------------
   # checking ann_trace input
@@ -517,9 +570,45 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
     ann_init <- ymax*3/4.
   }
 
-  # ---------------------
+  # -------------------------------------------------------------------------------------
   # main trace - plotting
-  # one line trace
+  # some specific search and check for the legend (continuous vs discrete)
+  if(!no_trace && plot_legend){
+    ann_tmp <- NULL
+    if(!is.null(annotation_type)){
+      if(!is.character(annotation_type) || length(annotation_type) != 1  || !(annotation_type %in% c('discrete', 'continuous')))
+        stop('Annotation_type variable must be a signle charachter between "discrete" and "continuous".')
+    }else{
+      cat('No option selected for the kind of annotation (annotation_type will be mainly used for the legend). 
+           This option will be selected automatically then. \n')
+      
+      ann_tmp <- factor(ann_tr)
+      
+      if(length(levels(ann_tmp)) <= 10) annotation_type <- 'discrete'
+      else annotation_type <- 'continuous'
+      if(rescaling_ann_col) annotation_type <- 'discrete'
+    }
+    
+    # checks on the discrete annotation_type
+    if(annotation_type == 'discrete'){
+      if(is.null(ann_tmp)) ann_tmp <- factor(ann_tr)
+      if(length(specific_palette_annotation) != length(levels(ann_tmp)))
+        stop('When using a discrete annotation_type please set the specific_palette_annotation to the same number of factors in the annotation.')
+      if(is.null(leg_lab)) leg_lab <- seq(1, length(specific_palette_annotation))
+      if(!is.null(leg_lab) && length(leg_lab) != length(specific_palette_annotation))
+        stop('Inserted different number of labels than colors. In the discrete annotation mode this cannot be done.')
+      if(!is.null(leg_lab) && length(leg_lab) != length(levels(ann_tmp)))
+        stop('Inserted different number of labels than factors in the annotation (e.g. different numbers 1-2-3). In the discrete annotation mode this cannot be done.')  
+    # checks on the continuous annotation_type
+    }else if(annotation_type == 'continuous'){
+      if(is.null(leg_lab)) leg_lab <- seq(1, length(specific_palette_annotation))
+      # check on the leg_lab
+      if(!is.null(leg_lab) && length(leg_lab) > length(specific_palette_annotation))
+        warning('Inserted more labels than colors. It will be done anyway.')
+    }
+  }
+  if(!no_trace) cat('Annotation inserted consists of the following kind of clusters:', annotation_type, '\n')
+  # ------------------------------------------------------------------------------------- one line trace
   if(!no_trace && one_line_trace && !annotate_snap_dist){
     if(is.null(specific_palette_annotation)){
       gg <- gg + geom_segment(aes(xx, 
@@ -541,69 +630,83 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
       gg <- gg + scale_color_gradientn(colours = specific_palette_annotation, guide = FALSE) #  guide_legend(title = "Days")
       # gg <- gg + guides(colour=FALSE)
     }
-    # multi line trace
-    }else if(!no_trace && multi_line_trace && !annotate_snap_dist){
+    
+  # ------------------------------------------------------------------------------------- multi line trace
+  }else if(!no_trace && multi_line_trace && !annotate_snap_dist){
+    
+    # var init  
+    height_one_band <- background_height/n_lines_annotation
+    y_multilines <- array(NA, dim = c(n_lines_annotation, length(xx)))
+    x_multilines <- rep(xx, n_lines_annotation)
+    # sequential add of the height of the horizontal band
+    for(i in 1:n_lines_annotation){
+      y_multilines[i,] <- rep(ann_init, length(xx)) + height_one_band*(i-1)
+      if(sub_sampling_factor!=1)
+        ann_tr[i,] <- ann_tr[i,][seq(1, Nsnap, sub_sampling_factor)]
+    }
+    # main vectorization and plot 
+    # -------------------------------------- no colorpalette
+    if(is.null(specific_palette_annotation)){
+      gg <- gg + geom_segment(aes(x = c(x_multilines),
+                              y = c(t(y_multilines)),
+                              xend = c(x_multilines),
+                              yend = c(t(y_multilines) + height_one_band)),
+                              col = c(t(ann_tr)),
+                              size = 0.1*general_size_annPoints)
       
-      # var init  
-      height_one_band <- background_height/n_lines_annotation
-      y_multilines <- array(NA, dim = c(n_lines_annotation, length(xx)))
-      x_multilines <- rep(xx, n_lines_annotation)
-      # sequential add of the height of the horizontal band
-      for(i in 1:n_lines_annotation){
-        y_multilines[i,] <- rep(ann_init, length(xx)) + height_one_band*(i-1)
-        if(sub_sampling_factor!=1)
-          ann_tr[i,] <- ann_tr[i,][seq(1, Nsnap, sub_sampling_factor)]
-      }
-      # main vectorization and plot
-      if(is.null(specific_palette_annotation)){
-        gg <- gg + geom_segment(aes(x = c(x_multilines),
-                                y = c(t(y_multilines)),
-                                xend = c(x_multilines),
-                                yend = c(t(y_multilines) + height_one_band)),
-                                col = c(t(ann_tr)),
-                                size = 0.1*general_size_annPoints)
-    # specific color palette
+    # --------------------------------------  specific color palette
     }else{
       if(rescaling_ann_col)
         stop('The specific insertion of a palette collides with the rescaling of the colors. Please turn it off to use the specific palette option.')
-      # here I need a loop for the specific palette
-      # gg <- gg + geom_segment(aes(x = c(x_multilines),
-      #                             y = c(t(y_multilines)),
-      #                             xend = c(x_multilines),
-      #                             yend = c(t(y_multilines) + height_one_band)),
-      #                             col = c(t(ann_tr)), # WRONG must go inside the aes 
-      #                         size = 0.1*general_size_annPoints)
-      # for(i in 1:n_lines_annotation){
-      #   gg + geom_segment(aes(x = c(x_multilines)[(1:Nsnap)*i],
-      #                         y = c(t(y_multilines))[(1:Nsnap)*i],
-      #                         xend = c(x_multilines)[(1:Nsnap)*i],
-      #                         yend = c(t(y_multilines) + height_one_band)[(1:Nsnap)*i], 
-      #                         col = c(t(ann_tr))[(1:Nsnap)*i]),
-      #                     size = 0.1*general_size_annPoints)
-      #   gg <- gg + scale_color_gradientn(colours = specific_palette_annotation, guide = FALSE) #  guide_legend(title = "Days")
-      # }
+      browser()
+      ann_tr_tmp <- c(t(ann_tr))
+      if(annotation_type == 'discrete') ann_tr_tmp <- as.factor(ann_tr_tmp)
+      # normal handling of the plot
       gg <- gg + geom_segment(aes(x = c(x_multilines),
                                   y = c(t(y_multilines)),
                                   xend = c(x_multilines),
                                   yend = c(t(y_multilines) + height_one_band),
-                                  col = c(t(ann_tr))), # WRONG must go inside the aes
+                                  col = ann_tr_tmp), # WRONG must go inside the aes
                               size = 0.1*general_size_annPoints)
-      gg <- gg + scale_color_gradientn(colours = specific_palette_annotation, guide = FALSE) #  guide_legend(title = "Days")
+      
+      # If the legend must be plotted:
+      if(plot_legend){
+        # discrete case
+        if(annotation_type == 'discrete'){
+          gg <- gg + scale_color_manual(name = leg_tit,
+                                        values = specific_palette_annotation,
+                                        labels = leg_lab) +
+                guides(color = guide_legend(override.aes = list(size=5))) # makes the lagend box bigger 
+        # continuous case
+        }else if(annotation_type == 'continuous'){
+
+          gg <- gg + scale_color_gradientn(leg_tit, na.value = 'transparent', colours = specific_palette_annotation,
+                                           breaks = seq(min(ann_tr_tmp), max(ann_tr_tmp), length.out = length(leg_lab)),
+                                           labels = leg_lab) 
+        }else{
+          stop('annotation_type must be continuous or discrete')
+        }
+      # no legend to plot
+      }else{
+        gg <- gg + scale_color_gradientn(colours = specific_palette_annotation, guide = FALSE) #  guide_legend(title = "Days")
+      }
     } 
   }
   
-  # ---------------------
+  # -------------------------------------------------------------------------------------
   # SETING: NO MORE THAN ONE ANN LINE AVAILABLE - annotation preparation for timeline and annotation of snap distance
   if(timeline || annotate_snap_dist){
     single_line_general_ann <- array("gray1", dim = Nsnap)
-    if(one_line_trace){
-      single_line_general_ann <- ann_tr
-    }else if(multi_line_trace){
-      single_line_general_ann <- ann_tr[1,]
-      warning('timeline color kept as first line in annotation trace inserted (it is multiple lines).')
+    if(!no_trace && uniform_color_timeline){
+      if(one_line_trace){
+        single_line_general_ann <- ann_tr
+      }else if(multi_line_trace){
+        single_line_general_ann <- ann_tr[1,]
+        warning('timeline color kept as first line in annotation trace inserted (it is multiple lines).')
+      }
     }
   }
-  # ---------------------
+  # -------------------------------------------------------------------------------------
   # plotting the distance between snapshots (on top of everything)
   if(annotate_snap_dist){
     max_snap_dist <- max(pin[,5])
@@ -615,7 +718,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
                             size = 0.1*general_size_annPoints)
   }
   
-  # ---------------------
+  # -------------------------------------------------------------------------------------
   # timeline at the bottom
   if(timeline){
     # setting timeline proportions
@@ -629,7 +732,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
       tp <- 1.0/6
     }
     
-    # only timeline
+    # ---------------------------------------- only timeline
     if(only_timeline){
       
       ymax <- Nsnap
@@ -659,7 +762,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
         annotate("text", label = "100%", x = -Nsnap/90, y = Nsnap, size = 3, angle = 90) +
         xlab("Progress Index") + ylab("Temporal annotation")
 
-    # normal timeline trace (no only)      
+    # ----------------------------------------  normal timeline trace (no only)      
     }else{
       # without palette
       if(is.null(specific_palette_timeline)){
@@ -681,6 +784,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
         annotate("text", label = "100%", x = -Nsnap/90, y = 1.0*ymax*tp, size = 3, angle = 90)
     }
     
+    # -------------------------------------------------------------------------------------
     # printing horizontal lines on the timeline annotation
     if(!is.null(horiz_lines_on_timeline)){
       
@@ -765,6 +869,9 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   #                           size=0.4*general_size_annPoints, col = color_vertical_line)
   # }
 
+  
+  
+  # -------------------------------------------------------------------------------------
   # basic annotation (principal cut)
   if(!only_timeline){
     main_col <- 'darkblue'
@@ -781,7 +888,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   
   
   
-  # -----------------------
+  # -------------------------------------------------------------------------------------
   # title and theme
   gg <- gg + ggtitle(title) + theme_minimal()
   
@@ -802,6 +909,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
     dev.off()
   }
   
+  # -------------------------------------------------------------------------------------
   # Plotly options
   if(use_plotly) {
     if(length(xx) > 15000)
@@ -810,6 +918,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
       gg <- ggplotly(gg)
   }
   
+  # -------------------------------------------------------------------------------------
   # returning and/or plotting
   if(return_plot){
     if(return_ann_trace) warning('No returning of ann_trace is possible if return_plot option is activated')
