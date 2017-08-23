@@ -175,7 +175,7 @@ select_features <- function(trj, feature_selection = 'pca', n_princ_comp = floor
     if(plotit || return_plot){
       data_to_plot <- as.data.frame(cbind(trj, cls = cluster_vector))
       data_to_plot[, ncol(data_to_plot)] <- as.factor(data_to_plot[, ncol(data_to_plot)])
-      names(data_to_plot)[length(names(data_to_plot))] <- col 
+      if(!is.null(col)) names(data_to_plot)[length(names(data_to_plot))] <- col 
       appca <- autoplot(pcahah, data = data_to_plot, colour = col, size=0.1*points_size, frame=frameit, frame.type = 'norm', frame.colour = col) + theme_minimal()
       # plot the legend
       if(plot_legend){

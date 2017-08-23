@@ -38,7 +38,6 @@ test_that('feature selection and its plotting', {
   expect_that(select_features(data_f, feature_selection = 'pca', 
                   plotit = T, frameit = F, plotly_it = F, points_size = 1.3, cluster_vector = clu_vector,
                   plot_legend = T, specific_palette = c("#b47b00", "#000000")), not(throws_error()))
-  
   expect_that(select_features(data_f, feature_selection = 'pca', 
                   plotit = T, frameit = T, points_size = 1.3, cluster_vector = clu_vector,
                   plot_legend = T), not(throws_error()))

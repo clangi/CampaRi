@@ -17,7 +17,7 @@ knitr::opts_knit$set(progress = FALSE)
 
 ## Feature selection
 
-Using the default R PCA algorithms (or the enhanced ones which are slow (PCAproj)) this function select the features with the biggest loading. It is also possible to plot the result in 2-3 components.
+Using the default R PCA algorithms (or the enhanced ones which are slow (PCAproj)) this function select the features with the biggest loading. It is also possible to plot the result in 2 components.
 
 ```{r}
 library(mlbench)
