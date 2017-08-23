@@ -75,7 +75,7 @@ select_features <- function(trj, feature_selection = 'pca', n_princ_comp = floor
         stop('The cluster vector must be numeric.')
       if(any(cluster_vector %% 1 != 0))
         stop('Only integers can be inserted.')
-      col <- 'clusters'
+      col <- 'Clusters'
     }else{
       col <- NULL
       cluster_vector <- rep(1, nrow(trj))
@@ -96,8 +96,10 @@ select_features <- function(trj, feature_selection = 'pca', n_princ_comp = floor
         
         leg_tit <- legend_title
       }else{
-        leg_tit <- 'Legend'
+        leg_tit <- 'Clusters'
       }
+      col <- leg_tit # to make them overlap (shade and legend)
+      
       # checking the labels
       if(!is.null(legend_labels)){
         if(!is.character(legend_labels))
@@ -128,6 +130,8 @@ select_features <- function(trj, feature_selection = 'pca', n_princ_comp = floor
         stop('There are too many levels (clusters > 20).')
       }
     }
+    if(plotly_it && frameit)
+      stop('plotly_it and frameit creates weird legends if this last is plotted. Avoid to use these options toghether')
   }else{
     if(!is.null(cluster_vector))
       stop('Please put plotit variables TRUE if you want to define the clusters to plot.')
@@ -169,11 +173,14 @@ select_features <- function(trj, feature_selection = 'pca', n_princ_comp = floor
   
     # plotting it eventually
     if(plotit || return_plot){
-      appca <- autoplot(pcahah, data = cbind(trj, clusters = cluster_vector), colour = col, size=0.1*points_size, frame=frameit) + theme_minimal()
+      data_to_plot <- as.data.frame(cbind(trj, cls = cluster_vector))
+      data_to_plot[, ncol(data_to_plot)] <- as.factor(data_to_plot[, ncol(data_to_plot)])
+      names(data_to_plot)[length(names(data_to_plot))] <- col 
+      appca <- autoplot(pcahah, data = data_to_plot, colour = col, size=0.1*points_size, frame=frameit, frame.type = 'norm', frame.colour = col) + theme_minimal()
       # plot the legend
       if(plot_legend){
         appca <- appca + scale_color_manual(name = leg_tit, values = specific_palette, labels = leg_lab) + 
-          guides(color = guide_legend(override.aes = list(size=5)))
+          guides(color = guide_legend(override.aes = list(size=points_size)))
       }else{
         if(!is.null(specific_palette))
           appca <- appca + scale_color_gradientn(colours = specific_palette, guide = FALSE)
