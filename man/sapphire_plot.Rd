@@ -41,7 +41,8 @@ produce a gray scale horizontal annotation.}
 
 \item{...}{Other options are: 'only_timeline', 'reorder_annotation', 'annotate_snap_dist', 'rescaling_ann_col', 'reorder_horizline_on_timeline', 
 'reorder_points_on_timeline', 'timeline_proportion', 'background_height', 'ann_initial_point', 'horiz_lines_on_timeline',  'horiz_colored_areas', 'points_on_timeline',  
-'vertical_barriers_points', 'specific_palette_timeline', 'specific_palette_annotation',  'general_size_annPoints', 'size_points_on_timeline'}
+'vertical_barriers_points', 'specific_palette_timeline', 'specific_palette_annotation',  'general_size_annPoints', 'size_points_on_timeline' 
+'plot_legend', 'use_plotly', uniform_color_timeline',  'legend_title', 'legend_labels', 'annotation_type' ('continuous' or 'discrete')}
 }
 \value{
 If \code{ann_trace_ret} is active it will return the annotation trace used for the plot.
