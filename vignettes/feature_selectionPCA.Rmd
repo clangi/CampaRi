@@ -1,0 +1,40 @@
+---
+title: "Feature selection (PCA)"
+author: "Davide Garolini"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Feature selection (PCA)}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
+knitr::opts_knit$set(progress = FALSE)
+# knitr::opts_knit$set(root.dir="to_d/")
+```
+
+## Feature selection
+
+Using the default R PCA algorithms (or the enhanced ones which are slow (PCAproj)) this function select the features with the biggest loading. It is also possible to plot the result in 2-3 components.
+
+```{r}
+library(mlbench)
+data(PimaIndiansDiabetes)
+
+
+
+
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
