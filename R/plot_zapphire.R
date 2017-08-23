@@ -98,7 +98,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   if(!('reorder_points_on_timeline' %in% names(input_args))) reorder_points_on_timeline <- FALSE  else reorder_points_on_timeline <- input_args[['reorder_points_on_timeline']]
   if(!('plot_legend' %in% names(input_args))) plot_legend <- FALSE  else plot_legend <- input_args[['plot_legend']]
   if(!('use_plotly' %in% names(input_args))) use_plotly <- FALSE  else use_plotly <- input_args[['use_plotly']]
-  if(!('uniform_color_timeline' %in% names(input_args))) uniform_color_timeline <- FALSE  else use_plotly <- input_args[['uniform_color_timeline']]
+  if(!('uniform_color_timeline' %in% names(input_args))) uniform_color_timeline <- FALSE  else uniform_color_timeline <- input_args[['uniform_color_timeline']]
   
   if(!('timeline_proportion' %in% names(input_args))) timeline_proportion <- NULL else timeline_proportion <- input_args[['timeline_proportion']]
   if(!('background_height' %in% names(input_args))) background_height <- NULL else background_height <- input_args[['background_height']]
@@ -748,7 +748,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   # SETING: NO MORE THAN ONE ANN LINE AVAILABLE - annotation preparation for timeline and annotation of snap distance
   if(timeline || annotate_snap_dist){
     single_line_general_ann <- array("gray1", dim = Nsnap)
-    if(!no_trace && uniform_color_timeline){
+    if(!no_trace && !uniform_color_timeline){
       if(one_line_trace){
         single_line_general_ann <- ann_tr
       }else if(multi_line_trace){
