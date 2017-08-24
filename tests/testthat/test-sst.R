@@ -19,4 +19,6 @@ test_that('Building a short spanning tree', {
   expect_true(!is.null(ret2))
   plottt <- sapphire_plot(sap_file = 'REPIX_000000000021.dat', title = "CAMPARI WRAPPER - MST", return_plot = TRUE)
   expect_true(!is.null(plottt))
+  if(file.exists('MST_DUMPLING.nc')) file.remove('MST_DUMPLING.nc')
+  if(file.exists('REPIX_000000000021.dat')) file.remove('REPIX_000000000021.dat')
 })

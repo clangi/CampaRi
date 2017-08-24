@@ -86,4 +86,6 @@ expect_that(sapphire_plot('REPIX_000000000021.dat', return_plot = F, local_cut =
 expect_that(sapphire_plot('REPIX_000000000021.dat', return_plot = F, local_cut = T, ann_trace = char_annotation, timeline = T, uniform_color_timeline=T,
                           rescaling_ann_col=T,specific_palette_annotation= c("#b47b00", "#000000", "#C70039"),
                           annotation_type = 'discrete', legend_title = "Pot en min", legend_labels = c('gauche+', 'gauche-', 'anti')), not(throws_error()))
+if(file.exists('MST_DUMPLING.nc')) file.remove('MST_DUMPLING.nc')
+if(file.exists('REPIX_000000000021.dat')) file.remove('REPIX_000000000021.dat')
 })

@@ -17,6 +17,7 @@ test_that('Building a minimum spanning tree', {
 	ret2 <- gen_annotation(ret, snap_start = 21, local_cut_width = 10)
 	expect_true(!is.null(ret2))
 
-	
+	if(file.exists('MST_DUMPLING.nc')) file.remove('MST_DUMPLING.nc')
+	if(file.exists('REPIX_000000000021.dat')) file.remove('REPIX_000000000021.dat')
 })
 

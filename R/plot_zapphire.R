@@ -636,7 +636,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
         warning('Inserted more labels than colors. It will be done anyway.')
     }
   }
-  if(!no_trace) cat('Annotation inserted consists of the following kind of clusters:', annotation_type, '\n')
+  if(!no_trace && plot_legend) cat('Annotation inserted for the legend consists of the following kind of clusters:', annotation_type, '\n')
   # ------------------------------------------------------------------------------------- one line trace
   if(!no_trace && one_line_trace && !annotate_snap_dist){
     if(is.null(specific_palette_annotation)){

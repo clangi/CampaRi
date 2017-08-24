@@ -17,4 +17,6 @@ ATOM  6     3H    ACE  A    1 30.35 46.85 44.73     1    0'
   library(data.table)
   data_f <- fread(data_f, data.table = F)
   expect_that(write_pdb(trj = data_f, file_name = "acciaio_inox.pdb", method = "automatic_safe", dim_check = F), not(throws_error()))
+  if(file.exists('acciaio_inox.pdb')) file.remove("acciaio_inox.pdb")
+  if(file.exists('seq.in')) file.remove("seq.in")
 })
