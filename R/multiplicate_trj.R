@@ -31,7 +31,7 @@ multiplicate_trj <- function(trj, window = NULL, overlapping_reduction = NULL, m
   if(!is.null(method) && (!is.character(method) || !(method %in% available_methods)))
     stop('Invalid entry for method variable.')
   
-  if(method == 'sincos'){
+  if(!is.null(method) && method == 'sincos'){
     trj_met <- matrix(NA, nrow = nrow(trj), ncol = ncol(trj)*2)
     for(i in 1:dim(trj)[1]){
       sins <- sapply(X = trj[i,], FUN = sin)

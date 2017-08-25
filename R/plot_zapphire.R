@@ -98,7 +98,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   if(!('reorder_points_on_timeline' %in% names(input_args))) reorder_points_on_timeline <- FALSE  else reorder_points_on_timeline <- input_args[['reorder_points_on_timeline']]
   if(!('plot_legend' %in% names(input_args))) plot_legend <- FALSE  else plot_legend <- input_args[['plot_legend']]
   if(!('use_plotly' %in% names(input_args))) use_plotly <- FALSE  else use_plotly <- input_args[['use_plotly']]
-  if(!('uniform_color_timeline' %in% names(input_args))) uniform_color_timeline <- FALSE  else uniform_color_timeline <- input_args[['uniform_color_timeline']]
+  if(!('uniform_color_timeline' %in% names(input_args))) uniform_color_timeline <- TRUE  else uniform_color_timeline <- input_args[['uniform_color_timeline']]
   
   if(!('timeline_proportion' %in% names(input_args))) timeline_proportion <- NULL else timeline_proportion <- input_args[['timeline_proportion']]
   if(!('background_height' %in% names(input_args))) background_height <- NULL else background_height <- input_args[['background_height']]
@@ -262,7 +262,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   # possible color overlapping
   if(!is.null(specific_palette_annotation) && rescaling_ann_col)
     warning('As you inserted a specific palette the color rescaling (grayscale) will not considered.')
-  
+  if(!is.null(specific_palette_annotation) && rescaling_ann_col) rescaling_ann_col <- FALSE
   # ---------------------
   # checking assignments for legend title and legend labels
   leg_tit <- NULL

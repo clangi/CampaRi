@@ -7,7 +7,8 @@
 select_features(trj, feature_selection = "pca",
   n_princ_comp = floor(ncol(trj)/10), pca_method = "R", plotit = FALSE,
   frameit = FALSE, return_plot = FALSE, cluster_vector = NULL,
-  plotly_it = FALSE, points_size = 1)
+  plotly_it = FALSE, points_size = 1, specific_palette = NULL,
+  plot_legend = FALSE, legend_title = NULL, legend_labels = NULL)
 }
 \arguments{
 \item{trj}{Input trajectory (variables on the columns and equal-time spaced snpashots on the row). It must be a \code{matrix} or a \code{data.frame} of numeric.}
