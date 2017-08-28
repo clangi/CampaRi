@@ -979,7 +979,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
     if(return_ann_trace) warning('No returning of ann_trace is possible if return_plot option is activated')
     invisible(gg)
   }else{
-    plot(gg)
+    print(gg)
     if(return_ann_trace) invisible(ann_tr)
   }
 }

@@ -89,6 +89,9 @@ r-packages:
   - Hmisc
   - distr
   - sfsmisc
+  - plotly
+  - ggfortify
+  - PairViz
 #  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; WGCNA ; fi 
   
 after_script:

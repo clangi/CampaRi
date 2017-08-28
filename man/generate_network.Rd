@@ -5,14 +5,20 @@
 \title{Create a network for each snapshots}
 \usage{
 generate_network(trj, window = NULL, method = "wgcna",
-  overlapping_reduction = NULL, transpose_trj = FALSE, ...)
+  post_processing_method = NULL, overlapping_reduction = NULL,
+  transpose_trj = FALSE, ...)
 }
 \arguments{
 \item{trj}{Input trajectory (variables on the columns and equal-time spaced snpashots on the row). It must be a \code{matrix} or a \code{data.frame} of numeric.}
 
 \item{window}{Number of snapshots taken before and after the considered snapshot.}
 
-\item{method}{Supported pairwise similarity measures are 'wgcna', 'binary', 'euclidean', 'maximum', 'canberra', 'minkowski', 'covariance'}
+\item{method}{Supported pairwise similarity measures are 'wgcna', 'binary', 'euclidean', 'maximum', 'canberra', 'minkowski', 'covariance', 
+'MI_MM',}
+
+\item{post_processing_method}{'path_euclidean', 'path_minkowski', 'path_manhattan', 'path_maximum', 'path_canberra', 'path_binary' will find the distance path to make
+an hamiltonian cycle. 'svd' if a singular vector decomposition will be used to have the diagional of the d matrix as output. With 'SymmetricUncertainty' you will have
+AdjacencySymmetricUncertainty=2*I(X;Y)/(H(X)+H(Y)) [method='MI_*' must be active].}
 
 \item{overlapping_reduction}{Not yet supported (It will if a great number of snapshots will be considered in this analysis - snapshot selection)}
 

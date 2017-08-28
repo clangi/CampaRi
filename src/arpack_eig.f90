@@ -393,7 +393,7 @@ module arpack_eig
                   lworkl, ierr )
                   ! if(superverbose) print *, "Real parts of eigenvalues:", d(:,1)
              if(superverbose) print *, "The corresponding eigenvectors are &
-             returned in the first ", iparam(5), " columns (iparam(5))."
+             &returned in the first ", iparam(5), " columns (iparam(5))."
     !        %------------------------------------------------%
     !        | The real parts of the eigenvalues are returned |
     !        | in the first column of the two dimensional     |
@@ -440,7 +440,7 @@ module arpack_eig
     !              | accurate to the requested |
     !              | tolerance)                |
     !              %---------------------------%
-                   if (d(j,2) == zero)  then ! Ritz value is real
+                   if (d(j,2) .eq. zero)  then ! Ritz value is real
                       call av(nx, v(1,j), ax)
                       call saxpy(n, -d(j,1), v(1,j), 1, ax, 1)
                       d(j,3) = snrm2(n, ax, 1)
@@ -507,18 +507,15 @@ module arpack_eig
              end do
              if(superverbose) print *, ' '
           end if
-     9000 continue
-          end
+        end
 
     !*******************************************************************************
     ! This function is the main input to our problems
     ! You can define a new product or a particolar relationship
     subroutine av (nx, x, y)
       implicit none
-      integer nx, j
+      integer nx
       Real x(nx), y(nx), help(nx,1)
-      Real one
-      parameter (one = 1.0E+0)
       help(:,1) = x
       help = matmul(A, help) ! simple matrix A * x multiplication
       y = help(:,1)
