@@ -13,6 +13,7 @@ contains
 ! by the inter-cluster distance MINUS the intra-cluster distance
 !
   subroutine rho_f(which, rho_out)
+    use gutenberg
     implicit none
     integer, intent(in) :: which
     real, intent(out) :: rho_out
@@ -43,7 +44,8 @@ contains
         end if
       end do
       ! print it
-      print *, sum(ave_distance)/(n_triplets*1.0), " : different clusters(i_k) distance(mean) "
+      call srpr(" : different clusters(i_k) distance(mean): ", &
+      & sum(ave_distance)/(n_triplets*1.0))
       ! ------------------------------ I_J (internal clusters)
       do iter=1, n_triplets
         if(detailed_print_rho) then
@@ -59,7 +61,8 @@ contains
         end if
       end do
       ! print it
-      print *, sum(ave_distance)/(n_triplets*1.0), " : same cluster(i_j) distance(mean) "
+      call srpr(" : same cluster(i_j) distance(mean): ", &
+      & sum(ave_distance)/(n_triplets*1.0))
     end if
   end subroutine
 
@@ -216,28 +219,28 @@ contains
     ! main Wolfe condition loop
     do while (any(cond1 .lt. 0.0) .or. any(cond2 .lt. 0.0))
       ! X_i + alpha*p_i
-      where(a .eq. 0) alpha_dir = alpha_dir*step
+      where(a .eq. 0.0) alpha_dir = alpha_dir*step
       X_k = x_supertemp + alpha_dir*search_dir
 
       ! Blocking a from going down more than 0.01 (useless)
       if(any(alpha_dir .lt. 0.01)) then
-        where(alpha_dir .lt. 0.01) alpha_dir = 0
-        where(alpha_dir .lt. 0.01) a = 1
+        where(alpha_dir .lt. 0.01) alpha_dir = 0.0
+        where(alpha_dir .lt. 0.01) a = 1.0
       end if
 
       ! if the X_k is positive after the first alpha -> found
-      where(X_k .gt. 0.0) a = 1
+      where(X_k .gt. 0.0) a = 1.0
 
       ! Check to avoid useless loops (original x small and negative direction)
       if(any(x_supertemp .lt. 0.01 .and. search_dir .lt. 0.0) ) then
-        where(x_supertemp .lt. 0.01 .and. search_dir .lt. 0.0) a = 1
-        where(x_supertemp .lt. 0.01 .and. search_dir .lt. 0.0) alpha_dir = 0
+        where(x_supertemp .lt. 0.01 .and. search_dir .lt. 0.0) a = 1.0
+        where(x_supertemp .lt. 0.01 .and. search_dir .lt. 0.0) alpha_dir = 0.0
       end if
 
       ! faster convergence of a to 0 if it is next to 0
-      if(any(a .eq. 0 .and. alpha_dir .lt. 0.25)) step = 0.6
+      if(any(a .eq. 0.0 .and. alpha_dir .lt. 0.25)) step = 0.6
       ! if(any(a .eq. 0 .and. alpha_dir .lt. 0.25)) print *, "step to 0.6"
-      if(any(a .eq. 0 .and. alpha_dir .lt. 0.1)) step = 0.3
+      if(any(a .eq. 0.0 .and. alpha_dir .lt. 0.1)) step = 0.3
       ! if(any(a .eq. 0 .and. alpha_dir .lt. 0.1)) print *, "step to 0.3"
 
       ! Calculate the new X_k to use (with new direction)
@@ -254,7 +257,7 @@ contains
       ! print *, count, ": ", any(cond1 .lt. 0.0), any(cond2 .lt. 0.0)
 
       ! Exit condition for a positive X (a == 1 means that alpha found is right)
-      if(all(X_k .gt. 0.0) .and. all(a .eq. 1)) exit
+      if(all(X_k .gt. 0.0) .and. all(a .eq. 1.0)) exit
 
       ! Counting the number of iterations
       if(count .eq. count_max) then

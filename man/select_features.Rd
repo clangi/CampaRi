@@ -28,7 +28,17 @@ select_features(trj, feature_selection = "pca",
 \item{cluster_vector}{This option can be used to set the clusters you want and show them with different colors (and shades if \code{frameit = TRUE}). 
 Please set this option with the same dimensionality of the trj (n_snapshots) and use integer numbers (to define the clusters).}
 
+\item{plotly_it}{Plot the PCA components using ggplotly (dynamic plots, to use only with reduced dimensionality).}
+
 \item{points_size}{It must be a number and it defines the size of the points.}
+
+\item{specific_palette}{use some specific color for the clusters}
+
+\item{plot_legend}{plot the legend}
+
+\item{legend_title}{define a title for the legend}
+
+\item{legend_labels}{labels for the legend}
 }
 \value{
 It will return a modified trajectory matrix and print the principal components vector.

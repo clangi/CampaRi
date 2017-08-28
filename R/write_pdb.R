@@ -19,8 +19,8 @@
 #' 
 #' @importFrom bio3d write.pdb
 #' @export write_pdb
-#' 
-#' 
+#' @importFrom data.table fwrite
+#' @importFrom stats dist
 
 write_pdb<-function(trj, file_name, seq_name=NULL, method = "automatic_safe", round=FALSE, digit=4, dim_check = TRUE, ...){
   # input checks
@@ -86,8 +86,8 @@ ATOM  6     3H    ACE  A    1 30.35 46.85 44.73     1    0\n
       close(pdbfile)
     }else{
       message('Selected sprintf support! The printing format will be ATOM  1 CH3    ACE  A    1 30.11 46.91 45.81        1     0.')
-      write.table(sprintf("%-6s %4d  %-4s%3s %1s %3d     %7.3f %7.3f %7.3f  %1d %1d",
-                          trj[,1], trj[,2], trj[,3], trj[,4], trj[,5], trj[,6], trj[,7], trj[,8], trj[,9], trj[,10], trj[,11]), 
+      fwrite(data.frame(sprintf("%-6s %4d  %-4s%3s %1s %3d     %7.3f %7.3f %7.3f  %1d %1d",
+                          trj[,1], trj[,2], trj[,3], trj[,4], trj[,5], trj[,6], trj[,7], trj[,8], trj[,9], trj[,10], trj[,11])), 
                   file_name, col.names = FALSE, row.names = FALSE, quote = FALSE)
     }
   }else if(method == 'automatic_unsafe'){

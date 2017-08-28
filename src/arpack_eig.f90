@@ -217,6 +217,7 @@ module arpack_eig
 
   contains
     subroutine find_eigens(eigval, eigvec, nx, nev, which)
+      use gutenberg
     ! implicit none !it is craching with some arpack definition
 
     !     %--------------%
@@ -270,18 +271,15 @@ module arpack_eig
           bmat  = 'I'
           tol    = zero
           if ( n > maxn ) then
-             print *, ' ERROR with _NSIMP: N is greater than MAXN '
-             stop
+             call fexit(' ERROR with _NSIMP: N is greater than MAXN ')
           else if ( nev > maxnev ) then
-             print *, ' ERROR with _NSIMP: NEV is greater than MAXNEV '
-             stop
+             call fexit(' ERROR with _NSIMP: NEV is greater than MAXNEV ')
           else if ( ncv > maxncv ) then
-             print *, ' ERROR with _NSIMP: NCV is greater than MAXNCV '
-             stop
+             call fexit(' ERROR with _NSIMP: NCV is greater than MAXNCV ')
           end if
           if (ncv .lt. (2*nev) .or. ncv .gt. nx*nx) then
-            print *, 'ERROR: ncv should be higher than 2*nev (+ 1) and greater than nx*nx'
-            stop
+            call fexit('ERROR: ncv should be higher than 2*nev (+ 1) and &
+            &greater than nx*nx')
           end if
     !     %-------------------------------------------------%
     !     | The following include statement and assignments |
@@ -360,16 +358,17 @@ module arpack_eig
     !        | Error message, check the |
     !        | documentation in SNAUPD. |
     !        %--------------------------%
-             print *, ' Error with SNAUPD, info = ', info
-             print *, ' Check the documentation of snaupd.'
-             print *, ' This is the main Ritz vectorization.'
+             call sipr(' Error with SNAUPD, info = ', info)
+             call spr(' Check the documentation of snaupd.')
+             call spr(' This is the main Ritz vectorization.')
              if (info .eq. (-3)) then
-               if(superverbose) print *, "Remember: NCV-NEV >= 2 and less than or equal to N."
-               if(superverbose) print *, 'ncv: ', ncv
-               if(superverbose) print *, 'nev: ', nev
-               if(superverbose) print *, 'n: ', n ! nx*nx
+               if(superverbose) call spr("Remember: NCV-NEV >= 2 and less&
+               & than or equal to N.")
+               if(superverbose) call sipr('ncv: ', ncv)
+               if(superverbose) call sipr('nev: ', nev)
+               if(superverbose) call sipr('n: ', n) ! nx*nx
              end if
-             stop
+             call fexit()
           else
     !        %-------------------------------------------%
     !        | No fatal errors occurred.                 |
@@ -392,8 +391,8 @@ module arpack_eig
                   resid, ncv, v, ldv, iparam, ipntr, workd, workl, &
                   lworkl, ierr )
                   ! if(superverbose) print *, "Real parts of eigenvalues:", d(:,1)
-             if(superverbose) print *, "The corresponding eigenvectors are &
-             &returned in the first ", iparam(5), " columns (iparam(5))."
+             if(superverbose) call sipr("The corresponding eigenvectors are &
+             &returned in the first columns (iparam(5)): ", iparam(5))
     !        %------------------------------------------------%
     !        | The real parts of the eigenvalues are returned |
     !        | in the first column of the two dimensional     |
@@ -414,16 +413,17 @@ module arpack_eig
     !           | Error condition:                   |
     !           | Check the documentation of SNEUPD. |
     !           %------------------------------------%
-                print *, ' Error with SNEUPD, info (ierr) = ', ierr
-                print *, ' Check the documentation of sneupd. '
-                print *, ' This is the egenval/vec extractor. '
+                call sipr(' Error with SNEUPD, info (ierr) = ', ierr)
+                call spr(' Check the documentation of sneupd. ')
+                call spr(' This is the egenval/vec extractor. ')
                 if (info .eq. (-3)) then
-                  if(superverbose) print *, "Remember: NCV-NEV >= 2 and less than or equal to N."
-                  if(superverbose) print *, 'ncv: ', ncv
-                  if(superverbose) print *, 'nev: ', nev
-                  if(superverbose) print *, 'n: ', n ! nx*nx
+                  if(superverbose) call spr("Remember: NCV-NEV >= 2 and&
+                  & less than or equal to N.")
+                  if(superverbose) call sipr('ncv: ', ncv)
+                  if(superverbose) call sipr('nev: ', nev)
+                  if(superverbose) call sipr('n: ', n) ! nx*nx
                 end if
-                stop
+                call sl()
              else
                 first = .true.
                 nconv =  iparam(5)
@@ -474,38 +474,38 @@ module arpack_eig
                 !      'Ritz values (Real, Imag) and residual residuals')
              end if
              !  Print additional convergence information.
-             if ( info == 1) then
-               if(superverbose) print *, ' Maximum number of iterations reached (info == 1).'
-             else if ( info == 3) then
-               if(superverbose) print *, ' No shifts could be applied during implicit', &
-                                         ' Arnoldi update, try increasing NCV.'
-             end if
-             if(superverbose) print *, '% ======= %'
-             if(superverbose) print *, '| Summary |'
-             if(superverbose) print *, '% ======= %'
-             if(superverbose) print *, 'Size of the matrix is ', n
-             if(superverbose) print *, 'The number of Ritz values (eigenval) requested is ', nev
-             if(superverbose) print *, 'The number of Arnoldi vectors (eigenvec) generated', &
-                      ' (NCV) is ', ncv
-             if(superverbose) print *, 'What portion of the spectrum: ', which
-             if(superverbose) print *, 'The number of converged Ritz values is ', nconv
-             if(superverbose) print *, 'The number of Implicit Arnoldi update', &
-                      ' iterations taken is ', iparam(3)
-             if(superverbose) print *, 'The number of A*x (matrix multiplication) is ', iparam(9)
-             if(superverbose) print *, 'The convergence criterion is ', tol
-             if(superverbose) print *, 'The eigenvectors v are present in the shape of: ', size(v(:,1)), size(v(1,:))
+            !  if ( info == 1) then
+            !    if(superverbose) print *, ' Maximum number of iterations reached (info == 1).'
+            !  else if ( info == 3) then
+            !    if(superverbose) print *, ' No shifts could be applied during implicit', &
+            !                              ' Arnoldi update, try increasing NCV.'
+            !  end if
+            !  if(superverbose) print *, '% ======= %'
+            !  if(superverbose) print *, '| Summary |'
+            !  if(superverbose) print *, '% ======= %'
+            !  if(superverbose) print *, 'Size of the matrix is ', n
+            !  if(superverbose) print *, 'The number of Ritz values (eigenval) requested is ', nev
+            !  if(superverbose) print *, 'The number of Arnoldi vectors (eigenvec) generated', &
+            !           ' (NCV) is ', ncv
+            !  if(superverbose) print *, 'What portion of the spectrum: ', which
+            !  if(superverbose) print *, 'The number of converged Ritz values is ', nconv
+            !  if(superverbose) print *, 'The number of Implicit Arnoldi update', &
+            !           ' iterations taken is ', iparam(3)
+            !  if(superverbose) print *, 'The number of A*x (matrix multiplication) is ', iparam(9)
+            !  if(superverbose) print *, 'The convergence criterion is ', tol
+            !  if(superverbose) print *, 'The eigenvectors v are present in the shape of: ', size(v(:,1)), size(v(1,:))
             !  do i=1, iparam(5)
             !    if(superverbose) print *, i,' eigenvector:   ', v(1:(nx),i)
             !  end do
              do i=1,nev
-               if(verbose) print *, i,' eigenvalue (Re, Im ,Residual):   ', d(i,1), d(i,2), d(i,3)
-               if(verbose) print *, i,' eigenvector:   ', v(1:(nx),i)
+              !  if(verbose) print *, i,' eigenvalue (Re, Im ,Residual):   ', d(i,1), d(i,2), d(i,3)
+              !  if(verbose) print *, i,' eigenvector:   ', v(1:(nx),i)
                eigvec(i,:) = v(1:nx,i)
                eigval(i, 1) = d(i,1) ! Re
                eigval(i, 2) = d(i,2) ! Im
                eigval(i, 3) = d(i,3) ! Residual
              end do
-             if(superverbose) print *, ' '
+            !  if(superverbose) print *, ' '
           end if
         end
 

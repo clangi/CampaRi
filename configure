@@ -623,6 +623,7 @@ ac_includes_default="\
 
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+FPICFLAGS
 FLIBS
 LAPACK_LIBS
 BLAS_LIBS
@@ -5853,6 +5854,7 @@ echo "ARPACK_LIBS=$ARPACK_LIBS" >& 6
 echo '--' >& 6
 echo ' ' >& 6
 echo "From R session:" >& 6
+
 
 
 

@@ -2,7 +2,7 @@ subroutine find_mahalanobis_F(clu1e1, clu1e2, clu2, &
   &n_feature, n_elements, X_MA, must_be_positive, mute_it)
 
   ! imports
-  ! use gutenberg
+  use gutenberg
   use optimization_maha_metric
   use arpack_eig
   implicit none
@@ -16,7 +16,7 @@ subroutine find_mahalanobis_F(clu1e1, clu1e2, clu2, &
   logical, intent(in) :: must_be_positive ! the distance function must or not be positive
 
   ! stuff that will be in input (maybe)
-  logical mute ! to comment when in R
+  ! logical mute ! to comment when in R
 
   ! internal variables
   real, dimension(:,:), allocatable :: grad_obj_fu
@@ -64,9 +64,9 @@ subroutine find_mahalanobis_F(clu1e1, clu1e2, clu2, &
   i_j = clu1e1 - clu1e2
   i_k = clu1e1 - clu2
 
-  if(all(i_j .eq. 0) .or. all(i_k .eq. 0)) then
-    print *, "Problem: you inserted identical triplets (internal or external snapshots are identical)."
-    stop
+  if(all(i_j .eq. 0.0) .or. all(i_k .eq. 0.0)) then
+    call fexit("Problem: you inserted identical triplets &
+    &(internal or external snapshots are identical).")
   end if
 
   call cpu_time(time1)
@@ -94,7 +94,7 @@ subroutine find_mahalanobis_F(clu1e1, clu1e2, clu2, &
   do ki=1,K
 
     ! print k
-    print *, 'k   :   ', ki, '    over', K
+    call sipr('k (over 10): ', ki)
 
     !compute rho by solving the argmax problem
     if(ki .gt. 1) rho(1) = rho(2)
@@ -114,18 +114,17 @@ subroutine find_mahalanobis_F(clu1e1, clu1e2, clu2, &
 
     ! some check on the found rho
     if(chosen_rho .le. 0) then
-      print *, "Found non strictly positive rho"
-      stop
+      call fexit("Found non strictly positive rho")
     end if
     if(kkk .eq. 0) then
-      print *, "No positive rho found. The introduced triplets are not suited for this learning."
-      stop
+      call fexit("No positive rho found. The introduced triplets &
+      & are not suited for this learning.")
     end if
 
     ! finding max value of the objfunction and its rho
     rho(2) = chosen_rho
     call cpu_time(time2)
-    print *, "Time to find Rho: ", time2-time1, 's'
+    call srpr("Time to find Rho[s]: ", time2-time1)
 
     ! printing the results
     ! print *, "-----------------"
@@ -140,7 +139,7 @@ subroutine find_mahalanobis_F(clu1e1, clu1e2, clu2, &
     ! J LOOP -------------------------------------------------------------------
     do ji=1,J
       ! print j
-      print *, 'j   :   ', ji, '/', J
+      call sipr('j (over 10): ', ji)
 
       ! Calculate the gradient matrix (it depends on the matrix X_k only)
       call grad_obj_f(rho(2), grad_obj_fu)
@@ -150,21 +149,21 @@ subroutine find_mahalanobis_F(clu1e1, clu1e2, clu2, &
       ! n_features = Dimension of the eigen-problem
       ! 1 = number of eigenvalues to calculate
       ! 'LM' = largest magnitude
-      print *, '=------------------------'
+      call spr('=------------------------')
       call find_eigens(eig_i, eigv_i, n_features, 1, 'LM')
-      print *, 'eigenvalue ', eig_i(1,1)
-      ! print *, '=------------------------'
+      call srpr('eigenvalue ', eig_i(1,1))
+      call spr('=------------------------')
       ! print *, 'eigenvector ', eigv_i(1,:)
       ! print *, '=------------------------'
       if(eig_i(1,1) .lt. epsilon) then ! without abs is much fuster
-        print *, '---------------------------------------&
-        &-------------------- Egenvalues converged'
+        call spr('---------------------------------------&
+        &-------------------- Egenvalues converged')
         exit ! eigenvalue < epsilon  ==  converged
       end if
 
       ! compute search direction p_i
       search_dir = matmul(transpose(eigv_i(1:1,:)),eigv_i(1:1,:)) - X_k
-      print *, '=------------------------'
+      ! print *, '=------------------------'
       ! do kkk=1,n_features
       !   print *, "Direction: ", search_dir(kkk,:)
       ! end do
@@ -178,8 +177,8 @@ subroutine find_mahalanobis_F(clu1e1, clu1e2, clu2, &
       !   print *, 'alpha*search_dir: ', alpha_dir(kkk,:)
       ! end do
       if(all(alpha_dir .lt. 0.01)) then
-        print *, '-------------------------------&
-        &-------------------------- Alpha made convergence'
+        call spr('-------------------------------&
+        &-------------------------- Alpha made convergence')
         exit
       end if
 
@@ -189,7 +188,7 @@ subroutine find_mahalanobis_F(clu1e1, clu1e2, clu2, &
 
     ! setting it for the next iteration
     call cpu_time(time1)
-    print *, "Time to find the new X_k: ", time1-time2, ' s'
+    call srpr("Time to find the new X_k[s]: ", time1-time2)
     X = X_k ! this is the new X (X_k) (saved)
 
     ! condition to break J loop
@@ -202,8 +201,8 @@ subroutine find_mahalanobis_F(clu1e1, clu1e2, clu2, &
       val2 = abs(of2 - of3)
 
       if(val1 .lt. epsilon .and. val2 .lt. epsilon) then
-        print *, '-----------------------------------&
-        &---------------------- Distance mat converged'
+        call spr('-----------------------------------&
+        &---------------------- Distance mat converged')
         exit
       end if
       X_k = X ! it did not converge -> continue iterations
@@ -212,31 +211,36 @@ subroutine find_mahalanobis_F(clu1e1, clu1e2, clu2, &
 
   ! print summary
   call cpu_time(time3)
-  print *, " "
-  print *, "Time needed to find the Mahalanobis distance:", time3-tot_time, ' s'
-  print *, '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-  print *, "                                      ------X-----"
-  print *, ""
+  call sl()
+  call srpr("Time needed to find the Mahalanobis distance[s]:", time3-tot_time)
+  call spr('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~&
+  &~~~~~~~~~~~~~')
+  call spr("                                      ------X-----")
+  call sl()
+  kkk = n_features
   do k=1,n_features
-    ! call rvpr(X(k,:))
+    if(n_features .gt. kkk) exit
     kkk = n_features
     if(n_features .gt. 10) kkk = 10
-    print *, X(k,1:kkk)
+    call rvpr(X(k,1:kkk))
   end do
-  print *, '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-  print *, "Resulting summed learned distance for Internal/External elements: "
+  call sl()
+  call spr('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~&
+  &~~~~~~~~~~~~~')
+  call spr("Resulting summed learned distance for Internal/External elements: ")
   print_rho_components = .true.
   detailed_print_rho = .true. ! the not detailed one was WRONG
   X_k = X
   call rho_f(1,rho(1))
-  print *, ' ----------------------------------- '
-  print *, "Resulting summed Euclidean distance for Internal/External elements: "
+  call spr(' ----------------------------------- ')
+  call spr("Resulting summed Euclidean distance for &
+  &Internal/External elements: ")
   X_k = 0
   do k=1,n_features
     X_k(k,k) = 1.0/n_features
   end do
   call rho_f(1,rho(1))
-  print *, ' ----------------------------------- '
+  call spr(' ----------------------------------- ')
 
   ! main return of the function
   X_MA = X

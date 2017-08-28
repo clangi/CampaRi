@@ -8,12 +8,16 @@
 #' @param n_princ_comp number of principal components to use
 #' @param pca_method If set 'R' (default) it will use \code{\link{princomp}}. The other (slower) option is 'robust' which is using \code{\link{PCAproj}}.
 #' @param plotit Plot the PCA components if two are selected.
+#' @param plotly_it Plot the PCA components using ggplotly (dynamic plots, to use only with reduced dimensionality).
 #' @param frameit Add a frame (shaded clustering) of the whole performed PCA.
 #' @param return_plot This option is usually used to add layers to the ggplot (made using autoplot).
 #' @param cluster_vector This option can be used to set the clusters you want and show them with different colors (and shades if \code{frameit = TRUE}). 
 #' Please set this option with the same dimensionality of the trj (n_snapshots) and use integer numbers (to define the clusters).
 #' @param points_size It must be a number and it defines the size of the points.
-#'
+#' @param specific_palette use some specific color for the clusters
+#' @param plot_legend plot the legend
+#' @param legend_title define a title for the legend
+#' @param legend_labels labels for the legend
 #' @details This function is based primarly on the basic R function \code{pricomp} and on \code{PCAproj} from the package pcaPP. Insead, for more details on the SAPPHIRE anlysis, please refer to the main documentation
 #' of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
 #'

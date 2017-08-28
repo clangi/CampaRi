@@ -3,8 +3,8 @@
 #'      \code{find_mahalanobis} uses a group of vectors belonging to a cluster and a second group of vector belonging to another cluster and learns
 #'      a distance matrix which maximise the distance between different clusters and minimize the distance between elements of the same cluster
 #'
-#' @param clu1 Elements of the first clustering. Needed shape: (features, number of vectors). n_vectors must be > of features.
 #' @param clu1e1 Elements of the first clustering. Needed shape: (features, number of vectors). n_vectors must be > of features.
+#' @param clu1e2 Elements of the first clustering. Needed shape: (features, number of vectors). n_vectors must be > of features.
 #' @param clu2 As above. The number of elements should be identical for clu1e1, clu1e2 and clu2
 #' @param must_be_positive If FALSE, it will consider also negative values for the Mahalanobis distance (the convergence can be much longer).
 #' @param mute_fortran If TRUE, the fortran code will be silent.
@@ -16,7 +16,7 @@
 #' @return It will return a matrix n_features*n_features.
 #' @seealso
 #' \code{\link{adjl_from_progindex}}, \code{\link{gen_progindex}}, \code{\link{gen_annotation}}.
-#' @examples
+# @examples
 #' 
 #' @export find_mahalanobis
 #' @useDynLib CampaRi, .registration = TRUE

@@ -35,10 +35,11 @@ c <- c/max(c)
 tra <- cbind(a,b,c)
 
 # find the distance
-Xad <- find_mahalanobis(a, b, c)
+Xad <- find_mahalanobis(a, b, c, mute_fortran = T)
 
 expect_true(!is.null(Xad))
-adjl <- mst_from_trj(trj = t(tra), distance_method = 12, distance_matrix = Xad)
+adjl <- mst_from_trj(trj = t(tra), distance_method = 12, distance_matrix = Xad, mute_fortran = T)
 expect_true(!is.null(adjl))
 if(file.exists('MST_DUMPLING.nc')) file.remove('MST_DUMPLING.nc')
+if(file.exists('Rplots.pdf')) file.remove('Rplots.pdf')
 })
