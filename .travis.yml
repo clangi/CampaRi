@@ -69,6 +69,7 @@ bioc_packages:
 r_github_packages:
   - jimhester/covr
   - cran/WGCNA
+  - cran/PairViz # it can not be seen by mac?
 
 r-packages:
   - bio3d
@@ -91,7 +92,7 @@ r-packages:
   - sfsmisc
   - plotly
   - ggfortify
-  - PairViz
+#  - PairViz
 #  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; WGCNA ; fi 
   
 after_script:
