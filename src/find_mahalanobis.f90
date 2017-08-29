@@ -47,13 +47,13 @@ subroutine find_mahalanobis_F(clu1e1, clu1e2, clu2, &
   call cpu_time(tot_time)
 
   allocate(X_k(n_features, n_features), STAT = AllocateStatus)
-  if(AllocateStatus /= 0) stop "*** Not enough memory ***"
+  if(AllocateStatus /= 0) call fexit("*** Not enough memory ***")
   allocate(grad_obj_fu(n_features, n_features), STAT = AllocateStatus2)
-  if(AllocateStatus /= 0) stop "*** Not enough memory ***"
+  if(AllocateStatus /= 0) call fexit("*** Not enough memory ***")
   allocate(X(n_features, n_features), STAT = AllocateStatus3)
-  if(AllocateStatus /= 0) stop "*** Not enough memory ***"
+  if(AllocateStatus /= 0) call fexit("*** Not enough memory ***")
   allocate(X_tmp(n_features, n_features), STAT = AllocateStatus4)
-  if(AllocateStatus /= 0) stop "*** Not enough memory ***"
+  if(AllocateStatus /= 0) call fexit("*** Not enough memory ***")
   allocate(i_j(n_features, n_triplets))
   allocate(i_k(n_features, n_triplets))
   allocate(A(n_features, n_features))
