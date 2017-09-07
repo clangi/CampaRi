@@ -292,34 +292,41 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
     }
   }
   # eventual add of bashrc PATH exports
-  if(!silent) cat('Looking for additional campari bin locations (exports) in ~./bashrc file... ')
-  camp_bin_path <- suppressWarnings(system('cat ~/.bashrc | grep PATH | grep camp', intern = T))
-  if(length(camp_bin_path) != 0){
-    camp_bin_path <- strsplit(paste(camp_bin_path, collapse = 'PATH'), split = "PATH|:", fixed = FALSE)[[1]]
-    if(length(camp_bin_path) > 1){
-      if(!silent) cat('found.\n')
-      camp_bin_path <- paste(camp_bin_path[grep(x = camp_bin_path, pattern = '/')], collapse = ":")
+  for(bash_rc_profile_files in c('bashrc', 'bash_profile')){
+    if(!silent) cat(paste0('Looking for additional campari bin locations (exports) in ~/.', bash_rc_profile_files, ' file... '))
+    camp_bin_path <- suppressWarnings(system(paste0('cat ~/.', bash_rc_profile_files, ' | grep PATH | grep camp'), intern = T))
+    if(length(camp_bin_path) != 0){
+      # checking the kind of virgolette to use
+      camp_bin_path <- strsplit(paste(camp_bin_path, collapse = 'PATH'), split = 'PATH|:|"', fixed = FALSE)[[1]]
+      camp_bin_path <- strsplit(paste(camp_bin_path, collapse = 'PATH'), split = "PATH|:|'", fixed = FALSE)[[1]]
+      if(length(camp_bin_path) > 1){
+        if(!silent) cat('found.\n')
+        camp_bin_path <- paste(camp_bin_path[grep(x = camp_bin_path, pattern = '/')], collapse = ":")
+      }else{
+        if(!silent) cat('not correct format.\n')
+      }
     }else{
-      if(!silent) cat('not correct format.\n')
+      if(!silent) cat('not found.\n')
+      camp_bin_path <- ""
     }
-  }else{
-    if(!silent) cat('not found.\n')
-    camp_bin_path <- ""
-  }
-  # eventual add of additional aliases
-  if(!silent) cat('Looking for additional campari bin locations (aliases) in ~./bashrc file... ')
-  camp_bin_alias <- suppressWarnings(system('cat ~/.bashrc | grep alias | grep camp', intern = T))
-  if(length(camp_bin_alias) != 0){
-    camp_bin_alias <- strsplit(paste(camp_bin_alias, collapse = '='), split = "=|'|\"", fixed = FALSE)[[1]]
-    if(length(camp_bin_alias) > 1){
-      if(!silent) cat('found.\n')
-      camp_bin_alias <- paste(dirname(camp_bin_alias[grep(x = camp_bin_alias, pattern = '/')]), collapse = ":")
-    }else{
-      if(!silent) cat('not correct format.\n')
+    # eventual add of additional aliases
+    if(camp_bin_path == ""){
+      if(!silent) cat(paste0('Looking for additional campari bin locations (aliases) in ~/.', bash_rc_profile_files, ' file... '))
+      camp_bin_alias <- suppressWarnings(system(paste0('cat ~/.', bash_rc_profile_files, ' | grep alias | grep camp'), intern = T))
+      if(length(camp_bin_alias) != 0){
+        camp_bin_alias <- strsplit(paste(camp_bin_alias, collapse = '='), split = "=|'", fixed = FALSE)[[1]]
+        camp_bin_alias <- strsplit(paste(camp_bin_alias, collapse = '='), split = '=|"', fixed = FALSE)[[1]]
+        if(length(camp_bin_alias) > 1){
+          if(!silent) cat('found.\n')
+          camp_bin_alias <- paste(dirname(camp_bin_alias[grep(x = camp_bin_alias, pattern = '/')]), collapse = ":")
+        }else{
+          if(!silent) cat('not correct format.\n')
+        }
+      }else{
+        if(!silent) cat('not found.\n')
+        camp_bin_alias <- ""
+      }
     }
-  }else{
-    if(!silent) cat('not found.\n')
-    camp_bin_alias <- ""
   }
   
   # adding the paths to the std PATH variable
@@ -412,7 +419,7 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   if(simulation_mode || (analysis_mode && (!any(c(ascii_mode, netcdf_mode))))){
     if("FMCSC_SEQFILE" %in% args_names){
       if(!file.exists(args_list[['FMCSC_SEQFILE']]))
-        stop('In this mode an existing sequence file must be specified. It was not found (use se_in).')
+        stop('In this mode an existing sequence file must be specified. It was not found (use seq_in).')
       if(!silent) cat('Using the following specific sequence file:', args_list[['FMCSC_SEQFILE']], '\n')
     }else{
       stop('A seq_in file must be provided when in simulation mode or in analysis (not ncminer - ascii nc (not amber)) mode.')

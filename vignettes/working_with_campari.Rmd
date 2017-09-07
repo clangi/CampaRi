@@ -10,9 +10,10 @@ vignette: >
 ---
 
 ```{r setup, include=FALSE}
+if(!file.exists("to_d")) dir.create("to_d")
 knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
 knitr::opts_knit$set(progress = FALSE)
-# knitr::opts_knit$set(root.dir="to_d/")
+knitr::opts_knit$set(root.dir="to_d/")
 ```
 
 Lets try out some other feature of the package.
@@ -21,6 +22,7 @@ Lets try out some other feature of the package.
 We will use here the trajectory generated using the following command (needs original campari package):
 ```{r, eval=FALSE}
 # standard run of the simulation in tutarial 11 - In this case we copy pasted the nbu_simulation.key
+system('printf "NBU\nEND" &> nbu.in')
 run_campari(FMCSC_SEQFILE="nbu.in", # you must have it defined according to CAMPARI's rules
             # FMCSC_BASENAME="NBU", # lets try the base_name option
             base_name = "NBU", print_status = F, # it will take 55 s in background ~
