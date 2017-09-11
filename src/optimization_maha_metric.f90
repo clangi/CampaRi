@@ -194,7 +194,7 @@ contains
     real  cond2(n_features, n_features)
     real  m1(n_features, n_features)
     real  step, c1, c2
-    real, dimension(n_features, n_features) :: a, amax
+    integer, dimension(n_features, n_features) :: a
     real  f1, f2
     integer count, count_max
     logical must_positive
@@ -204,9 +204,9 @@ contains
     ! Some parameter is inspired by scipy implementation
     c1 = 0.0001 ! 0 < c1 < c2 < 1
     c2 = 0.9
-    amax = 1.0 ! amax maximum step size (if >1.0 it is exploding here)
+    ! amax = 1.0 ! amax maximum step size (if >1.0 it is exploding here)
     step = 0.9
-    alpha_dir = amax/step ! std for final alpha
+    alpha_dir = 1.0/step ! std for final alpha
     a = 0
     cond1 = -1 ! default to enter the condition
     cond2 = -1
@@ -219,28 +219,28 @@ contains
     ! main Wolfe condition loop
     do while (any(cond1 .lt. 0.0) .or. any(cond2 .lt. 0.0))
       ! X_i + alpha*p_i
-      where(a .eq. 0.0) alpha_dir = alpha_dir*step
+      where(a .eq. 0) alpha_dir = alpha_dir*step
       X_k = x_supertemp + alpha_dir*search_dir
 
       ! Blocking a from going down more than 0.01 (useless)
       if(any(alpha_dir .lt. 0.01)) then
         where(alpha_dir .lt. 0.01) alpha_dir = 0.0
-        where(alpha_dir .lt. 0.01) a = 1.0
+        where(alpha_dir .lt. 0.01) a = 1
       end if
 
       ! if the X_k is positive after the first alpha -> found
-      where(X_k .gt. 0.0) a = 1.0
+      where(X_k .gt. 0.0) a = 1
 
       ! Check to avoid useless loops (original x small and negative direction)
       if(any(x_supertemp .lt. 0.01 .and. search_dir .lt. 0.0) ) then
-        where(x_supertemp .lt. 0.01 .and. search_dir .lt. 0.0) a = 1.0
+        where(x_supertemp .lt. 0.01 .and. search_dir .lt. 0.0) a = 1
         where(x_supertemp .lt. 0.01 .and. search_dir .lt. 0.0) alpha_dir = 0.0
       end if
 
       ! faster convergence of a to 0 if it is next to 0
-      if(any(a .eq. 0.0 .and. alpha_dir .lt. 0.25)) step = 0.6
+      if(any(a .eq. 0 .and. alpha_dir .lt. 0.25)) step = 0.6
       ! if(any(a .eq. 0 .and. alpha_dir .lt. 0.25)) print *, "step to 0.6"
-      if(any(a .eq. 0.0 .and. alpha_dir .lt. 0.1)) step = 0.3
+      if(any(a .eq. 0 .and. alpha_dir .lt. 0.1)) step = 0.3
       ! if(any(a .eq. 0 .and. alpha_dir .lt. 0.1)) print *, "step to 0.3"
 
       ! Calculate the new X_k to use (with new direction)
@@ -257,7 +257,7 @@ contains
       ! print *, count, ": ", any(cond1 .lt. 0.0), any(cond2 .lt. 0.0)
 
       ! Exit condition for a positive X (a == 1 means that alpha found is right)
-      if(all(X_k .gt. 0.0) .and. all(a .eq. 1.0)) exit
+      if(all(X_k .gt. 0.0) .and. all(a .eq. 1)) exit
 
       ! Counting the number of iterations
       if(count .eq. count_max) then

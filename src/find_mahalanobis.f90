@@ -64,7 +64,7 @@ subroutine find_mahalanobis_F(clu1e1, clu1e2, clu2, &
   i_j = clu1e1 - clu1e2
   i_k = clu1e1 - clu2
 
-  if(all(i_j .eq. 0.0) .or. all(i_k .eq. 0.0)) then
+  if(all(abs(i_j) .le. 0.0E-12) .or. all(abs(i_k) .le. 0.0E-12)) then
     call fexit("Problem: you inserted identical triplets &
     &(internal or external snapshots are identical).")
   end if

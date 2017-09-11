@@ -6,7 +6,7 @@
 \usage{
 plot_traces(voltage_traces_mat, return_plot = F, sub_sampling_factor = NULL,
   title = "", xlab = "", ylab = "", highlight_rows = NULL,
-  size_line = 1, nrows_to_plot = NULL)
+  size_line = 1, nrows_to_plot = NULL, ...)
 }
 \arguments{
 \item{voltage_traces_mat}{A logical indicating whether to write the plot to file.}
@@ -26,6 +26,8 @@ plot_traces(voltage_traces_mat, return_plot = F, sub_sampling_factor = NULL,
 \item{size_line}{size of the plotted line.}
 
 \item{nrows_to_plot}{The number of vertical neurons (rows) to plot.}
+
+\item{...}{'add_to_this_plot'}
 }
 \value{
 If \code{return_plot} is active it will return the plot.

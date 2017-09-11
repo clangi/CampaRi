@@ -327,7 +327,7 @@ contains
     character(255) :: strR, strL, str_h, str_0
     integer int, n_digits, counted_digits
     logical has_minus
-    integer d, d2 ! looping var
+    integer d ! looping var
     has_minus = .false.
     ! thi routine will split the real in 2 integers (per side of .)
     if(re .lt. 0) has_minus = .true.
@@ -388,9 +388,9 @@ contains
   !
     sumi = 0
     do i=16,0,-1
-      mx(i) = (ii-sumi)/(10.0**i)
+      mx(i) = floor((ii - sumi)/(10.0**i))
       if (i.gt.0) then
-        sumi = sumi + (10.0**i) * mx(i)
+        sumi = sumi + floor(10.0**i) * mx(i)
       end if
     end do
   !

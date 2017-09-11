@@ -37,7 +37,7 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', post_processi
   input_args <- list(...)
   avail_extra_argoments <- c('wgcna_type', 'wgcna_power', 'wgcna_corOp', 'minkowski_p', 'cov_method')
   avail_methods <- c('wgcna', 
-                     'binary', 'euclidean', 'manhattan', 'maximum', 'canberra', 'minkowski', 
+                     'binary', 'euclidean', 'manhattan', 'maximum', 'canberra', 'minkowski', 'mahalanobis',
                      'covariance',
                      'MI', 'MI_MM', 'MI_ML', 'MI_shrink', 'MI_SG')
   
@@ -172,6 +172,9 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', post_processi
     if(method == 'wgcna'){
       built_net <- WGCNA::adjacency(tmp_trj, type = wgcna_type, corFnc = 'cor', power = wgcna_power, corOptions = wgcna_corOp)
     # covariance
+    }else if(method == 'covariance'){
+      built_net <- cov(tmp_trj, method = cov_method)
+    # mahalanobis (stat implementation)
     }else if(method == 'covariance'){
       built_net <- cov(tmp_trj, method = cov_method)
     # MI based
