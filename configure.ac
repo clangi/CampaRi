@@ -157,12 +157,12 @@ BLAS_LIBS=`"${R_HOME}/bin/R" CMD config BLAS_LIBS`
 LAPACK_LIBS=`"${R_HOME}/bin/R" CMD config LAPACK_LIBS`
 SAFE_FFLAGS=`"${R_HOME}/bin/R" CMD config SAFE_FFLAGS`
 
-if test -z $BLAS_LIBS; then
+if test $BLAS_LIBS = ""; then
 AC_MSG_ERROR([BLAS_LIBS are necessary. Install them for R (they are linked using R CMD config BLAS_LIBS)])
 else
 options="$options BLAS"
 fi
-if test -z $LAPACK_LIBS; then
+if test $LAPACK_LIBS = ""; then
 	AC_MSG_ERROR([LAPACK_LIBS are necessary. Install them for R (they are linked using R CMD config LAPACK_LIBS)])
 else
 	options="$options LAPACK"
