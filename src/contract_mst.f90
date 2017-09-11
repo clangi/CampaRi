@@ -1,3 +1,40 @@
+!--------------------------------------------------------------------------!
+! LICENSE INFO:                                                            !
+!--------------------------------------------------------------------------!
+!    This file is part of CAMPARI.                                         !
+!                                                                          !
+!    Version 2.0                                                           !
+!                                                                          !
+!    Copyright (C) 2014, The CAMPARI development team (current and former  !
+!                        contributors)                                     !
+!                        Andreas Vitalis, Adam Steffen, Rohit Pappu, Hoang !
+!                        Tran, Albert Mao, Xiaoling Wang, Jose Pulido,     !
+!                        Nicholas Lyle, Nicolas Bloechliger                !
+!                                                                          !
+!    Website: http://sourceforge.net/projects/campari/                     !
+!                                                                          !
+!    CAMPARI is free software: you can redistribute it and/or modify       !
+!    it under the terms of the GNU General Public License as published by  !
+!    the Free Software Foundation, either version 3 of the License, or     !
+!    (at your option) any later version.                                   !
+!                                                                          !
+!    CAMPARI is distributed in the hope that it will be useful,            !
+!    but WITHOUT ANY WARRANTY; without even the implied warranty of        !
+!    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         !
+!    GNU General Public License for more details.                          !
+!                                                                          !
+!    You should have received a copy of the GNU General Public License     !
+!    along with CAMPARI.  If not, see <http://www.gnu.org/licenses/>.      !
+!--------------------------------------------------------------------------!
+! AUTHORSHIP INFO:                                                         !
+!--------------------------------------------------------------------------!
+!                                                                          !
+! MAIN AUTHOR:   Andreas Vitalis                                           !
+! CONTRIBUTIONS: Nicolas Bloechliger                                       !
+! WRAPPER: Davide Garolini                                                 !
+!                                                                          !
+!--------------------------------------------------------------------------!
+
 ! -----------------------------------------------------------------------------
 ! This function aims to reduce the fringe regions by collapsing the tree leaves
 ! on their branches. In this way we have less grouping of fringe regions
@@ -10,7 +47,7 @@ subroutine contract_mst_fortran(n_snaps,mnb,alnbs,alst,aldis,nrnds,istats)
   real, INTENT(INOUT) :: aldis(n_snaps,mnb)
   integer, INTENT(OUT) :: istats(2)
 !
-  integer i,j,kk,thej,ll
+  integer i, j, kk, thej, ll
 !
   logical, ALLOCATABLE :: terminal(:)
 !
@@ -33,7 +70,7 @@ subroutine contract_mst_fortran(n_snaps,mnb,alnbs,alst,aldis,nrnds,istats)
         do j=1,alnbs(i)
           if (aldis(i,j).ge.0.0) then
             thej = alst(i,j)
-            if (aldis(i,j).eq.0.0) then
+            if (abs(aldis(i,j)).le. 10.0E-12) then
               aldis(i,j) = -10.0*TINY(aldis(i,j))
             else
               aldis(i,j) = -1.0/aldis(i,j)

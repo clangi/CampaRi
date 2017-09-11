@@ -116,7 +116,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   if(!('annotation_type' %in% names(input_args))) annotation_type <- NULL else annotation_type <- input_args[['annotation_type']]
   
   if(!('general_size_annPoints' %in% names(input_args))) general_size_annPoints <- 1. else general_size_annPoints <- input_args[['general_size_annPoints']]
-  if(!('size_points_on_timeline' %in% names(input_args))) size_points_on_timeline <- 0.01 else size_points_on_timeline <- input_args[['size_points_on_timeline']]
+  if(!('size_points_on_timeline' %in% names(input_args))) size_points_on_timeline <- 0.005 else size_points_on_timeline <- input_args[['size_points_on_timeline']]
 
   # ============================
   #          CHECKS
@@ -747,8 +747,8 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   # -------------------------------------------------------------------------------------
   # SETING: NO MORE THAN ONE ANN LINE AVAILABLE - annotation preparation for timeline and annotation of snap distance
   if(timeline || annotate_snap_dist){
-    single_line_general_ann <- array("gray1", dim = Nsnap)
-    if(!no_trace && !uniform_color_timeline){
+    single_line_general_ann <- array(1, dim = Nsnap)
+    if(!no_trace){
       if(one_line_trace){
         single_line_general_ann <- ann_tr
       }else if(multi_line_trace){
@@ -756,6 +756,8 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
         warning('timeline color kept as first line in annotation trace inserted (it is multiple lines).')
       }
     }
+    if(uniform_color_timeline) color_timeline <- array(1, dim = Nsnap)
+    else color_timeline <- single_line_general_ann
   }
   # -------------------------------------------------------------------------------------
   # plotting the distance between snapshots (on top of everything)
@@ -793,7 +795,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
       if(is.null(specific_palette_timeline)){
         gg <- ggplot() + geom_point(aes(x=xx,
                                   y = (pin[,3][seq(1, Nsnap, sub_sampling_factor)])),
-                                  col=single_line_general_ann[seq(1, Nsnap, sub_sampling_factor)],
+                                  col=color_timeline[seq(1, Nsnap, sub_sampling_factor)],
                               size=size_points_on_timeline*general_size_annPoints) 
         
       # with palette
@@ -803,7 +805,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
                Please turn it off to use the specific palette option.')
         gg <- ggplot() + geom_point(aes(x=xx,
                                         y = (pin[,3][seq(1, Nsnap, sub_sampling_factor)]),
-                                        col=single_line_general_ann[seq(1, Nsnap, sub_sampling_factor)]), # col INSIDE
+                                        col=color_timeline[seq(1, Nsnap, sub_sampling_factor)]), # col INSIDE
                                     size=size_points_on_timeline*general_size_annPoints) 
         gg <- gg + scale_color_gradientn(colours = specific_palette_timeline, guide = FALSE) #  guide_legend(title = "Days")
       } 
@@ -820,16 +822,17 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
       if(is.null(specific_palette_timeline)){
         gg <- gg + geom_point(aes(x=xx,
                                   y = ((pin[,3]*1.0*ymax*tp)/Nsnap)[seq(1, Nsnap, sub_sampling_factor)]),
-                              col=single_line_general_ann[seq(1, Nsnap, sub_sampling_factor)],
+                              col=color_timeline[seq(1, Nsnap, sub_sampling_factor)],
                               size=size_points_on_timeline*general_size_annPoints)
       # with palette
       }else{
+        browser()
         if(is.character(single_line_general_ann) || rescaling_ann_col)
           stop('The specific insertion of a palette collides with the rescaling of the colors( or the insertion of chars). 
                Please turn it off to use the specific palette option.')
         gg <- gg + geom_point(aes(x=xx,
                                   y = ((pin[,3]*1.0*ymax*tp)/Nsnap)[seq(1, Nsnap, sub_sampling_factor)],
-                                  col=single_line_general_ann[seq(1, Nsnap, sub_sampling_factor)]), # col INSIDE
+                                  col=color_timeline[seq(1, Nsnap, sub_sampling_factor)]), # col INSIDE
                               size=size_points_on_timeline*general_size_annPoints)
         gg <- gg + scale_color_gradientn(colours = specific_palette_timeline, guide = FALSE) #  guide_legend(title = "Days")
       }

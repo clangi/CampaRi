@@ -9,6 +9,7 @@
 #' @param ylab y-axis label of the plot (default "")
 #' @param highlight_rows which rows should be highlighted in dark red.
 #' @param nrows_to_plot The number of vertical neurons (rows) to plot.
+#' @param ... 'add_to_this_plot'
 #' @details For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
 #'
 #' @return If \code{return_plot} is active it will return the plot.
@@ -20,22 +21,19 @@
 #' @import ggplot2
 
 plot_traces <- function(voltage_traces_mat, return_plot = F, sub_sampling_factor = NULL, title = "", xlab = "", ylab = "", highlight_rows = NULL,
-                          size_line = 1, nrows_to_plot = NULL){
+                          size_line = 1, nrows_to_plot = NULL, ...){
   
   # Analysis of extra args
-  # input_args <- list(...)
-  # avail_extra_argoments <- c('only_timeline',
-  #                            'annotate_snap_dist',
-  #                            'size_points_on_timeline')
+  input_args <- list(...)
+  avail_extra_argoments <- c('add_to_this_plot')
   
   
-  # if(any(!(names(input_args) %in% avail_extra_argoments))) 
-  #   warning('There is a probable mispelling in one of the inserted variables. Please check the available extra input arguments.')
-  # 
-  # # Default handling
-  # if(!('only_timeline' %in% names(input_args))) only_timeline <- FALSE else only_timeline <- input_args[['only_timeline']]
-  # if(!('annotate_snap_dist' %in% names(input_args))) annotate_snap_dist <- FALSE  else annotate_snap_dist <- input_args[['annotate_snap_dist']]
-  # if(!('size_points_on_timeline' %in% names(input_args))) size_points_on_timeline <- 0.01 else size_points_on_timeline <- input_args[['size_points_on_timeline']]
+  if(any(!(names(input_args) %in% avail_extra_argoments)))
+    stop('There is a probable mispelling in one of the inserted variables. Please check the available extra input arguments.')
+
+  # Default handling
+  if(!('add_to_this_plot' %in% names(input_args))) add_to_this_plot <- NULL else add_to_this_plot <- input_args[['add_to_this_plot']]
+
   # 
   # ============================
   #          CHECKS
@@ -94,13 +92,20 @@ plot_traces <- function(voltage_traces_mat, return_plot = F, sub_sampling_factor
     if(!is.numeric(highlight_rows) || !all(highlight_rows %in% c(1:n_traces)))
       stop('highlight_rows must be a numeric between 1 and the number of rows to plot.')
   } 
+  # ---------------------  
+  # checking the plot object
+  if(!is.null(add_to_this_plot) && !is.ggplot(add_to_this_plot))
+    stop('add_to_this_plot MUST be a ggplot object')
+  
   # ---------------------
   # initial creation of the plot
   xlabel <- ylabel <- ""
   if(xlab != "") xlabel <- xlab
   if(ylab != "") ylabel <- ylab
-  gg <- ggplot() +
-    xlab(xlabel) + ylab(ylabel) + theme_minimal() 
+  if(is.null(add_to_this_plot))
+    gg <- ggplot() + xlab(xlabel) + ylab(ylabel) + theme_minimal() 
+  else
+    gg <- add_to_this_plot + xlab(xlabel) + ylab(ylabel) + theme_minimal() 
   # theme(panel.grid.minor = element_line(colour="gray80"))
   
   # ---------------------
