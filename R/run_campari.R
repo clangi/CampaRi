@@ -302,6 +302,9 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   }
   # eventual add of bashrc PATH exports
   if(is.null(campari_exe)){
+    camp_bin_path <- ""
+    camp_bin_alias <- ""
+    found_exe <- FALSE
     for(bash_rc_profile_files in c('bashrc', 'bash_profile')){
       if(!silent) cat(paste0('Looking for additional campari bin locations (exports) in ~/.', bash_rc_profile_files, ' file... '))
       camp_bin_path <- suppressWarnings(system(paste0('cat ~/.', bash_rc_profile_files, ' | grep PATH | grep camp'), intern = T))
@@ -341,7 +344,9 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
       }
       if(found_exe) break 
     }
-  }  
+  } else {
+    camp_bin_path <- dirname(campari_exe)
+  }
   # adding the paths to the std PATH variable
   Sys.setenv(PATH=paste(Sys.getenv("PATH"), camp_bin_path, camp_bin_alias, sep=":"))
   
