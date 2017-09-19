@@ -21,6 +21,7 @@
 #' @param key_file_input If you provide an already formatted keyfile to this argument, every variable defined in the provided keyfile will be overriden by the ones in this function and CAMPARI will 
 #' be run after the generation of a new keyfile. Please note that in the case of multivariable keywords the algorithm will keep only the first value. Consider using \code{\link{keywords_from_keyfile}} function.
 #' @param silent Defaults to \code{FALSE}. It will silent all outputs (not the warnings).
+#' @param campari_exe If the automatic search fails it is possible to insert manually the location of the campari executable.
 #' @param ... Analysis variables (similarly to \code{\link{mst_from_trj}}). You can check all of these in the original documentation (\url{http://campari.sourceforge.net/documentation.html}). 
 #'
 #' @details For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
@@ -39,7 +40,7 @@
 
 run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=NULL, seq_in=NULL,
                         multi_threading=FALSE, mpi=FALSE, print_status=TRUE, run_in_background=FALSE,
-                        key_file_input=NULL, return_log = FALSE, silent = FALSE, ...){
+                        key_file_input=NULL, return_log = FALSE, silent = FALSE, campari_exe = NULL, ...){
   
   # -----------------------
   #        CHECKS  
@@ -83,7 +84,15 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
     warning('If return_log is active it is not possible to run_in_background. run_in_background is set to FALSE.\n')
     run_in_background <- FALSE
   }
-    
+  
+  # check campari_exe
+  if(!is.null(campari_exe)){
+    if(!is.character(campari_exe))
+      stop('campari_exe must be a character.')
+    if(!file.exists(campari_exe))
+      stop('campari_exe must be an existing file (executable).')
+  }
+  
   # checks on nsnaps and eventual other inputs.
   if(!is.null(nsnaps) && (!is.numeric(nsnaps) || nsnaps%%1 != 0))
     stop('nsnaps must be an integer.')
@@ -292,43 +301,47 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
     }
   }
   # eventual add of bashrc PATH exports
-  for(bash_rc_profile_files in c('bashrc', 'bash_profile')){
-    if(!silent) cat(paste0('Looking for additional campari bin locations (exports) in ~/.', bash_rc_profile_files, ' file... '))
-    camp_bin_path <- suppressWarnings(system(paste0('cat ~/.', bash_rc_profile_files, ' | grep PATH | grep camp'), intern = T))
-    if(length(camp_bin_path) != 0){
-      # checking the kind of virgolette to use
-      camp_bin_path <- strsplit(paste(camp_bin_path, collapse = 'PATH'), split = 'PATH|:|"', fixed = FALSE)[[1]]
-      camp_bin_path <- strsplit(paste(camp_bin_path, collapse = 'PATH'), split = "PATH|:|'", fixed = FALSE)[[1]]
-      if(length(camp_bin_path) > 1){
-        if(!silent) cat('found.\n')
-        camp_bin_path <- paste(camp_bin_path[grep(x = camp_bin_path, pattern = '/')], collapse = ":")
-      }else{
-        if(!silent) cat('not correct format.\n')
-      }
-    }else{
-      if(!silent) cat('not found.\n')
-      camp_bin_path <- ""
-    }
-    # eventual add of additional aliases
-    if(camp_bin_path == ""){
-      if(!silent) cat(paste0('Looking for additional campari bin locations (aliases) in ~/.', bash_rc_profile_files, ' file... '))
-      camp_bin_alias <- suppressWarnings(system(paste0('cat ~/.', bash_rc_profile_files, ' | grep alias | grep camp'), intern = T))
-      if(length(camp_bin_alias) != 0){
-        camp_bin_alias <- strsplit(paste(camp_bin_alias, collapse = '='), split = "=|'", fixed = FALSE)[[1]]
-        camp_bin_alias <- strsplit(paste(camp_bin_alias, collapse = '='), split = '=|"', fixed = FALSE)[[1]]
-        if(length(camp_bin_alias) > 1){
+  if(is.null(campari_exe)){
+    for(bash_rc_profile_files in c('bashrc', 'bash_profile')){
+      if(!silent) cat(paste0('Looking for additional campari bin locations (exports) in ~/.', bash_rc_profile_files, ' file... '))
+      camp_bin_path <- suppressWarnings(system(paste0('cat ~/.', bash_rc_profile_files, ' | grep PATH | grep camp'), intern = T))
+      if(length(camp_bin_path) != 0){
+        # checking the kind of virgolette to use
+        camp_bin_path <- strsplit(paste(camp_bin_path, collapse = 'PATH'), split = 'PATH|:|"', fixed = FALSE)[[1]]
+        camp_bin_path <- strsplit(paste(camp_bin_path, collapse = 'PATH'), split = "PATH|:|'", fixed = FALSE)[[1]]
+        if(length(camp_bin_path) > 1){
+          found_exe <- TRUE
           if(!silent) cat('found.\n')
-          camp_bin_alias <- paste(dirname(camp_bin_alias[grep(x = camp_bin_alias, pattern = '/')]), collapse = ":")
+          camp_bin_path <- paste(camp_bin_path[grep(x = camp_bin_path, pattern = '/')], collapse = ":")
         }else{
           if(!silent) cat('not correct format.\n')
         }
       }else{
         if(!silent) cat('not found.\n')
-        camp_bin_alias <- ""
+        camp_bin_path <- ""
       }
+      # eventual add of additional aliases
+      if(!found_exe){
+        if(!silent) cat(paste0('Looking for additional campari bin locations (aliases) in ~/.', bash_rc_profile_files, ' file... '))
+        camp_bin_alias <- suppressWarnings(system(paste0('cat ~/.', bash_rc_profile_files, ' | grep alias | grep camp'), intern = T))
+        if(length(camp_bin_alias) != 0){
+          camp_bin_alias <- strsplit(paste(camp_bin_alias, collapse = '='), split = "=|'", fixed = FALSE)[[1]]
+          camp_bin_alias <- strsplit(paste(camp_bin_alias, collapse = '='), split = '=|"', fixed = FALSE)[[1]]
+          if(length(camp_bin_alias) > 1){
+            found_exe <- TRUE
+            if(!silent) cat('found.\n')
+            camp_bin_alias <- paste(dirname(camp_bin_alias[grep(x = camp_bin_alias, pattern = '/')]), collapse = ":")
+          }else{
+            if(!silent) cat('not correct format.\n')
+          }
+        }else{
+          if(!silent) cat('not found.\n')
+          camp_bin_alias <- ""
+        }
+      }
+      if(found_exe) break 
     }
-  }
-  
+  }  
   # adding the paths to the std PATH variable
   Sys.setenv(PATH=paste(Sys.getenv("PATH"), camp_bin_path, camp_bin_alias, sep=":"))
   
