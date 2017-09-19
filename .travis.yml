@@ -92,6 +92,7 @@ r-packages:
   - sfsmisc
   - plotly
   - ggfortify
+  - Rtsne
 #  - PairViz
 #  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; WGCNA ; fi 
   

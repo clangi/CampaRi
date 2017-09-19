@@ -8,9 +8,9 @@
 #' @param overlapping_reduction Not yet supported (It will if a great number of snapshots will be considered in this analysis - snapshot selection)
 #' @param post_processing_method 'path_euclidean', 'path_minkowski', 'path_manhattan', 'path_maximum', 'path_canberra', 'path_binary' will find the distance path to make
 #' an hamiltonian cycle. 'svd' if a singular vector decomposition will be used to have the diagional of the d matrix as output. With 'SymmetricUncertainty' you will have
-#' AdjacencySymmetricUncertainty=2*I(X;Y)/(H(X)+H(Y)) [method='MI_*' must be active]. 
+#' AdjacencySymmetricUncertainty=2*I(X;Y)/(H(X)+H(Y)) [method='MI_*' must be active]. 'tsne' will make a tsne transformation.
 #' @param method Supported pairwise similarity measures are 'wgcna', 'binary', 'euclidean', 'maximum', 'canberra', 'minkowski', 'covariance', 
-#' 'MI_MM', 
+#' 'MI_MM'. If set 'none' the windows will be used only for the post_processing_method (works only with path_* or tsne/svd).
 #' @param transpose_trj Defaults to F. If set T the junk of trj (i.e. with a specific window) is transposed so to infer a network with dimensions window*(window-1)/2
 #' @param ... Various variables. Possible values are \code{c('wgcna_type', 'wgcna_power', 'wgcna_corOp')}.
 #' 
@@ -30,13 +30,14 @@
 #' @importFrom WGCNA mutualInfoAdjacency
 #' @importFrom data.table transpose
 #' @importFrom PairViz find_path
+#' @importFrom Rtsne Rtsne
 
 generate_network <- function(trj, window = NULL, method = 'wgcna', post_processing_method = NULL, overlapping_reduction = NULL, transpose_trj = FALSE, ...){
  
   # checking additional variable
   input_args <- list(...)
-  avail_extra_argoments <- c('wgcna_type', 'wgcna_power', 'wgcna_corOp', 'minkowski_p', 'cov_method')
-  avail_methods <- c('wgcna', 
+  avail_extra_argoments <- c('wgcna_type', 'wgcna_power', 'wgcna_corOp', 'minkowski_p', 'cov_method', 'tsne_dimensions', ' tsne_perplexity', 'tsne_maxIter')
+  avail_methods <- c('wgcna', 'none', 
                      'binary', 'euclidean', 'manhattan', 'maximum', 'canberra', 'minkowski', 'mahalanobis',
                      'covariance',
                      'MI', 'MI_MM', 'MI_ML', 'MI_shrink', 'MI_SG')
@@ -48,7 +49,10 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', post_processi
   if(!('wgcna_power' %in% names(input_args))) wgcna_power <- 1 else wgcna_power <- input_args[['wgcna_power']]
   if(!('wgcna_corOp' %in% names(input_args))) wgcna_corOp <- "use = 'p'" else wgcna_corOp <- input_args[['wgcna_corOp']]
   if(!('minkowski_p' %in% names(input_args))) minkowski_p <- 3 else minkowski_p <- input_args[['minkowski_p']]
-  if(!('cov_method' %in% names(input_args))) cov_method <- 'pearson' else cov_mat <- input_args[['spearman']]
+  if(!('cov_method' %in% names(input_args))) cov_method <- 'pearson' else cov_method <- input_args[['cov_method']]
+  if(!('tsne_dimensions' %in% names(input_args))) tsne_dimensions <- 2 else tsne_dimensions <- input_args[['tsne_dimensions']]
+  if(!('tsne_perplexity' %in% names(input_args))) tsne_perplexity <- 30 else tsne_perplexity <- input_args[['tsne_perplexity']]
+  if(!('tsne_maxIter' %in% names(input_args))) tsne_maxIter <- 500 else tsne_maxIter <- input_args[['tsne_maxIter']]
   
   # Method checks
   if(!is.null(method) && (!is.character(method) || length(method) != 1))
@@ -62,7 +66,7 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', post_processi
   
   # checks for available post_processing_method
   avail_post_proc_met <- c('path_euclidean', 'path_minkowski', 'path_manhattan', 'path_maximum', 'path_canberra', 'path_binary',
-                           'svd',
+                           'svd', 'tsne',
                            'SymmetricUncertainty')
   if(!is.null(post_processing_method) && (!is.character(post_processing_method) || length(post_processing_method) != 1))
     stop('post_processing_method must be a single character.')
@@ -74,6 +78,8 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', post_processi
     warning('You did not insert any Mutual Information option but you are trying to use SymmetricUncertainty. The method will be set to "MI".')
     method <- 'MI'
   }
+  if(method == 'none' && is.null(post_processing_method))
+    stop('It is needed a post_processing_method if you want to use directly the window (without any network construction).')
   
   # Checking input variables 
   if(!is.null(window) && (length(window) != 1 || !is.numeric(window) || window <= 3 || window > nrow(trj)/2))
@@ -94,6 +100,18 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', post_processi
   # specifiic checkings: the cov_method
   if(!cov_method %in% c('pearson', 'spearman', 'kendall'))
     stop('cov_method not supported.')
+
+  # specific checks for tsne
+  if(!.isSingleInteger(tsne_dimensions))
+    stop('tsne_dimensions must be a single integer')
+  if(!.isSingleInteger(tsne_perplexity))
+    stop('tsne_perplexity must be a single integer')
+  if(!.isSingleInteger(tsne_maxIter))
+    stop('tsne_maxIter must be a single integer')
+  if(tsne_perplexity > (window - 1)/3){
+    warning('tsne_perplexity too big. It will be set to tsne_perplexity <- (window/2 - 1)/3')
+    tsne_perplexity <- (window/2 - 1)/3
+  }
   
   if(!is.null(overlapping_reduction)) warning('overlapping_reduction functionality is not implemented still. Not use it.')
   # if((!is.null(overlapping_reduction) && (length(overlapping_reduction) != 1 ||!is.numeric(overlapping_reduction) ||
@@ -135,6 +153,8 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', post_processi
     trj_out <- matrix(NA, nrow = nrow(trj), ncol = standard_path_length) 
   }else if(!is.null(post_processing_method) && grepl(post_processing_method, pattern = 'svd', fixed = T)){
     trj_out <- matrix(NA, nrow = nrow(trj), ncol = ncol(trj))
+  }else if(!is.null(post_processing_method) && grepl(post_processing_method, pattern = 'tsne', fixed = T)){
+    trj_out <- matrix(NA, nrow = nrow(trj), ncol = tsne_dimensions*window)
   }else{
     stop('impossible initilization of the variables. Please check the modes.')
   }
@@ -168,29 +188,33 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', post_processi
     
     # main adjacency constructor.
     # --------------------------
-    # WGCNA
-    if(method == 'wgcna'){
-      built_net <- WGCNA::adjacency(tmp_trj, type = wgcna_type, corFnc = 'cor', power = wgcna_power, corOptions = wgcna_corOp)
-    # covariance
-    }else if(method == 'covariance'){
-      built_net <- cov(tmp_trj, method = cov_method)
-    # mahalanobis (stat implementation)
-    }else if(method == 'covariance'){
-      built_net <- cov(tmp_trj, method = cov_method)
-    # MI based
-    }else if(grepl(method, pattern = 'MI', fixed = T)){
-      while(dim(tmp_trj)[1] < 4) tmp_trj <- rbind(tmp_trj, tmp_trj)
-      built_net <- WGCNA::mutualInfoAdjacency(tmp_trj, entropyEstimationMethod = strsplit(method, split = '_')[[1]][2])
-    # distance inverse (e.g. Minkowskij similarity)
-    }else if(!(method %in% c('wgcna', 'covariance', 'MI_MM', 'MI_ML', 'MI_shrink', 'MI_SG'))){
-      distOptions_manual <- paste0("method = '",method,"'")
-      if(method == 'minkowski') distOptions_manual <- paste0(distOptions_manual, minkowski_p)
-      built_net <- WGCNA::adjacency(tmp_trj, type = "distance", distOptions = distOptions_manual)
-    # eventual misunderstanding
+    if(method != 'none'){
+      # WGCNA
+      if(method == 'wgcna'){
+        built_net <- WGCNA::adjacency(tmp_trj, type = wgcna_type, corFnc = 'cor', power = wgcna_power, corOptions = wgcna_corOp)
+      # covariance
+      }else if(method == 'covariance'){
+        built_net <- cov(tmp_trj, method = cov_method)
+      # mahalanobis (stat implementation)
+      }else if(method == 'covariance'){
+        built_net <- cov(tmp_trj, method = cov_method)
+      # MI based
+      }else if(grepl(method, pattern = 'MI', fixed = T)){
+        while(dim(tmp_trj)[1] < 4) tmp_trj <- rbind(tmp_trj, tmp_trj)
+        built_net <- WGCNA::mutualInfoAdjacency(tmp_trj, entropyEstimationMethod = strsplit(method, split = '_')[[1]][2])
+      # distance inverse (e.g. Minkowskij similarity)
+      }else if(!(method %in% c('wgcna', 'covariance', 'MI_MM', 'MI_ML', 'MI_shrink', 'MI_SG'))){
+        distOptions_manual <- paste0("method = '",method,"'")
+        if(method == 'minkowski') distOptions_manual <- paste0(distOptions_manual, minkowski_p)
+        built_net <- WGCNA::adjacency(tmp_trj, type = "distance", distOptions = distOptions_manual)
+      # eventual misunderstanding
+      }else{
+        stop('Something in the method construction went wrong. Please refer to the developers.')
+      }
     }else{
-      stop('Something in the method construction went wrong. Please refer to the developers.')
+      built_net <- tmp_trj
     }
-    
+          
     # Post-processing
     # -------------------------
     # special case: MI
@@ -210,12 +234,18 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', post_processi
       trj_out[i,] <- tmp_path
     }else if(!is.null(post_processing_method) && grepl(post_processing_method, pattern = 'svd', fixed = T)){
       trj_out[i,] <- svd(built_net_fin, nu = 0, nv = 0)$d
+    }else if(!is.null(post_processing_method) && grepl(post_processing_method, pattern = 'tsne', fixed = T)){
+      tmp_to_expand <- c(Rtsne::Rtsne(X = built_net_fin, dims = tsne_dimensions, perplexity = tsne_perplexity, verbose = FALSE, max_iter = tsne_maxIter)$Y)
+      if(length(tmp_to_expand) < ncol(trj_out))
+        tmp_to_expand <- c(rep(tmp_to_expand, 3))[ncol(trj_out)]
+      trj_out[i,] <- tmp_to_expand
     }else{
       # Taking only the upper.tri
       trj_out[i,] <- built_net_fin[lower.tri(x = built_net_fin, diag = FALSE)]
     }
   }
-  
+  # Checking the creation of NAs in the inference
+  # -------------------------
   if(any(is.na(trj_out))){
     n_na_trj <- sum(is.na(trj_out))
     warning('Attention: NA generated. Probably it is due to too short window of time used. Fraction of NA: ', 
