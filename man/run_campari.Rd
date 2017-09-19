@@ -7,7 +7,7 @@
 run_campari(trj = NULL, base_name = "base_name", data_file = NULL,
   nsnaps = NULL, seq_in = NULL, multi_threading = FALSE, mpi = FALSE,
   print_status = TRUE, run_in_background = FALSE, key_file_input = NULL,
-  return_log = FALSE, silent = FALSE, ...)
+  return_log = FALSE, silent = FALSE, campari_exe = NULL, ...)
 }
 \arguments{
 \item{trj}{Trajectory to be analysed by campari. It must be in the format (snapshots per variables). It will be written as an .tsv in the current working directory.}
@@ -35,6 +35,8 @@ be run after the generation of a new keyfile. Please note that in the case of mu
 \item{return_log}{Default to \code{FALSE}. It will return CAMPARI log as a string (also).}
 
 \item{silent}{Defaults to \code{FALSE}. It will silent all outputs (not the warnings).}
+
+\item{campari_exe}{If the automatic search fails it is possible to insert manually the location of the campari executable.}
 
 \item{...}{Analysis variables (similarly to \code{\link{mst_from_trj}}). You can check all of these in the original documentation (\url{http://campari.sourceforge.net/documentation.html}).}
 }
