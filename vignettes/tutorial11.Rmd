@@ -56,7 +56,7 @@ FMCSC_RSTOUT 20000000 # disable
 
 ps: nbu.in is a file containing only the following words in two different lines: NBU END
 
-For more information check [Tutorial 11: Structural Clustering and Related Methods in CAMPARI](campari.sourceforge.net/tutorial11.html)
+For more information check [Tutorial 11: Structural Clustering and Related Methods in CAMPARI](http://campari.sourceforge.net/V3/tutorial11.html)
 </div>
 </div> 
 
@@ -154,7 +154,7 @@ FMCSC_RSTOUT 20000000 # disable
 
 ```
 
-For more information check [Tutorial 11: Structural Clustering and Related Methods in CAMPARI](campari.sourceforge.net/tutorial11.html)
+For more information check [Tutorial 11: Structural Clustering and Related Methods in CAMPARI](http://campari.sourceforge.net/V3/tutorial11.html)
 </div>
 </div> 
 Here, we select the tree-like algorithm of Vitalis and Caflisch via keyword FMCSC_CMODE. Details are provided in the corresponding documentation and of course in the reference publication. As a choice of representation ("feature selection"), we pick all dihedral angles of the system (the natural degrees of freedom for our sampling engine here). By supplying both FMCSC_CDISTANCE and an auxiliary input file for FMCSC_CFILE, it is possible to select subsets of features (for example, for n-butane one could cluster purely based on the central torsion angle). How this is done in detail is explained elsewhere. The last two options control parameters of the tree-based algorithm, i.e., its height (FMCSC_BIRCHHEIGHT) and a coarse threshold radius that should correspond roughly to the maximum pairwise distance observed between snapshots (FMCSC_CMAXRAD). Finally, the choice for FMCSC_CRADIUS sets a threshold radius parameter for the final clusters obtained (all algorithms in CAMPARI currently offer control over cluster size rather than cluster number). Here, the chosen value of 60.0° corresponds to the expected results for this system. Specifically, the torsional potentials partition every dihedral angle into three well-defined states spaced 120° apart. This means that we expect 3^3=27 well-defined states overall with 9 of those being more likely than the other 18 due to the central torsion angle energetically favoring the anti state over the two gauche states.
@@ -235,7 +235,7 @@ FMCSC_ENOUT 20000000 # disable
 FMCSC_RSTOUT 20000000 # disable
 
 ```
-For more information check [Tutorial 11: Structural Clustering and Related Methods in CAMPARI](campari.sourceforge.net/tutorial11.html)
+For more information check [Tutorial 11: Structural Clustering and Related Methods in CAMPARI](http://campari.sourceforge.net/V3/tutorial11.html)
 </div>
 </div>
 
@@ -257,7 +257,7 @@ show_clustering_summary(log_file = "nbu_clustering_rmsd.log", fyc_file = "NBU.fy
 
 Note that the output files from Step 2 are overwritten. Because we selected the carbon atoms only for the RMSD computation, we do not expect to observe the same state partitioning as before. Specifically, the information on the methyl groups is lost (cluster centroid positions for these two torsion angles should approximately appear as if drawn randomly from the underlying distribution).
 
-An additional clustering method offered by CAMPARI is hierarchical clustering. Change the clustering specific keywords as the following (already R code). Note that the keywords have been copied directly in a string var (copied_string) from the original tutorial ([Tutorial 11](campari.sourceforge.net/tutorial11.html)) in order to use the handy option key_file_is_keyword.
+An additional clustering method offered by CAMPARI is hierarchical clustering. Change the clustering specific keywords as the following (already R code). Note that the keywords have been copied directly in a string var (copied_string) from the original tutorial ([Tutorial 11](http://campari.sourceforge.net/V3/tutorial11.html)) in order to use the handy option key_file_is_keyword.
 ```{r, eval=FALSE}
 # hierarchical clustering (as there are some more keywords to copy -> keywords_from_keyfile using key_file_is_keywords)
 copied_string <- "FMCSC_CMODE 3 # use hierarchical clustering
@@ -336,7 +336,7 @@ FMCSC_CPROGINDRMAX 7000 # number of search attempts
 FMCSC_CPROGINDSTART 1 # start from the first snapshot in the trajectory (default)
 
 ```
-For more information check [Tutorial 11: Structural Clustering and Related Methods in CAMPARI](campari.sourceforge.net/tutorial11.html)
+For more information check [Tutorial 11: Structural Clustering and Related Methods in CAMPARI](http://campari.sourceforge.net/V3/tutorial11.html)
 </div>
 </div>
 
