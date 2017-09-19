@@ -43,7 +43,12 @@
 
 .lt <- function(x) return(length(x))
 
-.check_integer <- function(x) return(is.null(x) || !is.numeric(x) || x%%1 != 0) # MUST not be null
+.isSingleInteger <- function(x) {
+  if(!is.numeric(x) || x%%1 != 0 || (is.null(dim(x)) && length(x) != 1) || (!is.null(dim(x))))
+    return(FALSE)
+  else 
+    return(TRUE)
+  }
 
 .print_consecutio <- function(itering, total_to_iter, tot_to_print = 10, other_to_print = "", timeit = T, time_first = NULL){
   state_to_print <- floor(((itering*1.0)/total_to_iter)*tot_to_print)
