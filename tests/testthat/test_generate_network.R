@@ -11,5 +11,6 @@ test_that('pre-processing with network inference', {
  
   expect_that(tsne_net <- generate_network(trj, method = 'minkowski', post_processing_method = 'tsne', window = 20), not(throws_error()))
   expect_that(tsne_net <- generate_network(trj, method = 'none', post_processing_method = 'tsne', window = 20), not(throws_error()))
+  expect_that(tsne_net <- generate_network(trj, method = 'MI', post_processing_method = 'tsne', window = 20), not(throws_error()))
   
   })
