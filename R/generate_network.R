@@ -102,15 +102,17 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', post_processi
     stop('cov_method not supported.')
 
   # specific checks for tsne
-  if(!.isSingleInteger(tsne_dimensions))
-    stop('tsne_dimensions must be a single integer')
-  if(!.isSingleInteger(tsne_perplexity))
-    stop('tsne_perplexity must be a single integer')
-  if(!.isSingleInteger(tsne_maxIter))
-    stop('tsne_maxIter must be a single integer')
-  if(tsne_perplexity > (window - 1)/3){
-    warning('tsne_perplexity too big. It will be set to tsne_perplexity <- (window/2 - 1)/3')
-    tsne_perplexity <- (window/2 - 1)/3
+  if(!is.null(post_processing_method) && post_processing_method == 'tsne'){
+    if(!.isSingleInteger(tsne_dimensions))
+      stop('tsne_dimensions must be a single integer')
+    if(!.isSingleInteger(tsne_perplexity))
+      stop('tsne_perplexity must be a single integer')
+    if(!.isSingleInteger(tsne_maxIter))
+      stop('tsne_maxIter must be a single integer')
+    if(tsne_perplexity > (window - 1)/3){
+      warning('tsne_perplexity too big. It will be set to tsne_perplexity <- (window/2 - 1)/3')
+      tsne_perplexity <- (window/2 - 1)/3
+    }  
   }
   
   if(!is.null(overlapping_reduction)) warning('overlapping_reduction functionality is not implemented still. Not use it.')
