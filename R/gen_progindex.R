@@ -60,7 +60,7 @@ gen_progindex <- function(adjl=NULL, nsnaps = NULL, snap_start = 1, read_from_ne
   
   if(read_from_netcdf){
     if(!mute) cat("Going netcdf...\n")
-    if(.check_integer(nsnaps)) stop("For netcdf data management you must write the number of snapshots in your trj")
+    if(!.isSingleInteger(nsnaps)) stop("For netcdf data management you must write the number of snapshots in your trj")
     use_tree_from_r <- FALSE
     adjl <- list()
     maxnb <- 2
