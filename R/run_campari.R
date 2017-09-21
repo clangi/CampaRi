@@ -53,14 +53,7 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   simulation_mode <- FALSE
   nvars <- NULL
   
-  # set upper case for args names
-  names(args_list) <- toupper(toupper(names(args_list)))
-  args_names <- names(args_list)
-  if(!is.null(key_file_input)){
-    cat('Keyfile manually inserted for enhanced keywords feeding. Attention: some standard checks will be overriden and others could be misbehaving.\n')
-    args_list <- keywords_from_keyfile(key_file_input = key_file_input, keyword_list = args_list, keyword_list_first = FALSE)
-    args_names <- names(args_list)
-  }
+  
   
   # -----------------------
   # base input checks
@@ -83,6 +76,15 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   if(return_log && (run_in_background)){
     warning('If return_log is active it is not possible to run_in_background. run_in_background is set to FALSE.\n')
     run_in_background <- FALSE
+  }
+  
+  # set upper case for args names
+  names(args_list) <- toupper(toupper(names(args_list)))
+  args_names <- names(args_list)
+  if(!is.null(key_file_input)){
+    if(!silent) cat('Keyfile manually inserted for enhanced keywords feeding. Attention: some standard checks will be overriden and others could be misbehaving.\n')
+    args_list <- keywords_from_keyfile(key_file_input = key_file_input, keyword_list = args_list, keyword_list_first = FALSE, silent = silent)
+    args_names <- names(args_list)
   }
   
   # check campari_exe
@@ -479,17 +481,20 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   if(!silent) cat(' --------------------------------------------------------------------------\n')
   if(!silent) cat('If not in bakground mode, an error in CAMPARI will be reflected in R.\n')
   if(print_status){
+    if(silent) stop('Do not use print status if you want a silent output (aka do not use silent = T AND print_status = T togheter)')
     suppressWarnings(system(paste0(campari_main_exe, " -k ", key_f, " | tee ", log_f)))
     if(any(grepl(x = suppressWarnings(system(paste0("tail -n8 ", log_f), intern = TRUE)), pattern = "CAMPARI CRASHED")))
       stop('======== detected CAMPARI CRASHED in log. Please check it for details ========')
   }else if(run_in_background){
     if(!silent) cat('Direct console printing disabled (it will run in background). Please check', log_f, ' file for real time logging.\n')
-    suppressWarnings(system(paste0(campari_main_exe, " -k ", key_f, " > ", log_f, "&")))
+    if(!silent) suppressWarnings(system(paste0(campari_main_exe, " -k ", key_f, " > ", log_f, "&")))
+    if(any(grepl(x = suppressWarnings(system(paste0("tail -n8 ", log_f), intern = TRUE)), pattern = "CAMPARI CRASHED")))
+      stop('======== detected CAMPARI CRASHED in log. Please check it for details ========')
   }else{
     if(!silent) cat('Direct console printing disabled. Please check', log_f, ' file for real time logging (at the end it will be tailed).\n')
-    suppressWarnings(system(paste0(campari_main_exe, " -k ", key_f, " > ", log_f)))
+    if(!silent) suppressWarnings(system(paste0(campari_main_exe, " -k ", key_f, " > ", log_f)))
     if(!silent) cat('\n')
-    suppressWarnings(system(paste0("tail -n7 ", log_f)))
+    if(!silent) suppressWarnings(system(paste0("tail -n7 ", log_f)))
     if(any(grepl(x = suppressWarnings(system(paste0("tail -n8 ", log_f), intern = TRUE)), pattern = "CAMPARI CRASHED")))
       stop('======== detected CAMPARI CRASHED in log. Please check it for details ========')
   }
