@@ -11,6 +11,7 @@
 #' @param return_string_of_arguments This argument will provide the possibility to have a string with already formatted function arguments (can be directly copied in \code{\link{run_campari}}).
 #' @param keyword_list_first It defines if the inserted keyword_list must be inserted afterwords or before (\code{TRUE}) the loaded keyfile keywords.
 #' @param key_file_is_keywords If \code{TRUE} the function will treat the key_file_input as a text element with keyfile alike features (attention: for this no fault catch is active).
+#' @param silent if \code{TRUE} the function will not cat.
 #' @return A named list or a table of keywords readed from the keyfile in input
 #' @seealso
 #' \code{\link{run_campari}}, \code{\link{sapphire_plot}}.
@@ -25,7 +26,7 @@
 #' 
 
 keywords_from_keyfile <- function(key_file_input, return_table=FALSE, keyword_list=NULL, return_string_of_arguments=FALSE,
-                                  keyword_list_first=TRUE, key_file_is_keywords=FALSE){
+                                  keyword_list_first=TRUE, key_file_is_keywords=FALSE, silent = FALSE){
   
   if(!is.character(key_file_input))
     stop('Inserted key_file_input is not a char string.')
@@ -38,6 +39,8 @@ keywords_from_keyfile <- function(key_file_input, return_table=FALSE, keyword_li
   
   if(!is.logical(return_table))
     stop('return_table must be a logical.')
+  if(!is.logical(silent))
+    stop('silent must be a logical.')
   if(!is.logical(keyword_list_first))
     stop('keyword_list_first must be a logical.')
   if(!is.logical(return_string_of_arguments))
@@ -47,9 +50,9 @@ keywords_from_keyfile <- function(key_file_input, return_table=FALSE, keyword_li
   
   if(!is.null(keyword_list)){
     if(keyword_list_first)
-      cat('A predefined list of keywords have been inserted. The ones from the keyfile will be appended after those.\n')
+      if(!silent) cat('A predefined list of keywords have been inserted. The ones from the keyfile will be appended after those.\n')
     else
-      cat('A predefined list of keywords have been inserted. The ones from the keyfile will be appended before those.\n')
+      if(!silent) cat('A predefined list of keywords have been inserted. The ones from the keyfile will be appended before those.\n')
     key_names <- names(keyword_list)
   }else{
     key_names<-NULL
@@ -90,7 +93,7 @@ keywords_from_keyfile <- function(key_file_input, return_table=FALSE, keyword_li
         keyword_list[k] <- paste(c(keywords_data_frame[k, !is.na(keywords_table[k,])][-1]), collapse = " ")
     }
   }
-  cat('Keyfile successfully loaded.', nrow(keywords_table), 'new keywords found.\n')
+  if(!silent) cat('Keyfile successfully loaded.', nrow(keywords_table), 'new keywords found.\n')
   
   if(return_table){
     if(!is.null(keyword_list))
