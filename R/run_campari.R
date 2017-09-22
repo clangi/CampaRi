@@ -143,57 +143,67 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
     if(is.null(nvars)) nvars <- ncol(trj) 
     if(!silent) cat('Input trajectory dimensions: (', nsnaps, ', ', nvars, ')\n')
     if(!silent) cat('ANALYSIS MODE\n')
-  }else if(is.null(data_file) && 
-           any(c('FMCSC_XTCFILE', 'FMCSC_DCDFILE', 'FMCSC_PDBFILE', 'FMCSC_NETCDFFILE', 'FMCSC_NCDM_ASFILE', 'FMCSC_NCDM_NCFILE') %in% args_names)){
-    if(any(c('FMCSC_XTCFILE', 'FMCSC_DCDFILE', 'FMCSC_PDBFILE', 'FMCSC_NETCDFFILE') %in% args_names)){
-      analysis_mode <- TRUE
-      warning('We found analysis keywords while no trj nor data_file was supplied. All the checks for the analysis inputs will be disabled. No NCMINER mode active.\n')
-      if(!silent) cat('ANALYSIS MODE (for manual insertion of FMCSC_*FILE keywords)\n')
-      if(any(c('FMCSC_NCDM_ASFILE', 'FMCSC_NCDM_NCFILE') %in% args_names)) stop('Once inserted the FMCSC_PDB_FORMAT no NCMINER mode keywords are usable.')
-      if(sum(c('FMCSC_XTCFILE', 'FMCSC_DCDFILE', 'FMCSC_PDBFILE', 'FMCSC_NETCDFFILE') %in% args_names) < 1)
-        stop('Please supply data_file to this function (or some FMCSC_*FILE following FMCSC_PDB_FORMAT).')
-      if(sum(c('FMCSC_XTCFILE', 'FMCSC_DCDFILE', 'FMCSC_PDBFILE', 'FMCSC_NETCDFFILE') %in% args_names) > 1)
-        stop('Please use only one file mode (following FMCSC_*FILE described in FMCSC_PDB_FORMAT).')
-      if('FMCSC_PDBFILE' %in% args_names){
-        data_file <- args_list[['FMCSC_PDBFILE']]
-        if(!args_list[['FMCSC_PDB_FORMAT']] %in% c(1, 2)){
-          warning('Even if FMCSC_PDB_FORMAT was used for FMCSC_PDBFILE no standard (1 or 2) was selected. It will be defaulted to 1.\n')
-          args_list <- c(args_list, FMCSC_PDB_FORMAT=1)
-        }
+  }else if(is.null(data_file)){
+    if('FMCSC_PDBANALYZE' %in% args_names){
+      if(as.numeric(args_list[['FMCSC_PDBANALYZE']] == 1)){
+        if(!silent) cat('PDBANALYZE option set TRUE. The analysis variables will be checked.')
+      } else if(as.numeric(args_list[['FMCSC_PDBANALYZE']] == 0)){
+        if(!silent) cat('PDBANALYZE option set FALSE. The analysis variables will not be checked. Simulation mode active')
+        simulation_mode <- TRUE
+        warning('SIMULATION RUN: using PDBANALYZE == 0 no check on the FILES will be done.\n')
       }
-      if('FMCSC_XTCFILE' %in% args_names){
-        data_file <- args_list[['FMCSC_XTCFILE']]
-        if(!args_list[['FMCSC_PDB_FORMAT']] != 3){
-          warning('Even if FMCSC_PDB_FORMAT was used for FMCSC_XTCFILE no standard (3) was selected. It will be defaulted to 3.\n')
-          args_list <- c(args_list, FMCSC_PDB_FORMAT=3)
+    }
+    if(!simulation_mode && any(c('FMCSC_XTCFILE', 'FMCSC_DCDFILE', 'FMCSC_PDBFILE', 'FMCSC_NETCDFFILE', 'FMCSC_NCDM_ASFILE', 'FMCSC_NCDM_NCFILE') %in% args_names)){
+      if(any(c('FMCSC_XTCFILE', 'FMCSC_DCDFILE', 'FMCSC_PDBFILE', 'FMCSC_NETCDFFILE') %in% args_names)){
+        analysis_mode <- TRUE
+        warning('We found analysis keywords while no trj nor data_file was supplied. All the checks for the analysis inputs will be disabled. No NCMINER mode active.\n')
+        if(!silent) cat('ANALYSIS MODE (for manual insertion of FMCSC_*FILE keywords)\n')
+        if(any(c('FMCSC_NCDM_ASFILE', 'FMCSC_NCDM_NCFILE') %in% args_names)) stop('Once inserted the FMCSC_PDB_FORMAT no NCMINER mode keywords are usable.')
+        if(sum(c('FMCSC_XTCFILE', 'FMCSC_DCDFILE', 'FMCSC_PDBFILE', 'FMCSC_NETCDFFILE') %in% args_names) < 1)
+          stop('Please supply data_file to this function (or some FMCSC_*FILE following FMCSC_PDB_FORMAT).')
+        if(sum(c('FMCSC_XTCFILE', 'FMCSC_DCDFILE', 'FMCSC_PDBFILE', 'FMCSC_NETCDFFILE') %in% args_names) > 1)
+          stop('Please use only one file mode (following FMCSC_*FILE described in FMCSC_PDB_FORMAT).')
+        if('FMCSC_PDBFILE' %in% args_names){
+          data_file <- args_list[['FMCSC_PDBFILE']]
+          if(!args_list[['FMCSC_PDB_FORMAT']] %in% c(1, 2)){
+            warning('Even if FMCSC_PDB_FORMAT was used for FMCSC_PDBFILE no standard (1 or 2) was selected. It will be defaulted to 1.\n')
+            args_list <- c(args_list, FMCSC_PDB_FORMAT=1)
+          }
         }
-      }
-      if('FMCSC_DCDFILE' %in% args_names){
-        data_file <- args_list[['FMCSC_DCDFILE']]
-        if(!args_list[['FMCSC_PDB_FORMAT']] != 4){
-          warning('Even if FMCSC_PDB_FORMAT was used for FMCSC_DCDFILE no standard (4) was selected. It will be defaulted to 4.\n')
-          args_list <- c(args_list, FMCSC_PDB_FORMAT=4)
+        if('FMCSC_XTCFILE' %in% args_names){
+          data_file <- args_list[['FMCSC_XTCFILE']]
+          if(!args_list[['FMCSC_PDB_FORMAT']] != 3){
+            warning('Even if FMCSC_PDB_FORMAT was used for FMCSC_XTCFILE no standard (3) was selected. It will be defaulted to 3.\n')
+            args_list <- c(args_list, FMCSC_PDB_FORMAT=3)
+          }
         }
-      }
-      if('FMCSC_NETCDFFILE' %in% args_names){
-        data_file <- args_list[['FMCSC_NETCDFFILE']]
-        netcdf_mode_amber <- TRUE
-        if(!args_list[['FMCSC_PDB_FORMAT']] != 5){
-          warning('Even if FMCSC_PDB_FORMAT was used for FMCSC_NETCDFFILE no standard (5) was selected. It will be defaulted to 5.\n')
-          args_list <- c(args_list, FMCSC_PDB_FORMAT=5)
+        if('FMCSC_DCDFILE' %in% args_names){
+          data_file <- args_list[['FMCSC_DCDFILE']]
+          if(!args_list[['FMCSC_PDB_FORMAT']] != 4){
+            warning('Even if FMCSC_PDB_FORMAT was used for FMCSC_DCDFILE no standard (4) was selected. It will be defaulted to 4.\n')
+            args_list <- c(args_list, FMCSC_PDB_FORMAT=4)
+          }
         }
+        if('FMCSC_NETCDFFILE' %in% args_names){
+          data_file <- args_list[['FMCSC_NETCDFFILE']]
+          netcdf_mode_amber <- TRUE
+          if(!args_list[['FMCSC_PDB_FORMAT']] != 5){
+            warning('Even if FMCSC_PDB_FORMAT was used for FMCSC_NETCDFFILE no standard (5) was selected. It will be defaulted to 5.\n')
+            args_list <- c(args_list, FMCSC_PDB_FORMAT=5)
+          }
+        }
+      }else if(!simulation_mode && any(c('FMCSC_NCDM_ASFILE', 'FMCSC_NCDM_NCFILE') %in% args_names)){
+        analysis_mode <- TRUE
+        warning('We found analysis keywords for the analysis while no trj R-object was supplied. These NCMINER mode active.\n')
+        if(!silent) cat('ANALYSIS MODE (for manual insertion of FMCSC_NCDM_* keyword)\n')
+        if('FMCSC_NCDM_ASFILE' %in% args_names && 'FMCSC_NCDM_NCFILE' %in% args_names)
+          stop('Use only one between FMCSC_NCDM_ASFILE and FMCSC_NCDM_NCFILE (or use data_file input).')
+        if('FMCSC_NCDM_ASFILE' %in% args_names) data_file <- args_list[['FMCSC_NCDM_ASFILE']]
+        if('FMCSC_NCDM_NCFILE' %in% args_names) data_file <- args_list[['FMCSC_NCDM_NCFILE']]
+        if(is.null(nsnaps) && "FMCSC_NCDM_NRFRMS" %in% args_names) nsnaps <- args_list[["FMCSC_NCDM_NRFRMS"]]
+        if('FMCSC_NCDM_ASFILE' %in% args_names) ascii_mode <- TRUE
+        if('FMCSC_NCDM_NCFILE' %in% args_names) netcdf_mode <- TRUE
       }
-    }else if(any(c('FMCSC_NCDM_ASFILE', 'FMCSC_NCDM_NCFILE') %in% args_names)){
-      analysis_mode <- TRUE
-      warning('We found analysis keywords for the analysis while no trj R-object was supplied. These NCMINER mode active.\n')
-      if(!silent) cat('ANALYSIS MODE (for manual insertion of FMCSC_NCDM_* keyword)\n')
-      if('FMCSC_NCDM_ASFILE' %in% args_names && 'FMCSC_NCDM_NCFILE' %in% args_names)
-        stop('Use only one between FMCSC_NCDM_ASFILE and FMCSC_NCDM_NCFILE (or use data_file input).')
-      if('FMCSC_NCDM_ASFILE' %in% args_names) data_file <- args_list[['FMCSC_NCDM_ASFILE']]
-      if('FMCSC_NCDM_NCFILE' %in% args_names) data_file <- args_list[['FMCSC_NCDM_NCFILE']]
-      if(is.null(nsnaps) && "FMCSC_NCDM_NRFRMS" %in% args_names) nsnaps <- args_list[["FMCSC_NCDM_NRFRMS"]]
-      if('FMCSC_NCDM_ASFILE' %in% args_names) ascii_mode <- TRUE
-      if('FMCSC_NCDM_NCFILE' %in% args_names) netcdf_mode <- TRUE
     }
   }else if(!is.null(data_file)){
     analysis_mode <- TRUE
