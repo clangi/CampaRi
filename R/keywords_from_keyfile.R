@@ -100,7 +100,7 @@ keywords_from_keyfile <- function(key_file_input, return_table=FALSE, keyword_li
       warning('The return_table option will not consider the keyword_list to be appended. It will return only the keyfile table.')
     return(keywords_table)
   }else if(return_string_of_arguments){
-    keywords_string <- paste0(names(keyword_list), '="', as.vector(unlist(keyword_list[names(keyword_list)])), collapse = '", ')
+    keywords_string <- paste0(names(keyword_list), '="', as.vector(unlist(keyword_list[names(keyword_list)])), '"', collapse = ', ')
     return(keywords_string)
   }else{
     return(keyword_list)
