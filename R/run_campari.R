@@ -145,9 +145,9 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
     if(!silent) cat('ANALYSIS MODE\n')
   }else if(is.null(data_file)){
     if('FMCSC_PDBANALYZE' %in% args_names){
-      if(as.numeric(args_list[['FMCSC_PDBANALYZE']] == 1)){
+      if(as.numeric(args_list[['FMCSC_PDBANALYZE']]) == 1){
         if(!silent) cat('PDBANALYZE option set TRUE. The analysis variables will be checked.')
-      } else if(as.numeric(args_list[['FMCSC_PDBANALYZE']] == 0)){
+      } else if(as.numeric(args_list[['FMCSC_PDBANALYZE']]) == 0){
         if(!silent) cat('PDBANALYZE option set FALSE. The analysis variables will not be checked. Simulation mode active')
         simulation_mode <- TRUE
         warning('SIMULATION RUN: using PDBANALYZE == 0 no check on the FILES will be done.\n')
@@ -408,7 +408,7 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
     n_cores <- parallel::detectCores()
     if("FMCSC_NRTHREADS" %in% args_names){
       if(!silent) cat('The number of threads defined for the openMP run has been set manually to:', args_list[["FMCSC_NRTHREADS"]], '\n')
-      if(args_list[["FMCSC_NRTHREADS"]] > n_cores || args_list[["FMCSC_NRTHREADS"]] < 2 || !is.numeric(args_list[["FMCSC_NRTHREADS"]])){
+      if(as.numeric(args_list[["FMCSC_NRTHREADS"]]) > n_cores || as.numeric(args_list[["FMCSC_NRTHREADS"]]) < 2){
         warning('Selected more/less/notcorrectly cores than the available number of units. It will be set to n_cores - 1')
         args_list <- c(args_list, FMCSC_NRTHREADS=n_cores-1)
       }
