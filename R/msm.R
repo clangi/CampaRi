@@ -17,10 +17,11 @@
 #'       \item \code{TM} The transition matrix
 #'       \item \code{cnt} The count matrix 
 #'       \item \code{values} The eigenvalues of the transition matrix
-#'       \item \code{vectors} The left eigenvectors of the transition matrix. 
-#'       \item \code{Q} The metastability, i.e. the trace of the transition matrix.   
-#'       \item \code{flux} The non-Markovian flux (see reference [2])
-#'       \item \code{mtp} Mean transition time between different states (see reference [3])
+#'       \item \code{left} The left eigenvectors of the transition matrix, normalized as in [1].
+#'       \item \code{right} The right eigenvectors of the transition matrix, normalized as in [1].
+#'       \item \code{Q} The metastability, i.e. the trace of the transition matrix.
+#'       \item \code{flux} Fluxes relative to each timescale. see ref. [2].
+#'       \item \code{mtp} Mean transition time between different states (see reference [2])
 #'       \item \code{pMSM} A vector of probabilities to be at set A, starting from A itself, aftera certain number of steps, calculated by means of the transition matrix (see reference [1]).
 #'       \item \code{pMD} A vector of probabilities to be at set A, starting from A itself, aftera certain number of steps, calculated directly from the trajectory (see reference [1]).
 #'       \item \code{epsMD} The statistical errors associated to the \code{pMD} (see reference [1]).
@@ -37,7 +38,7 @@
 #'     msm("BASINS_1.dat", 100, tm.opt="mle", CK.test=TRUE, setA=c(1,2))
 #' }
 #'
-#' @details The main reference for the Markov state model creation is [1][Prinz, J.H., et al. "Markov models of molecular kinetics: Generation and validation." \emph{The Journal of chemical physics} 134.17 (2011): 174105]. See also [2][Guarnera, E., Pellarin, R., & Caflisch, A. (2009). How does a simplified-sequence protein fold?. \emph{Biophysical journal}, 97(6), 1737-1746.] for non-Markovian flux and [3][Noe' F., et. al. "Hierarchical analysis of conformational dynamics in biomolecules: Transition metwork of metastable states". \emph{The Journal of Chemical Physics} 126, (2007): 155102.]
+#' @details The main reference for the Markov state model creation is [1][Prinz, J.H., et al. "Markov models of molecular kinetics: Generation and validation." \emph{The Journal of chemical physics} 134.17 (2011): 174105]. [2] [Noe' F., et. al. "Hierarchical analysis of conformational dynamics in biomolecules: Transition metwork of metastable states". \emph{The Journal of Chemical Physics} 126, (2007): 155102.]
 #'
 #' @importFrom graphics abline axis legend lines mtext par points text
 #' @importFrom stats as.ts coef filter lm nls sd weighted.mean
@@ -186,22 +187,65 @@ msm <-  function(seq, lag=1, tm.opt=c("symm", "mle"), eig.plot=FALSE, CK.test=FA
     }
 
 ##############################################################################
-    ## Eigenvalues and stationary distibution
-    tmp <- eigen(t(tm)) ## Left eigenvectors
-    if (!(max(Re(tmp$values))<1.01 & max(Re(tmp$values))>0.99)) stop("ERROR in MLE Eigenvalues")
-    eig <- Re(sort(tmp$values,decreasing=TRUE))
-    eig.vec <- Re(tmp$vectors[,order(Re(tmp$values), decreasing=TRUE)])
-    stat <- Re(tmp$vectors[,which.max(Re(tmp$values))])/Re(sum(tmp$vectors[,which.max(Re(tmp$values))]))
-    if (sum(stat)<0) stat <- -stat
 
-##############################################################################
-    ## Calculating non-Markovian Flux 
-    flux <- 1 - sum(as.vector(stat %*% (tm %^% 2)))
+    ## Eigenvalues and stationary distibution
+    ##     tmp <- eigen(t(tm)) ## Left eigenvectors
+    ##     if (!(max(Re(tmp$values))<1.01 & max(Re(tmp$values))>0.99)) stop("ERROR in MLE Eigenvalues    eig.val <- Re(sort(L$values, decreasing=TRUE))
+    ## ")
+    ##     eigs <- Re(sort(tmp$values,decreasing=TRUE))
+    ##     eig.vec <- Re(tmp$vectors[,order(Re(tmp$values), decreasing=TRUE)])
+    ##     eig.vec.right <- Re(eigen(tm)$vectors[,order(Re(tmp$values), decreasing=TRUE)])
+    ##     stat <- Re(tmp$vectors[,which.max(Re(tmp$values))])/Re(sum(tmp$vectors[,which.max(Re(tmp$values))]))
+    ##     if (sum(stat)<0) stat <- -stat
+
+    ## R <- eigen(tm) ## Right Eigenvectors
+    L <- eigen(t(tm)) ## L eigenvectors
+    if (!(max(Re(L$values))<1.01 & max(Re(L$values))>0.99)) stop("ERROR in MLE Eigenvalues")
+    eig <- Re(sort(L$values, decreasing=TRUE))
+    ## stat <- Re(L$vectors[,which.max(Re(L$values))])/Re(sum(L$vectors[,which.max(Re(L$values))]))
+    ## if (sum(stat)<0) stat <- -stat
+    L <- Re(L$vectors[,order(Re(L$values), decreasing=TRUE)])
+    ## R <- Re(R$vectors[,order(Re(R$values), decreasing=TRUE)])
+
+    L <- apply(L, 2, function(x) {
+        if(sum(x)<0) return(-x)
+        else return(x)
+    })
+    stat <- L[,1]/sum(L[,1])
+    if (sum(stat)<0) stat <- -stat
+    ## R <- apply(R, 2, function(x) {
+    ##     if(sum(x)<0) return(-x)
+    ##     else return(x)
+    ## })
+    ## for(kk in 1:nrow(R)) if(sum(R[,kk]*L[,kk]) < 0) R[,kk] <- -R[,kk]
+
+
+    ## Left eigenvectors properly normalized
+    A.L <- apply(L, 2, function(x) sqrt(sum(x^2/stat)))
+    L.tmp <- apply(L, 1, function(x) x/A.L)
+    if(identical(dim(L.tmp), dim(L))) L <- t(L.tmp)
+    else L <- t(L.tmp)
+    rm("L.tmp")
+
+    ## Right eigenvectors properly normalized
+    ## A.R <- apply(R, 2, function(x) sqrt(sum(x^2*stat)))
+    ## R.tmp <- apply(R, 1, function(x) x/A.R)
+    ## if(identical(dim(R.tmp), dim(R))) R <- t(R.tmp)
+    ## else R <- t(R.tmp)
+    ## rm("R.tmp")
+
+    R <- apply(L, 2, function(x) x/stat)
+    if(!identical(dim(R),dim(L))) R <- t(R)
+
+    if(abs(mean(sapply(c(1:nrow(L)), function(i) sum(L[,i]*R[,i])))-1) > 0.0001) stop("Error in left and right eigenvalues")
+
+#########################################################################
+    ## Calculating fluxes ...
+    flux <- colSums(L^2)
 
 ##############################################################################
     ## Calculating the mean transition time
     mtp <- lag/sum(as.vector(stat %*% (tm-(diag(nrow(tm))*diag(tm)))))
-
     
 ##############################################################################
     if(CK.test) {
@@ -217,33 +261,33 @@ msm <-  function(seq, lag=1, tm.opt=c("symm", "mle"), eig.plot=FALSE, CK.test=FA
         }
 
         ## Additional cnts
-        cnt <- list(cnt)
+        cnt.CK <- list(cnt)
         if(!silent) cat("Computing the count matrices for the CK test...\n")
         for (ll in 2:np.CK ) {  
             set <- c(1:(cstored-ll*lag)) 
-            cnt[[ll]] <- matrix(0, nrow=n.st, ncol=n.st)
+            cnt.CK[[ll]] <- matrix(0, nrow=n.st, ncol=n.st)
             for (i in 1:lt(set)) {
                 row <- seq.st[set[i]]
                 col <- seq.st[set[i]+lag*ll]
-                cnt[[ll]][row,col] <- cnt[[ll]][row,col]+1
+                cnt.CK[[ll]][row,col] <- cnt.CK[[ll]][row,col]+1
             }
         }
-        cnt.v <- lapply(cnt, rowSums)
-        if(!all(sapply(cnt, function(x) all(is.finite(x))))) stop("ERROR in Window Count Matrices")
+        cnt.v <- lapply(cnt.CK, rowSums)
+        if(!all(sapply(cnt.CK, function(x) all(is.finite(x))))) stop("ERROR in Window Count Matrices")
         ## Cleaning
         st.del <- unique(sort(unlist(lapply(cnt.v, function(x) which(x==0)))))
         if(lt(st.del)!=0) {
             warning(paste("State", st.del, "empty in the count matrix during CK test"), immediate.=T)
-            for(ll in c(1:np.CK)) cnt[[ll]] <- cnt[[ll]][-st.del,-st.del]
-            n.st <- unique(sapply(cnt, nrow))
-            cnt.v <- lapply(cnt, rowSums)
+            for(ll in c(1:np.CK)) cnt.CK[[ll]] <- cnt.CK[[ll]][-st.del,-st.del]
+            n.st <- unique(sapply(cnt.CK, nrow))
+            cnt.v <- lapply(cnt.CK, rowSums)
         }
         
         ## Calculating p_MD(A,A), and eps_MD(A,A)
         pMD <- NULL    
         for (ll in 1:np.CK) {
-            if (lt(setA)>1) pi <- rowSums(cnt[[ll]][,setA])/rowSums(cnt[[ll]])
-            else pi <- cnt[[ll]][,setA]/rowSums(cnt[[ll]])
+            if (lt(setA)>1) pi <- rowSums(cnt.CK[[ll]][,setA])/rowSums(cnt.CK[[ll]])
+            else pi <- cnt.CK[[ll]][,setA]/rowSums(cnt.CK[[ll]])
             pMD[ll] <- sum(wA[setA]*pi[setA])  ## Which wA should I use?
         }
         epsMD <- NULL
@@ -257,31 +301,33 @@ msm <-  function(seq, lag=1, tm.opt=c("symm", "mle"), eig.plot=FALSE, CK.test=FA
     ## Plot Eigenvalues
     if(eig.plot) {
         if(dev.new.eig) dev.new(width=7, height=7)
-        n.eig <- c(1:min(20, n.st))
-        xr <- range(n.eig)
+        ng <- c(1:min(20, n.st))
+        xr <- range(ng)
         yr <- c(0,max(eig))
-        plot(n.eig, eig[n.eig], main="Eigenvalues", xlim=xr, ylim=yr, xlab="", ylab="Eigenvalues", axes=TRUE, col="blue", pch=19)
-        for(i in n.eig) lines(rep(i,2), c(0, eig[i]))
-        mtext(text=paste("First", lt(n.eig), "eigenvalues out of", lt(eig)), side=1, line=2)
+        plot(ng, eig[ng], main="Eigenvalues", xlim=xr, ylim=yr, xlab="", ylab="Eigenvalues", axes=TRUE, col="blue", pch=19)
+        for(i in ng) lines(rep(i,2), c(0, eig[i]))
+        mtext(text=paste("First", lt(ng), "eigenvalues out of", lt(eig)), side=1, line=2)
     }
 
     ## #############################################################################
     ## ## Plot Chapman-Kolmogorov Test
     if(CK.test && CK.plot) {
-        if(dev.new.CK) dev.new(width=7,height=7)
+        if(dev.new.CK) dev.new(width=9,height=7)
+        par(mar=c(5.1, 4.1, 2.1, 2.1))
         xr <- range(lag*c(1:np.CK))
-        ## yr <- range(c(pMD+epsMD, pMD-epsMD, pMSM))
-        ## yr <- c(max(yr[1],0), min(yr[2],1))
+        ##yr <- range(c(pMD+epsMD, pMD-epsMD, pMSM))
+        ## yr <- c(0, 1)
         yr <- c(max(0, min(c(pMD-epsMD, pMSM))),1)
         main <- NULL
         main2 <- NULL
         for (i in 1:lt(setA)) main <- paste(main,as.character(setA[i]), sep=" ")
 
-        plot(0, 0, main=paste("Chapman-Kolmogorv Test :: setA={", main,"}, lag=", lag,  sep=""), xlim=xr, ylim=yr, xlab="Lag Time", ylab="Probability ", axes=TRUE, frame.plot=TRUE, type="n")
+        ## plot(0, 0, main=paste("Chapman-Kolmogorv Test :: setA={", main,"}, lag=", lag,  sep=""), xlim=xr, ylim=yr, xlab="Lag Time", ylab="Probability ", axes=TRUE, frame.plot=TRUE, type="n")
+        plot(0, 0, main="", xlim=xr, ylim=yr, xlab="Lag Time", ylab="Probability ", axes=TRUE, frame.plot=TRUE, type="n")
         points(lag*c(1:np.CK), pMSM, type="o", cex=1.5, pch=16, col="red")
         errbarHmisc <- get(x="errbar", pos="package:Hmisc")
         errbarHmisc(lag*c(1:np.CK), pMD, pMD+epsMD, pMD-epsMD, pch=4, lwd=0.8, cex=1.5, col='black', add=TRUE)
-        legend((2/3)*(np.CK*lag), yr[2]*0.97, legend=c(lag, "MD"), col=c("red", "black"), bty="n", pch=c(16,4), cex=1.2)
+        legend((2/3)*(np.CK*lag), yr[2]*0.97, legend=c(paste("MSM lag=", lag), "MD"), col=c("red", "black"), bty="n", pch=c(16,4), cex=1.2)
         lab <- NULL
         text((2/3)*(np.CK*lag), yr[2]*0.99, labels=paste("Chi2 =", chi), font=2)
     }
@@ -299,6 +345,6 @@ msm <-  function(seq, lag=1, tm.opt=c("symm", "mle"), eig.plot=FALSE, CK.test=FA
     }
     
     if(!silent) cat("Done.\n")
-    invisible(list(TM=tm, cnt=cnt, values=eig, vectors=eig.vec, Q=sum(diag(tm)), mtp=mtp, flux=flux, pMSM=pMSM, pMD=pMD, epsMD=epsMD, chi=chi, n.st=n.st, seq.st=seq.st, tab.st=tab.st, cstored=cstored, call=call))
+    invisible(list(TM=tm, cnt=cnt, values=eig, left=L, right=R, Q=sum(diag(tm)), flux=flux, mtp=mtp, pMSM=pMSM, pMD=pMD, epsMD=epsMD, chi=chi, n.st=n.st, seq.st=seq.st, tab.st=tab.st, cstored=cstored, call=call))
 
 }
