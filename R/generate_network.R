@@ -44,7 +44,7 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', post_processi
   
   # Default handling of extra inputs
   if(any(!(names(input_args) %in% avail_extra_argoments))) 
-    warning('There is a probable mispelling in one of the inserted variables. Please check the available extra input arguments.')
+    stop('There is a probable mispelling in one of the inserted variables. Please check the available extra input arguments.')
   if(!('wgcna_type' %in% names(input_args))) wgcna_type <- 'unsigned' else wgcna_type <- input_args[['wgcna_type']]
   if(!('wgcna_power' %in% names(input_args))) wgcna_power <- 1 else wgcna_power <- input_args[['wgcna_power']]
   if(!('wgcna_corOp' %in% names(input_args))) wgcna_corOp <- "use = 'p'" else wgcna_corOp <- input_args[['wgcna_corOp']]
