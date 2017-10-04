@@ -184,6 +184,7 @@ msm <-  function(seq, lag=1, tm.opt=c("symm", "mle"), eig.plot=FALSE, CK.test=FA
             }
         } 
         if(!all(is.finite(tm))) stop("ERROR in MLE TM")
+        if(any(is.na(tm)) | any(tm<0)) stop("ERROR in MLE TM")
     }
 
 ##############################################################################
