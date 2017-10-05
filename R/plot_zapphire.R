@@ -27,7 +27,7 @@
 #' @param ... Other options are: 'only_timeline', 'reorder_annotation', 'annotate_snap_dist', 'rescaling_ann_col', 'reorder_horizline_on_timeline', 
 #' 'reorder_points_on_timeline', 'timeline_proportion', 'background_height', 'ann_initial_point', 'horiz_lines_on_timeline',  'horiz_colored_areas', 'points_on_timeline',  
 #' 'vertical_barriers_points', 'specific_palette_timeline', 'specific_palette_annotation',  'general_size_annPoints', 'size_points_on_timeline' 
-#' 'plot_legend', 'use_plotly', uniform_color_timeline',  'legend_title', 'legend_labels', 'annotation_type' ('continuous' or 'discrete')
+#' 'plot_legend', 'use_plotly', uniform_color_timeline', 'which_uniform_color_timeline',  'legend_title', 'legend_labels', 'annotation_type' ('continuous' or 'discrete')
 #' @details For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
 #'
 #' @return If \code{ann_trace_ret} is active it will return the annotation trace used for the plot.
@@ -65,6 +65,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
                              'plot_legend', # plot the legend for the annotation
                              'use_plotly',
                              'uniform_color_timeline', # to put the timeline (and the distance annotation trace) in a simple black
+                             'which_uniform_color_timeline',
                              
                              'timeline_proportion',
                              'background_height',
@@ -99,6 +100,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   if(!('plot_legend' %in% names(input_args))) plot_legend <- FALSE  else plot_legend <- input_args[['plot_legend']]
   if(!('use_plotly' %in% names(input_args))) use_plotly <- FALSE  else use_plotly <- input_args[['use_plotly']]
   if(!('uniform_color_timeline' %in% names(input_args))) uniform_color_timeline <- TRUE  else uniform_color_timeline <- input_args[['uniform_color_timeline']]
+  if(!('which_uniform_color_timeline' %in% names(input_args))) which_uniform_color_timeline <- "black"  else which_uniform_color_timeline <- input_args[['which_uniform_color_timeline']]
   
   if(!('timeline_proportion' %in% names(input_args))) timeline_proportion <- NULL else timeline_proportion <- input_args[['timeline_proportion']]
   if(!('background_height' %in% names(input_args))) background_height <- NULL else background_height <- input_args[['background_height']]
@@ -131,7 +133,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   if(file.exists(folderPlot)&&write) print(paste0(folderPlot," already exixts. Posting plots there."))
   else if(write){
     dir.create(folderPlot)
-    cat(paste0(folderPlot," created in order to contain new plots."))
+    cat(paste0(folderPlot," created in order to contain new plots.\n"))
   }
   # ---------------------
   # checking the logicals
@@ -409,7 +411,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
     # AUTOMATIC 2 divisions: ann_trace == TRUE 
     if(automatic_trace_half){
       message("Annotation trace set to automatic. It will be considered bipartite along the timeline.")
-      cat("Half random mode selected for the trace annotation. First half will be light grey")
+      cat("Half random mode selected for the trace annotation. First half will be light grey.\n")
       ann_tr[pin[,3]>=Nsnap/2 & ann_tr == "NA"]<-"gray75"
       ann_tr[pin[,3] < Nsnap/2 & ann_tr == "NA"] <- "gray30"
     }
@@ -747,17 +749,21 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   # -------------------------------------------------------------------------------------
   # SETING: NO MORE THAN ONE ANN LINE AVAILABLE - annotation preparation for timeline and annotation of snap distance
   if(timeline || annotate_snap_dist){
-    single_line_general_ann <- array(1, dim = Nsnap)
-    if(!no_trace){
+    if(!.isSingleElement(which_uniform_color_timeline))
+      stop('which_uniform_color_timeline must be a single element.')
+    single_line_general_ann <- array(which_uniform_color_timeline, dim = Nsnap)
+    if(which_uniform_color_timeline != 'black' && !uniform_color_timeline){
+      warning('Detected insertion of which_uniform_color_timeline without the uniform_color_timeline mode active. It has been automatically activated.')
+      uniform_color_timeline <- T
+    }
+    if(!uniform_color_timeline && !no_trace){
       if(one_line_trace){
         single_line_general_ann <- ann_tr
       }else if(multi_line_trace){
         single_line_general_ann <- ann_tr[1,]
-        warning('timeline color kept as first line in annotation trace inserted (it is multiple lines).')
+        warning('Timeline color kept as first line in annotation trace inserted (it is multiple lines).\n')
       }
-    }
-    if(uniform_color_timeline) color_timeline <- array(1, dim = Nsnap)
-    else color_timeline <- single_line_general_ann
+    color_timeline <- single_line_general_ann
   }
   # -------------------------------------------------------------------------------------
   # plotting the distance between snapshots (on top of everything)

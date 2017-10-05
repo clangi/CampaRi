@@ -48,7 +48,13 @@
     return(FALSE)
   else 
     return(TRUE)
-  }
+}
+.isSingleElement <- function(x) {
+  if((is.null(dim(x)) && length(x) != 1) || (!is.null(dim(x))))
+    return(FALSE)
+  else 
+    return(TRUE)
+}
 
 .print_consecutio <- function(itering, total_to_iter, tot_to_print = 10, other_to_print = "", timeit = T, time_first = NULL){
   state_to_print <- floor(((itering*1.0)/total_to_iter)*tot_to_print)
