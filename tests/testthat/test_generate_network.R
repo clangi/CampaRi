@@ -7,9 +7,9 @@ test_that('pre-processing with network inference', {
   expect_that(net1 <- generate_network(trj, method = 'minkowski', window = 20), not(throws_error()))
   expect_that(path_net <- generate_network(trj, method = 'minkowski', post_processing_method = 'path_minkowski', window = 15), not(throws_error()))
   expect_that(SVD_net <- generate_network(trj, method = 'minkowski', post_processing_method = 'svd', window = 20), not(throws_error()))
-  expect_that(MI_net <- generate_network(trj, method = 'MI', post_processing_method = "SymmetricUncertainty", window = 7), not(throws_error()))
+  # expect_that(MI_net <- generate_network(trj, method = 'MI', post_processing_method = "SymmetricUncertainty", window = 7), not(throws_error()))
  
   expect_that(tsne_net <- generate_network(trj, method = 'minkowski', post_processing_method = 'tsne', window = 20), not(throws_error()))
   expect_that(tsne_net <- generate_network(trj, method = 'none', post_processing_method = 'tsne', window = 20), not(throws_error()))
-  expect_that(tsne_net <- generate_network(trj, method = 'MI', post_processing_method = 'tsne', window = 20), not(throws_error()))
+  # expect_that(tsne_net <- generate_network(trj, method = 'MI', post_processing_method = 'tsne', window = 20), not(throws_error()))
   })
