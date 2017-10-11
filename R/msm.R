@@ -6,6 +6,7 @@
 #' @param tm.opt How to infer the transition matrix. Using \code{"symm"} we derive the transition matrix simply symmetrizing the count matrix (and normalizing it). \code{"mle"} uses the maximum probability estimator for a reversible transition matrix (see references).
 #' @param eig.plot Logical value indicating whether to plot the eigenvalues spectrum or not. Default to FALSE.
 #' @param CK.test Logical value indicatig whether to perform the Chapman-Kolmogorov test or not. The number of points computed is 10. We recall that, if a count matrix is provided as \code{seq}, the test cannot be performed. Default to FALSE.
+#' @param CK.lags Vector of lag times to used in the CK test.
 #' @param CK.plot Logical value indicating whether to plot the results of the CK test spectrum or not. Default to TRUE.
 #' @param setA In case \code{CK.test} is true, this vector indicates the list of states that assemble the reference (macro)state A used in the CK test. Default to the largest state. 
 #' @param silent A logical value indicating whether the function has to remain silent or not. Default value is \code{FALSE}.
@@ -21,11 +22,16 @@
 #'       \item \code{right} The right eigenvectors of the transition matrix, normalized as in [1].
 #'       \item \code{Q} The metastability, i.e. the trace of the transition matrix.
 #'       \item \code{flux} Fluxes relative to each timescale. see ref. [2].
-#'       \item \code{mtp} Mean transition time between different states (see reference [2])
-#'       \item \code{pMSM} A vector of probabilities to be at set A, starting from A itself, aftera certain number of steps, calculated by means of the transition matrix (see reference [1]).
-#'       \item \code{pMD} A vector of probabilities to be at set A, starting from A itself, aftera certain number of steps, calculated directly from the trajectory (see reference [1]).
-#'       \item \code{epsMD} The statistical errors associated to the \code{pMD} (see reference [1]).
-#'       \item \code{chi} The reduced chi-square value of the CK test.
+#'       \item \code{mtp} Mean transition time between different states (see reference [2]).
+#'       \item \code{CK.data} A data.frame containing the Chapman Kolmogorv test results. In particular
+#'       \itemize{
+#'           \item \code{lag} Vector of the lag times used in the CK test with respect to the value of \code{lag}.
+#'           \item \code{pMSM} A vector of probabilities to be at set A, starting from A itself, after a certain number of steps, calculated by means of the transition matrix (see reference [1]).
+#'           \item \code{pMD} A vector of probabilities to be at set A, starting from A itself, after a certain number of steps, calculated directly from the trajectory (see reference [1]).
+#'           \item \code{epsMD} The statistical errors associated to the \code{pMD} (see reference [1]).
+#'       }
+#'       \item \code{CK.chi} The reduced chi-square value of the CK test.
+#'       \item \code{setA} The states used in the CK test.
 #'       \item \code{n.st} The number of states. 
 #'       \item \code{seq.st} The state sequence.
 #'       \item \code{tab.st} A data.frame containing the state number and its relative weigth.
@@ -49,7 +55,7 @@
 #' @export msm
 
 
-msm <-  function(seq, lag=1, tm.opt=c("symm", "mle"), eig.plot=FALSE, CK.test=FALSE, CK.plot=TRUE, setA=NULL, silent=FALSE, dev.new.eig=TRUE, dev.new.CK=TRUE)  {
+msm <-  function(seq, lag=1, tm.opt=c("symm", "mle"), eig.plot=FALSE, CK.test=FALSE, CK.lags=lag*c(1:10), CK.plot=TRUE, setA=NULL, silent=FALSE, dev.new.eig=TRUE, dev.new.CK=TRUE)  {
     call <- match.call()
     cnt.mode <- FALSE
     
@@ -255,22 +261,22 @@ msm <-  function(seq, lag=1, tm.opt=c("symm", "mle"), eig.plot=FALSE, CK.test=FA
 
         ## Calculating p_MSM(A,A)  
         pMSM <- NULL
-        np.CK <- 10
-        for (i in 1:np.CK) {
-            tmp <- wA %*% (tm %^% i)
-            pMSM[i] <- sum(tmp[setA])
+        ## np.CK <- 10
+        for (ll in seq_along(CK.lags)) {
+            tmp <- wA %*% (tm %^% CK.lags[ll])
+            pMSM[ll] <- sum(tmp[setA])
         }
 
         ## Additional cnts
-        cnt.CK <- list(cnt)
+        cnt.CK <- rep(list(), lt(CK.lags))
         if(!silent) cat("Computing the count matrices for the CK test...\n")
-        for (ll in 2:np.CK ) {  
-            set <- c(1:(cstored-ll*lag)) 
+        for (ll in seq_along(CK.lags)) {  
+            set <- c(1:(cstored-CK.lags[ll])) 
             cnt.CK[[ll]] <- matrix(0, nrow=n.st, ncol=n.st)
             for (i in 1:lt(set)) {
                 row <- seq.st[set[i]]
-                col <- seq.st[set[i]+lag*ll]
-                cnt.CK[[ll]][row,col] <- cnt.CK[[ll]][row,col]+1
+                col <- seq.st[set[i] + CK.lags[ll]]
+                cnt.CK[[ll]][row,col] <- cnt.CK[[ll]][row,col] + 1
             }
         }
         cnt.v <- lapply(cnt.CK, rowSums)
@@ -279,23 +285,26 @@ msm <-  function(seq, lag=1, tm.opt=c("symm", "mle"), eig.plot=FALSE, CK.test=FA
         st.del <- unique(sort(unlist(lapply(cnt.v, function(x) which(x==0)))))
         if(lt(st.del)!=0) {
             warning(paste("State", st.del, "empty in the count matrix during CK test"), immediate.=T)
-            for(ll in c(1:np.CK)) cnt.CK[[ll]] <- cnt.CK[[ll]][-st.del,-st.del]
+            for(ll in seq_along(CK.lags)) cnt.CK[[ll]] <- cnt.CK[[ll]][-st.del,-st.del]
             n.st <- unique(sapply(cnt.CK, nrow))
             cnt.v <- lapply(cnt.CK, rowSums)
         }
         
         ## Calculating p_MD(A,A), and eps_MD(A,A)
         pMD <- NULL    
-        for (ll in 1:np.CK) {
+        for (ll in seq_along(CK.lags)) {
             if (lt(setA)>1) pi <- rowSums(cnt.CK[[ll]][,setA])/rowSums(cnt.CK[[ll]])
             else pi <- cnt.CK[[ll]][,setA]/rowSums(cnt.CK[[ll]])
             pMD[ll] <- sum(wA[setA]*pi[setA])  ## Which wA should I use?
         }
         epsMD <- NULL
-        for (ll in 1:np.CK) epsMD[ll] <- sqrt(ll*lag*(pMD[ll]-pMD[ll]^2)/sum(cnt.v[[ll]][setA]) )
+        for (ll in seq_along(CK.lags)) epsMD[ll] <- sqrt(ll*lag*(pMD[ll]-pMD[ll]^2)/sum(cnt.v[[ll]][setA]) )
+
+        ## Create data.frame for the output
+        CK.data <- data.frame(lag= CK.lags, pMSM = pMSM, pMD = pMD, epsMD = epsMD)
         
         ## Calculating chi2 deviations
-        chi <- sum(((pMD-pMSM)/epsMD)^2)/np.CK 
+        CK.chi <- sum(((pMD-pMSM)/epsMD)^2)/lt(CK.lags) 
     }
 
     #############################################################################
@@ -315,29 +324,20 @@ msm <-  function(seq, lag=1, tm.opt=c("symm", "mle"), eig.plot=FALSE, CK.test=FA
     if(CK.test && CK.plot) {
         if(dev.new.CK) dev.new(width=9,height=7)
         par(mar=c(5.1, 4.1, 2.1, 2.1))
-        xr <- range(lag*c(1:np.CK))
-        ##yr <- range(c(pMD+epsMD, pMD-epsMD, pMSM))
-        ## yr <- c(0, 1)
+        xr <- range(CK.lags)
         yr <- c(max(0, min(c(pMD-epsMD, pMSM))),1)
-        main <- NULL
-        main2 <- NULL
-        for (i in 1:lt(setA)) main <- paste(main,as.character(setA[i]), sep=" ")
-
-        ## plot(0, 0, main=paste("Chapman-Kolmogorv Test :: setA={", main,"}, lag=", lag,  sep=""), xlim=xr, ylim=yr, xlab="Lag Time", ylab="Probability ", axes=TRUE, frame.plot=TRUE, type="n")
-        plot(0, 0, main="", xlim=xr, ylim=yr, xlab="Lag Time", ylab="Probability ", axes=TRUE, frame.plot=TRUE, type="n")
-        points(lag*c(1:np.CK), pMSM, type="o", cex=1.5, pch=16, col="red")
+        plot(0, 0, main="", xlim=xr, ylim=yr, xlab="Lag", ylab="Probability", axes=TRUE, frame.plot=TRUE, type="n")
+        points(CK.lags, pMSM, type="o", cex=1.5, pch=16, col="red")
         errbarHmisc <- get(x="errbar", pos="package:Hmisc")
-        errbarHmisc(lag*c(1:np.CK), pMD, pMD+epsMD, pMD-epsMD, pch=4, lwd=0.8, cex=1.5, col='black', add=TRUE)
-        legend((2/3)*(np.CK*lag), yr[2]*0.97, legend=c(paste("MSM lag=", lag), "MD"), col=c("red", "black"), bty="n", pch=c(16,4), cex=1.2)
-        lab <- NULL
-        text((2/3)*(np.CK*lag), yr[2]*0.99, labels=paste("Chi2 =", chi), font=2)
+        errbarHmisc(CK.lags, pMD, pMD+epsMD, pMD-epsMD, pch=4, lwd=0.8, cex=1.5, col='black', add=TRUE)
+        legend((2/3)*CK.lags, yr[2]*0.97, legend=c("MSM", "MD"), col=c("red", "black"), bty="n", pch=c(16,4), cex=1.2)
+        text((2/3)*CK.lags, yr[2]*0.99, labels=paste("Chi2 =", chi), font=2)
     }
 
     if(!CK.test) {
-        chi <- NaN
-        pMSM <- NaN
-        pMD <- NaN
-        epsMD <- NaN
+        CK.chi <- NaN
+        CK.data <- NaN
+        setA <- NaN
     }
     if(cnt.mode) {
         seq.st <- NaN
@@ -346,6 +346,6 @@ msm <-  function(seq, lag=1, tm.opt=c("symm", "mle"), eig.plot=FALSE, CK.test=FA
     }
     
     if(!silent) cat("Done.\n")
-    invisible(list(TM=tm, cnt=cnt, values=eig, left=L, right=R, Q=sum(diag(tm)), flux=flux, mtp=mtp, pMSM=pMSM, pMD=pMD, epsMD=epsMD, chi=chi, n.st=n.st, seq.st=seq.st, tab.st=tab.st, cstored=cstored, call=call))
+    invisible(list(TM=tm, cnt=cnt, values=eig, left=L, right=R, Q=sum(diag(tm)), flux=flux, mtp=mtp, CK.data=CK.data, CK.chi=CK.chi, setA=setA, n.st=n.st, seq.st=seq.st, tab.st=tab.st, cstored=cstored, call=call))
 
 }
