@@ -333,10 +333,10 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
             warning('Inserted negative values in the annotation trace. ', sum(ann_trace < 0), ' values have been coerced to pos.')
             ann_trace <- abs(ann_trace)
           }
-          if(any(ann_trace == 0)){
-            warning('Inserted 0 values (', sum(ann_trace==0), ') in the annotation trace. 1 is added to all values.')
-            ann_trace <- ann_trace + 1
-          }
+          # if(any(ann_trace == 0)){
+          #   warning('Inserted 0 values (', sum(ann_trace==0), ') in the annotation trace. 1 is added to all values.')
+          #   ann_trace <- ann_trace + 1
+          # }
           numeric_trace <- TRUE
         # is character?
         }else if(is.character(ann_trace)){
@@ -763,6 +763,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
         single_line_general_ann <- ann_tr[1,]
         warning('Timeline color kept as first line in annotation trace inserted (it is multiple lines).\n')
       }
+    }
     color_timeline <- single_line_general_ann
   }
   # -------------------------------------------------------------------------------------
