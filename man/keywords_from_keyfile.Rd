@@ -6,7 +6,7 @@
 \usage{
 keywords_from_keyfile(key_file_input, return_table = FALSE,
   keyword_list = NULL, return_string_of_arguments = FALSE,
-  keyword_list_first = TRUE, key_file_is_keywords = FALSE)
+  keyword_list_first = TRUE, key_file_is_keywords = FALSE, silent = FALSE)
 }
 \arguments{
 \item{key_file_input}{An already formatted keyfile. It can contain comments (#) and blank lines. Please note that in the case of multivariable keywords 
@@ -22,6 +22,8 @@ with correct formatting if the \code{key_file_is_keywords} is turned on (\code{T
 \item{keyword_list_first}{It defines if the inserted keyword_list must be inserted afterwords or before (\code{TRUE}) the loaded keyfile keywords.}
 
 \item{key_file_is_keywords}{If \code{TRUE} the function will treat the key_file_input as a text element with keyfile alike features (attention: for this no fault catch is active).}
+
+\item{silent}{if \code{TRUE} the function will not cat.}
 }
 \value{
 A named list or a table of keywords readed from the keyfile in input
