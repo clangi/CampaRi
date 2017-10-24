@@ -5,8 +5,8 @@
 \title{Identifying basins in the SAPPHIRE plot}
 \usage{
 basins_recognition(data, nx, ny = nx, ny.aut = FALSE, local.cut = FALSE,
-  match = FALSE, avg.opt = c("movav", "SG"), plot = FALSE,
-  out.file = TRUE, silent = FALSE, ...)
+  match = FALSE, dyn.check = 1, avg.opt = c("movav", "SG"),
+  plot = FALSE, out.file = TRUE, silent = FALSE, ...)
 }
 \arguments{
 \item{data}{Name of the PROGIDX_<...>.dat file or Data frame with three columns containing, in order, the (sorted) progress index, the relative time indices and the cut function.}
@@ -20,6 +20,8 @@ basins_recognition(data, nx, ny = nx, ny.aut = FALSE, local.cut = FALSE,
 \item{local.cut}{Logical value indicating whether the localized cut function has to be used (see references). Default value is \code{FALSE}.}
 
 \item{match}{Logical value indicating whether results from kinetic and dynamic annotation have to be either matched or merged. Default value is \code{FALSE}}
+
+\item{dyn.check}{The number of times the statistical check has to run on the partitions. 1 by default, 2 usually is enough.}
 
 \item{avg.opt}{Smoothing filter in the kinetic annotation analysis
 \itemize{

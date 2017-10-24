@@ -77,7 +77,6 @@ r-packages:
   - parallel
   - data.table
   - Rcpp
-  - distrEx
   - gplots
   - grDevices
   - graphics
@@ -88,7 +87,6 @@ r-packages:
   - stats
   - expm
   - Hmisc
-  - distr
   - sfsmisc
   - plotly
   - ggfortify
