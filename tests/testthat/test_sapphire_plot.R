@@ -1,7 +1,7 @@
 context('SAPPHIRE plot')
 
 test_that('Various plotting options', {
-adjl <- mst_from_trj(trj = matrix(rnorm(1000), nrow = 100, ncol = 10), dump_to_netcdf = FALSE)
+adjl <- mst_from_trj(trj = matrix(rnorm(50000), nrow = 5000, ncol = 10), dump_to_netcdf = FALSE)
 ret <- gen_progindex(adjl, snap_start = 21)
 ret2 <- gen_annotation(ret, snap_start = 21)
 
@@ -21,7 +21,7 @@ expect_that(sapphire_plot('REPIX_000000000021.dat', local_cut = FALSE), not(thro
 # Annotation preprocessing
 # ------------------------------
 # ann <- matrix(sample(c(rep(1,100), rep(2,100))), nrow = 2, ncol = 100)
-ann <- matrix(sample(c(1, 2, 3), size = 200, replace = T), nrow = 2, ncol = 100)
+ann <- matrix(sample(c(1, 2, 3), size = 200, replace = T), nrow = 2, ncol = 5000)
 # lets plot it!!!
 expect_that(sapphire_plot('REPIX_000000000021.dat', local_cut = FALSE, ann_trace = ann, reorder_annotation = T), not(throws_error())) # with ANNOTATION!!
 expect_that(sapphire_plot('REPIX_000000000021.dat', local_cut = FALSE, ann_trace = ann, annotate_snap_dist = T), not(throws_error())) # with distance values
@@ -86,6 +86,16 @@ expect_that(sapphire_plot('REPIX_000000000021.dat', return_plot = F, local_cut =
 expect_that(sapphire_plot('REPIX_000000000021.dat', return_plot = F, local_cut = T, ann_trace = char_annotation, timeline = T, uniform_color_timeline=T,
                           rescaling_ann_col=T,specific_palette_annotation= c("#b47b00", "#000000", "#C70039"),
                           annotation_type = 'discrete', legend_title = "Pot en min", legend_labels = c('gauche+', 'gauche-', 'anti')), not(throws_error()))
+
+# new stuff ------- for errors
+ann <- matrix(sample(seq(1, 10, length.out = 10000)), nrow = 2, ncol = 5000)
+expect_that(sapphire_plot('REPIX_000000000021.dat', return_plot = F, local_cut = T, ann_trace = ann, timeline = T, plot_legend = T, sub_sampling_factor = 7,
+                          rescaling_ann_col=F, specific_palette_annotation= c("#b47b00", "#000000", "#C70039")), not(throws_error()))
+expect_that(sapphire_plot('REPIX_000000000021.dat', return_plot = F, local_cut = T, ann_trace = ann, timeline = T, plot_legend = T, sub_sampling_factor = 5000,
+                          rescaling_ann_col=F, specific_palette_annotation= c("#b47b00", "#000000", "#C70039")), throws_error())
+
+
+
 if(file.exists('MST_DUMPLING.nc')) file.remove('MST_DUMPLING.nc')
 if(file.exists('REPIX_000000000021.dat')) file.remove('REPIX_000000000021.dat')
 })

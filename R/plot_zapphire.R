@@ -210,6 +210,8 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
     do_subsan_ann <- FALSE
     sub_sampling_factor <- 1
   }
+  if(!.isSingleInteger(sub_sampling_factor) || sub_sampling_factor > (Nsnap-2)/2 || sub_sampling_factor < 0)
+    stop('sub_sampling factor is more than half or less than 0 (or not a single integer).')
   
   # ---------------------
   # checking the horiz_lines_on_timeline
@@ -687,7 +689,9 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   # ------------------------------------------------------------------------------------- multi line trace
   }else if(!no_trace && multi_line_trace && !annotate_snap_dist){
     
-    # var init  
+    # var init
+    browser()
+    tmp_ann <- c()
     height_one_band <- background_height/n_lines_annotation
     y_multilines <- array(NA, dim = c(n_lines_annotation, length(xx)))
     x_multilines <- rep(xx, n_lines_annotation)
@@ -695,8 +699,10 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
     for(i in 1:n_lines_annotation){
       y_multilines[i,] <- rep(ann_init, length(xx)) + height_one_band*(i-1)
       if(sub_sampling_factor!=1)
-        ann_tr[i,] <- ann_tr[i,][seq(1, Nsnap, sub_sampling_factor)]
+        tmp_ann <- c(tmp_ann, ann_tr[i,][seq(1, Nsnap, sub_sampling_factor)])
     }
+    if(sub_sampling_factor==1)
+      tmp_ann <- c(t(ann_tr))
     # main vectorization and plot 
     # -------------------------------------- no colorpalette
     if(is.null(specific_palette_annotation)){ 
@@ -704,21 +710,20 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
                               y = c(t(y_multilines)),
                               xend = c(x_multilines),
                               yend = c(t(y_multilines) + height_one_band)),
-                              col = c(t(ann_tr)),
+                              col = tmp_ann,
                               size = 0.1*general_size_annPoints)
       
     # --------------------------------------  specific color palette
     }else{
       # if(rescaling_ann_col) #extended
       #   stop('The specific insertion of a palette collides with the rescaling of the colors. Please turn it off to use the specific palette option.')
-      ann_tr_tmp <- c(t(ann_tr))
-      if(plot_legend && annotation_type == 'discrete') ann_tr_tmp <- as.factor(ann_tr_tmp)
+      if(plot_legend && annotation_type == 'discrete') tmp_ann <- as.factor(tmp_ann)
       # normal handling of the plot
       gg <- gg + geom_segment(aes(x = c(x_multilines),
                                   y = c(t(y_multilines)),
                                   xend = c(x_multilines),
                                   yend = c(t(y_multilines) + height_one_band),
-                                  col = ann_tr_tmp), # WRONG must go inside the aes
+                                  col = tmp_ann), # WRONG must go inside the aes
                               size = 0.1*general_size_annPoints)
       
       # If the legend must be plotted:
@@ -731,10 +736,10 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
                 guides(color = guide_legend(override.aes = list(size=5))) # makes the lagend box bigger 
         # continuous case
         }else if(annotation_type == 'continuous'){
-          if(is.character(ann_tr_tmp) || rescaling_ann_col)
+          if(is.character(tmp_ann) || rescaling_ann_col)
             stop('The specific insertion of a palette collides with the rescaling of the colors. Please turn it off to use the specific palette option.')
           gg <- gg + scale_color_gradientn(leg_tit, na.value = 'transparent', colours = specific_palette_annotation,
-                                           breaks = seq(min(ann_tr_tmp), max(ann_tr_tmp), length.out = length(leg_lab)),
+                                           breaks = seq(min(tmp_ann), max(tmp_ann), length.out = length(leg_lab)),
                                            labels = leg_lab) 
         }else{
           stop('annotation_type must be continuous or discrete')
