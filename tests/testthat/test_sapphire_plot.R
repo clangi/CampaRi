@@ -87,13 +87,14 @@ expect_that(sapphire_plot('REPIX_000000000021.dat', return_plot = F, local_cut =
                           rescaling_ann_col=T,specific_palette_annotation= c("#b47b00", "#000000", "#C70039"),
                           annotation_type = 'discrete', legend_title = "Pot en min", legend_labels = c('gauche+', 'gauche-', 'anti')), not(throws_error()))
 
-# new stuff ------- for errors
-ann <- matrix(sample(seq(1, 10, length.out = 10000)), nrow = 2, ncol = 5000)
+# new stuff ------- for errors in subsampling factor
+ann <- matrix(sample(seq(-10, 10, length.out = 10000)), nrow = 2, ncol = 5000)
+expect_that(sapphire_plot('REPIX_000000000021.dat', return_plot = F, local_cut = T, ann_trace = ann, timeline = T, plot_legend = T, sub_sampling_factor = 1,
+                          rescaling_ann_col=F, specific_palette_annotation= c("#b47b00", "#000000", "#C70039")), not(throws_error()))
 expect_that(sapphire_plot('REPIX_000000000021.dat', return_plot = F, local_cut = T, ann_trace = ann, timeline = T, plot_legend = T, sub_sampling_factor = 7,
                           rescaling_ann_col=F, specific_palette_annotation= c("#b47b00", "#000000", "#C70039")), not(throws_error()))
 expect_that(sapphire_plot('REPIX_000000000021.dat', return_plot = F, local_cut = T, ann_trace = ann, timeline = T, plot_legend = T, sub_sampling_factor = 5000,
                           rescaling_ann_col=F, specific_palette_annotation= c("#b47b00", "#000000", "#C70039")), throws_error())
-
 
 
 if(file.exists('MST_DUMPLING.nc')) file.remove('MST_DUMPLING.nc')

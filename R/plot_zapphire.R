@@ -19,13 +19,19 @@
 # @param annotate_snap_dist if \code{TRUE} the distance between snapshots will be added on the top of the plot
 #' @param sub_sampling_factor if a number is inserted the annotation will be subsampled by that factor.
 #' @param return_ann_trace If \code{TRUE} the annotation vector is returned. This option can be really useful for adding layers and specific text using \code{ggplot2}.
-# @param background_height Defines the height on which to put the annotation (integer between 1 and 14).
+# @param ann_height Defines the height on which to put the annotation (integer between 1 and 14).
 # @param ann_names_L Vector of characther strings indicating, from top on the left, the names of the annotation horizontal bars.
 # @param ann_names_R Vector of characther strings indicating, from top on the right, the names of the annotation horizontal bars.
 #' @param use_plotly This option, if turned on will use the plotly format to represent the plot which is usually generated using ggplot2 only
 #' @param title Title of the plot (default "")
 #' @param ... Other options are: 'only_timeline', 'reorder_annotation', 'annotate_snap_dist', 'rescaling_ann_col', 'reorder_horizline_on_timeline', 
-#' 'reorder_points_on_timeline', 'timeline_proportion', 'background_height', 'ann_initial_point', 'horiz_lines_on_timeline',  'horiz_colored_areas', 'points_on_timeline',  
+#' 'reorder_points_on_timeline', 
+#' 'timeline_proportion'  =  std:1/6*y_max set y_max from local_cut and standard_cut this defines a proportion of that y_max (e.g. 0.5 meaning that the timeline will be placed in the 0 - 0.5*ymax space)
+#' 'ann_height'   =  std:1/8*y_max set the height of the annotation
+#' 'ann_initial_point'  =  std:3/4*y_max set the starting point of the annotation from the top
+#' 'localcutbasin_prop_height'  =  std:1/4*y_max set the heigth space of the localcut
+#' 'basin_prop_height'  =  std:1/4*y_max set the heigth space of the stdcut
+#' 'horiz_lines_on_timeline',  'horiz_colored_areas', 'points_on_timeline',  
 #' 'vertical_barriers_points', 'specific_palette_timeline', 'specific_palette_annotation',  'general_size_annPoints', 'size_points_on_timeline' 
 #' 'plot_legend', 'use_plotly', uniform_color_timeline', 'which_uniform_color_timeline',  'legend_title', 'legend_labels', 'annotation_type' ('continuous' or 'discrete')
 #' @details For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
@@ -68,7 +74,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
                              'which_uniform_color_timeline',
                              
                              'timeline_proportion',
-                             'background_height',
+                             'ann_height',
                              'ann_initial_point', # annotation trace initial point (between 0 and 1)
                              'localcutbasin_prop_height',
                              'basin_prop_height',
@@ -103,7 +109,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   if(!('which_uniform_color_timeline' %in% names(input_args))) which_uniform_color_timeline <- "black"  else which_uniform_color_timeline <- input_args[['which_uniform_color_timeline']]
   
   if(!('timeline_proportion' %in% names(input_args))) timeline_proportion <- NULL else timeline_proportion <- input_args[['timeline_proportion']]
-  if(!('background_height' %in% names(input_args))) background_height <- NULL else background_height <- input_args[['background_height']]
+  if(!('ann_height' %in% names(input_args))) ann_height <- NULL else ann_height <- input_args[['ann_height']]
   if(!('localcutbasin_prop_height' %in% names(input_args))) localcutbasin_prop_height <- NULL else localcutbasin_prop_height <- input_args[['localcutbasin_prop_height']]
   if(!('basin_prop_height' %in% names(input_args))) basin_prop_height <- NULL else basin_prop_height <- input_args[['basin_prop_height']]
   if(!('ann_initial_point' %in% names(input_args))) ann_initial_point <- NULL else ann_initial_point <- input_args[['ann_initial_point']]
@@ -567,14 +573,14 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   
   # ---------------------
   # Trace height from the top. This is the 0-16 parts out of ymax
-  if(!is.null(background_height) && is.numeric(background_height) && length(background_height) == 1L){
-    if(background_height > 1 || background_height < 0){
+  if(!is.null(ann_height) && is.numeric(ann_height) && length(ann_height) == 1L){
+    if(ann_height > 1 || ann_height < 0){
       warning("Inserted background height too small or too big.")
-      background_height <- ymax/8.
+      ann_height <- ymax/8.
     }
-    background_height <- background_height*ymax
+    ann_height <- ann_height*ymax
   }else{
-    background_height <- ymax/8.
+    ann_height <- ymax/8.
   }
   if(!is.null(ann_initial_point) && is.numeric(ann_initial_point) && length(ann_initial_point) == 1L){
     if(ann_initial_point >= 1 || ann_initial_point < 0){
@@ -647,7 +653,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
       gg <- gg + geom_segment(aes(xx,
                                   y = rep(ann_init, length(xx)),
                                   xend = xx,
-                                  yend = rep(ann_init + background_height, length(xx))),
+                                  yend = rep(ann_init + ann_height, length(xx))),
                               col = ann_tr[seq(1, Nsnap, sub_sampling_factor)], # color must be out if no palette is used
                               size = 0.1*general_size_annPoints)
     # specific color palette
@@ -659,7 +665,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
       gg <- gg + geom_segment(aes(xx, 
                                   y = rep(ann_init, length(xx)),
                                   xend = xx, 
-                                  yend = rep(ann_init + background_height, length(xx)), 
+                                  yend = rep(ann_init + ann_height, length(xx)), 
                                   col = ann_tr_tmp[seq(1, Nsnap, sub_sampling_factor)]), # col is INSIDE aes
                               size = 0.1*general_size_annPoints)
       # If the legend must be plotted:
@@ -690,9 +696,8 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   }else if(!no_trace && multi_line_trace && !annotate_snap_dist){
     
     # var init
-    browser()
     tmp_ann <- c()
-    height_one_band <- background_height/n_lines_annotation
+    height_one_band <- ann_height/n_lines_annotation
     y_multilines <- array(NA, dim = c(n_lines_annotation, length(xx)))
     x_multilines <- rep(xx, n_lines_annotation)
     # sequential add of the height of the horizontal band
@@ -778,7 +783,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
     gg <- gg + geom_segment(aes(xx,
                                 y = rep(ann_init , length(xx)),
                                 xend = xx, 
-                                yend = ((pin[,5]*1.*background_height)/max_snap_dist + ann_init)[seq(1, Nsnap, sub_sampling_factor)]),
+                                yend = ((pin[,5]*1.*ann_height)/max_snap_dist + ann_init)[seq(1, Nsnap, sub_sampling_factor)]),
                             col = single_line_general_ann[seq(1, Nsnap, sub_sampling_factor)],
                             size = 0.1*general_size_annPoints)
   }
@@ -945,7 +950,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   # basic annotation (principal cut)
   if(!only_timeline){
     main_col <- 'darkblue'
-    if((timeline && (min(y_cut[seq(1, Nsnap, sub_sampling_factor)]) < tp*ymax)) || (!no_trace && (background_height > ymax/2.1)))
+    if((timeline && (min(y_cut[seq(1, Nsnap, sub_sampling_factor)]) < tp*ymax)) || (!no_trace && (ann_height > ymax/2.1)))
       main_col <- 'dodgerblue'
     gg <- gg + geom_line(aes(x = xx, y = y_cut[seq(1, Nsnap, sub_sampling_factor)]), color=main_col, size=0.8) # SHALL WE KEEP THE NAs?
   }
