@@ -477,6 +477,9 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
         ## if(!silent) cat("Number of bigg is", .lt(bigg.brk), "\n")
         breaks.tot <- unique(sort(c(breaks.tot, bigg.brk)))
         ## if(!silent) cat("Number of matched is", .lt(bigg.brk), "\n")
+
+        if(any(breaks.tot==hist$x[nx])) breaks.tot <- breaks.tot[-which(breaks.tot==hist$x[nx])]
+        if(any(breaks.tot==hist$x[1])) breaks.tot <- breaks.tot[-which(breaks.tot==hist$x[1])]
         
 #################################################################################
         ## HISTOGRAM of each PARTITION 
