@@ -1,8 +1,8 @@
 context('generate_network')
 
 test_that('pre-processing with network inference', {
-  test_plotting <- T
-  my_libs <- T
+  test_plotting <- F
+  my_libs <- F
   if(my_libs) library(TSA)
   trj <- matrix(rnorm(1000), nrow = 100, ncol = 10)
   expect_true(!is.null(trj))
