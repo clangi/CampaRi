@@ -19,16 +19,29 @@
 # @param annotate_snap_dist if \code{TRUE} the distance between snapshots will be added on the top of the plot
 #' @param sub_sampling_factor if a number is inserted the annotation will be subsampled by that factor.
 #' @param return_ann_trace If \code{TRUE} the annotation vector is returned. This option can be really useful for adding layers and specific text using \code{ggplot2}.
-# @param background_height Defines the height on which to put the annotation (integer between 1 and 14).
+# @param ann_height Defines the height on which to put the annotation (integer between 1 and 14).
 # @param ann_names_L Vector of characther strings indicating, from top on the left, the names of the annotation horizontal bars.
 # @param ann_names_R Vector of characther strings indicating, from top on the right, the names of the annotation horizontal bars.
 #' @param use_plotly This option, if turned on will use the plotly format to represent the plot which is usually generated using ggplot2 only
 #' @param title Title of the plot (default "")
 #' @param ... Other options are: 'only_timeline', 'reorder_annotation', 'annotate_snap_dist', 'rescaling_ann_col', 'reorder_horizline_on_timeline', 
-#' 'reorder_points_on_timeline', 'timeline_proportion', 'background_height', 'ann_initial_point', 'horiz_lines_on_timeline',  'horiz_colored_areas', 'points_on_timeline',  
+#' 'reorder_points_on_timeline', horiz_lines_on_timeline',  'horiz_colored_areas', 'points_on_timeline',  
 #' 'vertical_barriers_points', 'specific_palette_timeline', 'specific_palette_annotation',  'general_size_annPoints', 'size_points_on_timeline' 
-#' 'plot_legend', 'use_plotly', uniform_color_timeline',  'legend_title', 'legend_labels', 'annotation_type' ('continuous' or 'discrete')
+#' 'plot_legend', 'use_plotly', uniform_color_timeline', 'which_uniform_color_timeline',  'legend_title', 'legend_labels', 'annotation_type' ('continuous' or 'discrete')
 #' @details For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
+#'
+#'
+#' 'timeline_proportion'  =  std:1/6*y_max set y_max from local_cut and standard_cut this defines a proportion of that y_max (e.g. 0.5 meaning that the timeline will be placed in the 0 - 0.5*ymax space)
+#' 
+#' 'ann_height'   =  std:1/8*y_max set the height of the annotation
+#' 
+#' 'ann_initial_point'  =  std:3/4*y_max set the starting point of the annotation from the top
+#' 
+#' 'localcutbasin_prop_height'  =  std:1/4*y_max set the heigth space of the localcut
+#' 
+#' 'basin_prop_height'  =  std:1/4*y_max set the heigth space of the stdcut
+#'
+#'
 #'
 #' @return If \code{ann_trace_ret} is active it will return the annotation trace used for the plot.
 #' @seealso
@@ -65,9 +78,10 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
                              'plot_legend', # plot the legend for the annotation
                              'use_plotly',
                              'uniform_color_timeline', # to put the timeline (and the distance annotation trace) in a simple black
+                             'which_uniform_color_timeline',
                              
                              'timeline_proportion',
-                             'background_height',
+                             'ann_height',
                              'ann_initial_point', # annotation trace initial point (between 0 and 1)
                              'localcutbasin_prop_height',
                              'basin_prop_height',
@@ -99,9 +113,10 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   if(!('plot_legend' %in% names(input_args))) plot_legend <- FALSE  else plot_legend <- input_args[['plot_legend']]
   if(!('use_plotly' %in% names(input_args))) use_plotly <- FALSE  else use_plotly <- input_args[['use_plotly']]
   if(!('uniform_color_timeline' %in% names(input_args))) uniform_color_timeline <- TRUE  else uniform_color_timeline <- input_args[['uniform_color_timeline']]
+  if(!('which_uniform_color_timeline' %in% names(input_args))) which_uniform_color_timeline <- "black"  else which_uniform_color_timeline <- input_args[['which_uniform_color_timeline']]
   
   if(!('timeline_proportion' %in% names(input_args))) timeline_proportion <- NULL else timeline_proportion <- input_args[['timeline_proportion']]
-  if(!('background_height' %in% names(input_args))) background_height <- NULL else background_height <- input_args[['background_height']]
+  if(!('ann_height' %in% names(input_args))) ann_height <- NULL else ann_height <- input_args[['ann_height']]
   if(!('localcutbasin_prop_height' %in% names(input_args))) localcutbasin_prop_height <- NULL else localcutbasin_prop_height <- input_args[['localcutbasin_prop_height']]
   if(!('basin_prop_height' %in% names(input_args))) basin_prop_height <- NULL else basin_prop_height <- input_args[['basin_prop_height']]
   if(!('ann_initial_point' %in% names(input_args))) ann_initial_point <- NULL else ann_initial_point <- input_args[['ann_initial_point']]
@@ -131,7 +146,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   if(file.exists(folderPlot)&&write) print(paste0(folderPlot," already exixts. Posting plots there."))
   else if(write){
     dir.create(folderPlot)
-    cat(paste0(folderPlot," created in order to contain new plots."))
+    cat(paste0(folderPlot," created in order to contain new plots.\n"))
   }
   # ---------------------
   # checking the logicals
@@ -208,6 +223,8 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
     do_subsan_ann <- FALSE
     sub_sampling_factor <- 1
   }
+  if(!.isSingleInteger(sub_sampling_factor) || sub_sampling_factor > (Nsnap-2)/2 || sub_sampling_factor < 0)
+    stop('sub_sampling factor is more than half or less than 0 (or not a single integer).')
   
   # ---------------------
   # checking the horiz_lines_on_timeline
@@ -331,10 +348,10 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
             warning('Inserted negative values in the annotation trace. ', sum(ann_trace < 0), ' values have been coerced to pos.')
             ann_trace <- abs(ann_trace)
           }
-          if(any(ann_trace == 0)){
-            warning('Inserted 0 values (', sum(ann_trace==0), ') in the annotation trace. 1 is added to all values.')
-            ann_trace <- ann_trace + 1
-          }
+          # if(any(ann_trace == 0)){
+          #   warning('Inserted 0 values (', sum(ann_trace==0), ') in the annotation trace. 1 is added to all values.')
+          #   ann_trace <- ann_trace + 1
+          # }
           numeric_trace <- TRUE
         # is character?
         }else if(is.character(ann_trace)){
@@ -409,7 +426,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
     # AUTOMATIC 2 divisions: ann_trace == TRUE 
     if(automatic_trace_half){
       message("Annotation trace set to automatic. It will be considered bipartite along the timeline.")
-      cat("Half random mode selected for the trace annotation. First half will be light grey")
+      cat("Half random mode selected for the trace annotation. First half will be light grey.\n")
       ann_tr[pin[,3]>=Nsnap/2 & ann_tr == "NA"]<-"gray75"
       ann_tr[pin[,3] < Nsnap/2 & ann_tr == "NA"] <- "gray30"
     }
@@ -563,14 +580,14 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   
   # ---------------------
   # Trace height from the top. This is the 0-16 parts out of ymax
-  if(!is.null(background_height) && is.numeric(background_height) && length(background_height) == 1L){
-    if(background_height > 1 || background_height < 0){
+  if(!is.null(ann_height) && is.numeric(ann_height) && length(ann_height) == 1L){
+    if(ann_height > 1 || ann_height < 0){
       warning("Inserted background height too small or too big.")
-      background_height <- ymax/8.
+      ann_height <- ymax/8.
     }
-    background_height <- background_height*ymax
+    ann_height <- ann_height*ymax
   }else{
-    background_height <- ymax/8.
+    ann_height <- ymax/8.
   }
   if(!is.null(ann_initial_point) && is.numeric(ann_initial_point) && length(ann_initial_point) == 1L){
     if(ann_initial_point >= 1 || ann_initial_point < 0){
@@ -643,7 +660,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
       gg <- gg + geom_segment(aes(xx,
                                   y = rep(ann_init, length(xx)),
                                   xend = xx,
-                                  yend = rep(ann_init + background_height, length(xx))),
+                                  yend = rep(ann_init + ann_height, length(xx))),
                               col = ann_tr[seq(1, Nsnap, sub_sampling_factor)], # color must be out if no palette is used
                               size = 0.1*general_size_annPoints)
     # specific color palette
@@ -655,7 +672,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
       gg <- gg + geom_segment(aes(xx, 
                                   y = rep(ann_init, length(xx)),
                                   xend = xx, 
-                                  yend = rep(ann_init + background_height, length(xx)), 
+                                  yend = rep(ann_init + ann_height, length(xx)), 
                                   col = ann_tr_tmp[seq(1, Nsnap, sub_sampling_factor)]), # col is INSIDE aes
                               size = 0.1*general_size_annPoints)
       # If the legend must be plotted:
@@ -685,16 +702,19 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   # ------------------------------------------------------------------------------------- multi line trace
   }else if(!no_trace && multi_line_trace && !annotate_snap_dist){
     
-    # var init  
-    height_one_band <- background_height/n_lines_annotation
+    # var init
+    tmp_ann <- c()
+    height_one_band <- ann_height/n_lines_annotation
     y_multilines <- array(NA, dim = c(n_lines_annotation, length(xx)))
     x_multilines <- rep(xx, n_lines_annotation)
     # sequential add of the height of the horizontal band
     for(i in 1:n_lines_annotation){
       y_multilines[i,] <- rep(ann_init, length(xx)) + height_one_band*(i-1)
       if(sub_sampling_factor!=1)
-        ann_tr[i,] <- ann_tr[i,][seq(1, Nsnap, sub_sampling_factor)]
+        tmp_ann <- c(tmp_ann, ann_tr[i,][seq(1, Nsnap, sub_sampling_factor)])
     }
+    if(sub_sampling_factor==1)
+      tmp_ann <- c(t(ann_tr))
     # main vectorization and plot 
     # -------------------------------------- no colorpalette
     if(is.null(specific_palette_annotation)){ 
@@ -702,21 +722,20 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
                               y = c(t(y_multilines)),
                               xend = c(x_multilines),
                               yend = c(t(y_multilines) + height_one_band)),
-                              col = c(t(ann_tr)),
+                              col = tmp_ann,
                               size = 0.1*general_size_annPoints)
       
     # --------------------------------------  specific color palette
     }else{
       # if(rescaling_ann_col) #extended
       #   stop('The specific insertion of a palette collides with the rescaling of the colors. Please turn it off to use the specific palette option.')
-      ann_tr_tmp <- c(t(ann_tr))
-      if(plot_legend && annotation_type == 'discrete') ann_tr_tmp <- as.factor(ann_tr_tmp)
+      if(plot_legend && annotation_type == 'discrete') tmp_ann <- as.factor(tmp_ann)
       # normal handling of the plot
       gg <- gg + geom_segment(aes(x = c(x_multilines),
                                   y = c(t(y_multilines)),
                                   xend = c(x_multilines),
                                   yend = c(t(y_multilines) + height_one_band),
-                                  col = ann_tr_tmp), # WRONG must go inside the aes
+                                  col = tmp_ann), # WRONG must go inside the aes
                               size = 0.1*general_size_annPoints)
       
       # If the legend must be plotted:
@@ -729,10 +748,10 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
                 guides(color = guide_legend(override.aes = list(size=5))) # makes the lagend box bigger 
         # continuous case
         }else if(annotation_type == 'continuous'){
-          if(is.character(ann_tr_tmp) || rescaling_ann_col)
+          if(is.character(tmp_ann) || rescaling_ann_col)
             stop('The specific insertion of a palette collides with the rescaling of the colors. Please turn it off to use the specific palette option.')
           gg <- gg + scale_color_gradientn(leg_tit, na.value = 'transparent', colours = specific_palette_annotation,
-                                           breaks = seq(min(ann_tr_tmp), max(ann_tr_tmp), length.out = length(leg_lab)),
+                                           breaks = seq(min(tmp_ann), max(tmp_ann), length.out = length(leg_lab)),
                                            labels = leg_lab) 
         }else{
           stop('annotation_type must be continuous or discrete')
@@ -747,17 +766,22 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   # -------------------------------------------------------------------------------------
   # SETING: NO MORE THAN ONE ANN LINE AVAILABLE - annotation preparation for timeline and annotation of snap distance
   if(timeline || annotate_snap_dist){
-    single_line_general_ann <- array(1, dim = Nsnap)
-    if(!no_trace){
+    if(!.isSingleElement(which_uniform_color_timeline))
+      stop('which_uniform_color_timeline must be a single element.')
+    single_line_general_ann <- array(which_uniform_color_timeline, dim = Nsnap)
+    if(which_uniform_color_timeline != 'black' && !uniform_color_timeline){
+      warning('Detected insertion of which_uniform_color_timeline without the uniform_color_timeline mode active. It has been automatically activated.')
+      uniform_color_timeline <- T
+    }
+    if(!uniform_color_timeline && !no_trace){
       if(one_line_trace){
         single_line_general_ann <- ann_tr
       }else if(multi_line_trace){
         single_line_general_ann <- ann_tr[1,]
-        warning('timeline color kept as first line in annotation trace inserted (it is multiple lines).')
+        warning('Timeline color kept as first line in annotation trace inserted (it is multiple lines).\n')
       }
     }
-    if(uniform_color_timeline) color_timeline <- array(1, dim = Nsnap)
-    else color_timeline <- single_line_general_ann
+    color_timeline <- single_line_general_ann
   }
   # -------------------------------------------------------------------------------------
   # plotting the distance between snapshots (on top of everything)
@@ -766,7 +790,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
     gg <- gg + geom_segment(aes(xx,
                                 y = rep(ann_init , length(xx)),
                                 xend = xx, 
-                                yend = ((pin[,5]*1.*background_height)/max_snap_dist + ann_init)[seq(1, Nsnap, sub_sampling_factor)]),
+                                yend = ((pin[,5]*1.*ann_height)/max_snap_dist + ann_init)[seq(1, Nsnap, sub_sampling_factor)]),
                             col = single_line_general_ann[seq(1, Nsnap, sub_sampling_factor)],
                             size = 0.1*general_size_annPoints)
   }
@@ -933,7 +957,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   # basic annotation (principal cut)
   if(!only_timeline){
     main_col <- 'darkblue'
-    if((timeline && (min(y_cut[seq(1, Nsnap, sub_sampling_factor)]) < tp*ymax)) || (!no_trace && (background_height > ymax/2.1)))
+    if((timeline && (min(y_cut[seq(1, Nsnap, sub_sampling_factor)]) < tp*ymax)) || (!no_trace && (ann_height > ymax/2.1)))
       main_col <- 'dodgerblue'
     gg <- gg + geom_line(aes(x = xx, y = y_cut[seq(1, Nsnap, sub_sampling_factor)]), color=main_col, size=0.8) # SHALL WE KEEP THE NAs?
   }

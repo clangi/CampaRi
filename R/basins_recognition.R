@@ -13,6 +13,7 @@
 #' @param ny.aut Logical value indicating whether a suitable number of bins on the y-axis has to be identified automatically. Default value is \code{FALSE}.
 #' @param local.cut Logical value indicating whether the localized cut function has to be used (see references). Default value is \code{FALSE}.
 #' @param match Logical value indicating whether results from kinetic and dynamic annotation have to be either matched or merged. Default value is \code{FALSE}               
+#' @param dyn.check The number of times the statistical check has to run on the partitions. 1 by default, 2 usually is enough. 
 #' @param avg.opt Smoothing filter in the kinetic annotation analysis
 #'       \itemize{
 #'            \item "\code{movav}" for moving average filter
@@ -51,16 +52,14 @@
 #' @importFrom stats as.ts coef filter lm nls sd weighted.mean
 #' @importFrom utils head tail
 #' @importFrom gplots hist2d
-#' @importFrom distrEx HellingerDist
 #' @importFrom outliers grubbs.test
 #' @importFrom prospectr movav savitzkyGolay
 #' @importFrom splus2R peaks
 #' @importFrom grDevices dev.new
-#' @importFrom distr DiscreteDistribution
 #' @importFrom data.table fread fwrite
 #' @export basins_recognition
 
-basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, match=FALSE, avg.opt=c("movav", "SG"), plot=FALSE, out.file=TRUE, silent=FALSE, ...) {
+basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, match=FALSE, dyn.check=1, avg.opt=c("movav", "SG"), plot=FALSE, out.file=TRUE, silent=FALSE, ...) {
     call <- match.call()
     
     if(!is.character(data) && !is.data.frame(data)) stop("data must be a string or a data frame")
@@ -69,6 +68,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
     if((ny %% 1) != 0) stop("ny must be an integer")
     if(!is.logical(local.cut)) stop("local.cut must be a logical value")
     if(!is.logical(match)) stop("match must be a logical value")
+    if(!(dyn.check %in% c(1:10))) stop("dyn.check value not valid")
     if(!is.logical(plot)) stop("plot must be a logical value")
     if(!is.logical(out.file)) stop("out.file must be a logical value")
     avg.opt.arg <- c("movav", "SG")
@@ -138,7 +138,31 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
         if(length(vec)<3) warning("Vector completely erased in refine function")
         return(vec)
     }
-
+    true.peaks <- function(idxx, values, up=TRUE) {
+        ## To select the effective peaks or minima, it return a selection of idxx 
+        rl <- rle(diff(idxx))
+        if(any(rl$values==1)) {
+            disc <- NULL
+            st <- c(0, cumsum(rl$lengths))[which(rl$values==1)] + 1
+            end <- cumsum(rl$lengths)[which(rl$values==1)]
+            for(ii in seq_along(st)) {
+                ## max() means that in case two consecutive index have the same values, I pick the one on the right (.. don't know if it's the best choice honestly)
+                if(up) idx.max <- max(which(values[idxx[st[ii]:(end[ii]+1)]]==max(values[idxx[st[ii]:(end[ii]+1)]])))
+                else idx.max <- max(which(values[idxx[st[ii]:(end[ii]+1)]]==min(values[idxx[st[ii]:(end[ii]+1)]])))
+                disc <- c(disc, idxx[st[ii]:(end[ii]+1)][-idx.max])
+            }
+            return(idxx[-match(disc, idxx)])
+        } else return(idxx)
+    }
+    myHell <- function(x, y){
+        return(sqrt(1-sum(sqrt(x*y))))
+    }
+    myKL <- function(x, y){
+        xn <- x[-which(x==0 | y==0)]
+        yn <- y[-which(x==0 | y==0)]
+        return(sum(xn*log(xn/yn)))
+    }
+    
     ## INPUT FILE 
     if(!silent) cat("Reading PROGIDX file...\n")
     if(is.data.frame(data)){
@@ -232,8 +256,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
                 if (is.list(expmodel)) {
                     if(!silent) cat("Exponential model chosen, hyperbola not available\n")
                     can <- (1/coef(expmodel)["c"])*log((coef(expmodel)["a"]/coef(expmodel)["b"]) *(1-perc))
-                }
-                else {
+                } else {
                     if(!silent) cat("Hyperbola model chosen, exponential not available\n")
                     can <- coef(fracmodel)[2]*perc/(1-perc) 
                 }
@@ -270,6 +293,27 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
         }
 
 ####################################################################################
+        ## BIGG PARTITION
+###############################################################################
+        ## ovlap is the measure of overlaps of the ministretchs along the x-axis
+        ovlap <- as.vector(rowSums(joinx))
+        ovlap.der <- c(diff(ovlap),0) + c(0, diff(ovlap))
+        interval <- c(mean(ovlap.der)-2*sd(ovlap.der), mean(ovlap.der)+2*sd(ovlap.der))
+        idxx.up <- which(ovlap.der>interval[2])
+        idxx.down <- which(ovlap.der<interval[1])
+        if(.lt(idxx.up)>1) idxx.up.cl <- true.peaks(idxx.up, ovlap.der, up=TRUE)
+        else idxx.up.cl <- NULL
+        if(.lt(idxx.down)>1) idxx.down.cl <- true.peaks(idxx.down, ovlap.der, up=FALSE)
+        else idxx.up.cl <- NULL
+        if(is.null(idxx.up.cl) & is.null(idxx.down.cl)) bigg.idx <- NULL
+        else bigg.idx <- sort(c(idxx.up.cl, idxx.down.cl))
+        bigg.brk <- hist$x[bigg.idx]
+        
+        ## source("./Rfunctions/SBR_images_functions.R")
+        ## stretches.crosses(progind$Time, rawset, hist, joinx, ovlap, ovlap.der, bigg.idx)
+
+        
+####################################################################################
         ## FILL RAWSET
 ###############################################################################
         rawset <- data.frame(min=rep(0,ny), max=rep(0,ny), center=rep(0,ny), wth1=rep(0,ny), wth2=rep(0,ny))
@@ -287,13 +331,15 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
         rawset$wth1[which(is.na(rawset$wth1))] <- 0
         rawset$wth2[which(is.na(rawset$wth2))] <- 0
         if(any(!is.finite(unlist(rawset)))) stop("Error in rawset")
-        rawsetsort <- rawset[order(rawset$center),]
 
+        rm("joinx")
+        
 #################################################################################
         ## WEIGHTED SUMS FUNCTIONS
 ##############################################################################
         ## Forward
-        sumwr <- function(first,meanopt,wthopt) {
+        sumwr <- function(rawset, first, meanopt, wthopt) {
+            rawsetsort <- rawset[order(rawset$center),]
             if (first=="min") rawfirst <- rawsetsort$min
             if (first=="max") rawfirst <- rawsetsort$max
             if (first=="center") rawfirst <- rawsetsort$center
@@ -305,7 +351,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
             idrs <- match(FALSE, rawsetsort$center==0)
             if (is.na(idrs)) idrs <- 1
             sm <- NULL
-            for (i in 1:nx) {
+            for (i in seq(nx)) {
                 idxlist <- which(rawfirst[idrs:ny] < hist$x.breaks[i+1]) + idrs - 1 
                 if(length(idxlist)==0) sm[i] <- 0
                 else sm[i] <- sum(rawwth[idxlist])
@@ -315,7 +361,8 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
 
 #################################################################################
         ## Backward
-        backsumwr <- function(first,meanopt,wthopt) {
+        backsumwr <- function(rawset, first, meanopt, wthopt) {
+            rawsetsort <- rawset[order(rawset$center),]
             if (first=="min") rawfirst <- rawsetsort$min
             if (first=="max") rawfirst <- rawsetsort$max
             if (first=="center") rawfirst <- rawsetsort$center
@@ -342,16 +389,16 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
 
 #################################################################################
         ## Forward Filter with Haar wavelet
-        MaxHaar <- function(first,meanopt,wthopt) {
-            filt <- filter(as.ts(sumwr(first,meanopt,wthopt)), Haarfilt, method="convolution", sides=2)
+        MaxHaar <- function(rawset, first, meanopt, wthopt) {
+            filt <- filter(as.ts(sumwr(rawset, first, meanopt, wthopt)), Haarfilt, method="convolution", sides=2)
             filt <- c(rep(0,K),filt[c((K+1):(length(filt)-K))],rep(0,K))  #Filt with 0 instead of NA
             xbr <- hist$x[which(peaks(filt,dpeaks.dyn))]
             return(c(1,xbr,cstored))
         }
 #################################################################################
         ## Backward Filter with Haar wavelet
-        BackMaxHaar <- function(first,meanopt,wthopt) {
-            filt <- filter(as.ts(rev(backsumwr(first,meanopt,wthopt))), Haarfilt, method="convolution", sides=2)
+        BackMaxHaar <- function(rawset, first, meanopt,wthopt) {
+            filt <- filter(as.ts(rev(backsumwr(rawset, first, meanopt, wthopt))), Haarfilt, method="convolution", sides=2)
             filt <- c(rep(0,K),filt[c((K+1):(length(filt)-K))],rep(0,K))  #Filt with 0 instead of NA
             xbr <- hist$x[which(rev(peaks(filt, dpeaks.dyn)))]
             return(c(1,xbr,cstored))
@@ -360,9 +407,11 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
 #################################################################################
         ##CHOICE OF THE BREAKS
 #################################################################################
-        breaks.max <- MaxHaar("max","min",1) 
-        breaks.min <- BackMaxHaar("min","max",1)
-       
+        breaks.max <- MaxHaar(rawset, "max","min",1) 
+        breaks.min <- BackMaxHaar(rawset, "min","max",1)
+
+        rm("rawset")
+        
 ###############################################################################
         ##HARD BREAKS: Joining selected breaks.min and breaks.max with res
 ###############################################################################
@@ -375,15 +424,15 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
         } else {
             sep <- NULL
             idx <- 0
-            selbreaks.max <- breaks.max[-c(1,length(breaks.max))]
-            selbreaks.min <- breaks.min[-c(1,length(breaks.min))]
+            selbreaks.max <- breaks.max[-c(1,.lt(breaks.max))]
+            selbreaks.min <- breaks.min[-c(1,.lt(breaks.min))]
             softbreaks.max <- selbreaks.max
             softbreaks.min <- selbreaks.min
-            for (i in 1:length(selbreaks.max)) {
+            for (i in 1:.lt(selbreaks.max)) {
                 selcell.max <- which(hist$x==selbreaks.max[i])
-                if (i==length(selbreaks.max)) selcell2.max <- length(hist$x)
+                if (i==.lt(selbreaks.max)) selcell2.max <- .lt(hist$x)
                 else selcell2.max <- which(hist$x==selbreaks.max[i+1])
-                for (j in 1:length(selbreaks.min)) {
+                for (j in seq_along(selbreaks.min)) {
                     selcell.min <- which(hist$x==selbreaks.min[j])
                     if (selcell.max==selcell.min) {
                         idx <- idx+1
@@ -393,7 +442,8 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
                         next
                     }
                     if ((selcell.max+1) == selcell.min) {
-                        if (!is.na(match(hist$x[selcell.max],sep))) {
+                        if (!is.na(match(hist$x[selcell.max], sep))) {
+                            ## If already in sep it's just removed
                             softbreaks.min <- softbreaks.min[-which(softbreaks.min==selbreaks.min[j])]
                             next
                         }
@@ -404,6 +454,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
                         next
                     }
                     if ((selcell.max+2) == selcell.min & (selcell2.max-selcell.max) >= 3) {
+                        ## if are distant two cells and the subsequent one is far enough
                         if (!is.na(match(hist$x[selcell.max],sep))) {
                             softbreaks.min <- softbreaks.min[-which(softbreaks.min==selbreaks.min[j])]
                             next
@@ -417,111 +468,114 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
                     ## if (selcell.max[i]>selcell.min+3) break    
                 }
             }
-            breaks.tot <- sort(c(1,cstored,sep,softbreaks.max,softbreaks.min))
+            breaks.tot <- sort(c(1, cstored, sep, softbreaks.max, softbreaks.min))
         }
+
 #################################################################################
-        ## HISTOGRAM of each PARTITION and Max density 
+        ## UNIFYING with BIGG Partition 
+################################################################################
+
+        ## It works in pathological cases (i.e. NULL vecto)
+        ## if(!silent) cat("Number of bigg is", .lt(bigg.brk), "\n")
+        breaks.tot <- unique(sort(c(breaks.tot, bigg.brk)))
+        ## if(!silent) cat("Number of matched is", .lt(bigg.brk), "\n")
+
+        if(any(breaks.tot==hist$x[nx])) breaks.tot <- breaks.tot[-which(breaks.tot==hist$x[nx])]
+        if(any(breaks.tot==hist$x[1])) breaks.tot <- breaks.tot[-which(breaks.tot==hist$x[1])]
+        
+#################################################################################
+        ## HISTOGRAM of each PARTITION 
 ################################################################################
         if(is.null(breaks.tot)) {
             brk.dyn <- NULL
         } else {
             ## Breaks.Tot
-            brkjy.tot <- matrix(rep(0,(length(breaks.tot)-1)*ny), nrow=ny, ncol=(length(breaks.tot)-1))
-            for (i in 1:(length(breaks.tot)-1)) {
-                if (i==1) {
-                    ncls <- 1
-                    ncle <- which(hist$x==breaks.tot[i+1])
-                }
-                else if (i == (length(breaks.tot)-1) ) {
-                    ncls <- which(hist$x==breaks.tot[i])+1
-                    ncle <- nx
-                }
-                else {
-                    ncls <- which(hist$x==breaks.tot[i])+1
-                    ncle <- which(hist$x==breaks.tot[i+1])
-                }
-                for (j in 1:ny) {
-                    brkjy.tot[j,i] <- sum(hist$counts[c(ncls:ncle),j])
-                }
-            }
-            dens.tot <- brkjy.tot
-            for (i in 1:(length(breaks.tot)-1)) {
-                ## dens.tot[,i] <-  brkjy.tot[,i]/(breaks.tot[i+1]-breaks.tot[i])
-                dens.tot[,i] <-  brkjy.tot[,i]/(sum(brkjy.tot[,i]))
-            }
-
-########################################################################
-            ##JOINING PARTITIONS METHODS
-########################################################################
-            ## Computation of Distances Hell and Kolm between consecutive partitions
-            distHell.tot <- NULL
-            for(j in 1:(length(breaks.tot)-2)) {
-                prova1 <- DiscreteDistribution(supp = c(1:ny) , prob=dens.tot[,j])
-                prova2 <- DiscreteDistribution(supp = c(1:ny) , prob=dens.tot[,j+1])
-                distHell.tot[j] <- HellingerDist(prova1,prova2)
-            }
-
-########################################################################################
-            ##MAIN JOINING procedure: comparison with training uniform samples
-########################################################################################
-
-            lstHell.tot <- sort.int(distHell.tot, index.return=TRUE)$ix
-            discbreaks.tot <- NULL
-            ncounts <- NULL
-            flagbreak <- 0
-            ll <- 0
-            for (i in lstHell.tot) { 
-                sampleHell.tot <- NULL
-                l1 <- which(hist$x==breaks.tot[i])+1 
-                if (i==1) l1 <- 1
-                l2 <- which(hist$x==breaks.tot[i+1])
-                l3 <- which(hist$x==breaks.tot[i+2])
-                if (i==length(lstHell.tot)) l3 <- nx
-                pr <- (l2-l1+1)/(l3-l1+1)
-                if(!silent) {
-                    cat.str <- paste("Would-be basins", paste(round(breaks.tot[i:(i+2)]), collapse=" "))
-                    cat(cat.str)
-                    nlett <- nchar(cat.str)
-                }
-                for (j in 1:ny) ncounts[j] <- sum(hist$counts[c(l1:l3),j])
-                for (idx in 1:nsample) {
-                    unif1 <- rep(0,ny)
-                    unif2 <- rep(0,ny)
-                    for (j in 1:ny) {
-                        if(ncounts[j]==0) next
-                        dum <- sample(c(0:1), ncounts[j], replace=TRUE, prob=c(pr,1-pr))
-                        unif1[j] <- ncounts[j]-sum(dum)
-                        unif2[j] <- sum(dum)
+            for(iii in seq(dyn.check)) {  
+                brkjy <- matrix(rep(0,(.lt(breaks.tot)-1)*ny), nrow=ny, ncol=(.lt(breaks.tot)-1))
+                for (i in 1:(.lt(breaks.tot)-1)) {
+                    if (i==1) {
+                        ncls <- 1
+                        ncle <- which(hist$x==breaks.tot[i+1])
+                    } else if (i == (.lt(breaks.tot)-1) ) {
+                        ncls <- which(hist$x==breaks.tot[i])+1
+                        ncle <- nx
+                    } else {
+                        ncls <- which(hist$x==breaks.tot[i])+1
+                        ncle <- which(hist$x==breaks.tot[i+1])
                     }
-                    dens1 <- unif1/sum(unif1)
-                    dens2 <- unif2/sum(unif2)
-                    part1 <- DiscreteDistribution(supp = c(1:ny) , prob=dens1)
-                    part2 <- DiscreteDistribution(supp = c(1:ny) , prob=dens2)
-                    sampleHell.tot[idx] <- HellingerDist(part1,part2)
+                    ## ColSums doesn't work if ncls==ncle 
+                    for (j in 1:ny) brkjy[j,i] <- sum(hist$counts[c(ncls:ncle),j])
                 }
-                grubbsHell.tot <- grubbs.test(c(sampleHell.tot,distHell.tot[i]), type=10)
-                foo <- c(sampleHell.tot,distHell.tot[i])
-                if (distHell.tot[i] < max(sampleHell.tot) | grubbsHell.tot$p.value>conf.lev) {
-                    if(!silent) cat(rep(" ",15+4+3*nchar(as.character(cstored))-nlett), "--> Joining partitions\n", sep="")
-                    flagbreak <- 0
-                    ll <- ll+1
-                    discbreaks.tot[ll] <- breaks.tot[i+1]
-                }
-                else {
-                    if(!silent) cat("\n")
-                    flagbreak <- flagbreak+1
-                }
-                if (flagbreak==cutjoin) break
-            }
+                dens <- apply(brkjy, 2, function(x) x/sum(x))
+                if(nrow(dens)!=ny) dens <- t(dens)
 
-            if(!is.null(discbreaks.tot)) {
-                brk.dyn <- sort(breaks.tot[-match(discbreaks.tot, breaks.tot)])
-            } else brk.dyn <- sort(breaks.tot)
+
+      ########################################################################
+                ##JOINING PARTITIONS METHODS
+      ########################################################################
+                ## Computation of Distances Hell between consecutive partitions
+
+                distHell <- sapply(seq(.lt(breaks.tot)-2), function(j) myHell(dens[,j], dens[,j+1]))
+                discbreaks <- NULL
+                ncounts <- NULL
+                flagbreak <- 0
+                ll <- 0
+                lstHell <- order(distHell)
+                sampleHell <- rep(-1, nsample)
+                for (i in lstHell) { 
+                    l1 <- which(hist$x==breaks.tot[i])+1 
+                    if (i==1) l1 <- 1
+                    l2 <- which(hist$x==breaks.tot[i+1])
+                    l3 <- which(hist$x==breaks.tot[i+2])
+                    if (i==.lt(lstHell)) l3 <- nx
+                    pr <- (l2-l1+1)/(l3-l1+1)
+                    if(!silent) {
+                        cat.str <- paste("Would-be basins", paste(round(breaks.tot[i:(i+2)]), collapse=" "))
+                        cat(cat.str)
+                        nlett <- nchar(cat.str)
+                    }
+                    ncounts <- colSums(hist$counts[c(l1:l3),])
+                    for (idx in seq(nsample)) {
+                        unif1 <- rep(0,ny)
+                        unif2 <- rep(0,ny)
+                        for (j in 1:ny) {
+                            if(ncounts[j]==0) next
+                            dum <- sample(c(0:1), ncounts[j], replace=TRUE, prob=c(pr,1-pr))
+                            unif1[j] <- ncounts[j]-sum(dum)
+                            unif2[j] <- sum(dum)
+                        }
+                        sampleHell[idx] <- myHell(unif1/sum(unif1), unif2/sum(unif2))
+                    }
+                    grubbsHell <- grubbs.test(c(sampleHell, distHell[i]), type=10)
+                    if (distHell[i] < max(sampleHell) | grubbsHell$p.value>conf.lev) {
+                        if(!silent) cat(rep(" ",15+4+3*nchar(as.character(cstored))-nlett), "--> Joining partitions\n", sep="")
+                        flagbreak <- 0
+                        ll <- ll+1
+                        discbreaks[ll] <- breaks.tot[i+1]
+                    } else {
+                        if(!silent) cat("\n")
+                        flagbreak <- flagbreak+1
+                    }
+                    if (flagbreak==cutjoin) break
+                }
+
+                if(!is.null(discbreaks)) {
+                    brk.dyn <- sort(breaks.tot[-match(discbreaks, breaks.tot)])
+                } else brk.dyn <- sort(breaks.tot)
+
+                if(!silent) cat("Discarded", .lt(discbreaks), ":: Final number", .lt(brk.dyn), "\n")
+                ## source("./Rfunctions/SBR_images_functions.R")
+                ## if(iii==1) probdist.comparison(progind$Time, rawset, hist, joinx, breaks.tot, distHell, brk.dyn, new=TRUE)
+                ## else probdist.comparison(progind$Time, rawset, hist, joinx, breaks.tot, distHell, brk.dyn, new=FALSE)
+                breaks.tot <- brk.dyn
+            }
         }
         if(!silent) cat("End of the dynamic analysis\n")
     } 
 
+    ## From here onwards the unique resu.lt of this analysis is just brk.dyn
 
+    
 #########&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&###############
 ############################&&&&&& KINETIC &&&&&&&###############################
 #########&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&###############
@@ -549,13 +603,12 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
     if(.lt(max.mv)!=0) {
 ### First Cleaning on mv:: check separation between consecutive max
         max.mv.tmp <- max.mv
-        rif <- max.mv[length(max.mv)]
-        if(length(max.mv)>1){
-            for (i in (length(max.mv)-1):1) {
+        rif <- max.mv[.lt(max.mv)]
+        if(.lt(max.mv)>1){
+            for (i in (.lt(max.mv)-1):1) {
                 if (rif-max.mv[i]<dpeaks.kin/2) {
                     max.mv.tmp <- max.mv.tmp[-match(max.mv[i],max.mv.tmp)] ##Remove the smallest
-                }
-                else rif <- max.mv[i]
+                } else rif <- max.mv[i]
             }
         }
         max.mv <- max.mv.tmp
@@ -563,13 +616,13 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
 ### Second Cleaning Attempt on mv
         adj.mv <- NULL
         adj.mv[1] <- which.min(kin.mv[1:max.mv[1]])
-        for (i in 1:length(max.mv) ) {
-            if(length(max.mv)==1) next
-            if (i==length(max.mv)) adj.mv[i+1] <- which.min(kin.mv[round(max.mv[i]):cstored])+round(max.mv[i])-1
+        for (i in seq_along(max.mv) ) {
+            if(.lt(max.mv)==1) next
+            if (i==.lt(max.mv)) adj.mv[i+1] <- which.min(kin.mv[round(max.mv[i]):cstored])+round(max.mv[i])-1
             else adj.mv[i+1] <- which.min(kin.mv[round(max.mv[i]):round(max.mv[i+1])])+round(max.mv[i])-1 
-            amax <- mean( c(kin.mv[max.mv[i]]-kin.mv[adj.mv[i]], kin.mv[max.mv[i]]-kin.mv[adj.mv[i+1]]) ) ## Lengths of adjacent (closest) vertical bars
+            amax <- mean( c(kin.mv[max.mv[i]]-kin.mv[adj.mv[i]], kin.mv[max.mv[i]]-kin.mv[adj.mv[i+1]]) ) ## Lts of adjacent (closest) vertical bars
             if (i==1) amin <- kin.mv[max.mv[i+1]]-kin.mv[adj.mv[i+1]]
-            else if (i==length(max.mv)) amin <- kin.mv[max.mv[i-1]]-kin.mv[adj.mv[i]]
+            else if (i==.lt(max.mv)) amin <- kin.mv[max.mv[i-1]]-kin.mv[adj.mv[i]]
             else amin <- mean(c(kin.mv[max.mv[i-1]]-kin.mv[adj.mv[i]], kin.mv[max.mv[i+1]]-kin.mv[adj.mv[i+1]]) ) 
             ## print(paste("Evaluating", i, max.mv[i], "with ratio", 100*amax/amin, "%"))
             if ( amax/amin < thr.ratio) {
@@ -578,8 +631,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
             }
         }
         brk.kin <- round(max.mv.tmp)
-    }
-    else {
+    } else {
         brk.kin <- NULL
     }
         
@@ -602,18 +654,18 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
         if(.lt(vdyn)!=0) {
             vdyn <- refine(vdyn)
         }
-        if(!silent) cat("Number of dynamic and kinetic breaks are respectively",length(vdyn), length(vkin), "\n")
+        if(!silent) cat("Number of dynamic and kinetic breaks are respectively",.lt(vdyn), .lt(vkin), "\n")
 ##################################################################################
         ## Matching
         if(.lt(vdyn) !=0 && .lt(vkin!=0) ) {
             ll <- 0
-            for (i in 1:length(vkin) ) { 
+            for (i in seq_along(vkin) ) { 
                 dist <- NULL
                 ## if(!silent) cat("********************************************\n")
                 ## print(paste("Analyzing kin break n", i, " ::: ", vkin[i]))
                 set <- c(tail(vdyn[which(vdyn<vkin[i])],1), head(vdyn[which(vdyn>=vkin[i])],1) )
-                if (length(set)==0) break
-                for (j in 1:length(set) ) {
+                if (.lt(set)==0) break
+                for (j in 1:.lt(set) ) {
                     ## Naive criteria (binary decision)
                     dist[j] <- abs(set[j]-vkin[i])
                     ## if(!silent) cat("Comparing with ", set[j], "Distance is", dist[j],"\n")
@@ -645,14 +697,14 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
                 ## Looking for residual vdyn too close to any of the vkin (rare)
                 dist <- NULL
                 ll <- 0
-                for(i in 1:length(vdyn)) {
-                    for(j in 1:length(vkin)) {
+                for(i in 1:.lt(vdyn)) {
+                    for(j in 1:.lt(vkin)) {
                         ll <- ll+1
                         dist[ll] <- abs(vdyn[i]-vkin[j])
                     }
                 }
                 ## Identifying and removing them from vdyn vector
-                dist.mtx <- matrix(dist<sd.kin, nrow=length(vdyn), ncol=length(vkin), byrow=TRUE)
+                dist.mtx <- matrix(dist<sd.kin, nrow=.lt(vdyn), ncol=.lt(vkin), byrow=TRUE)
                 if(any(dist.mtx)) {
                     near <- unique(which(dist.mtx==TRUE, arr.ind=TRUE)[,1])
                     vdyn <- vdyn[-near]
@@ -665,8 +717,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
                 breaks <- sort(unique(c(breaks,vkin)))
             }
         }
-    }
-    else if(.lt(brk.kin)!=0) breaks <- refine(brk.kin) ## If only.kin==TRUE
+    } else if(.lt(brk.kin)!=0) breaks <- refine(brk.kin) ## If only.kin==TRUE
     else breaks <- NULL
 
 
@@ -679,7 +730,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
         if(out.file) {
             output.match <- data.frame(PI=progind$PI, Time=progind$Time, State=seq.st)
             if(is.character(data)) {
-                if(!silent) cat("Writing", gsub("PROGIDX", "BASINS", strsplit(data,"/",fixed=T)[[1]][length(strsplit(data,"/",fixed=T)[[1]])]), "...\n")
+                if(!silent) cat("Writing", gsub("PROGIDX", "BASINS", strsplit(data,"/",fixed=T)[[1]][.lt(strsplit(data,"/",fixed=T)[[1]])]), "...\n")
                 fwrite(output.match, file=gsub("PROGIDX", "BASINS", data), sep='\t', row.names=FALSE, col.names=FALSE)
             } else {
                 if(!silent) cat(paste0("Writing BASINS_", as.character(progind$Time[1]), ".dat\n"))
@@ -687,15 +738,14 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
             }
         }
     } else {
-        if(!silent) cat("Number of states is", length(breaks)+1, "\n")
+        if(!silent) cat("Number of states is", .lt(breaks)+1, "\n")
         if(!silent) cat(breaks, "\n")
-
         vec <- sort(breaks)
         seq.st <- NULL
-        for (i in 1:(length(vec)+1)) {
+        for (i in 1:(.lt(vec)+1)) {
             if (i==1) ib <- 0
             else ib <- vec[i-1]
-            if (i==length(vec)+1) fb <- cstored
+            if (i==.lt(vec)+1) fb <- cstored
             else fb <- vec[i]
             ## if(!silent) cat(i,ib,fb,fb-ib,"\n")
             seq.st <- c(seq.st,rep(i,fb-ib))
@@ -703,7 +753,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
         if(out.file) {
             output.match <- data.frame(PI=progind$PI, Time=progind$Time, State=seq.st)
             if(is.character(data)) {
-                if(!silent) cat("Writing", gsub("PROGIDX", "BASINS", strsplit(data,"/",fixed=T)[[1]][length(strsplit(data,"/",fixed=T)[[1]])]), "...\n")
+                if(!silent) cat("Writing", gsub("PROGIDX", "BASINS", strsplit(data,"/",fixed=T)[[1]][.lt(strsplit(data,"/",fixed=T)[[1]])]), "...\n")
                 fwrite(output.match, file=gsub("PROGIDX", "BASINS", data), sep='\t', row.names=FALSE, col.names=FALSE)
             } else {
                 if(!silent) cat(paste0("Writing BASINS_", as.character(progind$Time[1]), ".dat\n"))
@@ -711,6 +761,19 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
             }
         }
     }    
+
+    if(is.null(breaks)){
+        tab.st <- data.frame(n=1, start=1, end=cstored, .lt=cstored, type=1)
+    } else {
+        tab.st <- data.frame(n=c(1:(.lt(breaks)+1)), start=c(1,vec+1), end=c(vec, cstored), .lt=diff(c(0,vec, cstored)), type=c(rep(NaN,.lt(breaks)),1))
+        if(only.kin) tab.st$type <- c(rep(3, .lt(breaks)), 1)
+        else if(match) tab.st$type <- 1
+        else {
+            if(.lt(brk.mtc)>0) tab.st$type[match(brk.mtc,tab.st$end)] <- 1
+            if(.lt(vdyn)>0) tab.st$type[match(vdyn, tab.st$end)] <- 2
+            tab.st$type[match(vkin[-match(brk.mtc, vkin)], tab.st$end)] <- 3
+        }
+    }
 
 ####################################################################
     ## PLOT Section
@@ -731,13 +794,13 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
         kin.pl <- -log(cutf / cstored)[xr1]
         xx.lab <- c(1,round(breaks),cstored)
         axis(1, at=xx.lab, tck=.01, cex.axis=1.8)
-        axis(3, labels=rep("", length(xx.lab)), at=xx.lab, tck=.01)
+        axis(3, labels=rep("", .lt(xx.lab)), at=xx.lab, tck=.01)
         mtext("Progress Index", side=1, line=1.5, cex=cx )
         yy.lab1 <- format(c(min(kin.pl), min(kin.pl)+(max(kin.pl)-min(kin.pl))*c(1:3)/3), digits=2)
         axis(2, labels=yy.lab1, at=scale(as.numeric(yy.lab1)), las=3, tck=.01, cex.axis=cx)
         mtext(expression("ln(("*italic(tau["SA"]+tau["AS"])*")/2)"), at=max(progind$Time)/2, side=2, line=1.8, cex=cx)
         yy.lab2 <- round(c(1, c(1:5)/5*max(progind$Time)))
-        axis(4, labels=rep("", length(yy.lab2)), at=max(progind$Time)+round(yy.lab2*(sc-1)), las=2, tck=.01, hadj=-0.6, col="red")
+        axis(4, labels=rep("", .lt(yy.lab2)), at=max(progind$Time)+round(yy.lab2*(sc-1)), las=2, tck=.01, hadj=-0.6, col="red")
         mtext(yy.lab2, side=4, las=2, line=0.2, at=max(progind$Time)+yy.lab2*(sc-1), col="red", cex=1.8)
         mtext("Time", at=max(progind$Time)*(sc+1)/2, side=4, line=2.4, cex=cx, col="red")
 
@@ -755,19 +818,9 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
             abline(v=brk.mtc, lwd=0.7, col="black")
         } else abline(v=breaks, lwd=0.7, col="black")
     }
-    
-    if(is.null(breaks)){
-        tab.st <- data.frame(n=1, start=1, end=cstored, length=cstored, type=1)
-    } else {
-        tab.st <- data.frame(n=c(1:(length(breaks)+1)), start=c(1,vec+1), end=c(vec, cstored), length=diff(c(0,vec, cstored)), type=c(rep(NaN,length(breaks)),1))
-        if(only.kin) tab.st$type <- c(rep(3, length(breaks)), 1)
-        else if(match) tab.st$type <- 1
-        else {
-            if(.lt(brk.mtc)>0) tab.st$type[match(brk.mtc,tab.st$end)] <- 1
-            if(.lt(vdyn)>0) tab.st$type[match(vdyn, tab.st$end)] <- 2
-            tab.st$type[match(vkin[-match(brk.mtc, vkin)], tab.st$end)] <- 3
-        }
-    }
+
+
+
     invisible(list(tab.st=tab.st, nbins=c(nx,ny), seq.st=seq.st[order(progind$Time)], call=call))
     
 }

@@ -5,8 +5,8 @@
 \title{Building a Markov State Model}
 \usage{
 msm(seq, lag = 1, tm.opt = c("symm", "mle"), eig.plot = FALSE,
-  CK.test = FALSE, CK.plot = TRUE, setA = NULL, silent = FALSE,
-  dev.new.eig = TRUE, dev.new.CK = TRUE)
+  CK.test = FALSE, CK.lags = lag * c(1:10), CK.plot = TRUE, setA = NULL,
+  silent = FALSE, dev.new.eig = TRUE, dev.new.CK = TRUE)
 }
 \arguments{
 \item{seq}{It can be provided (1) A file name containing only one row with the state sequence, (2) a file type BASINS_<...>, i.e. the output file of the \code{basins_recognition} function, (3) the state sequence itself, (4) the count matrix.}
@@ -18,6 +18,8 @@ msm(seq, lag = 1, tm.opt = c("symm", "mle"), eig.plot = FALSE,
 \item{eig.plot}{Logical value indicating whether to plot the eigenvalues spectrum or not. Default to FALSE.}
 
 \item{CK.test}{Logical value indicatig whether to perform the Chapman-Kolmogorov test or not. The number of points computed is 10. We recall that, if a count matrix is provided as \code{seq}, the test cannot be performed. Default to FALSE.}
+
+\item{CK.lags}{Vector of lag times to used in the CK test.}
 
 \item{CK.plot}{Logical value indicating whether to plot the results of the CK test spectrum or not. Default to TRUE.}
 
@@ -35,14 +37,20 @@ A list containing
       \item \code{TM} The transition matrix
       \item \code{cnt} The count matrix 
       \item \code{values} The eigenvalues of the transition matrix
-      \item \code{vectors} The left eigenvectors of the transition matrix. 
-      \item \code{Q} The metastability, i.e. the trace of the transition matrix.   
-      \item \code{flux} The non-Markovian flux (see reference [2])
-      \item \code{mtp} Mean transition time between different states (see reference [3])
-      \item \code{pMSM} A vector of probabilities to be at set A, starting from A itself, aftera certain number of steps, calculated by means of the transition matrix (see reference [1]).
-      \item \code{pMD} A vector of probabilities to be at set A, starting from A itself, aftera certain number of steps, calculated directly from the trajectory (see reference [1]).
-      \item \code{epsMD} The statistical errors associated to the \code{pMD} (see reference [1]).
-      \item \code{chi} The reduced chi-square value of the CK test.
+      \item \code{left} The left eigenvectors of the transition matrix, normalized as in [1].
+      \item \code{right} The right eigenvectors of the transition matrix, normalized as in [1].
+      \item \code{Q} The metastability, i.e. the trace of the transition matrix.
+      \item \code{flux} Fluxes relative to each timescale. see ref. [2].
+      \item \code{mtp} Mean transition time between different states (see reference [2]).
+      \item \code{CK.data} A data.frame containing the Chapman Kolmogorv test results. In particular
+      \itemize{
+          \item \code{lag} Vector of the lag times used in the CK test with respect to the value of \code{lag}.
+          \item \code{pMSM} A vector of probabilities to be at set A, starting from A itself, after a certain number of steps, calculated by means of the transition matrix (see reference [1]).
+          \item \code{pMD} A vector of probabilities to be at set A, starting from A itself, after a certain number of steps, calculated directly from the trajectory (see reference [1]).
+          \item \code{epsMD} The statistical errors associated to the \code{pMD} (see reference [1]).
+      }
+      \item \code{CK.chi} The reduced chi-square value of the CK test.
+      \item \code{setA} The states used in the CK test.
       \item \code{n.st} The number of states. 
       \item \code{seq.st} The state sequence.
       \item \code{tab.st} A data.frame containing the state number and its relative weigth.
@@ -54,7 +62,7 @@ A list containing
 \code{msm} uses the discretized trajectory (state sequence) to infer the transition matrix of the process. Further values are extracted, like the eigenvalues, eigenvectors, non-Markovian flux and metastability. If requested, a Chapman-Kolmogorv test is carried out to check the Markovianity of model.
 }
 \details{
-The main reference for the Markov state model creation is [1][Prinz, J.H., et al. "Markov models of molecular kinetics: Generation and validation." \emph{The Journal of chemical physics} 134.17 (2011): 174105]. See also [2][Guarnera, E., Pellarin, R., & Caflisch, A. (2009). How does a simplified-sequence protein fold?. \emph{Biophysical journal}, 97(6), 1737-1746.] for non-Markovian flux and [3][Noe' F., et. al. "Hierarchical analysis of conformational dynamics in biomolecules: Transition metwork of metastable states". \emph{The Journal of Chemical Physics} 126, (2007): 155102.]
+The main reference for the Markov state model creation is [1][Prinz, J.H., et al. "Markov models of molecular kinetics: Generation and validation." \emph{The Journal of chemical physics} 134.17 (2011): 174105]. [2] [Noe' F., et. al. "Hierarchical analysis of conformational dynamics in biomolecules: Transition metwork of metastable states". \emph{The Journal of Chemical Physics} 126, (2007): 155102.]
 }
 \examples{
 \dontrun{

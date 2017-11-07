@@ -77,7 +77,6 @@ r-packages:
   - parallel
   - data.table
   - Rcpp
-  - distrEx
   - gplots
   - grDevices
   - graphics
@@ -88,14 +87,17 @@ r-packages:
   - stats
   - expm
   - Hmisc
-  - distr
   - sfsmisc
   - plotly
   - ggfortify
   - Rtsne
 #  - PairViz
 #  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; WGCNA ; fi 
-  
+
+output:
+  html_document: 
+    smart: false
+
 after_script:
   - ls -lah
   - FILE=$(ls -1t *.tar.gz | head -n 1)

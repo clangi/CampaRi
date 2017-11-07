@@ -28,11 +28,13 @@ NOTE: use "working with campari" to generate the PROGIDX_000000000022.dat.
 
 
 ```{r, eval=FALSE}
+getwd()
 # Classic plots 
 # ------------------------------
 sapphire_plot('PROGIDX_000000000022.dat') # baseline and local cut
 sapphire_plot('PROGIDX_000000000022.dat', timeline = TRUE) # with the timeline at the bottom # the dot size can be reduced internally
 sapphire_plot('PROGIDX_000000000022.dat', local_cut = FALSE) # without the local cut
+sapphire_plot('PROGIDX_000000000022.dat', local_cut = FALSE, timeline = TRUE) # without the local cut
 
 # Annotation preprocessing
 # ------------------------------
@@ -43,7 +45,27 @@ prog_index_table <- read.table('PROGIDX_000000000022.dat')[,3]
 ann <- t((trj_fyc[prog_index_table, ] %% 360 < 120) + (trj_fyc[prog_index_table, ] %% 360 < 240) + 1)
 # lets plot it!!!
 sapphire_plot('PROGIDX_000000000022.dat', local_cut = FALSE, ann_trace = ann) # with ANNOTATION!!
+sapphire_plot('PROGIDX_000000000022.dat', local_cut = T, ann_trace = ann, reorder_annotation = T) # with ANNOTATION!!
+sapphire_plot('PROGIDX_000000000022.dat', local_cut = T, ann_trace = ann, reorder_annotation = T, timeline = T) # with ANNOTATION!!
 sapphire_plot('PROGIDX_000000000022.dat', local_cut = FALSE, ann_trace = ann, annotate_snap_dist = T) # with distance values
+sapphire_plot('PROGIDX_000000000022.dat', local_cut = FALSE, ann_trace = ann, use_plotly = T, annotate_snap_dist = T) # with distance values
+sapphire_plot('PROGIDX_000000000022.dat', local_cut = FALSE, ann_trace = ann, uniform_color_timeline=F, annotate_snap_dist = T, timeline = T) # with distance values
+sapphire_plot('PROGIDX_000000000022.dat', local_cut = FALSE, ann_trace = ann, uniform_color_timeline=F, timeline_proportion = 0.5,
+              annotate_snap_dist = T, timeline = T) # with distance values
+sapphire_plot('PROGIDX_000000000022.dat', local_cut = FALSE, ann_trace = ann, uniform_color_timeline=F, timeline_proportion = 0.5, reorder_points_on_timeline = F, #TODO
+              annotate_snap_dist = T, timeline = T) # with distance values
+              annotate_snap_dist = T, timeline = T) # with distance values
+sapphire_plot('PROGIDX_000000000022.dat', local_cut = FALSE, ann_trace = ann, uniform_color_timeline=F,
+              timeline_proportion = 0.5, ann_initial_point = 0.5, size_points_on_timeline = 1.5,
+              annotate_snap_dist = F, timeline = T) # with distance values
+sapphire_plot('PROGIDX_000000000022.dat', local_cut = FALSE, ann_trace = ann, uniform_color_timeline=F,
+              timeline_proportion = 0.5, ann_initial_point = 0.5, size_points_on_timeline = 1.5, background_height = 2.5,
+              annotate_snap_dist = F, timeline = T) # with distance values
+sapphire_plot('PROGIDX_000000000022.dat', local_cut = FALSE, ann_trace = ann, uniform_color_timeline=T,
+              timeline_proportion = 0.5, ann_initial_point = 0.1, size_points_on_timeline = 1.5, background_height = 2.5, which_uniform_color_timeline = 'red',
+              annotate_snap_dist = F, timeline = T) # with distance values
+
+
 
 # the advanced option -> adding layers to the gg object
 # ------------------------------
@@ -63,8 +85,10 @@ sapphire_plot('PROGIDX_000000000022.dat', return_plot = F, local_cut = T, ann_tr
 rescaling_ann_col=F, specific_palette_annotation= c("#b47b00", "#000000"),
 annotation_type = 'continuous', legend_title = "Pot en min", legend_labels = c('gauche+', 'gauche-', 'anti')) 
 sapphire_plot('PROGIDX_000000000022.dat', return_plot = F, local_cut = T, ann_trace = ann[1,], timeline = T, # plot only the first line!
-rescaling_ann_col=F, specific_palette_annotation= c("#b47b00", "#000000", "#C70039"),
-annotation_type = 'discrete', legend_title = "Pot en min", legend_labels = c('gauche+', 'gauche-', 'anti'))  
+rescaling_ann_col=F, uniform_color_timeline=F, specific_palette_annotation= c("#b47b00", "#000000", "#C70039"),
+sapphire_plot('PROGIDX_000000000022.dat', return_plot = F, local_cut = T, ann_trace = ann[1,], timeline = T, # plot only the first line!
+              rescaling_ann_col=F, uniform_color_timeline=F, specific_palette_annotation= c("#b47b00", "#000000", "#C70039"), 
+              specific_palette_timeline= c("#b47b00", "#000000", "#C70039")) # problems if adding the legend?? discrete stuff
 sapphire_plot('PROGIDX_000000000022.dat', return_plot = F, local_cut = T, ann_trace = ann[1,], timeline = T,
 rescaling_ann_col=F, annotation_type = 'discrete', legend_title = "Pot en min", legend_labels = c('gauche+', 'gauche-', 'anti'))  
 sapphire_plot('PROGIDX_000000000022.dat', return_plot = F, local_cut = T, ann_trace = ann[1,], timeline = T,
