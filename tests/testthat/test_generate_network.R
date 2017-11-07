@@ -9,20 +9,25 @@ test_that('pre-processing with network inference', {
   
   # checking some (expected) errors
   # -----------------------------------
-  expect_that(a <- generate_network(trj, window = 20, method = "sadasd"), throws_error())
-  expect_that(a <- generate_network(trj, window = 20, post_processing_method = "asdsads"), throws_error())
+  expect_error(a <- generate_network(trj, window = 20, method = "sadasd"))
+  expect_error(a <- generate_network(trj, window = 20, post_processing_method = "asdsads"))
   # testing for distances and postprocessing
   # -----------------------------------
-  expect_that(net_joint_tr <- generate_network(trj, method = 'minkowski', post_processing_method = 'svd', window = 18), not(throws_error()))
-  expect_that(net1 <- generate_network(trj, method = 'minkowski', window = 20), not(throws_error()))
-  expect_that(path_net <- generate_network(trj, method = 'minkowski', post_processing_method = 'path_minkowski', window = 15), not(throws_error()))
-  expect_that(SVD_net <- generate_network(trj, method = 'minkowski', post_processing_method = 'svd', window = 20), not(throws_error()))
-  # expect_that(MI_net <- generate_network(trj, method = 'MI', post_processing_method = "SymmetricUncertainty", window = 7), not(throws_error()))
+  expect_error(net_joint_tr <- generate_network(trj, method = 'minkowski', post_processing_method = 'svd', window = 18), NA)
+  expect_error(net1 <- generate_network(trj, method = 'minkowski', window = 20), NA)
+  expect_error(path_net <- generate_network(trj, method = 'minkowski', post_processing_method = 'path_minkowski', window = 15), NA)
+  expect_error(SVD_net <- generate_network(trj, method = 'minkowski', post_processing_method = 'svd', window = 20), NA)
+  # expect_error(MI_net <- generate_network(trj, method = 'MI', post_processing_method = "SymmetricUncertainty", window = 7), NA)
  
   # testing for tsne
   # -----------------------------------
-  expect_that(tsne_net <- generate_network(trj, method = 'minkowski', post_processing_method = 'tsne', window = 20), not(throws_error()))
-  expect_that(tsne_net <- generate_network(trj, method = 'none', post_processing_method = 'tsne', window = 20), not(throws_error()))
+  expect_error(tsne_net <- generate_network(trj, method = 'minkowski', post_processing_method = 'tsne', window = 20, tsne_pearagd = 3))
+  # expect_error(tsne_net <- generate_network(trj, method = 'minkowski', post_processing_method = 'tsne', window = 20, tsne_perplexity = 3), NA)
+  expect_error(tsne_net <- generate_network(trj, method = 'none', post_processing_method = 'tsne', window = 20), NA)
+  
+  # testing multiplication
+  # -----------------------------------
+  expect_error(a <- generate_network(trj, window = 20, method = "sadasd"))
   
   
   # testing for spectrum transformation
@@ -36,7 +41,7 @@ test_that('pre-processing with network inference', {
   if(my_libs) b <- periodogram(y = trj[ ,2], plot = test_plotting)
   if(test_plotting) plot(y = b$spec, x = b$freq,type = "h") # spec is what it was needed
 
-  expect_that(asd <- generate_network(trj, method = 'fft', window = 10), not(throws_error()))
+  expect_error(asd <- generate_network(trj, method = 'fft', window = 10), NA)
   if(my_libs) c <- periodogram(y = c(trj[1:5, 1], trj[1:5, 1]), plot = test_plotting)
   if(my_libs) d <- periodogram(y = c(trj[1:5, 2], trj[1:5, 2]), plot = test_plotting)
   # final check of equality
@@ -69,5 +74,5 @@ test_that('pre-processing with network inference', {
   expect_warning(asd <- generate_network(trj, post_processing_method = "amplitude_maxfreq", window = 10))
   
   # this test needs further packages. They should not be a forced installation
-  # expect_that(tsne_net <- generate_network(trj, method = 'MI', post_processing_method = 'tsne', window = 20), not(throws_error()))
+  # expect_error(tsne_net <- generate_network(trj, method = 'MI', post_processing_method = 'tsne', window = 20), NA)
   })

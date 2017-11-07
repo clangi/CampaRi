@@ -37,7 +37,7 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', post_processi
  
   # checking additional variable
   input_args <- list(...)
-  avail_extra_argoments <- c('wgcna_type', 'wgcna_power', 'wgcna_corOp', 'minkowski_p', 'cov_method', 'tsne_dimensions', ' tsne_perplexity', 'tsne_maxIter')
+  avail_extra_argoments <- c('wgcna_type', 'wgcna_power', 'wgcna_corOp', 'minkowski_p', 'cov_method', 'tsne_dimensions', 'tsne_perplexity', 'tsne_maxIter')
   avail_methods <- c('wgcna', 'none', 
                      'binary', 'euclidean', 'manhattan', 'maximum', 'canberra', 'minkowski', 'mahalanobis',
                      'covariance',
@@ -255,7 +255,7 @@ c('path_euclidean', 'path_minkowski', 'path_manhattan', 'path_maximum', 'path_ca
             else if(post_processing_method == 'maxfreq')
               vec_freq <- c(vec_freq, freq_spectr$freq[which(freq_spectr$spec == max(freq_spectr$spec))])
             else if(post_processing_method == 'amplitude_maxfreq')
-              vec_freq <- c(vec_freq, diff(range(tmp_trj[,fr])), freq_spectr$freq[which(freq_spectr$spec == max(freq_spectr$spec))])
+              vec_freq <- c(vec_freq, diff(range(tmp_trj[,fr])), freq_spectr$freq[which(freq_spectr$spec == max(freq_spectr$spec))[1]])
           }else{
             vec_freq <- c(vec_freq, freq_spectr$spec)
           }

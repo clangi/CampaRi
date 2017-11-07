@@ -93,7 +93,11 @@ r-packages:
   - Rtsne
 #  - PairViz
 #  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; WGCNA ; fi 
-  
+
+output:
+  html_document: 
+    smart: false
+
 after_script:
   - ls -lah
   - FILE=$(ls -1t *.tar.gz | head -n 1)
