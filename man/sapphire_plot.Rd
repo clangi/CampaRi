@@ -40,13 +40,7 @@ produce a gray scale horizontal annotation.}
 \item{title}{Title of the plot (default "")}
 
 \item{...}{Other options are: 'only_timeline', 'reorder_annotation', 'annotate_snap_dist', 'rescaling_ann_col', 'reorder_horizline_on_timeline', 
-'reorder_points_on_timeline', 
-'timeline_proportion'  =  std:1/6*y_max set y_max from local_cut and standard_cut this defines a proportion of that y_max (e.g. 0.5 meaning that the timeline will be placed in the 0 - 0.5*ymax space)
-'ann_height'   =  std:1/8*y_max set the height of the annotation
-'ann_initial_point'  =  std:3/4*y_max set the starting point of the annotation from the top
-'localcutbasin_prop_height'  =  std:1/4*y_max set the heigth space of the localcut
-'basin_prop_height'  =  std:1/4*y_max set the heigth space of the stdcut
-'horiz_lines_on_timeline',  'horiz_colored_areas', 'points_on_timeline',  
+'reorder_points_on_timeline', horiz_lines_on_timeline',  'horiz_colored_areas', 'points_on_timeline',  
 'vertical_barriers_points', 'specific_palette_timeline', 'specific_palette_annotation',  'general_size_annPoints', 'size_points_on_timeline' 
 'plot_legend', 'use_plotly', uniform_color_timeline', 'which_uniform_color_timeline',  'legend_title', 'legend_labels', 'annotation_type' ('continuous' or 'discrete')}
 }
@@ -59,6 +53,17 @@ If \code{ann_trace_ret} is active it will return the annotation trace used for t
 }
 \details{
 For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
+
+
+'timeline_proportion'  =  std:1/6*y_max set y_max from local_cut and standard_cut this defines a proportion of that y_max (e.g. 0.5 meaning that the timeline will be placed in the 0 - 0.5*ymax space)
+
+'ann_height'   =  std:1/8*y_max set the height of the annotation
+
+'ann_initial_point'  =  std:3/4*y_max set the starting point of the annotation from the top
+
+'localcutbasin_prop_height'  =  std:1/4*y_max set the heigth space of the localcut
+
+'basin_prop_height'  =  std:1/4*y_max set the heigth space of the stdcut
 }
 \examples{
 adjl <- mst_from_trj(trj = matrix(rnorm(1000), nrow = 100, ncol = 10))
