@@ -2,6 +2,8 @@ context('generate_network')
 
 test_that('pre-processing with network inference', {
   test_plotting <- T
+  my_libs <- T
+  if(my_libs) library(TSA)
   trj <- matrix(rnorm(1000), nrow = 100, ncol = 10)
   expect_true(!is.null(trj))
   
@@ -30,13 +32,13 @@ test_that('pre-processing with network inference', {
   trj[,2] <- cos(1:120)*(1/rep(1:30, 4) + tanh(120:1)*(1/sin(120:1)))
   if(test_plotting) plot(trj[,1], type = 'l')
   if(test_plotting) plot(trj[,2], type = 'l')
-  a <- periodogram(y = trj[ ,1], plot = test_plotting)
-  b <- periodogram(y = trj[ ,2], plot = test_plotting)
+  if(my_libs) a <- periodogram(y = trj[ ,1], plot = test_plotting)
+  if(my_libs) b <- periodogram(y = trj[ ,2], plot = test_plotting)
   if(test_plotting) plot(y = b$spec, x = b$freq,type = "h") # spec is what it was needed
 
   expect_that(asd <- generate_network(trj, method = 'fft', window = 10), not(throws_error()))
-  c <- periodogram(y = c(trj[1:5, 1], trj[1:5, 1]), plot = test_plotting)
-  d <- periodogram(y = c(trj[1:5, 2], trj[1:5, 2]), plot = test_plotting)
+  if(my_libs) c <- periodogram(y = c(trj[1:5, 1], trj[1:5, 1]), plot = test_plotting)
+  if(my_libs) d <- periodogram(y = c(trj[1:5, 2], trj[1:5, 2]), plot = test_plotting)
   # final check of equality
   expect_true(all(c$spec == asd[1, 1:5]))
   expect_true(all(d$spec == asd[1, 6:10]))
@@ -47,10 +49,24 @@ test_that('pre-processing with network inference', {
   if(test_plotting) plot(y = asd[1, 6:10], x = c$freq, type = 'h')
   
   # more staff -> range & freq
-  expect_that(asd <- generate_network(trj, method = 'fft', window = 10), not(throws_error()))
-  
-  
-  
+  # amplitude (range)
+  expect_warning(asd <- generate_network(trj, post_processing_method = "amplitude", window = 10))
+  res <- c()
+  for(i in 1:ncol(trj))
+    res <- c(res, diff(range(c(trj[1:5, i], trj[1:5, i]))))
+  expect_true(all(res == asd[1, ]))
+  # maxfreq
+  expect_warning(asd <- generate_network(trj, post_processing_method = "maxfreq", window = 10))
+  res <- c()
+  if(my_libs){
+    for(i in 1:ncol(trj)){
+      P <- periodogram(c(trj[1:5, i], trj[1:5, i]), plot = F)
+      res <- c(res, P$freq[which(P$spec == max(P$spec))])
+    }
+    expect_true(all(res == asd[1, ]))
+  }
+  # both
+  expect_warning(asd <- generate_network(trj, post_processing_method = "amplitude_maxfreq", window = 10))
   
   # this test needs further packages. They should not be a forced installation
   # expect_that(tsne_net <- generate_network(trj, method = 'MI', post_processing_method = 'tsne', window = 20), not(throws_error()))

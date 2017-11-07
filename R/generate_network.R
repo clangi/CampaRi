@@ -102,7 +102,10 @@ c('path_euclidean', 'path_minkowski', 'path_manhattan', 'path_maximum', 'path_ca
   # Additional input (...) checks
   # ---------------------------
   # wgcna specific inputs
-  if(!is.character(wgcna_type) || !is.character(wgcna_corOp) || !is.numeric(wgcna_power) || wgcna_power%%1 != 0) 
+  if(!.isSingleInteger(wgcna_power) || 
+     !.isSingleElement(wgcna_type) || 
+     !.isSingleElement(wgcna_corOp) || 
+     !is.character(wgcna_type) || !is.character(wgcna_corOp) || !is.numeric(wgcna_power)) 
     stop('Inserted values for wgcna specifics inserted.')
   if(wgcna_corOp == 'pearson') wgcna_corOp <- "use = 'p'"
   else if(wgcna_corOp == 'spearman') wgcna_corOp <- "use = 'p', method = 'spearman'"
@@ -244,7 +247,8 @@ c('path_euclidean', 'path_minkowski', 'path_manhattan', 'path_maximum', 'path_ca
       }else if( method == 'fft'){
         vec_freq <- c()
         for(fr in 1:ncol(trj)){
-          freq_spectr <- periodogram(tmp_trj[,fr], plot = F)
+          if(is.null(post_processing_method) || (!is.null(post_processing_method) && post_processing_method != 'amplitude')) # just to avoid further calc
+            freq_spectr <- periodogram(tmp_trj[,fr], plot = F)
           if(!is.null(post_processing_method) && post_processing_method %in% c('amplitude', 'amplitude_maxfreq', 'maxfreq')){
             if(post_processing_method == 'amplitude')
               vec_freq <- c(vec_freq, diff(range(tmp_trj[,fr])))
