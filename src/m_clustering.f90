@@ -78,7 +78,7 @@
 ! ntlnks             : management of user-requested link additions (count)
 !
 module m_clustering
-  
+
   ! distance matrix must be allocatable
   real, allocatable :: distance_mat(:,:)
 
@@ -310,7 +310,7 @@ module m_clustering
         notdone = .true.
         fail = -1
         nlst1 = 1
-        kklst(1,1) = kk
+        kklst(1,1) = kk ! kklst store the least of kk cluster at the previous level (??) clangini
     !    cnt1 = 0
         do ii=2,c_nhier !for each level (from 2)
           jj = -1
@@ -324,24 +324,26 @@ module m_clustering
               if ((birchtree(ii)%cls(ll)%center.le.0).OR.(birchtree(ii)%cls(ll)%center.gt.n_snaps)) then
                 call spr("BUG: the center is not allocated. Please contact the admin.")
                 call fexit()
-              end if
+              end if ! This is a sanity check. clangini
               !distance between the one element i with all the children clusters ll
-              call preprocess_snapshot(trj, i, vecti)
+              call preprocess_snapshot(trj, i, vecti) ! vecti contains coords of snap i. clangini
               call snap_to_cluster_d(tmp_d, birchtree(ii)%cls(ll), vecti)
               if (tmp_d.lt.min_d) then !I care only about the minimum distance for storing
+                ! I have to loop through every children to find the minimum. clangini
                 min_d = tmp_d !minimum distance is in the j-th child
                 jj = j !the children cluster (ll) number
                 thekk = kk
               end if
               if (tmp_d.lt.scrcts(ii)) then ! snap i belong to the cluster
                 nlst2 = nlst2 + 1 !number of adds
+                ! snap i can be added to more than 1 cluster
                 kklst(nlst2,2) = ll !cluster that has it added
               end if
             end do
           end do
     !     store the path
           if (jj.eq.-1) then
-            kkhistory(ii-1) = 1 !e.g. no children
+            kkhistory(ii-1) = 1 !e.g. no children !kkhistory is the kk path through the cluster
           else
             kkhistory(ii-1) = thekk !the minimum!
           end if
@@ -356,7 +358,7 @@ module m_clustering
                 kkf = thekk
               end if
             else !  if NOT (nlst2.le.0) (it is not alone)
-              if (fail.gt.0) then
+              if (fail.gt.0) then ! if a real fail. This is the Outlier treatment. clangini
                 do j=fail,ii-1 !from the point it found a value alone far away from the others until the last level
                   birchtree(j)%ncls = birchtree(j)%ncls + 1 !generate a new cluster
                   if (birchtree(j)%ncls.gt.birchtree(j)%n_clu_alsz_tree) &
@@ -379,6 +381,7 @@ module m_clustering
             end if
             cycit = .true.
           ! LEAF ADD - to access this you must have found min_d (a minimum distance INSIDE a cluster (<scrcts(lev)))
+          ! this is the treating at the leaf level
           else if ((ii.eq.c_nhier).AND.(min_d.lt.scrcts(ii))) then
             kk = birchtree(ii-1)%cls(thekk)%children(jj)
             call preprocess_snapshot(trj, i, vecti)
@@ -388,6 +391,7 @@ module m_clustering
             end do
             notdone = .false.
           ! NEW CLUSTER
+          ! this is the standard case of adding a new cluster
           else  !case in which you must add one cluster
             if (fail.eq.-1) then !e.g. first add
               fail = ii
