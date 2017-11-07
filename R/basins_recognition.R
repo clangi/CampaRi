@@ -304,7 +304,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
         if(.lt(idxx.up)>1) idxx.up.cl <- true.peaks(idxx.up, ovlap.der, up=TRUE)
         else idxx.up.cl <- NULL
         if(.lt(idxx.down)>1) idxx.down.cl <- true.peaks(idxx.down, ovlap.der, up=FALSE)
-        else idxx.up.cl <- NULL
+        else idxx.down.cl <- NULL
         if(is.null(idxx.up.cl) & is.null(idxx.down.cl)) bigg.idx <- NULL
         else bigg.idx <- sort(c(idxx.up.cl, idxx.down.cl))
         bigg.brk <- hist$x[bigg.idx]
