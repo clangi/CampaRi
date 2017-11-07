@@ -256,8 +256,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
                 if (is.list(expmodel)) {
                     if(!silent) cat("Exponential model chosen, hyperbola not available\n")
                     can <- (1/coef(expmodel)["c"])*log((coef(expmodel)["a"]/coef(expmodel)["b"]) *(1-perc))
-                }
-                else {
+                } else {
                     if(!silent) cat("Hyperbola model chosen, exponential not available\n")
                     can <- coef(fracmodel)[2]*perc/(1-perc) 
                 }
@@ -303,8 +302,11 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
         idxx.up <- which(ovlap.der>interval[2])
         idxx.down <- which(ovlap.der<interval[1])
         if(.lt(idxx.up)>1) idxx.up.cl <- true.peaks(idxx.up, ovlap.der, up=TRUE)
+        else idxx.up.cl <- NULL
         if(.lt(idxx.down)>1) idxx.down.cl <- true.peaks(idxx.down, ovlap.der, up=FALSE)
-        bigg.idx <- sort(c(idxx.up.cl, idxx.down.cl))
+        else idxx.up.cl <- NULL
+        if(is.null(idxx.up.cl) & is.null(idxx.down.cl)) bigg.idx <- NULL
+        else bigg.idx <- sort(c(idxx.up.cl, idxx.down.cl))
         bigg.brk <- hist$x[bigg.idx]
         
         ## source("./Rfunctions/SBR_images_functions.R")
@@ -477,6 +479,9 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
         ## if(!silent) cat("Number of bigg is", .lt(bigg.brk), "\n")
         breaks.tot <- unique(sort(c(breaks.tot, bigg.brk)))
         ## if(!silent) cat("Number of matched is", .lt(bigg.brk), "\n")
+
+        if(any(breaks.tot==hist$x[nx])) breaks.tot <- breaks.tot[-which(breaks.tot==hist$x[nx])]
+        if(any(breaks.tot==hist$x[1])) breaks.tot <- breaks.tot[-which(breaks.tot==hist$x[1])]
         
 #################################################################################
         ## HISTOGRAM of each PARTITION 
@@ -491,12 +496,10 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
                     if (i==1) {
                         ncls <- 1
                         ncle <- which(hist$x==breaks.tot[i+1])
-                    }
-                    else if (i == (.lt(breaks.tot)-1) ) {
+                    } else if (i == (.lt(breaks.tot)-1) ) {
                         ncls <- which(hist$x==breaks.tot[i])+1
                         ncle <- nx
-                    }
-                    else {
+                    } else {
                         ncls <- which(hist$x==breaks.tot[i])+1
                         ncle <- which(hist$x==breaks.tot[i+1])
                     }
@@ -549,8 +552,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
                         flagbreak <- 0
                         ll <- ll+1
                         discbreaks[ll] <- breaks.tot[i+1]
-                    }
-                    else {
+                    } else {
                         if(!silent) cat("\n")
                         flagbreak <- flagbreak+1
                     }
@@ -606,8 +608,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
             for (i in (.lt(max.mv)-1):1) {
                 if (rif-max.mv[i]<dpeaks.kin/2) {
                     max.mv.tmp <- max.mv.tmp[-match(max.mv[i],max.mv.tmp)] ##Remove the smallest
-                }
-                else rif <- max.mv[i]
+                } else rif <- max.mv[i]
             }
         }
         max.mv <- max.mv.tmp
@@ -630,8 +631,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
             }
         }
         brk.kin <- round(max.mv.tmp)
-    }
-    else {
+    } else {
         brk.kin <- NULL
     }
         
@@ -717,8 +717,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
                 breaks <- sort(unique(c(breaks,vkin)))
             }
         }
-    }
-    else if(.lt(brk.kin)!=0) breaks <- refine(brk.kin) ## If only.kin==TRUE
+    } else if(.lt(brk.kin)!=0) breaks <- refine(brk.kin) ## If only.kin==TRUE
     else breaks <- NULL
 
 
