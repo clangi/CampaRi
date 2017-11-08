@@ -45,8 +45,8 @@ test_that('pre-processing with network inference', {
   if(my_libs) c <- periodogram(y = c(trj[1:5, 1], trj[1:5, 1]), plot = test_plotting)
   if(my_libs) d <- periodogram(y = c(trj[1:5, 2], trj[1:5, 2]), plot = test_plotting)
   # final check of equality
-  expect_true(all(c$spec == asd[1, 1:5]))
-  expect_true(all(d$spec == asd[1, 6:10]))
+  if(my_libs) expect_true(all(c$spec == asd[1, 1:5]))
+  if(my_libs) expect_true(all(d$spec == asd[1, 6:10]))
   
   if(test_plotting) plot(y = c$spec, x = c$freq, type = 'h')
   if(test_plotting) plot(y = asd[1, 1:5], x = c$freq, type = 'h')
