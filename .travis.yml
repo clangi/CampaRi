@@ -70,6 +70,7 @@ r_github_packages:
   - jimhester/covr
   - cran/WGCNA
   - cran/PairViz # it can not be seen by mac?
+  - rstudio/rmarkdown
 
 r-packages:
   - bio3d
@@ -91,12 +92,13 @@ r-packages:
   - plotly
   - ggfortify
   - Rtsne
+  - TSA
 #  - PairViz
 #  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; WGCNA ; fi 
 
-output:
-  html_document: 
-    smart: false
+#output: # pandoc must be installed with dev options from github
+#  html_document: 
+#    smart: false
 
 after_script:
   - ls -lah
