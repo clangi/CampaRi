@@ -1065,8 +1065,8 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
       if(any(kin > 0)){
         n_neg_kin <- sum(kin > 0)
         warning(paste0('We found negative values in the kinetic trace during parabolic subtraction. This is inexpected. The number of them is: ', n_neg_kin,' 
-                       Every value under -0.3 will be truncated automatically.'))
-        kin[kin < -0.3] <- 0
+                       Every value under -0.3 will be truncated automatically (not done yet).'))
+        # kin[kin < -0.3] <- 0
       }
       gg <- gg + geom_line(aes(x = xx, y = kin[seq(1, Nsnap, sub_sampling_factor)]), color=main_col, size=0.8) # SHALL WE KEEP THE NAs?
     }
@@ -1078,19 +1078,22 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
       if(!parabolic_subtraction){
         gg <- gg + geom_point(mapping = aes(x = xx, y = y_local_cut[seq(1, Nsnap, sub_sampling_factor)]), color = "red3", size = 0.08) 
       }else{
-        xx_tmp <- seq(from=1, by=1, to=Nsnap)
-        parabol <- 2 * xx_tmp * (Nsnap - xx_tmp)/Nsnap
-        parabol <- replace(parabol, which(parabol == 0), min(parabol[-which(parabol == 0)]))
-        parabol.log <- -log(parabol/Nsnap)
-        cutf <- replace((pin[,10] + pin[,12]), which((pin[,10] + pin[,12]) == 0), min((pin[,10] + pin[,12])[which((pin[,10] + pin[,12]) > 0)]))
-        kin <- 2.5 - (1./3.)*log(cutf/Nsnap) - parabol.log
-        if(any(kin > 0)){
-          n_neg_kin <- sum(kin > 0)
-          warning(paste0('We found negative values in the local kinetic trace during parabolic subtraction. This is inexpected. The number of them is: ', n_neg_kin,' 
-                       Every value under -0.3 will be truncated automatically.'))
-          kin[kin < -0.3] <- 0
-        }
-        gg <- gg + geom_point(mapping = aes(x = xx, y = kin[seq(1, Nsnap, sub_sampling_factor)]), color = "red3", size = 0.08) 
+        gg <- gg + geom_point(mapping = aes(x = xx, y = y_local_cut[seq(1, Nsnap, sub_sampling_factor)]), color = "red3", size = 0.08)
+        warning('for the local_cut the option parabolic_subtraction is not ready yet')
+        # 
+        # xx_tmp <- seq(from=1, by=1, to=Nsnap)
+        # parabol <- 2 * xx_tmp * (Nsnap - xx_tmp)/Nsnap
+        # parabol <- replace(parabol, which(parabol == 0), min(parabol[-which(parabol == 0)]))
+        # parabol.log <- -log(parabol/Nsnap)
+        # cutf <- replace((pin[,10] + pin[,12]), which((pin[,10] + pin[,12]) == 0), min((pin[,10] + pin[,12])[which((pin[,10] + pin[,12]) > 0)]))
+        # kin <- 2.5 - (1./3.)*log(cutf/Nsnap) - parabol.log
+        # if(any(kin > 0)){
+        #   n_neg_kin <- sum(kin > 0)
+        #   warning(paste0('We found negative values in the local kinetic trace during parabolic subtraction. This is inexpected. The number of them is: ', n_neg_kin,' 
+        #                Every value under -0.3 will be truncated automatically.'))
+        #   kin[kin < -0.3] <- 0
+        # }
+        # gg <- gg + geom_point(mapping = aes(x = xx, y = kin[seq(1, Nsnap, sub_sampling_factor)]), color = "red3", size = 0.08) 
       }
     }
   }

@@ -119,7 +119,6 @@ test_that('Various plotting options', {
   # checking the parabolic_subtraction
   expect_error(sapphire_plot('REPIX_000000000021.dat', ann_trace = ann, parabolic_subtraction = T, timeline = T, plot_legend = T), NA)  
   
-  
   if(file.exists('MST_DUMPLING.nc')) file.remove('MST_DUMPLING.nc')
   if(file.exists('REPIX_000000000021.dat')) file.remove('REPIX_000000000021.dat')
 })
