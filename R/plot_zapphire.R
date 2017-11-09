@@ -24,24 +24,37 @@
 # @param ann_names_R Vector of characther strings indicating, from top on the right, the names of the annotation horizontal bars.
 #' @param use_plotly This option, if turned on will use the plotly format to represent the plot which is usually generated using ggplot2 only
 #' @param title Title of the plot (default "")
-#' @param ... Other options are: 'only_timeline', 'reorder_annotation', 'annotate_snap_dist', 'rescaling_ann_col', 'reorder_horizline_on_timeline', 
-#' 'reorder_points_on_timeline', horiz_lines_on_timeline',  'horiz_colored_areas', 'points_on_timeline',  
-#' 'vertical_barriers_points', 'specific_palette_timeline', 'specific_palette_annotation',  'general_size_annPoints', 'size_points_on_timeline' 
-#' 'plot_legend', 'use_plotly', uniform_color_timeline', 'which_uniform_color_timeline',  'legend_title', 'legend_labels', 'annotation_type' ('continuous' or 'discrete')
+#' @param ... Other options are: 
+#'      \itemize{
+#'        \item "\code{only_timeline}" 
+#'        \item "\code{reorder_annotation}"   
+#'        \item "\code{annotate_snap_dist}" should I plot a special annotation on top with the intersnaps dist? it follows the uniform color timeline
+#'        \item "\code{snap_dist_annotation_height}" how hight should it be? std: y_max/8
+#'        \item "\code{rescaling_ann_col}" 
+#'        \item "\code{reorder_horizline_on_timeline}" 
+#'        \item "\code{reorder_points_on_timeline}" 
+#'        \item "\code{horiz_lines_on_timeline}" 
+#'        \item "\code{horiz_colored_areas}" 
+#'        \item "\code{points_on_timeline}" 
+#'        \item "\code{vertical_barriers_points}" 
+#'        \item "\code{specific_palette_timeline}" 
+#'        \item "\code{specific_palette_annotation}" 
+#'        \item "\code{general_size_annPoints}" 
+#'        \item "\code{size_points_on_timeline}" 
+#'        \item "\code{plot_legend}" 
+#'        \item "\code{uniform_color_timeline}" to put an uniform color on timeline and snap dist (std: T)
+#'        \item "\code{which_uniform_color_timeline}" std: 'black'. if you put 'annotation' you get the first of the lines in the annotation (colorwise)
+#'        \item "\code{legend_title}" Title of the legend
+#'        \item "\code{annotation_type}" 'continuous' or 'discrete' - it defines the legend and the colors according to specific_palette_annotation
+#'        \item "\code{timeline_proportion}" std:1/6*y_max set y_max from local_cut and standard_cut this defines a 
+#'        proportion of that y_max (e.g. 0.5 meaning that the timeline will be placed in the 0 - 0.5*ymax space)
+#'        \item "\code{ann_height}" std:1/8*y_max set the height of the annotation
+#'        \item "\code{ann_initial_point}" std:3/4*y_max set the starting point of the annotation from the top
+#'        \item "\code{localcutbasin_prop_height}" std:1/4*y_max set the heigth space of the localcut
+#'        \item "\code{basin_prop_height}" std:1/4*y_max set the heigth space of the stdcut
+#'        \item "\code{parabolic_subtraction}" you can avoid the randomness of the parabolic curve (on annotation) by using parabolic subtraction.
+#'      }
 #' @details For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
-#'
-#'
-#' 'timeline_proportion'  =  std:1/6*y_max set y_max from local_cut and standard_cut this defines a proportion of that y_max (e.g. 0.5 meaning that the timeline will be placed in the 0 - 0.5*ymax space)
-#' 
-#' 'ann_height'   =  std:1/8*y_max set the height of the annotation
-#' 
-#' 'ann_initial_point'  =  std:3/4*y_max set the starting point of the annotation from the top
-#' 
-#' 'localcutbasin_prop_height'  =  std:1/4*y_max set the heigth space of the localcut
-#' 
-#' 'basin_prop_height'  =  std:1/4*y_max set the heigth space of the stdcut
-#'
-#'
 #'
 #' @return If \code{ann_trace_ret} is active it will return the annotation trace used for the plot.
 #' @seealso
@@ -73,10 +86,10 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
                              'reorder_annotation', 
                              'annotate_snap_dist',
                              'rescaling_ann_col', # if true the numerical ann are rescaled in grey
+                             'snap_dist_annotation_height',
                              'reorder_horizline_on_timeline',
                              'reorder_points_on_timeline',
                              'plot_legend', # plot the legend for the annotation
-                             'use_plotly',
                              'uniform_color_timeline', # to put the timeline (and the distance annotation trace) in a simple black
                              'which_uniform_color_timeline',
                              
@@ -96,6 +109,8 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
                              'legend_labels',
                              'annotation_type',
                              
+                             'parabolic_subtraction',
+                             
                              'general_size_annPoints',
                              'size_points_on_timeline')
                              
@@ -105,18 +120,19 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   
   # Default handling
   if(!('only_timeline' %in% names(input_args))) only_timeline <- FALSE else only_timeline <- input_args[['only_timeline']]
-  if(!('reorder_annotation' %in% names(input_args))) reorder_annotation <- FALSE else reorder_annotation <- input_args[['reorder_annotation']]
+  if(!('reorder_annotation' %in% names(input_args))) reorder_annotation <- TRUE else reorder_annotation <- input_args[['reorder_annotation']]
   if(!('annotate_snap_dist' %in% names(input_args))) annotate_snap_dist <- FALSE  else annotate_snap_dist <- input_args[['annotate_snap_dist']]
   if(!('rescaling_ann_col' %in% names(input_args))) rescaling_ann_col <- TRUE  else rescaling_ann_col <- input_args[['rescaling_ann_col']]
   if(!('reorder_horizline_on_timeline' %in% names(input_args))) reorder_horizline_on_timeline <- FALSE else reorder_horizline_on_timeline <- input_args[['reorder_horizline_on_timeline']]
   if(!('reorder_points_on_timeline' %in% names(input_args))) reorder_points_on_timeline <- FALSE  else reorder_points_on_timeline <- input_args[['reorder_points_on_timeline']]
   if(!('plot_legend' %in% names(input_args))) plot_legend <- FALSE  else plot_legend <- input_args[['plot_legend']]
-  if(!('use_plotly' %in% names(input_args))) use_plotly <- FALSE  else use_plotly <- input_args[['use_plotly']]
   if(!('uniform_color_timeline' %in% names(input_args))) uniform_color_timeline <- TRUE  else uniform_color_timeline <- input_args[['uniform_color_timeline']]
+  if(!('parabolic_subtraction' %in% names(input_args))) parabolic_subtraction <- FALSE  else parabolic_subtraction <- input_args[['parabolic_subtraction']]
   if(!('which_uniform_color_timeline' %in% names(input_args))) which_uniform_color_timeline <- "black"  else which_uniform_color_timeline <- input_args[['which_uniform_color_timeline']]
   
   if(!('timeline_proportion' %in% names(input_args))) timeline_proportion <- NULL else timeline_proportion <- input_args[['timeline_proportion']]
   if(!('ann_height' %in% names(input_args))) ann_height <- NULL else ann_height <- input_args[['ann_height']]
+  if(!('snap_dist_annotation_height' %in% names(input_args))) snap_dist_annotation_height <- NULL  else snap_dist_annotation_height <- input_args[['snap_dist_annotation_height']]
   if(!('localcutbasin_prop_height' %in% names(input_args))) localcutbasin_prop_height <- NULL else localcutbasin_prop_height <- input_args[['localcutbasin_prop_height']]
   if(!('basin_prop_height' %in% names(input_args))) basin_prop_height <- NULL else basin_prop_height <- input_args[['basin_prop_height']]
   if(!('ann_initial_point' %in% names(input_args))) ann_initial_point <- NULL else ann_initial_point <- input_args[['ann_initial_point']]
@@ -284,8 +300,8 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   # checking assignments for legend title and legend labels
   leg_tit <- NULL
   leg_lab <- NULL
-  if(!plot_legend && (!is.null(legend_title) || !is.null(legend_labels) || !is.null(annotation_type))){
-    warning('Inserted legend_title or legend_labels or annotation_type variables WITHOUT activating plot_legend. This option will be turned on automatically.')
+  if(!plot_legend && (!is.null(legend_title) || !is.null(legend_labels))){
+    warning('Inserted legend_title or legend_labels variables WITHOUT activating plot_legend. This option will be turned on automatically.')
     plot_legend <- TRUE
   }
   if(plot_legend){
@@ -411,10 +427,15 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   # ---------------------
   # checking the reordering of the annotation (functionality that is working only with one-line whatever) TODO extend it
   if(reorder_annotation){
-    if(n_partitions_trace || automatic_trace_half)
-      stop('reorder_annotation is supported only for direct (==nrow(trj)) numeric-character insertion')
+    if(n_partitions_trace || automatic_trace_half){
+      warning('reorder_annotation is supported only for direct (==nrow(trj)) numeric-character insertion')
+      warning('WARNING WARNING: the reordering has been set to NO. In the case of direct insertion it could be a problem.
+               NOTE: it is automatically done in the case of half split (ann_trace = T) or number of splits (ann_trace = whatever number).')
+      reorder_annotation <- FALSE
+    }
+  }else{
+    warning('WARNING WARNING: reorder_annotation is false. We suppose that you know it and your annotation has been already reordered accordingly.')
   }
-  
   
   # ============================
   # Main ann_trace constructor
@@ -427,7 +448,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
     if(automatic_trace_half){
       message("Annotation trace set to automatic. It will be considered bipartite along the timeline.")
       cat("Half random mode selected for the trace annotation. First half will be light grey.\n")
-      ann_tr[pin[,3]>=Nsnap/2 & ann_tr == "NA"]<-"gray75"
+      ann_tr[pin[,3] >= Nsnap/2 & ann_tr == "NA"] <- "gray75"
       ann_tr[pin[,3] < Nsnap/2 & ann_tr == "NA"] <- "gray30"
     }
     # ---------------------
@@ -440,9 +461,10 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
         ann_trace = 10
       }
       ann_tr[pin[,3]<Nsnap/ann_trace] <- "gray1"
-      for(i in 1:(ann_trace-1)) ann_tr[pin[,3]<Nsnap*(i+1)/ann_trace
-                                       & pin[,3]>=Nsnap*(i)/ann_trace
-                                       & ann_tr == "NA"] <- paste0("gray",floor(100/ann_trace)*i)
+      for(i in 1:(ann_trace-1)) 
+        ann_tr[pin[,3] < Nsnap*(i+1)/ann_trace
+               & pin[,3] >= Nsnap*(i)/ann_trace
+               & ann_tr == "NA"] <- paste0("gray",floor(100/ann_trace)*i)
     }
     # ---------------------
     # DIRECT INSERTION (ONE LINE): ann_trace == exactly the ann_trace
@@ -582,13 +604,35 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   # Trace height from the top. This is the 0-16 parts out of ymax
   if(!is.null(ann_height) && is.numeric(ann_height) && length(ann_height) == 1L){
     if(ann_height > 1 || ann_height < 0){
-      warning("Inserted background height too small or too big.")
+      warning("Inserted background height too small or too big (0-1 must be).")
       ann_height <- ymax/8.
     }
     ann_height <- ann_height*ymax
   }else{
     ann_height <- ymax/8.
   }
+  
+  # height of the snap_dist annotation
+  if(!is.null(snap_dist_annotation_height)){
+    if(.isSingleElement(snap_dist_annotation_height) && 
+     is.numeric(snap_dist_annotation_height)){
+      if(ann_height > 1 || ann_height < 0){
+        warning("Inserted background height too small or too big (0-1 must be).")
+        snap_dist_annotation_height <- ymax/8.
+      }
+      if(!annotate_snap_dist){
+        warning('You inserted snap_dist_annotation_height without putting annotate_snap_dist = T. We will do it for you.')
+        annotate_snap_dist <- T
+      }
+    }else{
+      warning('Inserted strange snap_dist_annotation_height. Should be a number between 0-1.')
+    }
+    snap_dist_annotation_height <- snap_dist_annotation_height*ymax
+  }else{
+    snap_dist_annotation_height <- ymax/8.
+  }
+  
+  # initial point of the annotation
   if(!is.null(ann_initial_point) && is.numeric(ann_initial_point) && length(ann_initial_point) == 1L){
     if(ann_initial_point >= 1 || ann_initial_point < 0){
       warning("Inserted initial annotation point too small or too big (between 0-1).")
@@ -602,60 +646,74 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   # -------------------------------------------------------------------------------------
   # main trace - plotting
   # some specific search and check for the legend (continuous vs discrete)
-  if(!no_trace && plot_legend){
+  # checks on annotation type
+  if(!no_trace){
     ann_tmp <- NULL
-    if(!is.null(annotation_type)){
-      if(!is.character(annotation_type) || length(annotation_type) != 1  || !(annotation_type %in% c('discrete', 'continuous')))
-        stop('Annotation_type variable must be a signle character between "discrete" and "continuous".')
-    }else{
+    if(!is.null(annotation_type))
       cat('No option selected for the kind of annotation (annotation_type will be mainly used for the legend). 
-           This option will be selected automatically then. \n')
-      
-      ann_tmp <- factor(ann_tr)
-      
-      if(length(levels(ann_tmp)) <= 10) annotation_type <- 'discrete'
-      else annotation_type <- 'continuous'
-      if(rescaling_ann_col) annotation_type <- 'discrete'
-    }
+           Trying to guess. \n')
     
-    # checks on the discrete annotation_type
+    # checking if which annotation is meaningful (if set or not)  
+    ann_tmp <- factor(ann_tr)
+    if(length(levels(ann_tmp)) <= 10) annotation_type_tmp <- 'discrete'
+    else annotation_type_tmp <- 'continuous'
+    if(rescaling_ann_col) annotation_type_tmp <- 'discrete'
+    
+    # check annotation_type insertion
+    if(!is.null(annotation_type)){
+      if(!.isSingleElement(annotation_type) || !is.character(annotation_type) || !(annotation_type %in% c('discrete', 'continuous')))
+        stop('Annotation_type variable must be a signle character between "discrete" and "continuous".')
+      if(annotation_type_tmp != annotation_type)
+        warning('The analysis of the annotation type (continuous vs discrete) collides with the inserted one. 
+                Please check that the number of classes in the discrete one are less than 10.')
+    }else{
+      annotation_type <- annotation_type_tmp
+    }
+    # discrete
     if(annotation_type == 'discrete'){
-      if(is.null(ann_tmp)) ann_tmp <- factor(ann_tr)
       if(!is.null(specific_palette_annotation)){
         if(length(specific_palette_annotation) != length(levels(ann_tmp)))
           stop('When using a discrete annotation_type please set the specific_palette_annotation to the same number of factors in the annotation.')
       }else{
         specific_palette_annotation <- levels(ann_tmp)
       }
-      if(is.null(leg_lab)) leg_lab <- seq(1, length(specific_palette_annotation))
-      if(!is.null(leg_lab) && length(leg_lab) != length(specific_palette_annotation))
-        stop('Inserted different number of labels than colors. In the discrete annotation mode this cannot be done.')
-      if(!is.null(leg_lab) && length(leg_lab) != length(levels(ann_tmp)))
-        stop('Inserted different number of labels than factors in the annotation (e.g. different numbers 1-2-3). In the discrete annotation mode this cannot be done.') 
-      if(length(levels(ann_tmp)) > 10)
-        warning('There are a lot of levels (>10) in the discrete annotation. Consider using a continuous annotation type along with a continuous legending.')
-      if(length(levels(ann_tmp)) > 20){
-        warning('There are too many levels (>20). Continuous legending activated.')
-        annotation_type <- 'continuous'
-      }
-    }
-    # checks on the continuous annotation_type
-    if(annotation_type == 'continuous'){
+      # continuous
+    }else if(annotation_type == 'continuous'){
       if(is.null(specific_palette_annotation)){
         specific_palette_annotation <- levels(factor(ann_tr))
-        if(is.character(ann_tr) || rescaling_ann_col)
-          stop('You inserted a characther annotation trace or decided to rescale the annotation colors. When using annotation_type = "continuous"
-               this can be tricky without a proper specific_palette_annotation. Please specify a palette.')
+        # if(is.character(ann_tr) || rescaling_ann_col) # there seems no need of this check because it is already considered before
+        #   stop('You inserted a characther annotation trace or decided to rescale the annotation colors. When using annotation_type = "continuous"
+        #          this can be tricky without a proper specific_palette_annotation. Please specify a palette.')
       }
-      if(is.null(leg_lab)) leg_lab <- seq(1, length(specific_palette_annotation))
-      # check on the leg_lab
-      if(!is.null(leg_lab) && length(leg_lab) > length(specific_palette_annotation))
-        warning('Inserted more labels than colors. It will be done anyway.')
+    }  
+    # legend check
+    if(plot_legend){
+      # checks on the discrete annotation_type
+      if(annotation_type == 'discrete'){
+        if(is.null(leg_lab)) leg_lab <- seq(1, length(specific_palette_annotation))
+        if(!is.null(leg_lab) && length(leg_lab) != length(specific_palette_annotation))
+          stop('Inserted different number of labels than colors. In the discrete annotation mode this cannot be done.')
+        if(!is.null(leg_lab) && length(leg_lab) != length(levels(ann_tmp)))
+          stop('Inserted different number of labels than factors in the annotation (e.g. different numbers 1-2-3). In the discrete annotation mode this cannot be done.') 
+        if(length(levels(ann_tmp)) > 10)
+          warning('There are a lot of levels (>10) in the discrete annotation. Consider using a continuous annotation type along with a continuous legending.')
+        if(length(levels(ann_tmp)) > 20){
+          warning('There are too many levels (>20). Continuous legending activated.')
+          annotation_type <- 'continuous'
+        }
+      }
+      # checks on the continuous annotation_type
+      if(annotation_type == 'continuous'){
+        if(is.null(leg_lab)) leg_lab <- seq(1, length(specific_palette_annotation))
+        # check on the leg_lab
+        if(!is.null(leg_lab) && length(leg_lab) > length(specific_palette_annotation))
+          warning('Inserted more labels than colors. It will be done anyway.')
+      }
     }
   }
   if(!no_trace && plot_legend) cat('Annotation inserted for the legend consists of the following kind of clusters:', annotation_type, '\n')
   # ------------------------------------------------------------------------------------- one line trace
-  if(!no_trace && one_line_trace && !annotate_snap_dist){
+  if(!no_trace && one_line_trace){
     if(is.null(specific_palette_annotation)){
       gg <- gg + geom_segment(aes(xx,
                                   y = rep(ann_init, length(xx)),
@@ -663,18 +721,22 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
                                   yend = rep(ann_init + ann_height, length(xx))),
                               col = ann_tr[seq(1, Nsnap, sub_sampling_factor)], # color must be out if no palette is used
                               size = 0.1*general_size_annPoints)
+      
     # specific color palette
     }else{
-      # if(rescaling_ann_col)
-      #   stop('The specific insertion of a palette collides with the rescaling of the colors. Please turn it off to use the specific palette option.')
-      ann_tr_tmp <- ann_tr
-      if(plot_legend && annotation_type == 'discrete') ann_tr_tmp <- as.factor(ann_tr_tmp)
+      
+      # putting the right 'discrete' 'continuous' swapper
+      if(annotation_type == 'discrete') ann_tr_tmp <- as.factor(ann_tr)
+      else if(!rescaling_ann_col && annotation_type == 'continuous') ann_tr_tmp <- as.numeric(ann_tr) 
+      else stop('rescaling the colors force to put strings in the annotation. No continuous annotation_type can work with this option on.')
+      
       gg <- gg + geom_segment(aes(xx, 
                                   y = rep(ann_init, length(xx)),
                                   xend = xx, 
                                   yend = rep(ann_init + ann_height, length(xx)), 
                                   col = ann_tr_tmp[seq(1, Nsnap, sub_sampling_factor)]), # col is INSIDE aes
                               size = 0.1*general_size_annPoints)
+      
       # If the legend must be plotted:
       if(plot_legend){
         # discrete case
@@ -685,8 +747,8 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
             guides(color = guide_legend(override.aes = list(size=5))) # makes the lagend box bigger 
         # continuous case
         }else if(annotation_type == 'continuous'){
-          if(is.character(ann_tr_tmp) || rescaling_ann_col)
-            stop('The specific insertion of a palette collides with the rescaling of the colors. Please turn it off to use the specific palette option.')
+          # if(is.character(ann_tr_tmp))
+          #   stop('The specific insertion of a palette collides with the rescaling of the colors. Please turn it off to use the specific palette option.')
           gg <- gg + scale_color_gradientn(leg_tit, na.value = 'transparent', colours = specific_palette_annotation,
                                            breaks = seq(min(ann_tr_tmp), max(ann_tr_tmp), length.out = length(leg_lab)),
                                            labels = leg_lab) 
@@ -695,12 +757,18 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
         }
         # no legend to plot
       }else{
-        gg <- gg + scale_color_gradientn(colours = specific_palette_annotation, guide = FALSE) #  guide_legend(title = "Days")
+        # discrete case
+        if(annotation_type == 'discrete'){
+          gg <- gg + scale_color_manual(values = specific_palette_annotation, guide = FALSE) 
+        # continuous case
+        }else if(annotation_type == 'continuous'){
+          gg <- gg + scale_color_gradientn(colours = specific_palette_annotation, guide = FALSE) #  guide_legend(title = "Days")
+        }
       }
     }
     
   # ------------------------------------------------------------------------------------- multi line trace
-  }else if(!no_trace && multi_line_trace && !annotate_snap_dist){
+  }else if(!no_trace && multi_line_trace){
     
     # var init
     tmp_ann <- c()
@@ -713,8 +781,8 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
       if(sub_sampling_factor!=1)
         tmp_ann <- c(tmp_ann, ann_tr[i,][seq(1, Nsnap, sub_sampling_factor)])
     }
-    if(sub_sampling_factor==1)
-      tmp_ann <- c(t(ann_tr))
+    if(sub_sampling_factor==1) tmp_ann <- c(t(ann_tr))
+    
     # main vectorization and plot 
     # -------------------------------------- no colorpalette
     if(is.null(specific_palette_annotation)){ 
@@ -727,59 +795,76 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
       
     # --------------------------------------  specific color palette
     }else{
-      # if(rescaling_ann_col) #extended
-      #   stop('The specific insertion of a palette collides with the rescaling of the colors. Please turn it off to use the specific palette option.')
-      if(plot_legend && annotation_type == 'discrete') tmp_ann <- as.factor(tmp_ann)
+      
+      # putting the right 'discrete' 'continuous' swapper
+      if(annotation_type == 'discrete') ann_tr_tmp <- as.factor(tmp_ann)
+      else if(!rescaling_ann_col && annotation_type == 'continuous') ann_tr_tmp <- as.numeric(tmp_ann) 
+      else stop('rescaling the colors force to put strings in the annotation. No continuous annotation_type can work with this option on.')
+      
       # normal handling of the plot
       gg <- gg + geom_segment(aes(x = c(x_multilines),
                                   y = c(t(y_multilines)),
                                   xend = c(x_multilines),
                                   yend = c(t(y_multilines) + height_one_band),
-                                  col = tmp_ann), # WRONG must go inside the aes
+                                  col = ann_tr_tmp), # WRONG must go inside the aes
                               size = 0.1*general_size_annPoints)
       
       # If the legend must be plotted:
       if(plot_legend){
+        
         # discrete case
         if(annotation_type == 'discrete'){
           gg <- gg + scale_color_manual(name = leg_tit,
                                         values = specific_palette_annotation,
                                         labels = leg_lab) +
                 guides(color = guide_legend(override.aes = list(size=5))) # makes the lagend box bigger 
+          
         # continuous case
         }else if(annotation_type == 'continuous'){
-          if(is.character(tmp_ann) || rescaling_ann_col)
-            stop('The specific insertion of a palette collides with the rescaling of the colors. Please turn it off to use the specific palette option.')
+          # if(is.character(ann_tr_tmp))
+          #   stop('The specific insertion of a palette collides with the rescaling of the colors. Please turn it off to use the specific palette option.')
           gg <- gg + scale_color_gradientn(leg_tit, na.value = 'transparent', colours = specific_palette_annotation,
-                                           breaks = seq(min(tmp_ann), max(tmp_ann), length.out = length(leg_lab)),
+                                           breaks = seq(min(ann_tr_tmp), max(ann_tr_tmp), length.out = length(leg_lab)),
                                            labels = leg_lab) 
         }else{
           stop('annotation_type must be continuous or discrete')
         }
+        
       # no legend to plot
       }else{
-        gg <- gg + scale_color_gradientn(colours = specific_palette_annotation, guide = FALSE) #  guide_legend(title = "Days")
+        
+        # discrete case
+        if(annotation_type == 'discrete'){
+          gg <- gg + scale_color_manual(values = specific_palette_annotation, guide = FALSE)
+          
+        # continuous case
+        }else if(annotation_type == 'continuous'){
+          gg <- gg + scale_color_gradientn(colours = specific_palette_annotation, guide = FALSE) #  guide_legend(title = "Days")
+        }
       }
     }
   }
   
   # -------------------------------------------------------------------------------------
   # SETING: NO MORE THAN ONE ANN LINE AVAILABLE - annotation preparation for timeline and annotation of snap distance
-  if(timeline || annotate_snap_dist){
+  # todo - manual insertion of a color coded stuff!
+  if(timeline || annotate_snap_dist){ # 'black' is the standard along with uniform_color_timeline = T if put 'annotation' it uses the trace
     if(!.isSingleElement(which_uniform_color_timeline))
       stop('which_uniform_color_timeline must be a single element.')
-    single_line_general_ann <- array(which_uniform_color_timeline, dim = Nsnap)
-    if(which_uniform_color_timeline != 'black' && !uniform_color_timeline){
+    if(which_uniform_color_timeline != 'annotation' && !uniform_color_timeline){ 
       warning('Detected insertion of which_uniform_color_timeline without the uniform_color_timeline mode active. It has been automatically activated.')
       uniform_color_timeline <- T
     }
-    if(!uniform_color_timeline && !no_trace){
+    if(which_uniform_color_timeline == 'annotation' && !uniform_color_timeline){
+      if(!no_trace) stop('To select which_uniform_color_timeline using the annotation reference and colors please keep the annotation active.')
       if(one_line_trace){
         single_line_general_ann <- ann_tr
       }else if(multi_line_trace){
         single_line_general_ann <- ann_tr[1,]
         warning('Timeline color kept as first line in annotation trace inserted (it is multiple lines).\n')
       }
+    }else{
+      single_line_general_ann <- array(which_uniform_color_timeline, dim = Nsnap)
     }
     color_timeline <- single_line_general_ann
   }
@@ -788,10 +873,10 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   if(annotate_snap_dist){
     max_snap_dist <- max(pin[,5])
     gg <- gg + geom_segment(aes(xx,
-                                y = rep(ann_init , length(xx)),
+                                y = rep(ymax , length(xx)),
                                 xend = xx, 
-                                yend = ((pin[,5]*1.*ann_height)/max_snap_dist + ann_init)[seq(1, Nsnap, sub_sampling_factor)]),
-                            col = single_line_general_ann[seq(1, Nsnap, sub_sampling_factor)],
+                                yend = ((pin[,5]*1.*snap_dist_annotation_height)/max_snap_dist + ymax)[seq(1, Nsnap, sub_sampling_factor)]),
+                            col = color_timeline[seq(1, Nsnap, sub_sampling_factor)],
                             size = 0.1*general_size_annPoints)
   }
   
@@ -824,9 +909,14 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
         
       # with palette
       }else{
-        if(is.character(single_line_general_ann) || rescaling_ann_col)
-          stop('The specific insertion of a palette collides with the rescaling of the colors (or the insertion of chars). 
-               Please turn it off to use the specific palette option.')
+        # The following will work once the difference between specific_palette_timeline and *_annotation will be adressed
+        # if(!no_trace) stop('To put a palette in the only_timeline option you need to put ONE line annotation. 
+        #                    If you do not use that this palette does not know how to color the timeline with the inserted palette.')
+        # putting the right 'discrete' 'continuous' swapper
+        if(annotation_type == 'discrete') color_timeline <- as.factor(color_timeline)
+        else if(!rescaling_ann_col && annotation_type == 'continuous') color_timeline <- as.numeric(color_timeline) 
+        else stop('rescaling the colors force to put strings in the annotation. No continuous annotation_type can work with this option on.')
+        
         gg <- ggplot() + geom_point(aes(x=xx,
                                         y = (pin[,3][seq(1, Nsnap, sub_sampling_factor)]),
                                         col=color_timeline[seq(1, Nsnap, sub_sampling_factor)]), # col INSIDE
@@ -850,10 +940,13 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
                               size=size_points_on_timeline*general_size_annPoints)
       # with palette
       }else{
-        browser()
-        if(is.character(single_line_general_ann) || rescaling_ann_col)
-          stop('The specific insertion of a palette collides with the rescaling of the colors( or the insertion of chars). 
-               Please turn it off to use the specific palette option.')
+        # The following will work once the difference between specific_palette_timeline and *_annotation will be adressed
+        # if(!no_trace) stop('To put a palette in the only_timeline option you need to put ONE line annotation. 
+        #                    If you do not use that this palette does not know how to color the timeline with the inserted palette.')
+        # putting the right 'discrete' 'continuous' swapper
+        if(annotation_type == 'discrete') color_timeline <- as.factor(color_timeline)
+        else if(!rescaling_ann_col && annotation_type == 'continuous') color_timeline <- as.numeric(color_timeline) 
+        else stop('rescaling the colors force to put strings in the annotation. No continuous annotation_type can work with this option on.')
         gg <- gg + geom_point(aes(x=xx,
                                   y = ((pin[,3]*1.0*ymax*tp)/Nsnap)[seq(1, Nsnap, sub_sampling_factor)],
                                   col=color_timeline[seq(1, Nsnap, sub_sampling_factor)]), # col INSIDE
@@ -959,16 +1052,48 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
     main_col <- 'darkblue'
     if((timeline && (min(y_cut[seq(1, Nsnap, sub_sampling_factor)]) < tp*ymax)) || (!no_trace && (ann_height > ymax/2.1)))
       main_col <- 'dodgerblue'
-    gg <- gg + geom_line(aes(x = xx, y = y_cut[seq(1, Nsnap, sub_sampling_factor)]), color=main_col, size=0.8) # SHALL WE KEEP THE NAs?
+    
+    if(!parabolic_subtraction){
+      gg <- gg + geom_line(aes(x = xx, y = y_cut[seq(1, Nsnap, sub_sampling_factor)]), color=main_col, size=0.8) # SHALL WE KEEP THE NAs?
+    }else{
+      xx_tmp <- seq(from=1, by=1, to=Nsnap)
+      parabol <- 2 * xx_tmp * (Nsnap - xx_tmp)/Nsnap
+      parabol <- replace(parabol, which(parabol == 0), min(parabol[-which(parabol == 0)]))
+      parabol.log <- -log(parabol/Nsnap)
+      cutf <- replace(pin[,4], which(pin[,4] == 0), min(pin[,4][which(pin[,4] > 0)]))
+      kin <- -log(cutf/Nsnap) - parabol.log
+      if(any(kin > 0)){
+        n_neg_kin <- sum(kin > 0)
+        warning(paste0('We found negative values in the kinetic trace during parabolic subtraction. This is inexpected. The number of them is: ', n_neg_kin,' 
+                       Every value under -0.3 will be truncated automatically.'))
+        kin[kin < -0.3] <- 0
+      }
+      gg <- gg + geom_line(aes(x = xx, y = kin[seq(1, Nsnap, sub_sampling_factor)]), color=main_col, size=0.8) # SHALL WE KEEP THE NAs?
+    }
   }
   
   # local cut
-  if(!only_timeline)
-    if(local_cut) gg <- gg + 
-      geom_point(mapping = aes(x=xx,y=y_local_cut[seq(1, Nsnap, sub_sampling_factor)]), color="red3", size=0.08) 
-  
-  
-  
+  if(!only_timeline){
+    if(local_cut){
+      if(!parabolic_subtraction){
+        gg <- gg + geom_point(mapping = aes(x = xx, y = y_local_cut[seq(1, Nsnap, sub_sampling_factor)]), color = "red3", size = 0.08) 
+      }else{
+        xx_tmp <- seq(from=1, by=1, to=Nsnap)
+        parabol <- 2 * xx_tmp * (Nsnap - xx_tmp)/Nsnap
+        parabol <- replace(parabol, which(parabol == 0), min(parabol[-which(parabol == 0)]))
+        parabol.log <- -log(parabol/Nsnap)
+        cutf <- replace((pin[,10] + pin[,12]), which((pin[,10] + pin[,12]) == 0), min((pin[,10] + pin[,12])[which((pin[,10] + pin[,12]) > 0)]))
+        kin <- 2.5 - (1./3.)*log(cutf/Nsnap) - parabol.log
+        if(any(kin > 0)){
+          n_neg_kin <- sum(kin > 0)
+          warning(paste0('We found negative values in the local kinetic trace during parabolic subtraction. This is inexpected. The number of them is: ', n_neg_kin,' 
+                       Every value under -0.3 will be truncated automatically.'))
+          kin[kin < -0.3] <- 0
+        }
+        gg <- gg + geom_point(mapping = aes(x = xx, y = kin[seq(1, Nsnap, sub_sampling_factor)]), color = "red3", size = 0.08) 
+      }
+    }
+  }
   
   # -------------------------------------------------------------------------------------
   # title and theme
@@ -995,7 +1120,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   # Plotly options
   if(use_plotly) {
     if(length(xx) > 15000)
-      warning('time-points (on the x downsampled eventually) are more than 15000. Ggplotly would be stupidly slow and crash. It will plotted normally.')
+      warning('time-points (on the x downsampled eventually) are more than 15000. Ggplotly would be stupidly slow and crash. It will be plotted normally.')
     else
       gg <- ggplotly(gg)
   }
