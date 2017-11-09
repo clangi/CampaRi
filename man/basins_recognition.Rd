@@ -6,7 +6,7 @@
 \usage{
 basins_recognition(data, nx, ny = nx, ny.aut = FALSE, local.cut = FALSE,
   match = FALSE, dyn.check = 1, avg.opt = c("movav", "SG"),
-  plot = FALSE, out.file = TRUE, silent = FALSE, ...)
+  plot = FALSE, new.dev = TRUE, out.file = TRUE, silent = FALSE, ...)
 }
 \arguments{
 \item{data}{Name of the PROGIDX_<...>.dat file or Data frame with three columns containing, in order, the (sorted) progress index, the relative time indices and the cut function.}
@@ -30,6 +30,8 @@ basins_recognition(data, nx, ny = nx, ny.aut = FALSE, local.cut = FALSE,
 }}
 
 \item{plot}{A logical value indicating whether to display the SAPPHIRE plot with the resulting partitions or not. Black partitions are the matched ones, blue ones derive only from the dynamic analysis and orange ones only from the kinetic analysis. The green curve is the kinetic annotation (black curve) where the parabolic shape has been subtracted, i.e. the actual curve used for the peaks identification. Default value is \code{FALSE}.}
+
+\item{new.dev}{A logical value indicating whether a new window/device has to plotted or not when \code{plot=TRUE}.}
 
 \item{out.file}{A logical value indicating whether to write an output file with the state sequence ordered with respect to the PI. Default value is \code{TRUE}.}
 
