@@ -328,10 +328,10 @@ msm <-  function(seq, lag=1, tm.opt=c("symm", "mle"), eig.plot=FALSE, CK.test=FA
         yr <- c(max(0, min(c(pMD-epsMD, pMSM))),1)
         plot(0, 0, main="", xlim=xr, ylim=yr, xlab="Lag", ylab="Probability", axes=TRUE, frame.plot=TRUE, type="n")
         points(CK.lags, pMSM, type="o", cex=1.5, pch=16, col="red")
-        errbarHmisc <- get(x="errbar", pos="package:Hmisc")
-        errbarHmisc(CK.lags, pMD, pMD+epsMD, pMD-epsMD, pch=4, lwd=0.8, cex=1.5, col='black', add=TRUE)
-        legend((2/3)*CK.lags, yr[2]*0.97, legend=c("MSM", "MD"), col=c("red", "black"), bty="n", pch=c(16,4), cex=1.2)
-        text((2/3)*CK.lags, yr[2]*0.99, labels=paste("Chi2 =", chi), font=2)
+        ##errbarHmisc <- get(x="errbar", pos="package:Hmisc")
+        errbar(CK.lags, pMD, pMD+epsMD, pMD-epsMD, pch=4, lwd=0.8, cex=1.5, col='black', add=TRUE)
+        legend((2/3)*max(CK.lags), yr[2]*0.97, legend=c("MSM", "MD"), col=c("red", "black"), bty="n", pch=c(16,4), cex=1.2)
+        text((2/3)*max(CK.lags), yr[2]*0.99, labels=paste("Chi2 =", CK.chi), font=2)
     }
 
     if(!CK.test) {
