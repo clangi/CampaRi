@@ -28,7 +28,7 @@ test_that('Various plotting options', {
   # Annotation preprocessing
   # ------------------------------
   # with splitting in 2 parts -> ann_trace = T
-  expect_error(sapphire_plot('REPIX_000000000021.dat', local_cut = FALSE, ann_trace = T, reorder_annotation = T)) 
+  expect_warning(sapphire_plot('REPIX_000000000021.dat', local_cut = FALSE, ann_trace = T, reorder_annotation = T)) 
   expect_error(sapphire_plot('REPIX_000000000021.dat', local_cut = FALSE, ann_trace = T, reorder_annotation = F), NA) 
   expect_error(sapphire_plot('REPIX_000000000021.dat', local_cut = FALSE, ann_trace = 5, reorder_annotation = F), NA) 
   
