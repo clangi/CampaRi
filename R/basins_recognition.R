@@ -734,8 +734,9 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
         if(out.file) {
             output.match <- data.frame(PI=progind$PI, Time=progind$Time, State=seq.st)
             if(is.character(data)) {
-                if(!silent) cat("Writing", gsub("PROGIDX", "BASINS", strsplit(data,"/",fixed=T)[[1]][.lt(strsplit(data,"/",fixed=T)[[1]])]), "...\n")
-                fwrite(output.match, file=gsub("PROGIDX", "BASINS", data), sep='\t', row.names=FALSE, col.names=FALSE)
+                fileout <- gsub("PROGIDX", "BASINS", strsplit(data,"/",fixed=T)[[1]][.lt(strsplit(data,"/",fixed=T)[[1]])])
+                if(!silent) cat("Writing", fileout, "...\n")
+                fwrite(output.match, file=fileout, sep='\t', row.names=FALSE, col.names=FALSE)
             } else {
                 if(!silent) cat(paste0("Writing BASINS_", as.character(progind$Time[1]), ".dat\n"))
                 fwrite(output.match, file=paste("./BASINS_", as.character(progind$Time[1]), ".dat", sep=""), sep='\t', row.names=FALSE, col.names=FALSE)
@@ -757,8 +758,9 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
         if(out.file) {
             output.match <- data.frame(PI=progind$PI, Time=progind$Time, State=seq.st)
             if(is.character(data)) {
-                if(!silent) cat("Writing", gsub("PROGIDX", "BASINS", strsplit(data,"/",fixed=T)[[1]][.lt(strsplit(data,"/",fixed=T)[[1]])]), "...\n")
-                fwrite(output.match, file=gsub("PROGIDX", "BASINS", data), sep='\t', row.names=FALSE, col.names=FALSE)
+                fileout <- gsub("PROGIDX", "BASINS", strsplit(data,"/",fixed=T)[[1]][.lt(strsplit(data,"/",fixed=T)[[1]])])
+                if(!silent) cat("Writing", fileout, "...\n")
+                fwrite(output.match, file=fileout, sep='\t', row.names=FALSE, col.names=FALSE)
             } else {
                 if(!silent) cat(paste0("Writing BASINS_", as.character(progind$Time[1]), ".dat\n"))
                 fwrite(output.match, file=paste("./BASINS_", as.character(progind$Time[1]), ".dat", sep=""), sep='\t', row.names=FALSE, col.names=FALSE)
