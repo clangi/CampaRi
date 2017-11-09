@@ -115,6 +115,7 @@ test_that('Various plotting options', {
   
   # checking plotly
   expect_error(sapphire_plot('REPIX_000000000021.dat', annotate_snap_dist = T, use_plotly = T), NA)
+  expect_error(sapphire_plot('REPIX_000000000021.dat', annotate_snap_dist = T, timeline = T, use_plotly = T, size_points_on_timeline = 0.1), NA)
   
   # checking the parabolic_subtraction
   expect_error(sapphire_plot('REPIX_000000000021.dat', ann_trace = ann, parabolic_subtraction = T, timeline = T, plot_legend = T), NA)  
