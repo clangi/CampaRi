@@ -546,7 +546,8 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
                             unif1[j] <- ncounts[j]-sum(dum)
                             unif2[j] <- sum(dum)
                         }
-                        sampleHell[idx] <- myHell(unif1/sum(unif1), unif2/sum(unif2))
+                        if(sum(unif1)==0 || sum(unif2)==0) sampleHell[idx] <- 1
+                        else sampleHell[idx] <- myHell(unif1/sum(unif1), unif2/sum(unif2))
                     }
                     grubbsHell <- grubbs.test(c(sampleHell, distHell[i]), type=10)
                     if (distHell[i] < max(sampleHell) | grubbsHell$p.value>conf.lev) {
