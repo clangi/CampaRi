@@ -39,10 +39,36 @@ produce a gray scale horizontal annotation.}
 
 \item{title}{Title of the plot (default "")}
 
-\item{...}{Other options are: 'only_timeline', 'reorder_annotation', 'annotate_snap_dist', 'rescaling_ann_col', 'reorder_horizline_on_timeline', 
-'reorder_points_on_timeline', horiz_lines_on_timeline',  'horiz_colored_areas', 'points_on_timeline',  
-'vertical_barriers_points', 'specific_palette_timeline', 'specific_palette_annotation',  'general_size_annPoints', 'size_points_on_timeline' 
-'plot_legend', 'use_plotly', uniform_color_timeline', 'which_uniform_color_timeline',  'legend_title', 'legend_labels', 'annotation_type' ('continuous' or 'discrete')}
+\item{...}{Other options are: 
+\itemize{
+  \item "\code{only_timeline}" 
+  \item "\code{reorder_annotation}"   
+  \item "\code{annotate_snap_dist}" should I plot a special annotation on top with the intersnaps dist? it follows the uniform color timeline
+  \item "\code{snap_dist_annotation_height}" how hight should it be? std: y_max/8
+  \item "\code{rescaling_ann_col}" 
+  \item "\code{reorder_horizline_on_timeline}" 
+  \item "\code{reorder_points_on_timeline}" 
+  \item "\code{horiz_lines_on_timeline}" 
+  \item "\code{horiz_colored_areas}" 
+  \item "\code{points_on_timeline}" 
+  \item "\code{vertical_barriers_points}" 
+  \item "\code{specific_palette_timeline}" 
+  \item "\code{specific_palette_annotation}" 
+  \item "\code{general_size_annPoints}" 
+  \item "\code{size_points_on_timeline}" 
+  \item "\code{plot_legend}" 
+  \item "\code{uniform_color_timeline}" to put an uniform color on timeline and snap dist (std: T)
+  \item "\code{which_uniform_color_timeline}" std: 'black'. if you put 'annotation' you get the first of the lines in the annotation (colorwise)
+  \item "\code{legend_title}" Title of the legend
+  \item "\code{annotation_type}" 'continuous' or 'discrete' - it defines the legend and the colors according to specific_palette_annotation
+  \item "\code{timeline_proportion}" std:1/6*y_max set y_max from local_cut and standard_cut this defines a 
+  proportion of that y_max (e.g. 0.5 meaning that the timeline will be placed in the 0 - 0.5*ymax space)
+  \item "\code{ann_height}" std:1/8*y_max set the height of the annotation
+  \item "\code{ann_initial_point}" std:3/4*y_max set the starting point of the annotation from the top
+  \item "\code{localcutbasin_prop_height}" std:1/4*y_max set the heigth space of the localcut
+  \item "\code{basin_prop_height}" std:1/4*y_max set the heigth space of the stdcut
+  \item "\code{parabolic_subtraction}" you can avoid the randomness of the parabolic curve (on annotation) by using parabolic subtraction.
+}}
 }
 \value{
 If \code{ann_trace_ret} is active it will return the annotation trace used for the plot.
@@ -53,17 +79,6 @@ If \code{ann_trace_ret} is active it will return the annotation trace used for t
 }
 \details{
 For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
-
-
-'timeline_proportion'  =  std:1/6*y_max set y_max from local_cut and standard_cut this defines a proportion of that y_max (e.g. 0.5 meaning that the timeline will be placed in the 0 - 0.5*ymax space)
-
-'ann_height'   =  std:1/8*y_max set the height of the annotation
-
-'ann_initial_point'  =  std:3/4*y_max set the starting point of the annotation from the top
-
-'localcutbasin_prop_height'  =  std:1/4*y_max set the heigth space of the localcut
-
-'basin_prop_height'  =  std:1/4*y_max set the heigth space of the stdcut
 }
 \examples{
 adjl <- mst_from_trj(trj = matrix(rnorm(1000), nrow = 100, ncol = 10))
