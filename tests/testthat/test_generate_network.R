@@ -56,12 +56,14 @@ test_that('pre-processing with network inference', {
   # more staff -> range & freq
   # amplitude (range)
   expect_warning(asd <- generate_network(trj, post_processing_method = "amplitude", window = 10))
+  expect_error(asd <- generate_network(trj, post_processing_method = "amplitude", window = 10), NA)
   res <- c()
   for(i in 1:ncol(trj))
     res <- c(res, diff(range(c(trj[1:5, i], trj[1:5, i]))))
   expect_true(all(res == asd[1, ]))
   # maxfreq
   expect_warning(asd <- generate_network(trj, post_processing_method = "maxfreq", window = 10))
+  expect_error(asd <- generate_network(trj, post_processing_method = "maxfreq", window = 10), NA)
   res <- c()
   if(my_libs){
     for(i in 1:ncol(trj)){
@@ -72,6 +74,7 @@ test_that('pre-processing with network inference', {
   }
   # both
   expect_warning(asd <- generate_network(trj, post_processing_method = "amplitude_maxfreq", window = 10))
+  expect_error(asd <- generate_network(trj, post_processing_method = "amplitude_maxfreq", window = 10), NA)
   
   # this test needs further packages. They should not be a forced installation
   # expect_error(tsne_net <- generate_network(trj, method = 'MI', post_processing_method = 'tsne', window = 20), NA)
