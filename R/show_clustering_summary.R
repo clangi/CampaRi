@@ -105,7 +105,8 @@ show_clustering_summary <- function(log_file, fyc_file = NULL, verbose = TRUE, w
       stop('It seems that the number of snapshots used for the analysis it is different from the simulated dimensions (check log file for snapshots incorrect).')
     
     # see if there are enough lines
-    n_lines <- as.numeric(strsplit(suppressWarnings(system(paste0('wc -l ', fyc_file), intern = TRUE)), split = ' ')[[1]][1])
+    n_lines <- strsplit(suppressWarnings(system(paste0('wc -l ', fyc_file), intern = TRUE)), split = ' ')[[1]]
+    n_lines <- as.numeric(n_lines[n_lines != ''][1])
     
     # selecting the centers:
     clu_centers <- as.numeric(suppressWarnings(system(paste0("grep -F 'CLUSTER SUMMARY' -A ", which_first_clusters + 1, " ", log_file, 
