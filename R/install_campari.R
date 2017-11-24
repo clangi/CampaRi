@@ -17,7 +17,7 @@
 install_campari <- function(installation_location = NULL, install_ncminer = FALSE, install_threads = FALSE, install_mpi = FALSE, silent_built = FALSE){
   
   # insertion checks
-  campari_source <- system.file("for_campari/", package = "CampaRi")
+  campari_source <- system.file('extdata/', "for_campari/", package = "CampaRi")
   if(!is.null(installation_location)){
     if(!dir.exists(installation_location))
       stop('Inserted directory does not exist. Please take care about the possibility to execute a makefile.')

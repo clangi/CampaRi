@@ -54,8 +54,6 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libarpack2-dev; fi # must be specified
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install netcdf-bin; fi # must be specified
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install pandoc; fi # must be specified
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -y libblas-common; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -y liblapack-dev; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -y libfftw3-dev; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -y libfftw3-bin; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -y libopenmpi-dev; fi
