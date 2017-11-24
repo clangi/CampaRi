@@ -1,0 +1,26 @@
+How to add additional tests
+   $ Id: $
+
+To add a new self-test named FooTest,
+1) Create test directory named FooTest
+2) Copy all the files necessary to run this test to the test directory
+   - the token _ABSINTH_HOME_ will be replaced by the location of the absinth
+     installation in any files in the test directory
+   - additional replacement tokens can be defined in the TestCases.pl file
+3) Create script in the test directory which executes the test, named run_test.sh
+4) Create the file DiffFiles.pl in the test directory (use e.g. WaterBox/DiffFiles.pl
+   as template).  In it, list all the files which are expected to be identical between
+   different test runs, and which will be compared.
+5) Add the test directory to TestCases.pl
+6) Modify TestDescriptions.txt to describe the new test
+7) Run the test with the command,
+      ./runSelfTests.pl -cr FooTest
+   This will copy (with token replacement) all the files in the test directory
+   (FooTest) to the work directory (FooTest/work), and then run the test using
+   the run_test.sh command
+8) Examine the output.  If it is OK, rename the directory "FooTest/work" to
+   "FooTest/standard".  
+9) To run a new test and compare it against the "standard" results, do,
+      ./runSelfTests.pl -cre FooTest
+10) Finally, do not check in the work directory to CVS.
+

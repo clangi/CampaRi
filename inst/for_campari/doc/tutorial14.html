@@ -1,0 +1,828 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!--
+############################################################################
+# LICENSE INFO:                                                            #
+############################################################################
+#    This file is part of CAMPARI.                                         #
+#                                                                          #
+#    Version 3.0                                                           #
+#                                                                          #
+#    Copyright (C) 2017, The CAMPARI development team (current and former  #
+#                        contributors)                                     #
+#                        Andreas Vitalis, Adam Steffen, Rohit Pappu, Hoang #
+#                        Tran, Albert Mao, Xiaoling Wang, Jose Pulido,     #
+#                        Nicholas Lyle, Nicolas Bloechliger, Marco Bacci,  #
+#                        Davide Garolini, Jiri Vymetal                     #
+#                                                                          #
+#    Website: http://sourceforge.net/projects/campari/                     #
+#                                                                          #
+#    CAMPARI is free software: you can redistribute it and/or modify       #
+#    it under the terms of the GNU General Public License as published by  #
+#    the Free Software Foundation, either version 3 of the License, or     #
+#    (at your option) any later version.                                   #
+#                                                                          #
+#    CAMPARI is distributed in the hope that it will be useful,            #
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of        #
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         #
+#    GNU General Public License for more details.                          #
+#                                                                          #
+#    You should have received a copy of the GNU General Public License     #
+#    along with CAMPARI.  If not, see <http://www.gnu.org/licenses/>.      #
+############################################################################
+# AUTHORSHIP INFO:                                                         #
+############################################################################
+#                                                                          #
+# MAIN AUTHOR:   Andreas Vitalis                                           #
+#                                                                          #
+############################################################################
+-->
+<html xml:lang="en" dir="ltr" xmlns="http://www.w3.org/1999/xhtml" lang="en-US">
+<head>
+<!--
+    Designed by CAMPARI Development Group
+    Base template (without user's data) checked by http://validator.w3.org : "This page is valid XHTML 1.0 Transitional"
+    -->
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></meta>
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge"></meta>
+  <title>CAMPARI Tutorial 14</title>
+  <link rel="stylesheet" href="style_red.css" type="text/css" media="screen"></link>
+</head>
+<body>
+<div id="art-page-background-simple-gradient"></div>
+<div id="art-main"><!-- Header -->
+<div class="art-Sheet2"><!-- Banner Art -->
+<div class="art-Header">
+<div class="art-Header-png"></div>
+</div>
+<!-- Top Navigation Bar -->
+<div class="art-nav">
+<div class="l"></div>
+<div class="r"></div>
+<ul class="art-menu">
+  <li><a href="index.html"><span class="l"></span><span class="r"></span><span
+ class="t">Home</span></a></li>
+  <li><a href="documentation.html" class=" active"><span class="l"></span><span
+ class="r"></span><span class="t">Documentation</span></a></li>
+  <li><a href="references.html"><span class="l"></span><span class="r"></span><span
+ class="t">References</span></a></li>
+  <li><a href="contact.html"><span class="l"></span><span class="r"></span><span
+ class="t">Support</span></a></li>
+  <li><a href="download.html"><span class="l"></span><span class="r"></span><span
+ class="t">Download</span></a></li>
+</ul>
+</div>
+<!-- Top Sub Navigation Bar -->
+<div class="nav-menu">
+<ul class="navlist">
+  <li><a href="documentation.html">Overview</a></li>
+  <li><a href="install.html">Install</a></li>
+  <li><a href="tutorials.html" class=" active">Tutorials</a></li>
+  <li><a href="inputfiles.html">Inputfiles</a></li>
+  <li><a href="keywords.html">Keywords</a></li>
+  <li><a href="outputfiles.html">Outputfiles</a></li>
+  <li><a href="parameters.html">Parameters</a></li>
+  <li><a href="development.html">Development</a></li>
+  <li><br/>
+  </li>
+</ul>
+</div>
+</div>
+<!-- Main Page Contents -->
+<div class="art-Sheet">
+<div class="art-Sheet-bl"></div>
+<div class="art-Sheet-br"></div>
+<div class="art-Sheet-bc"></div>
+<div class="art-Sheet-cl"></div>
+<div class="art-Sheet-cr"></div>
+<div class="art-Sheet-cc"></div>
+<div class="art-Sheet-body">
+<div class="art-contentLayout"><!-- Page Contents -->
+<div class="art-content">
+<div class="art-Post">
+<div class="art-Post-body">
+<div class="art-PostContent">
+<br/>
+<h2>Tutorial 14: What You Did Not Know You Could Do with CAMPARI - Part I: The NetCDF Analysis Mode for General Time Series</h2>
+<h3>Preface:</h3>
+This tutorial covers an execution mode of CAMPARI that allows the dedicated analysis of arbitrary numerical input
+data (&rarr;<a href="keywords.html#netcdf_analysis">NetCDF analysis mode</a>).
+As you might have discovered following <a href="tutorial10.html">Tutorial 10</a> 
+and <a href="tutorial11.html">Tutorial 11</a>, CAMPARI possesses a set of powerful (and sometimes unique) 
+data mining algorithms, which can prove useful for the analysis of many different types of data, in particular for
+time series.
+<br/><br/>
+This tutorial covers the usage of the executables <i>camp_nc_miner</i> and <i>camp_nc_miner_threads</i>,
+and the reader is referred to the  <a href="install.html">installation instructions</a> 
+for dependencies and compilation. These executables, which differ one another 
+exclusively for supporting (<i>camp_nc_miner_threads</i>) or not (<i>camp_nc_miner</i>) 
+threaded code, have been developed to analyze time series data of (almost) any type 
+by means of clustering and downstream routines (see, <i>e.g.</i>, <a href="keywords.html#CCOLLECT">CCOLLECT</a> 
+as a starting point). More in general, these two executables support two different types of input 
+files: time series data can be fed to CAMPARI either as <a href="keywords.html#NCDM_ASFILE">ASCII files</a> 
+or as <a href="keywords.html#NCDM_NCFILE">binary NetCDF files</a> (see links for appropriate formatting 
+and more information).
+<br/>
+<h3>Step-by-Step Part A:</h3>
+<h5>Step A.1 - Specific settings</h5>
+The above-mentioned NetCDF data mining executables of CAMPARI are supported in a <a href="keywords.html#netcdf_analysis">special analysis mode</a> 
+for general time series data. In this execution mode, many 
+keywords relevant to the analysis of atomistic systems are simply 
+ignored, in particular there are no <a href="keywords.html#PARAMETERS">parameter file</a> and no
+<a href="keywords.html#SEQFILE">sequence file</a> to specify. 
+<br/><br/> 
+Let us suppose you are interested in financial modeling. If so, a great place to start
+is to try to understand the evolution in time of stock market data. To begin with, we start creating 
+a key-file, key_ncdmA.key, with the following entries:
+<br/><br/>
+<tt>
+<a href="keywords.html#NCDM_ASFILE">FMCSC_NCDM_ASFILE</a> &lt;full path to campari folder&gt;/examples/tutorial14/stocks.dat # ASCII file with input data <br/>
+<a href="keywords.html#NCDM_ANONAS">FMCSC_NCDM_ANONAS</a> 1     # do analysis on input ASCII data <br/>
+<a href="keywords.html#NCDM_NRFEATS">FMCSC_NCDM_NRFEATS</a> 7   # number of features in ASCII file (number of columns) <br/>
+<a href="keywords.html#NCDM_NRFRMS">FMCSC_NCDM_NRFRMS</a> 3643  # number of frames in ASCII file (number of rows that contain features values) <br/>
+<a href="keywords.html#NCDM_CHECKAS">FMCSC_NCDM_CHECKAS</a> 0   # disable checking of correct number of columns per row (generally slow) <br/>
+</tt>
+<br/>
+Keywords that have the string <i>_NCDM_</i> are specific to this special 
+analysis mode and not used in standard CAMPARI. <a href="keywords.html#NCDM_ASFILE">FMCSC_NCDM_ASFILE</a> 
+specifies the path and name of the input ASCII file. In this example it contains the 
+values of the openings and of the traded volumes of the stock indexes DJI, Nasdaq and 
+Nikkei in columns 1 to 6 (DJI openings, DJI volumes, <i>etc.</i>) from 2003 to 2016 
+included. The seventh column is the volatility (VIX) index over the same time period. These (daily)
+data are from <a href="http://finance.yahoo.com">Yahoo</a> and have been adjusted to account for missing values, <i>etc</i>.
+<br/><br/>
+Keyword <a href="keywords.html#NCDM_NRFRMS">FMCSC_NCDM_NRFRMS</a> 
+must <i> always </i> be set to the total number of frames (rows) that hold the values of the 
+features (feature weights in the ASCII file are automatically detected in case they are present). 
+If the number of rows <i>differs</i> from <a href="keywords.html#NCDM_NRFRMS">FMCSC_NCDM_NRFRMS</a> 
+(only feature values are present in the ASCII file), one of three conditions must be fulfilled.
+<ul>
+<li>If the number of rows is <a href="keywords.html#NCDM_NRFRMS">FMCSC_NCDM_NRFRMS</a> + 1, feature values and static weights are
+assumed to be in the ASCII file in this order, <i>viz.</i>, static weights are on the last row.</li>
+<li>If the number of rows is 2*<a href="keywords.html#NCDM_NRFRMS">FMCSC_NCDM_NRFRMS</a>, feature values and dynamic weights are
+are assumed to be in the ASCII file in this order.</li>
+<li>If the number of rows is 2*<a href="keywords.html#NCDM_NRFRMS">FMCSC_NCDM_NRFRMS</a> + 1, feature values, dynamic weights, and
+static weights are assumed to be in the ASCII file in this order,</li>
+</ul>
+If none of these conditions are fulfilled when <a href="keywords.html#NCDM_NRFRMS">FMCSC_NCDM_NRFRMS</a> does not agree
+with the number of rows in the input file, CAMPARI will crash with an error.
+<br/><br/>
+For the meaning of feature weights, see <a href="keywords.html#CDISTANCE">CDISTANCE</a> 
+and <a href="keywords.html#CMODWEIGHTS">CMODWEIGHTS</a>; for properly discarding frames 
+(and possible associated weights, which happens automatically), see <a href="keywords.html#NCDM_FRAMESFILE">FMCSC_NCDM_FRAMESFILE</a>. 
+<br/><br/>
+Analogously, <a href="keywords.html#NCDM_NRFEATS">FMCSC_NCDM_NRFEATS</a> 
+must be <i> always </i> set equal to the number of features, <i>i.e.</i> 
+columns, present in the ASCII file. The <i>only</i> way to exclude some features
+from the analysis is to use keyword <a href="keywords.html#NCDM_CFILE">FMCSC_NCDM_CFILE</a>
+as we will se below.
+<br/>
+<h5>Step A.2 - Define keywords for analysis</h5>
+Now that the <a href="keywords.html#netcdf_analysis">NetCDF specific keywords</a> that we need 
+are in the keyfile, we proceed by requiring the computation of the so-called <a href="references.html#ref23_5">Progress Index</a> 
+to partition the data into basins. To this purpuse we append the key file with:<br/><br/>
+<tt>
+<a href="keywords.html#BASENAME">FMCSC_BASENAME</a> stockdata       # to give a basename to the output binary NetCDF file<br/>
+<a href="keywords.html#NRTHREADS">FMCSC_NRTHREADS</a> 2             # desired number of threads <br/>
+<a href="keywords.html#THREADS_VERBOSE">FMCSC_THREADS_VERBOSE</a> 0 # reduce threads verbosity to minimum <br/>
+<a href="keywords.html#CMODE">FMCSC_CMODE</a> 4                     # go for the progress index method<br/>
+<a href="keywords.html#CDISTANCE">FMCSC_CDISTANCE</a> 7             # distance metric of type 7, <i>i.e.</i> simple Euclidean distance between frames <br/>
+<a href="keywords.html#BIRCHHEIGHT">FMCSC_BIRCHHEIGHT</a> 2         # tree-based clustering with 1 level <br/>
+<a href="keywords.html#CMAXRAD">FMCSC_CMAXRAD</a> 100.0             # target radius of clusters at root <br/>
+<a href="keywords.html#CRADIUS">FMCSC_CRADIUS</a> 99.0              # target radius of clusters at leaves <br/>
+<a href="keywords.html#BIRCHCHUNKSZ">FMCSC_BIRCHCHUNKSZ</a> 1       # do not employ divide and merge strategy for parallel clustering <br/>
+<a href="keywords.html#CRESORT">FMCSC_CRESORT</a> 1                 # resort clusters systematically <br/>
+<a href="keywords.html#CPROGINDMODE">FMCSC_CPROGINDMODE</a> 2       # select approximate scheme for the progress index <br/>
+<a href="keywords.html#CPROGINDSTART">FMCSC_CPROGINDSTART</a> 1     # start from first snapshot in trajectory <br/>
+<a href="keywords.html#CPROGINDRMAX">FMCSC_CPROGINDRMAX</a> 3643    # use as many random attempts as there are frames <br/>
+<a href="keywords.html#CPROGMSTFOLD">FMCSC_CPROGMSTFOLD</a> 20      # fold terminal branches of the spanning tree aggressively <br/>
+<a href="keywords.html#CPROGINDWIDTH">FMCSC_CPROGINDWIDTH</a> 300   # width for local cut-function (about 10% of frames) <br/>
+<a href="keywords.html#CPREPMODE">FMCSC_CPREPMODE</a> 2             # center the data and normalize by variance <br/>
+<a href="keywords.html#CCOLLECT">FMCSC_CCOLLECT</a> 1               # do not subsample the frames with a regular interval <br/>
+</tt>
+<br/>
+With the above inputs, we circumvent the high memory usage of the <a href="keywords.html#CPROGINDMODE">exact algorithm</a>.
+In this case it is feasible to make the search space (<a href="keywords.html#CPROGINDRMAX">FMCSC_CPROGINDRMAX</a>) 
+as large as the whole data set (<a href="keywords.html#NCDM_NRFRMS">FMCSC_NCDM_NRFRMS</a>). 
+This is achieved by assuring that there is only one cluster at the finer (leaves) level 
+of the tree (<a href="keywords.html#BIRCHHEIGHT">FMCSC_BIRCHHEIGHT</a> is small and <a href="keywords.html#CMAXRAD">FMCSC_CMAXRAD</a> 
+and <a href="keywords.html#CRADIUS">FMCSC_CRADIUS</a> are both large), 
+and that the algorithm can make as many search attempts as there are frames. 
+In other words, with these settings, we are computing the exact minimum 
+spanning tree with lower memory requirements but worse time complexity than the exact algorithm (<a href="keywords.html#CPROGINDMODE">FMCSC_CPROGINDMODE</a> 
+set to 1).<br/> 
+Here, we choose <a href="keywords.html#CDISTANCE">FMCSC_CDISTANCE</a> to be equal to 7, 
+which is appropriate whenever we do not have periodic 
+variables or feature weights (see Part B for this).
+<br/><br/>
+We can now run (it should not take more than a minute on a modern desktop): <br/><br/>
+<tt>
+camp_ncminer_threads -k key_ncdmA.key &gt; log_key_ncdm.log
+</tt>
+<br/><br/>
+Or, to avoid using the multi-threaded executable:
+<br/><br/>
+<tt>
+camp_ncminer -k key_ncdmA.key &gt; log_key_ncdm.log 
+</tt>
+<br/><br/>
+We should be left with the standard clustering output files (such as <a href="outputfiles.html#STRUCT_CLUSTERING.clu">STRUCT_CLUSTERING.clu</a>)
+and Progress Index file <a href="outputfiles.html#PROGIDX_xxxxxxxxxxxx.dat">PROGIDX_000000000001.dat</a>. 
+The user is encouraged to plot the results with the preferred tool.
+We provide an R script to the purpose (&lt;full path to campari folder&gt;/examples/tutorial14/R_tutorial14.R).
+If an R installation is available, it should be safe to copy the R script to your working directory, 
+adjust the <i>campadir</i> and <i>profile</i> pathways at the beginning of the script and run it ("<tt>Rscript R_tutorial14.R</tt>").
+It should return the same image as &lt;full path to campari folder&gt;/examples/tutorial14/reference1.png, 
+which highlights both the partition into several basins (the turmoil that characterized the stock markets 
+is manifest, for example, in the time trace of years 2007, 2008 and 2009) and the little time 
+recurrence of these type of data, which probably need a more sophisticated pre-processing 
+(for instance, to account for gradients).
+<br/>
+<h5>Step A.3 - Usage of NCDM FRAMESFILE and CFILE </h5>
+It is of course possible to play with the data. For example, we can focus on the years 
+2006 - 2010 and on the American market only by adding the following keywords to the key-file:<br/><br/>
+<tt> 
+<a href="keywords.html#NCDM_CFILE">FMCSC_NCDM_CFILE</a> &lt;full path to campari folder&gt;/examples/tutorial14/cfile.inp            # openings of DJI, Nasdaq, VIX as features <br/>
+<a href="keywords.html#NCDM_FRAMESFILE">FMCSC_NCDM_FRAMESFILE</a> &lt;full path to campari folder&gt;/examples/tutorial14/frames.inp # values from 2006 to 2010 only <br/>
+</tt>
+<br/>
+This time we also want to convert the ASCII data to NetCDF format and print out
+the data actually being used ("seen") by the clustering routines. To this aim, 
+we add:<br/><br/>
+<tt> 
+<a href="keywords.html#NCDM_WRTINPUT">FMCSC_NCDM_WRTINPUT</a> 1 # to convert the ASCII file to net-cdf binary format <br/>
+<a href="keywords.html#CDUMP">FMCSC_CDUMP</a> 1                 # to write down what is actually used by the clustering routines <br/>
+</tt>
+<br/>
+After appending these additional keywords to the key-file, we are are ready to run CAMPARI again. 
+If you want to back up the previously generated files 
+for some reasons, do it now. <br/> Now we run:
+<br/><br/>
+<tt>
+camp_ncminer_threads -k key_ncdmA.key &gt; log_key_ncdm.log 
+</tt>
+<br/><br/>
+or, to avoid using threaded code:
+<br/><br/>
+<tt>
+camp_ncminer -k key_ncdmA.key &gt; log_key_ncdm.log 
+</tt>
+<br/><br/>
+The first thing we suggest to do here is to convert the 
+two NetCDF files that have been generated to a human-readable 
+format. From the terminal, execute:
+<br/><br/>
+<tt>
+ncdump stockdata_convert.nc &gt; stockdata_convert.cdl
+</tt>
+<br/>
+<tt>
+ncdump CLUSTERING_FEATURES.nc &gt; CLUSTERING_FEATURES.cdl
+</tt>
+<br/><br/>
+By giving a quick look at those files, one should realize that <a href="keywords.html#NCDM_WRTINPUT">stockdata_convert.cdl</a> 
+contains the input ASCII data in full, regardless the usage of <a href="keywords.html#NCDM_CFILE">FMCSC_NCDM_CFILE</a>, <a href="keywords.html#NCDM_FRAMESFILE">FMCSC_NCDM_FRAMESFILE</a> 
+and <a href="keywords.html#CPREPMODE">FMCSC_CPREPMODE</a>, where the contrary is true for <a href="outputfiles.html#CLUSTERING_FEATURES.nc">CLUSTERING_FEATURES.cdl</a>.
+It may be a useful exercise to try to modify the R script to obtain a figure similar to 
+&lt;full path to campari folder&gt;/examples/tutorial14/reference2.png. 
+This can be achieved by setting <i>iniyr</i> to 2006, <i>endyr</i> to 2010 
+and both <i>whichasannos</i> and <i>whichtmsrs</i> to c(1,3,7). 
+Ideally, you can also change <i>pngnm</i> (the variable part in the name of the output image) to, <i>e.g.</i>, "pippo".
+<br/><br/> 
+As a last remark, despite the usage of a <a href="keywords.html#NCDM_FRAMESFILE">frames file</a>,
+we did not change keyword <a href="keywords.html#NCDM_NRFRMS">FMCSC_NCDM_NRFRMS</a> 
+as already explained above.
+For further modifications, one could now try to, for example, reduce <a href="keywords.html#CPROGINDWIDTH">FMCSC_CPROGINDWIDTH</a> 
+to 150 and look at the new cut function by re-running 
+the same analysis and the R script as before. If you introduce any modifications, be sure to
+undo them before continuing.<br/> 
+<h5>Step A.4 - Usage of NetCDF file </h5>
+We next demonstrate how to use a NetCDF file as input. 
+We use the file "stockdata_convert.nc", which was just generated, for this purpose.
+First, let us edit the following entries in the key-file:
+<br/><br/>
+<tt>
+FMCSC_NCDM_ANONAS 1 &rarr; <a href="keywords.html#NCDM_ANONAS">FMCSC_NCDM_ANONAS</a> 0<br/>
+FMCSC_NCDM_ASFILE ... &rarr; #<a href="keywords.html#NCDM_ASFILE">FMCSC_NCDM_ASFILE</a> ... <br/>
+FMCSC_NCDM_CFILE ... &rarr; #<a href="keywords.html#NCDM_CFILE">FMCSC_NCDM_CFILE</a> ... <br/>
+FMCSC_NCDM_FRAMESFILE ... &rarr; #<a href="keywords.html#NCDM_FRAMESFILE">FMCSC_NCDM_FRAMESFILE</a> ... <br/>
+</tt>
+<br/>
+Note that commenting (or removing) of FMCSC_NCDM_ASFILE is mandatory
+while the other two modifications simply undo the modifications introduced in A.3, <i>i.e.</i>, 
+the results from what follows will be comparable in scope to those in A.2. We next add:
+<br/><br/>
+<tt>
+<a href="keywords.html#NCDM_NCFILE">FMCSC_NCDM_NCFILE</a> &lt;full path to your working directory&gt;/stockdata_convert.nc # NetCDF file (mutually exclusive with FMCSC_NCDM_ANONAS) <br/>
+<a href="keywords.html#PCAMODE">FMCSC_PCAMODE</a> 5       # perform time-lagged independent component analysis (tICA)<br/> 
+<a href="keywords.html#CREDUCEDIM">FMCSC_CREDUCEDIM</a> 3 # use the first 3 dimensions in tICA space for clustering <br/> 
+<a href="keywords.html#CLAGTIME">FMCSC_CLAGTIME</a> 260   # lag time for tICA <br/> 
+</tt>
+<br/>
+In case you could not generate the stockdata_convert.nc from Step A.3, you can still use 
+the file in "&lt;full path to campari folder&gt;/examples/tutorial14/stockdata_convert.nc"
+as <a href="keywords.html#NCDM_NCFILE">FMCSC_NCDM_NCFILE</a>, which should look the same. 
+Make sure to restore <a href="keywords.html#CPROGINDWIDTH">FMCSC_CPROGINDWIDTH</a> to 300 in case you modified it earlier.
+It is now time to execute as before:
+<br/><br/>
+<tt>
+camp_ncminer_threads -k key_ncdmA.key &gt; log_key_ncdm.log 
+</tt>
+<br/><br/>
+or, to avoid using threaded code:
+<br/><br/>
+<tt>
+camp_ncminer -k key_ncdmA.key &gt; log_key_ncdm.log 
+</tt>
+<br/><br/>
+In this last step of Part A, we are performing a dimensionality reduction with
+<a href="keywords.html#PCAMODE">time-lagged independent component analysis (tICA)</a>, and 
+we use the first three dimensions in this space to cluster the data (see <a href="keywords.html#CREDUCEDIM">FMCSC_CREDUCEDIM</a>). 
+Of course all these steps follow the preprocessing specified with <a href="keywords.html#CPREPMODE">FMCSC_CPREPMODE</a>.<br/>
+To plot the results and obtain a figure as &lt;full path to campari folder&gt;/examples/tutorial14/reference3.png, 
+it is necessary to restore the R script to the original version and choose your favorite suffix for the png file (<i>pngnm</i>).
+<br/><br/>
+There are many parameters the user can try to change at this point in the key-file (<i>e.g.</i> one could use <a href="keywords.html#NCDM_NMFV">FMCSC_NCDM_NMFV</a> 
+to rename the variable in the converted NetCDF file, or could change <a href="keywords.html#CLAGTIME">FMCSC_CLAGTIME</a> 
+in the tICA analysis, which has an influence that is difficult to predict) and in the R script, including the cut 
+function plotted (yprofl &larr; 4 to plot the <a href="outputfiles.html#PROGIDX_xxxxxxxxxxxx.dat">global cut function</a>, 
+which looks smoother). 
+<br/><br/>
+The user is also encouraged to convert the NetCDF output files  <a href="keywords.html#NCDM_WRTINPUT">stockdata_checked.nc</a> 
+and <a href="outputfiles.html#CLUSTERING_FEATURES.nc">CLUSTERING_FEATURES.nc</a>:
+<br/><br/>
+ncdump stockdata_checked.nc &gt; stockdata_checked.cdl
+<br/>
+ncdump CLUSTERING_FEATURES.nc &gt; CLUSTERING_FEATURES.cdl
+<br/><br/>
+and look at the intrinsic differencies.
+Since the <a href="keywords.html#NCDM_WRTINPUT">writing down</a> of the input <a href="keywords.html#NCDM_NCFILE">NetCDF file</a> 
+precedes the <a href="keywords.html#CPREPMODE">preprocessing of the data</a> and the <a href="keywords.html#CREDUCEDIM">dimensionality reduction</a>,
+the two files differ. However, it is never a good idea to use blindly one of those files as input 
+NetCDF file, as both are in general sensitive to most of the analysis keywords. The only safe 
+option is to use the converted ASCII file (see stockdata_convert.nc above). Finally, 
+the user is referred to the beginning of the log-file to understand warnings about 
+unused keywords, which are harmless in this scenario, but can give important 
+information (<i>e.g.</i>, we can learn that keywords such as <a href="keywords.html#NCDM_NRFRMS">FMCSC_NCDM_NRFRMS</a> 
+and <a href="keywords.html#NCDM_NRFEATS">FMCSC_NCDM_NRFEATS</a> are completely 
+ignored when providing an input <a href="keywords.html#NCDM_NCFILE">NetCDF file</a>).
+That's weird, isn't it?!? The answer as to why is in Part B.
+<br/>
+<br/>
+<h3>Step-by-Step Part B:</h3>
+<h5>Step B.1 - Specific settings</h5>
+We now turn to the analysis of periodic variables. This 
+is tricky because many concepts inherent to data analysis, <i>e.g.</i>, variance, break down
+or have to be substantially revised to be able to deal correctly and/or unambiguously with periodic
+data. Users who want to analyse periodic 
+variables are encouraged to perform all the steps 
+below.
+<br/>
+<br/>
+To simplify this part, we always use available ASCII files shipped with CAMPARI.
+We start with "&lt;full path to campari folder&gt;/examples/tutorial14/nbu_wghts.dat",
+which contains in rows from 1 to 1000 the values of the torsion angles 
+of the small molecule, <i>n</i>-butane (the same system as in <a href="tutorial11.html">Tutorial 11</a>), 
+an associated set of dynamic weights (rows 1001 to 2000) and associated (and here flat) static weights (line 2001).
+<br/>
+<br/>
+We recommend to create a new working folder.
+We start by building up a new key-file from 
+scratch, "key_ncdmB.key":<br/><br/>
+<tt>
+<a href="keywords.html#NCDM_ASFILE">FMCSC_NCDM_ASFILE</a> &lt;full path to campari folder&gt;/examples/tutorial14/nbu_wghts.dat # ASCII file with input data <br/>
+<a href="keywords.html#NCDM_ANONAS">FMCSC_NCDM_ANONAS</a> 1          # do analysis on input ASCII data <br/>
+<a href="keywords.html#NCDM_NRFEATS">FMCSC_NCDM_NRFEATS</a> 3        # number of features in ASCII file (number of columns) <br/>
+<a href="keywords.html#NCDM_NRFRMS">FMCSC_NCDM_NRFRMS</a> 1000       # number of frames in ASCII file (number of rows that contain features values) <br/>
+<a href="keywords.html#NCDM_PRDCRNG">FMCSC_NCDM_PRDCRNG</a> -180 180 # left and right boundaries of periodic interval in degrees <br/>
+<a href="keywords.html#NCDM_WRTINPUT">FMCSC_NCDM_WRTINPUT</a> 1      # to convert the ASCII file to NetCDF binary format <br/>
+</tt>
+<br/>
+As before, these are the settings informing CAMPARI about what to expect in the ASCII file.<br/>
+<h5>Step B.2 - Define keywords for analysis</h5>
+Here we want to analyze the small molecule's dihedral angles, which 
+all reside in the interval assumed as the reference one by CAMPARI [-180&deg;:180&deg;].
+Rather than working with angles directly, we choose the respective sine and cosine values.
+We also want to make use of the dynamic weights reported in the input ASCII file. To achieve this,
+we must choose option 4 for keyword <a href="keywords.html#CDISTANCE">FMCSC_CDISTANCE</a>.
+Let us append key_ncdmB.key with the following lines:<br/><br/>
+<tt>
+<a href="keywords.html#BASENAME">FMCSC_BASENAME</a> NBU       # to give a basename to the output binary net-cdf <br/>
+<a href="keywords.html#NRTHREADS">FMCSC_NRTHREADS</a> 2       # desired number of threads <br/>
+<a href="keywords.html#THREADS_VERBOSE">FMCSC_THREADS_VERBOSE</a> 0 # reduce threads verbosity to minimum <br/>
+<a href="keywords.html#CMODE">FMCSC_CMODE</a> 5               # go for tree-based clustering <br/>
+<a href="keywords.html#CDISTANCE">FMCSC_CDISTANCE</a> 4       # distance criterion <br/>
+<a href="keywords.html#BIRCHHEIGHT">FMCSC_BIRCHHEIGHT</a> 8   # number of tree levels <br/>
+<a href="keywords.html#CMAXRAD">FMCSC_CMAXRAD</a> 1.0         # target radius of clusters at root <br/>
+<a href="keywords.html#CRADIUS">FMCSC_CRADIUS</a> 0.1         # target radius of clusters at leaves <br/>
+<a href="keywords.html#BIRCHCHUNKSZ">FMCSC_BIRCHCHUNKSZ</a> 1 # do not employ divide and merge strategy for parallel clustering <br/>
+<a href="keywords.html#CRESORT">FMCSC_CRESORT</a> 1           # resort clusters systematically <br/>
+<a href="keywords.html#CDUMP">FMCSC_CDUMP</a> 1               # to write down what is actually used by the clustering routines <br/>
+<a href="keywords.html#CCOLLECT">FMCSC_CCOLLECT</a> 1         # do not discard any frame <br/>
+<a href="keywords.html#TOROUT">FMCSC_TOROUT</a> 1             # to write down torsional coordinates in plain CAMPARI<br/>
+</tt>
+<br/>
+Now run:
+<br/><br/>
+<tt>
+camp_ncminer_threads -k key_ncdmB.key &gt; log_key_ncdm.log 
+</tt>
+<br/><br/>
+Or, to avoid using threaded code:
+<br/><br/>
+<tt>
+camp_ncminer -k key_ncdmB.key &gt; log_key_ncdm.log 
+</tt>
+<br/><br/>
+Then execute:
+<br/><br/>
+<tt>
+mv NBU_convert.nc NBU_convert_1.nc <br/>
+mv CLUSTERING_FEATURES.nc CLUSTERING_FEATURES_1.nc<br/>
+</tt>
+<br/>
+As before, the user is encouraged to look at the human-readable 
+versions of files <a href="keywords.html#NCDM_WRTINPUT">NBU_convert_1.nc</a> 
+and <a href="keywords.html#CDUMP">CLUSTERING_FEATURES_1.nc</a>, respectively:
+<br/><br/>
+<tt>
+ncdump NBU_convert_1.nc &gt; NBU_convert_1.cdl<br/>
+ncdump CLUSTERING_FEATURES_1.nc &gt; CLUSTERING_FEATURES_1.cdl<br/>
+</tt><br/>
+From these files, it is possible (and correct) to discover that the information about static weights 
+is lost in CLUSTERING_FEATURES_1.nc since the specified <a href="keywords.html#CDISTANCE">distance criterion</a> 
+does not make use of them. It is also possible to glean that the torsional angles have turned into their sine and 
+cosine values, and that the dynamic weights have been duplicated to respect the 
+associated dimension attribute (<i>nfeats</i> in the NetCDF file). However, being aware of the
+specific features of CLUSTERING_FEATURES_1.nc actually enables us to 
+use exactly this file as an input <a href="keywords.html#NCDM_NCFILE">NetCDF file</a> to obtain 
+the exact same results. Before doing that, let us thus move the clustering output file:
+<br/><br/>
+<tt>
+mv STRUCT_CLUSTERING.clu STRUCT_CLUSTERING_1.clu<br/>
+</tt>
+<br/>
+Finally, we should notice the presence of the attribute 
+<i>periodic_range</i> in both output NetCDF files, 
+as specified with keyword <a href="keywords.html#NCDM_PRDCRNG">FMCSC_NCDM_PRDCRNG</a>, 
+and the absence of the output we requested by keyword <a href="keywords.html#TOROUT">FMCSC_TOROUT</a>, <i>i.e.</i>, 
+there is no <a href="outputfiles.html#FYC.dat">FYC.dat</a>. 
+The reason is that there is no notion of molecules or atoms within the
+<i>camp_ncminer*</i> executables so that there is no
+information on dihedral angles or other derived coordinates either.  
+In other words, any analysis routines that process input with the knowledge that 
+the data are coordinates of particles (possibly with specific topologies) are simply 
+not available in <a href="keywords.html#netcdf_analysis">NetCDF analysis mode</a>.
+<h5>Step B.3 - Usage of NetCDF file </h5>
+As an additional step, we want to use the above mentioned <a href="outputfiles.html#CLUSTERING_FEATURES.nc">CLUSTERING_FEATURES_1.nc</a> 
+to show that sine and cosine values 
+can be used with a properly adjusted <a href="keywords.html#CDISTANCE">distance criterion</a> 
+to achieve the same results stored in STRUCT_CLUSTERING_1.clu.
+<br/>
+We first should comment or modify existing keywords (do not remove them this time so they can be reused later), most
+importantly <a href="keywords.html#NCDM_ASFILE">FMCSC_NCDM_ASFILE</a>.
+Modify "key_ncdmB.key" as follows:
+<br/><br/>
+<tt>
+FMCSC_NCDM_ANONAS 1 &rarr; <a href="keywords.html#NCDM_ANONAS">FMCSC_NCDM_ANONAS</a> 0<br/>
+FMCSC_NCDM_ASFILE ... &rarr; # <a href="keywords.html#NCDM_ASFILE">FMCSC_NCDM_ASFILE</a> ... <br/>
+FMCSC_NCDM_NRFRMS ... &rarr; # <a href="keywords.html#NCDM_NRFRMS">FMCSC_NCDM_NRFRMS</a> ... <br/>
+FMCSC_NCDM_NRFEATS ... &rarr; # <a href="keywords.html#NCDM_NRFEATS">FMCSC_NCDM_NRFEATS</a> ... <br/>
+FMCSC_NCDM_PRDCRNG ... &rarr; # <a href="keywords.html#NCDM_PRDCRNG">FMCSC_NCDM_PRDCRNG</a> ... <br/>
+</tt>
+<br/>
+The respective values provided by these keywords are all going to be inferred from the input <a href="keywords.html#NCDM_NCFILE">NetCDF file</a>. 
+If there is a need to change the input binary NetCDF file, one can convert it to human-readable format 
+(unless it is extremely large), edit it manually, and convert it back to the binary form with the help of <i>ncgen</i>.
+Alternatively, there should be specific tools to avoid conversion (<a href="http://www.unidata.ucar.edu/software/netcdf/">link</a>).
+<br/><br/>
+We need to add the missing keyword for specifying the NetCDF-based input file:
+<br/><br/>
+<tt>
+<a href="keywords.html#NCDM_NCFILE">FMCSC_NCDM_NCFILE</a> &lt;full path to your workdir&gt;/CLUSTERING_FEATURES_1.nc # NetCDF file (mutually exclusive with FMCSC_NCDM_ASFILE)
+</tt>
+<br/><br/>
+We also change keyword <a href="keywords.html#CDISTANCE">FMCSC_CDISTANCE</a> from 4 to 9:
+<br/><br/>
+<tt>
+<a href="keywords.html#CDISTANCE">FMCSC_CDISTANCE</a> 9       # distance criterion <br/>
+</tt>
+<br/>
+Then we run again:
+<br/><br/>
+<tt>
+camp_ncminer_threads -k key_ncdmB.key &gt; log_key_ncdm.log 
+</tt>
+<br/><br/>
+Or, to avoid using threaded code:
+<br/><br/>
+<tt>
+camp_ncminer -k key_ncdmB.key &gt; log_key_ncdm.log 
+</tt>
+<br/><br/>
+A quick check between the newly generated STRUCT_CLUSTERING.clu and 
+STRUCT_CLUSTERING_1.clu points out that we have achieved exactly 
+the same results. In other words, if sine and cosine values are 
+directly available in the input file (ASCII or NetCDF), then the 
+appropriate <a href="keywords.html#CDISTANCE">distance criterion</a> 
+is either 7, 8, or 9, depending on the presence 
+or absence of features weights, and on whether they 
+are desired for analysis (if we had set the <a href="keywords.html#CDISTANCE">distance criterion</a> 
+to 7, we would have ignored the dynamic weights in CLUSTERING_FEATURES_1.nc completely).
+<br/>
+<br/>
+There are many possibilities to keep on familiarizing yourself with this framework. You 
+could, for example, change 
+the <a href="keywords.html#CDISTANCE">distance criterion</a> 
+to see how this influences the actual usage of feature weights. 
+It is also possible to overwrite the input dynamic weights 
+through keyword <a href="keywords.html#CMODWEIGHTS">CMODWEIGHTS</a> 
+and related ones and/or perform extra analysis that are downstream 
+to the clustering (<i>e.g.</i>, generate <a href="keywords.html#SYNTRAJ_MD">synthetic trajectories</a>).<br/>
+<h5>Step B.4 - Dealing with a periodic range different from the default </h5>
+We revert now to use an ASCII file that contains fundamentally the 
+same data as before. However, the dihedral angle values have been remapped to the [0&deg;:360&deg;] 
+interval, and, in addition, the three entries in the 1st and 500th lines have been shifted 
+by -360, 360, and 720 degrees, respectively, from the remapped values. This is 
+expected to be safe given the intrinsic periodicity of 360&deg; 
+of angles. More generally, any meaningful analysis on these 
+data should not depend on which periodic interval we choose. For consistency
+and error checking of the raw angle data, it can be desirable, however, to map in a particular manner,
+and this is what the <i>periodic_range</i> variable mentioned above indicates and what
+can be controlled by keyword <a href="keywords.html#NCDM_PRDCRNG">FMCSC_NCDM_PRDCRNG</a>.
+The internal CAMPARI convention is immutable and maps every periodic range to the 
+[-180&deg;;180&deg;] interval.
+The user is encouraged to compare the two input files directly, <i>viz.</i>,
+&lt;full path to campari folder&gt;/examples/tutorial14/nbu_wghts.dat 
+and &lt;full path to campari folder&gt;/examples/tutorial14/nbu_wghts_0-360_mdfd.dat.
+<br/><br/>
+To run with these modified input data, we first uncomment/modify the following keywords:
+<br/><br/>
+<tt>
+# FMCSC_NCDM_ASFILE ... &rarr; <a href="keywords.html#NCDM_ASFILE">FMCSC_NCDM_ASFILE</a> ... <br/>
+FMCSC_NCDM_ANONAS 0 &rarr; <a href="keywords.html#NCDM_ASFILE">FMCSC_NCDM_ANONAS</a> 1 <br/>
+# FMCSC_NCDM_NRFRMS ... &rarr; <a href="keywords.html#NCDM_NRFRMS">FMCSC_NCDM_NRFRMS</a> ... <br/>
+# FMCSC_NCDM_NRFEATS ... &rarr; <a href="keywords.html#NCDM_NRFEATS">FMCSC_NCDM_NRFEATS</a> ... <br/>
+# FMCSC_NCDM_PRDCRNG ... &rarr; <a href="keywords.html#NCDM_PRDCRNG">FMCSC_NCDM_PRDCRNG</a> ... <br/>
+</tt>
+<br/>
+In turn, we comment FMCSC_NCDM_NCFILE:
+<br/>
+<br/>
+<tt>
+FMCSC_NCDM_NCFILE</a> ... &rarr; # <a href="keywords.html#NCDM_NCFILE">FMCSC_NCDM_NCFILE</a> ... <br/>
+</tt>
+<br/>
+You should then substitute the entry of FMCSC_NCDM_ASFILE to point to the modified ASCII file:
+<br/>
+<br/>
+<tt>
+<a href="keywords.html#NCDM_ASFILE">FMCSC_NCDM_ASFILE</a> &lt;full path to campari folder&gt;/examples/tutorial14/nbu_wghts_0-360_mdfd.dat # ASCII file <br/>
+</tt>
+<br/>
+Even though the new angles are recorded in the interval [0&deg;:360&deg;] (mod 360&deg;), this does not
+automatically mean that it is maximally conservative to set <a href="keywords.html#NCDM_PRDCRNG">FMCSC_NCDM_PRDCRNG</a> 
+to "0 360". As you should have been able to see from the side-by-side comparison of the files,
+the data from -180&deg; to 0&deg; have actually been periodically wrapped around to the 
+interval from 180&deg; to 360&deg;. In terms of raw data, this is different from shifting the entire
+data by 180&deg;. In other words, the position of the periodic boundaries has not actually changed,
+and thus a specification of "-180 180" is conservative here.
+<br/><br/>
+Thus, we just have to pick (it should still be set to these values):
+<br/><br/>
+<tt>
+<a href="keywords.html#NCDM_PRDCRNG">FMCSC_NCDM_PRDCRNG</a> -180 180  <br/>
+</tt>
+<br/>
+You should also revert <a href="keywords.html#CDISTANCE">FMCSC_CDISTANCE</a> to 4:
+<br/>
+<br/>
+<tt>
+<a href="keywords.html#CDISTANCE">FMCSC_CDISTANCE</a> 4 <br/>
+</tt>
+<br/>
+Now we run:
+<br/><br/>
+<tt>
+camp_ncminer_threads -k key_ncdmB.key &gt; log_key_ncdm.log 
+</tt>
+<br/><br/>
+Or, to avoid using threaded code:
+<br/><br/>
+<tt>
+camp_ncminer -k key_ncdmB.key &gt; log_key_ncdm.log 
+</tt>
+<br/><br/>
+Finally, convert the newly generated NetCDF files and back up the key result: 
+<br/><br/>
+<tt>
+ncdump NBU_convert.nc &gt; NBU_convert_2.cdl <br/>
+ncdump CLUSTERING_FEATURES.nc &gt; CLUSTERING_FEATURES_2.cdl<br/>
+mv STRUCT_CLUSTERING.clu STRUCT_CLUSTERING_2.clu<br/>
+</tt>
+<br/>
+Now let us repeat the exact same calculation by just shifting the periodic interval by 180&deg;.
+Thus, we just have to pick:
+<br/><br/>
+<tt>
+<a href="keywords.html#NCDM_PRDCRNG">FMCSC_NCDM_PRDCRNG</a>  0 360<br/>
+</tt>
+<br/>
+An execute:<br/>
+<br/>
+<tt>
+camp_ncminer_threads -k key_ncdmB.key &gt; log_key_ncdm.log 
+</tt>
+<br/><br/>
+Or, to avoid using threaded code:
+<br/><br/>
+<tt>
+camp_ncminer -k key_ncdmB.key &gt; log_key_ncdm.log 
+</tt>
+<br/><br/>
+Again, convert the newly generated NetCDF files and back up the key result: 
+<br/><br/>
+<tt>
+ncdump NBU_convert.nc &gt; NBU_convert_3.cdl <br/>
+ncdump CLUSTERING_FEATURES.nc &gt; CLUSTERING_FEATURES_3.cdl<br/>
+mv STRUCT_CLUSTERING.clu STRUCT_CLUSTERING_3.clu<br/>
+</tt>
+<br/>
+First and foremost, comparing the key results, <i>i.e.</i>, 
+STRUCT_CLUSTERING.clu with STRUCT_CLUSTERING_1.clu and STRUCT_CLUSTERING_2.clu, should confirm
+that the analyses are insensitive to choices regarding the position of the 
+periodic reference interval. The actual data can differ, however. Indeed, mutual comparisons of 
+NBU_convert_?.cdl and CLUSTERING_FEATURES_?.cdl
+allow the following observations:<br/>
+<ol>
+<li>CLUSTERING_FEATURES_2.cdl is practically 
+    equal to CLUSTERING_FEATURES_1.cdl aside from 
+    precision limitations in the values that were manually 
+    changed, <i>viz</i>, on lines 1 and 500. In general, it is recommend
+    to keep periodic data symmetric about 0.0 as this maximizes floating point 
+    accuracy. This is because we maintained a consistent choice regarding the 
+    position of the reference interval in the input data.</li>
+<li>CLUSTERING_FEATURES_3.cdl differs from the other two cases. Because we shifted the reference 
+    interval by 180&deg; and because we use a feature extraction in trigonometric functions,
+    all the feature values are simply inverted in sign.</li> 
+<li>NBU_convert_2.cdl, <i>viz.</i>, NBU_convert.nc can 
+    be used in CAMPARI as <a href="keywords.html#NCDM_NCFILE">binary NetCDF file</a> 
+    as the <i>periodic_range</i> attribute is -180 180 
+    and features are untouched (it is thus maximally conservative). However, 
+    it may not be safe to use with other 
+    software because not all values are mapped to the reference interval (which is an "error" of
+    the input ASCII file).</li>
+<li>NBU_convert_2.cdl and NBU_convert_3.cdl are identical except for the <i>periodic_range</i> attribute, which is expected.
+    If you were to find analyses that produce different results based on these two input files, it would
+    be correct to question the applicability of the chosen methodology to periodic data.</li>
+</ol>
+As a last bit, it is possible to ask CAMPARI to just 
+convert the ASCII file to a NetCDF file and pick any periodic 
+range (without running any analysis). To this purpose we would simply change:
+<br/><br/>
+<tt>
+<a href="keywords.html#NCDM_PRDCRNG">FMCSC_NCDM_PRDCRNG</a> -120 240 <br/>
+<a href="keywords.html#NCDM_ANONAS">FMCSC_NCDM_ANONAS</a> 0 #disable all analysis <br/>
+</tt>
+<br/>
+The newly generated NBU_convert.nc now has an attribute indicating that the assumed
+periodic reference interval is from -120&deg; to 240&deg;. Importantly,
+if we used this file as an input via <a href="keywords.html#NCDM_NCFILE">FMCSC_NCDM_NCFILE</a>,
+we would not be able to overwrite the interval to [-180&deg;;180&deg;] by means of CAMPARI
+(this option is only available with ASCII files).
+<br/><br/>
+</div>
+</div>
+</div>
+</div>
+<!-- Side Navigation Bar --><!--<div class="art-sidebar1">--><!-- Contributors Block --><!--<div class="art-Block">
+                    <div class="art-Block-tl"></div>
+                    <div class="art-Block-tr"></div>
+                    <div class="art-Block-bl"></div>
+                    <div class="art-Block-br"></div>
+                    <div class="art-Block-tc"></div>
+                    <div class="art-Block-bc"></div>
+                    <div class="art-Block-cl"></div>
+                    <div class="art-Block-cr"></div>
+                    <div class="art-Block-cc"></div>
+                    <div class="art-Block-body">
+                        <div class="art-BlockHeader">
+                            <div class="l"></div>
+                            <div class="r"></div>
+                            <div class="art-header-tag-icon">
+                                <div class="t">Contributors - Links</div>
+                            </div>
+                        </div><div class="art-BlockContent">
+                            <div class="art-BlockContent-body">
+                                <div>
+                                <b>Pappu Lab</b><br />
+                                Washington University in St. Louis, MO<br />
+                                Website: <a href="lima.wustl.edu">lima.wustl.edu</a><br />
+                                Phone: (999) 999-9999 <br/>
+                                <br/>
+                                <b>Andreas Vitalis</b><br />
+                                Unistat de Zurich<br />
+                                Website: <a href="papajohns.com">vitalis.net</a><br />
+                                Phone: (111) 999-9999 <br/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>--><!-- Search Block --><!--
+                <div class="art-Block">
+                    <div class="art-Block-tl"></div>
+                    <div class="art-Block-tr"></div>
+                    <div class="art-Block-bl"></div>
+                    <div class="art-Block-br"></div>
+                    <div class="art-Block-tc"></div>
+                    <div class="art-Block-bc"></div>
+                    <div class="art-Block-cl"></div>
+                    <div class="art-Block-cr"></div>
+                    <div class="art-Block-cc"></div>
+                    <div class="art-Block-body">
+                        <div class="art-BlockHeader">
+                            <div class="l"></div>
+                            <div class="r"></div>
+                            <div class="art-header-tag-icon">
+                                <div class="t">Find Text</div>
+                            </div>
+                        </div><div class="art-BlockContent">
+                            <div class="art-BlockContent-body">
+                                <div><form method="get" id="newsletterform" action="javascript:void(0)">
+                                <input type="text" value="" name="email" id="s" style="width: 95%;" />
+                                <span class="art-button-wrapper">
+                                    <span class="l"> </span>
+                                    <span class="r"> </span>
+                                    <input class="art-button" type="submit" name="search" value="Search"/>
+                                </span>
+                                </form></div>
+                            </div>
+                        </div>
+                    </div>
+                </div> 
+                --><!-- News/Updates Block --><!--
+                <div class="art-Block">
+                    <div class="art-Block-tl"></div>
+                    <div class="art-Block-tr"></div>
+                    <div class="art-Block-bl"></div>
+                    <div class="art-Block-br"></div>
+                    <div class="art-Block-tc"></div>
+                    <div class="art-Block-bc"></div>
+                    <div class="art-Block-cl"></div>
+                    <div class="art-Block-cr"></div>
+                    <div class="art-Block-cc"></div>
+                    <div class="art-Block-body">
+                        <div class="art-BlockHeader">
+                            <div class="l"></div>
+                            <div class="r"></div>
+                            <div class="art-header-tag-icon">
+                                <div class="t">Recent News</div>
+                            </div>
+                        </div><div class="art-BlockContent">
+                            <div class="art-BlockContent-body">
+                                <div>
+                                    <p><b>Jun 14, 2008</b><br/>
+                                    Aliquam sit amet felis. Mauris semper, 
+                                    velit semper laoreet dictum, quam 
+                                    diam dictum urna, nec placerat elit 
+                                    nisl in quam. Etiam augue pede, 
+                                    molestie eget, rhoncus at, convallis 
+                                    ut, eros. Aliquam pharetra.<br/>
+                                    <a href="javascript:void(0)">Read more...</a></p>
+                                                          
+                                    <p><b>Aug 24, 2008</b><br/>
+                                    Aliquam sit amet felis. Mauris semper, 
+                                    velit semper laoreet dictum, quam 
+                                    diam dictum urna, nec placerat elit 
+                                    nisl in quam. Etiam augue pede, 
+                                    molestie eget, rhoncus at, convallis 
+                                    ut, eros. Aliquam pharetra.<br/>
+                                    <a href="javascript:void(0)">Read more...</a></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> --><!-- End Sidebar --> </div>
+</div>
+</div>
+<!-- End main page contents --><!-- Footer -->
+<div class="art-Footer">
+<div class="art-Footer-background">
+<div class="art-Footer-inner"> <a href="#" class="art-rss-tag-icon"
+ title="RSS"></a>
+<div class="art-Footer-text">
+<p><a href="#">Contact Us</a> | <a href="#">Terms of Use</a> | <a
+ href="#">License Information</a><br/>
+Copyright © 2010 . All Rights Reserved.</p>
+</div>
+</div>
+</div>
+</div>
+<p class="art-page-footer">XHTML and CSS valid. Powered by <a
+ href="http://www.flashmint.com/">FlashMint</a> - flash templates
+provider.</p>
+<div style="text-align: center; font-size: 0.75em;">Design downloaded
+from <a href="http://www.freewebtemplates.com/">free website templates</a>.</div>
+</div>
+</body>
+</html>

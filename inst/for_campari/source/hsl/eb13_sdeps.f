@@ -1,0 +1,479 @@
+* COPYRIGHT (c) 1979 AEA Technology and
+* Council for the Central Laboratory of the Research Councils
+C Original date 23 March 2001
+C  March 2001: threadsafe version of FA04
+C 20/2/02 Cosmetic changes applied to reduce single/double differences
+C
+C 12th July 2004 Version 1.0.0. Version numbering added.
+C 28th March 2013 Version 1.0.1. Single <- Double corrected in the documentation
+
+      REAL FUNCTION FA14A(IX,I)
+C         NEARLY PORTABLE RANDOM NUMBER GENERATOR USING THE RECURSION
+C                       IX=IX*A MOD P
+C
+C    WHERE A=7**5
+C    AND P=2**31-1.
+C
+C         THIS FUNCTION DOES NOT ADHERE TO THE ANSI STANDARD 1966 IN
+C    TWO RESPECTS:
+C      1) IT ASSUMES AN INTEGER WORD LENGTH OF AT LEAST 32 BITS (I.E.
+C    INTEGERS WHICH LIE IN THE RANGE 1-2**31 TO 2**31-1 INCLUSIVE MUST
+C    BE REPRESENTABLE);
+C      2) IT ASSUMES THAT A POSITIVE INTEGER LESS THAN 2**16 MAY BE
+C    FLOATED WITHOUT LOSS OF DIGITS.
+C
+C         THIS CODE IS BASED ON CODE PUBLISHED BY LINUS SCHRAGE IN
+C    T.O.M.S. VOL.5 NO.2 JUNE 1979 (PP 132-138)
+C
+C
+C
+C       THE FUNCTION IS USED AS FOLLOWS:
+C
+C                      R=FA14A(IX,I)
+C
+C       WHERE IX IS THE GENERATOR WORD
+C             I IS AN INTEGER SET BY THE USER.
+C
+C
+C       THE VALUE RETURNED BY FA14A/AD WILL LIE IN THE RANGE
+C                (0.,1.)  IF I IS NON-NEGATIVE
+C                (-1.,1.) IF I IS NEGATIVE.
+C
+C       THE METHOD EMPLOYED IS A MULTIPLICATIVE CONGRUENTIAL
+C   ONE USING A MULTIPLIER OF 7**5 AND TAKING THE MODULO TO
+C   2**31-1, I.E. THE GENERATOR NUMBER , G = IX, IS UPDATED ON
+C   EACH CALL TO THE VALUE
+C
+C                  5          31
+C               G*7  MODULO (2  -1)
+C
+C       THE RESULT RETURNED IS CALCULATED AS A DOUBLE
+C  PRECISION NUMBER HAVING THE VALUE
+C
+C                      31
+C                  G/(2   -1)    IF THE ARGUMENT IS
+C                                NON-NEGATIVE
+C           OR
+C                      31
+C                2*G/(2   -1)-1  IF THE ARGUMENT IS NEGATIVE
+C
+C
+C 7**5, 2**15, 2**16, 2**31-1
+C     .. Parameters ..
+      INTEGER A,B15,B16,P
+      PARAMETER (A=16807,B15=32768,B16=65536,P=2147483647)
+C     ..
+C     .. Scalar Arguments ..
+      INTEGER IX,I
+C     ..
+C     .. Local Scalars ..
+      DOUBLE PRECISION X
+      INTEGER FHI,K,LEFTLO,XALO,XHI
+C     ..
+C     .. Intrinsic Functions ..
+      INTRINSIC FLOAT
+C     ..
+C     .. Executable Statements ..
+C
+C GET 15 HI ORDER BITS OF IX
+      XHI = IX/B16
+C GET 16 LO BITS OF IX AND FORM LO PRODUCT
+      XALO = (IX-XHI*B16)*A
+C GET 15 HI ORDER BITS OF LO PRODUCT
+      LEFTLO = XALO/B16
+C     FORM THE 31 HIGHEST BITS OF FULL PRODUCT
+      FHI = XHI*A + LEFTLO
+C GET OVERFLOPAST 31ST BIT OF FULL PRODUCT
+      K = FHI/B15
+C ASSEMBLE ALL THE PARTS AND PRESUBTRACT P
+C THE PARENTHESES ARE ESSENTIAL
+      IX = (((XALO-LEFTLO*B16)-P)+ (FHI-K*B15)*B16) + K
+C ADD P BACK IN IF NECCESSARY
+      IF (IX.LT.0) IX = IX + P
+C MULTIPLY BY 1/(2**31-1)
+      XHI = IX/B16
+      X = (FLOAT(XHI)*65536.0D0) + FLOAT(IX-XHI*B16)
+      IF (I.GE.0) FA14A = X*4.6566128752457969241D-10
+      IF (I.LT.0) FA14A = X*9.3132257504915938482D-10 - 1.0D0
+      RETURN
+
+      END
+      SUBROUTINE FA14B(IX,MAX,NRAND)
+C         NEARLY PORTABLE RANDOM NUMBER GENERATOR USING THE RECURSION
+C                       IX=IX*A MOD P
+C
+C    WHERE A=7**5
+C    AND P=2**31-1.
+C
+C         THIS SUBROUTINE DOES NOT ADHERE TO THE ANSI STANDARD 1966
+C    IN ONE RESPECT:
+C         IT ASSUMES AN INTEGER WORD LENGTH OF AT LEAST 32 BITS (I.E.
+C    INTEGERS WHICH LIE IN THE RANGE 1-2**31 TO 2**31-1 INCLUSIVE MUST
+C    BE REPRESENTABLE).
+C
+C         THIS CODE IS BASED ON CODE PUBLISHED BY LINUS SCHRAGE IN
+C    T.O.M.S. VOL.5 NO.2 JUNE 1979 (PP 132-138)
+C
+C
+C       THE FUNCTION IS USED AS FOLLOWS:
+C
+C                  CALL FA14B(IX,MAX,NRAND)
+C
+C       WHERE IX    IS THE GENERATOR WORD
+C             MAX   IS AN INTEGER SET BY THE USER AND
+C             NRAND IS AN INTEGER SET BY FA14B/BD.
+C
+C
+C       THE VALUE OF NRAND RETURNED BY FA14B/BD WILL LIE IN THE
+C   RANGE
+C                        (1,MAX)
+C
+C       THE METHOD EMPLOYED IS A MULTIPLICATIVE CONGRUENTIAL
+C   ONE USING A MULTIPLIER OF 7**5 AND TAKING THE MODULO TO
+C   2**31-1, I.E. THE GENERATOR NUMBER , G = IX, IS UPDATED ON
+C   EACH CALL TO THE VALUE
+C
+C                  5          31
+C               G*7  MODULO (2  -1)
+C
+C       THE RESULT RETURNED IS AN INTEGER NUMBER
+C   HAVING THE VALUE
+C
+C                        31
+C   INT. PART( (MAX*G)/(2   -1) ) + 1
+C
+C
+C 7**5, 2**15, 2**16, 2**31-1
+C 2**30,  2**30-1
+C     .. Parameters ..
+      INTEGER A,B15,B16,P
+      PARAMETER (A=16807,B15=32768,B16=65536,P=2147483647)
+      INTEGER B30,Q
+      PARAMETER (B30=1073741824,Q=1073741823)
+C     ..
+C     .. Scalar Arguments ..
+      INTEGER IX,MAX,NRAND
+C     ..
+C     .. Local Scalars ..
+      INTEGER BE1,BE2,C,D,F,FHI,G,K,LEFTLO,MHI,MLO,MU,NU,XALO,XHI,XLO
+C     ..
+C     .. Executable Statements ..
+C
+C GET 15 HI ORDER BITS OF IX
+      XHI = IX/B16
+C GET 16 LO BITS OF IX AND FORM LO PRODUCT
+      XALO = (IX-XHI*B16)*A
+C GET 15 HI ORDER BITS OF LO PRODUCT
+      LEFTLO = XALO/B16
+C     FORM THE 31 HIGHEST BITS OF FULL PRODUCT
+      FHI = XHI*A + LEFTLO
+C GET OVERFLOPAST 31ST BIT OF FULL PRODUCT
+      K = FHI/B15
+C ASSEMBLE ALL THE PARTS AND PRESUBTRACT P
+C THE PARENTHESES ARE ESSENTIAL
+      IX = (((XALO-LEFTLO*B16)-P)+ (FHI-K*B15)*B16) + K
+C ADD P BACK IN IF NECCESSARY
+      IF (IX.LT.0) IX = IX + P
+C MULTIPLY BY MAX AND DIVIDE BY 2**31-1 IN INTEGER ARITHMETIC
+C SPLIT IX AND MAX INTO HI AND LO PARTS
+      XHI = IX/B15
+      XLO = IX - B15*XHI
+      MHI = MAX/B15
+      MLO = MAX - B15*MHI
+C CALCULATE INTERMEDIATE PRODUCT AND SPLIT INTO HI AND LO PARTS
+C PRESUBTRACT P
+      F = (XHI*MLO-P) + XLO*MHI
+C F IS > 0 IF INTERMEDIATE PRODUCT WOULD HAVE OVERFLOWED
+      IF (F.GT.0) GO TO 1
+      F = F + P
+      BE1 = F/B15
+      BE2 = F - BE1*B15
+      GO TO 2
+
+    1 F = F - 1
+      BE1 = F/B15
+      BE2 = F - BE1*B15
+      BE1 = BE1 + B16
+C FORM PRODUCT OF LO PARTS AND ADD IN LO PART OF INTERMEDIATE PRODUCT
+C TO GET LO PART OF COMPLETE PRODUCT
+    2 G = B15*BE2 + XLO*MLO
+C REPRESENT LO PART OF FULL PRODUCT IN BASE 2**30
+      D = G/B30
+      C = XHI/2
+C CALCULATE FULL PRODUCT DIVIDED BY 2**30
+      F = ((2* (C*MHI-Q)-1)+MHI* (XHI-2*C)) + D + BE1
+C GET FULL PRODUCT DIVIDED IN BASE 2**31
+      IF (F.GT.0) GO TO 3
+      F = F + P
+      NU = F/2
+      MU = F - NU*2
+      GO TO 4
+
+    3 F = F - 1
+      NU = F/2
+      MU = F - 2*NU
+      NU = NU + B30
+C CALCULATE REMAINDER OF PRODUCT DIVIDED BY 2**31
+    4 F = (B30*MU-P) + NU + (G-B30*D)
+      NRAND = NU + 1
+C  ADD ONE IF REMAINDER IS NOT < 2**31-1
+      IF (F.GE.0) NRAND = NRAND + 1
+      RETURN
+
+      END
+      SUBROUTINE FA14C(IX,IGEN)
+C        FA14C IS A SUBROUTINE USED IN CONJUNCTION WITH FA14A OR
+C   FA14B. IT PROVIDES THE USER WITH THE FACILITY OF SAVING THE
+C   CURRENT VALUE OF THE GENERATOR NUMBER USED BY FA14A AND FA14B.
+C
+C        USE OF THE ROUTINE IS AS FOLLOWS:
+C
+C                       CALL FA14C(IX,IGEN)
+C
+C     WHERE IX   IS THE GENERATOR WORD
+C           IGEN IS AN INTEGER WHICH IS SET BY FA14C/CD TO THE CURRENT
+C                VALUE OF THE GENERATOR.
+C
+C
+C     .. Scalar Arguments ..
+      INTEGER IX,IGEN
+C     ..
+C     .. Executable Statements ..
+      IGEN = IX
+      RETURN
+
+      END
+      SUBROUTINE FA14D(IX,IGEN)
+C        FA14D IS A SUBROUTINE USED IN CONJUNCTION WITH FA14A OR
+C   FA14B. IT PROVIDES THE USER WITH THE FACILITY OF SETTING THE
+C   CURRENT VALUE OF THE GENERATOR NUMBER USED BY FA14A AND FA14B.
+C
+C        USE OF THE ROUTINE IS AS FOLLOWS:
+C
+C                       CALL FA14D(IX,IGEN)
+C
+C    WHERE IX   IS THE GENERATOR WORD
+C          IGEN IS AN INTEGER, SET BY THE USER TO THE VALUE TO WHICH
+C               THE GENERATOR IS TO BE SET. IT IS RECOMMENDED THAT THIS
+C               VALUE BE OBTAINED BY A PREVIOUS CALL TO FA14C/CD.
+C
+C     .. Scalar Arguments ..
+      INTEGER IX,IGEN
+C     ..
+C     .. Executable Statements ..
+      IX = IGEN
+      RETURN
+
+      END
+      SUBROUTINE FA14I(IX)
+C        FA14I IS A SUBROUTINE USED TO INITIALIZE THE GENERATOR WORD USE
+C   BY FA14A AND FA14B. IT MUST BE CALLED FIRST BEFORE ANY OF THE OTHER
+C   ENTRIES ARE CALLED.
+C
+C        USE OF THE ROUTINE IS AS FOLLOWS:
+C
+C                       CALL FA14I(IX)
+C
+C    WHERE IX   IS THE GENERATOR WORD
+C
+C     .. Scalar Arguments ..
+      INTEGER IX
+C     ..
+C     .. Executable Statements ..
+      IX = 1
+      RETURN
+
+      END
+* COPYRIGHT (c) 1988 AEA Technology
+* Original date 17 Feb 2005
+
+C 17th February 2005 Version 1.0.0. Replacement for FD05.
+
+      REAL FUNCTION FD15A(T)
+C----------------------------------------------------------------
+C  Fortran 77 implementation of the Fortran 90 intrinsic
+C    functions: EPSILON, TINY, HUGE and RADIX.  Note that
+C    the RADIX result is returned as REAL.
+C
+C  The CHARACTER argument specifies the type of result:
+C       
+C   'E'  smallest positive real number: 1.0 + FD15A > 1.0, i.e.
+C          EPSILON(REAL)
+C   'T'  smallest full precision positive real number, i.e.
+C          TINY(REAL)
+C   'H'  largest finite positive real number, i.e.
+C          HUGE(REAL)
+C   'R'  the base of the floating point arithematic, i.e.
+C          RADIX(REAL)
+C
+C    any other value gives a result of zero.
+C----------------------------------------------------------------
+      CHARACTER T
+
+      IF ( T.EQ.'E' ) THEN
+         FD15A = EPSILON(1.0)
+      ELSE IF ( T.EQ.'T' ) THEN
+         FD15A = TINY(1.0)
+      ELSE IF ( T.EQ.'H' ) THEN
+         FD15A = HUGE(1.0)
+      ELSE IF ( T.EQ.'R' ) THEN
+         FD15A = REAL(RADIX(1.0))
+      ELSE
+         FD15A = 0.0
+      ENDIF
+      RETURN
+      END
+* COPYRIGHT (c) 1980 AEA Technology
+* Original date 27 Jan 1993
+C       Toolpack tool decs employed.
+C       Hollerith in format statement 100 changed.
+C       Arg dimensions set to *.
+C       Modified for obsolescent features (Feb 1997)
+C 1/4/99 Size of MARK increased to 100.
+C 13/3/02 Cosmetic changes applied to reduce single/double differences
+C
+C 12th July 2004 Version 1.0.0. Version numbering added.
+
+      SUBROUTINE KB06A(COUNT,N)
+C
+C             KB06A      HANDLES REAL SINGLE-LENGTH VARIABLES
+C  THE WORK-SPACE 'MARK' OF LENGTH 100 PERMITS UP TO 2**50 NUMBERS
+C  TO BE SORTED.
+
+C     .. Scalar Arguments ..
+      INTEGER N
+C     ..
+C     .. Array Arguments ..
+      REAL COUNT(*)
+C     ..
+C     .. Local Scalars ..
+      REAL AV,X
+      INTEGER I,IF,IFEND,IFK,IFKA,IK,IP,IS,IS1,IY,J,K,K1,LA,LNGTH,M,
+     +        MLOOP
+C     ..
+C     .. Local Arrays ..
+      INTEGER MARK(100)
+C     ..
+C     .. Executable Statements ..
+C  CHECK THAT A TRIVIAL CASE HAS NOT BEEN ENTERED
+      IF (N.EQ.1) GO TO 280
+      IF (N.GE.1) GO TO 110
+      WRITE (6,FMT=100)
+
+  100 FORMAT (/,/,/,20X,' ***KB06A*** ',
+     +       'NO NUMBERS TO BE SORTED ** RETURN TO CALLING PROGRAM')
+
+      GO TO 280
+C  'M' IS THE LENGTH OF SEGMENT WHICH IS SHORT ENOUGH TO ENTER
+C  THE FINAL SORTING ROUTINE. IT MAY BE EASILY CHANGED.
+  110 M = 12
+C  SET UP INITIAL VALUES.
+      LA = 2
+      IS = 1
+      IF = N
+      DO 270 MLOOP = 1,N
+C  IF SEGMENT IS SHORT ENOUGH SORT WITH FINAL SORTING ROUTINE .
+        IFKA = IF - IS
+        IF ((IFKA+1).GT.M) GO TO 140
+C********* FINAL SORTING ***
+C  (A SIMPLE BUBBLE SORT)
+        IS1 = IS + 1
+        DO 130 J = IS1,IF
+          I = J
+  120     IF (COUNT(I-1).GE.COUNT(I)) GO TO 130
+          AV = COUNT(I-1)
+          COUNT(I-1) = COUNT(I)
+          COUNT(I) = AV
+          I = I - 1
+          IF (I.GT.IS) GO TO 120
+  130   CONTINUE
+        LA = LA - 2
+        GO TO 260
+C             *******  QUICKSORT  ********
+C  SELECT THE NUMBER IN THE CENTRAL POSITION IN THE SEGMENT AS
+C  THE TEST NUMBER.REPLACE IT WITH THE NUMBER FROM THE SEGMENT'S
+C  HIGHEST ADDRESS.
+  140   IY = (IS+IF)/2
+        X = COUNT(IY)
+        COUNT(IY) = COUNT(IF)
+C  THE MARKERS 'I' AND 'IFK' ARE USED FOR THE BEGINNING AND END
+C  OF THE SECTION NOT SO FAR TESTED AGAINST THE PRESENT VALUE
+C  OF X .
+        K = 1
+        IFK = IF
+C  WE ALTERNATE BETWEEN THE OUTER LOOP THAT INCREASES I AND THE
+C  INNER LOOP THAT REDUCES IFK, MOVING NUMBERS AS NECESSARY,
+C  UNTIL THEY MEET .
+        DO 160 I = IS,IF
+          IF (X.LT.COUNT(I)) GO TO 160
+          IF (I.GE.IFK) GO TO 170
+          COUNT(IFK) = COUNT(I)
+          K1 = K
+          DO 150 K = K1,IFKA
+            IFK = IF - K
+            IF (COUNT(IFK).LE.X) GO TO 150
+            IF (I.GE.IFK) GO TO 180
+            COUNT(I) = COUNT(IFK)
+            GO TO 160
+
+  150     CONTINUE
+          GO TO 170
+
+  160   CONTINUE
+C  RETURN THE TEST NUMBER TO THE POSITION MARKED BY THE MARKER
+C  WHICH DID NOT MOVE LAST. IT DIVIDES THE INITIAL SEGMENT INTO
+C  2 PARTS. ANY ELEMENT IN THE FIRST PART IS LESS THAN ANY ELEMENT
+C  IN THE SECOND PART, AND THEY MAY NOW BE SORTED INDEPENDENTLY.
+  170   COUNT(IFK) = X
+        IP = IFK
+        GO TO 190
+
+  180   COUNT(I) = X
+        IP = I
+C  STORE THE LONGER SUBDIVISION IN WORKSPACE.
+  190   IF ((IP-IS).GT. (IF-IP)) GO TO 200
+        MARK(LA) = IF
+        MARK(LA-1) = IP + 1
+        IF = IP - 1
+        GO TO 210
+
+  200   MARK(LA) = IP - 1
+        MARK(LA-1) = IS
+        IS = IP + 1
+C  FIND THE LENGTH OF THE SHORTER SUBDIVISION.
+  210   LNGTH = IF - IS
+        IF(LNGTH.LT.0) GO TO 230
+        IF(LNGTH.EQ.0) GO TO 260
+C  IF IT CONTAINS MORE THAN ONE ELEMENT STORE IT IN WORKSPACE .
+        LA = LA + 2
+        MARK(LA) = IF
+        MARK(LA-1) = IS
+        GO TO 270
+C  IF IT CONTAINS NO ELEMENTS RESELECT THE OTHER SUBDIVISION
+C  AND FIND A DIFFERENT TEST NUMBER. NUMBERS WHICH ARE FOUND TO
+C  EQUAL THE TEST NUMBER ARE SORTED OUT.
+  230   IS = MARK(LA-1)
+        IF = MARK(LA)
+        IFEND = IF - 1
+        IK = IS
+        DO 240 I = IK,IFEND
+          IF (COUNT(I).NE.X) GO TO 250
+          IS = IS + 1
+  240   CONTINUE
+        LA = LA - 2
+        GO TO 260
+
+  250   AV = COUNT(I)
+        IY = (IF+IS)/2
+        COUNT(I) = COUNT(IY)
+        COUNT(IY) = AV
+        GO TO 270
+C  FIND IF SORTING IS COMPLETED.
+  260   IF (LA.LE.0) GO TO 280
+C  OBTAIN THE ADDRESS OF THE SHORTEST SEGMENT AWAITING QUICKSORT
+        IF = MARK(LA)
+        IS = MARK(LA-1)
+  270 CONTINUE
+  280 RETURN
+
+      END

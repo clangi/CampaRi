@@ -1,0 +1,322 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!--
+############################################################################
+# LICENSE INFO:                                                            #
+############################################################################
+#    This file is part of CAMPARI.                                         #
+#                                                                          #
+#    Version 3.0                                                           #
+#                                                                          #
+#    Copyright (C) 2017, The CAMPARI development team (current and former  #
+#                        contributors)                                     #
+#                        Andreas Vitalis, Adam Steffen, Rohit Pappu, Hoang #
+#                        Tran, Albert Mao, Xiaoling Wang, Jose Pulido,     #
+#                        Nicholas Lyle, Nicolas Bloechliger, Marco Bacci,  #
+#                        Davide Garolini, Jiri Vymetal                     #
+#                                                                          #
+#    Website: http://sourceforge.net/projects/campari/                     #
+#                                                                          #
+#    CAMPARI is free software: you can redistribute it and/or modify       #
+#    it under the terms of the GNU General Public License as published by  #
+#    the Free Software Foundation, either version 3 of the License, or     #
+#    (at your option) any later version.                                   #
+#                                                                          #
+#    CAMPARI is distributed in the hope that it will be useful,            #
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of        #
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         #
+#    GNU General Public License for more details.                          #
+#                                                                          #
+#    You should have received a copy of the GNU General Public License     #
+#    along with CAMPARI.  If not, see <http://www.gnu.org/licenses/>.      #
+############################################################################
+# AUTHORSHIP INFO:                                                         #
+############################################################################
+#                                                                          #
+# MAIN AUTHOR:   Andreas Vitalis                                           #
+# CONTRIBUTIONS: Adam Steffen                                              #
+#                                                                          #
+############################################################################
+-->
+<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US" xml:lang="en">
+<head>
+    <!--
+    Designed by CAMPARI Development Group
+    Base template (without user's data) checked by http://validator.w3.org : "This page is valid XHTML 1.0 Transitional"
+    -->
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></meta>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge"></meta>
+    <title>CAMPARI Main</title>
+    <link rel="stylesheet" href="style_red.css" type="text/css" media="screen"></link>
+</head>
+<body>
+<div id="art-page-background-simple-gradient"></div>
+<div id="art-main">
+    <!-- Header -->
+    <div class="art-Sheet2">
+        
+        <!-- Banner Art -->
+        <div class="art-Header">
+            <div class="art-Header-png"></div>
+        </div>
+                
+        <!-- Top Navigation Bar -->
+        <div class="art-nav">
+            <div class="l"></div>
+            <div class="r"></div>
+            <ul class="art-menu">
+                <li><a href="index.html" class=" active"><span class="l"></span><span class="r"></span><span class="t">Home</span></a></li>
+                <li><a href="documentation.html"><span class="l"></span><span class="r"></span><span class="t">Documentation</span></a></li>
+                <li><a href="references.html"><span class="l"></span><span class="r"></span><span class="t">References</span></a></li>
+                <li><a href="contact.html"><span class="l"></span><span class="r"></span><span class="t">Support</span></a></li>
+                <li><a href="download.html"><span class="l"></span><span class="r"></span><span class="t">Download</span></a></li>
+            </ul>
+        </div>
+            
+        <!-- Top Sub Navigation Bar -->
+        <!--
+        <div class="nav-menu">
+            <ul class="navlist">
+                <li><a href="documentation.html">Overview</a></li>
+                <li><a href="install.html">Install</a></li>
+                <li><a href="tutorials.html">Tutorials</a></li>
+                <li><a href="inputfiles.html">Inputfiles</a></li>
+                <li><a href="keywords.html">Keywords</a></li>
+                <li><a href="outputfiles.html">Outputfiles</a></li>
+                <li><a href="parameters.html">Parameters</a></li>
+                <li><a href="development.html" class=" active">Development</a></li>
+                <li></li>
+            </ul>
+        </div> 
+        -->
+    </div>
+        
+    <!-- Main Page Contents -->
+    <div class="art-Sheet">
+        <div class="art-Sheet-bl"></div>
+        <div class="art-Sheet-br"></div>
+        <div class="art-Sheet-bc"></div>
+        <div class="art-Sheet-cl"></div>
+        <div class="art-Sheet-cr"></div>
+        <div class="art-Sheet-cc"></div>
+        <div class="art-Sheet-body">
+            
+            <div class="art-contentLayout2">
+                <!-- Page Contents -->
+                <div class="art-content">
+                <div class="art-Post">
+                <div class="art-Post-body">
+<div class="art-PostContent">
+<h2>Welcome to the CAMPARI home page!<br/>
+</h2>
+We are proud to introduce the third official version of CAMPARI (v3).
+This version of CAMPARI differs dramatically from its predecessor, as most functionalties of the code
+can now benefit from an OpenMP threads parallelization. Given that modern computing resources routinely
+feature tens of cores in a single shared memory node, this change means that CAMPARI 
+can now also be employed for simulations of larger, dense systems while maintaining
+a reasonable production rate.
+In addition, some of the inner loops (mostly for gradient-based propagators) have become faster 
+by factors of 2 or more even when executed just by a single thread. 
+Because of our development model, CAMPARI does not strive to compete with pure performance-optimized
+codes like GROMACS, but rather maintains its prior philosphy, that is, to rigorously
+support and maintain a wide array of methods and analysis tools "under the same hood."<br/>
+<br/>
+It is our continued hope that the tools we provide for the molecular simulations
+of biological macromolecules and their analysis can be as useful to other
+users as they are to us. We believe that CAMPARI populates a relevant niche due to
+its unusual layout, internal structure
+(explicit and system-specific support for biological macromolecules at many levels),
+the wide class of supported algorithms, its extensive documentation (including tutorials), 
+and the reference implementation of the ABSINTH implicit solvent model and force field paradigm.<br/>
+If you are new to this software and/or this documentation, please refer to the <a
+ href="documentation.html">documentation overview</a> page. From there, you will be able
+to obtain an idea of the basic workings of CAMPARI, and you will be directed to the remainder
+of the comprehensive documentation. Note that a few links may not work in the web-version
+of the documentation found at <a href="http://campari.sourceforge.net/index.html">campari.sourceforge.net</a>.
+In that case, please refer to a local copy obtained by downloading the package.<br/>
+<br/>Some of the features built into CAMPARI include:<br/>
+<h4>Features Supported by CAMPARI:</h4>
+<ul>
+<li>Flexible Monte Carlo sampling of biopolymers in internal coordinate / rigid-body space</li>
+<li>Minimization and dynamics-based sampling (MD/LD in NVE/NVT) in internal coordinate / rigid-body space</li>
+<li>Cartesian space minimization and dynamics-based sampling (MD/LD in NVE/NVT) including support for custom sets of holonomic constraints</li>
+<li>Hybrid sampling algorithms combining Monte Carlo and dynamics methods</li>
+<li>Ported parameters and paradigms for major force fields such as CHARMM22/27/36, AMBER94/99/03, OPLS-AA/L, or GROMOS53a5/6</li>
+<li>OpenMP-based shared memory parallelization of all supported samplers (with the exception of some Monte Carlo move sets)</li>
+<li>Full support and control of the ABSINTH implicit solvation model and underlying force field paradigm</li>
+<li>Near-complete control over Hamiltonian through tuning of intrinsic parameters via simple keywords</li>
+<li>Simulations of arbitrary systems based on 3D input geometries by means of extensive patch facilities to all energy terms</li>
+<li>Support for droplet and periodic boundary conditions with standard long-range electrostatic corrections such as particle-mesh Ewald or reaction field methods</li>
+<li>Very wide support for replica-exchange simulations (available in multidimensional form in Hamiltonian space) with explicit support for free energy calculations</li>
+<li>Hybrid MPI/OpenMP parallelism for multi-replica simulations: inter-replica communication via MPI and speed-up of individual replicas by OpenMP</li>
+<li>Full support for the Progrss Index-Guided Sampling (PIGS) method</li> 
+<li>Wang-Landau sampling in Monte Carlo simulations in energy or reaction coordinate space</li>
+<li>Support for sculpting of energy landscapes (commonly known as "accelerated molecular dynamics") for all samplers</li>
+<li>Different biasing potentials to global secondary structure content, polymeric properties or to individual geometric variables</li>
+<li>Support for arbitrary tabulated potentials (spline-based) and density restraints (spatial)</li>
+<li>Molecule builder for polypeptides, polynucleotides, and various small molecules without the requirement to provide any structural or geometric input</li>
+<li>Built-in analysis routines pertaining to polymeric properties (<i>e.g.</i>, simulated scattering data), structural
+properties (<i>e.g.</i>, secondary structure assignment for polypeptides according to DSSP), solution structure (<i>e.g.</i>, arbitrary pair
+correlation functions), and many more (with the ability to perform these analyses "on-the-fly")</li>
+<li>Various clustering algorithms operating on a large selection of possible coordinates</li>
+<li>An entire toolkit dedicated to network (Markov state) models and their analysis (committor probabilities, steady states, <i>etc.</i>)</li>
+<li>Implementations of recently published algorithms, <i>e.g.</i>, for data mining, tree-based clustering,
+<a href="http://pubs.acs.org/doi/abs/10.1021/ct200801b">J. Chem. Theor. Comput. 8 (3), 1108-1120 (2012)</a>,
+kinetic partitioning, 
+<a href="http://dx.doi.org/10.1016/j.cpc.2013.06.009">Comput. Phys. Comm. 184 (11), 2446-2453 (2013)</a>,
+automatic feature selection,
+<a href="http://dx.doi.org/10.1021/acs.jctc.5b00618">J. Chem. Theor. Comput. 11 (11), 5481-5492 (2015)</a>;
+for simulation methodology, analysis of spatial density maps by equilibrium sampling,
+<a href="http://dx.doi.org/10.1016/j.str.2013.10.014">Structure 22 (1), 156-167 (2014)</a>,
+dynamics in mixed rigid body and dihedral angle space, <a href="http://dx.doi.org/10.1063/1.4887339">J. Chem. Phys., 141 (3), 034105 (2014)</a>,
+or the progress index guided sampling method,
+<a href="http://dx.doi.org/10.1016/j.bbagen.2014.08.013">Biochim. Biophys. Acta, 1850 (5), 889-902 (2015)</a>.</li>
+<li>Conversion of various binary trajectory file formats and PDB naming conventions, program execution in trajectory analysis mode
+(also in parallel)</li>
+<li>Completely free and released under the GPL</li>
+</ul>
+<h4>Features currently not supported by CAMPARI but commonly found in other simulation software packages:</h4>
+<ul>
+<li>Implicit solvation models other than ABSINTH or primitive models</li>
+<li>MPI-based "classic" domain decomposition for dense systems (see OpenMP functionality above)</li>
+<li>Sampling of constant-pressure ensembles using manostats</li>
+</ul>
+<br/>
+The above lists should provide you with a good idea of whether CAMPARI may be a useful addition to your toolkit.
+The <a href="references.html">list of references</a> contains many examples of research performed with the help of CAMPARI.<br/>
+</div>
+                    
+                </div>
+                </div>
+                </div>
+                
+            <!-- Side Navigation Bar -->
+            <div class="art-sidebar1">
+                                    
+                <!-- Contributors Block -->
+                <div class="art-Block">
+                    <div class="art-Block-tl"></div>
+                    <div class="art-Block-tr"></div>
+                    <div class="art-Block-bl"></div>
+                    <div class="art-Block-br"></div>
+                    <div class="art-Block-tc"></div>
+                    <div class="art-Block-bc"></div>
+                    <div class="art-Block-cl"></div>
+                    <div class="art-Block-cr"></div>
+                    <div class="art-Block-cc"></div>
+                    <div class="art-Block-body">
+                        <div class="art-BlockHeader">
+                            <div class="l"></div>
+                            <div class="r"></div>
+                            <div class="art-header-tag-icon">
+                                <div class="t">Contributors - Links</div>
+                            </div>
+                        </div><div class="art-BlockContent">
+                            <div class="art-BlockContent-body">
+                                <div>
+                                <b>Pappu Lab</b><br />
+                                Washington University in St. Louis, Missouri, USA<br />
+                                Website: <a href="http://pappulab.wustl.edu" target="_TOP">pappulab.wustl.edu</a><br />
+                                Phone: +1 (314) 935-5416 <br/>
+                                <br/>
+                                <b>Andreas Vitalis</b><br />
+                                Universit&auml;t Z&uuml;rich @ Caflisch Lab, Z&uuml;rich, Switzerland<br />
+                                Current Website: <a href="http://www.biochem-caflisch.uzh.ch/" target="_TOP">biochem-caflisch.uzh.ch</a><br />
+                                Phone: +41 (44) 635-5597
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Search Block -->
+                <!--
+                <div class="art-Block">
+                    <div class="art-Block-tl"></div>
+                    <div class="art-Block-tr"></div>
+                    <div class="art-Block-bl"></div>
+                    <div class="art-Block-br"></div>
+                    <div class="art-Block-tc"></div>
+                    <div class="art-Block-bc"></div>
+                    <div class="art-Block-cl"></div>
+                    <div class="art-Block-cr"></div>
+                    <div class="art-Block-cc"></div>
+                    <div class="art-Block-body">
+                        <div class="art-BlockHeader">
+                            <div class="l"></div>
+                            <div class="r"></div>
+                            <div class="art-header-tag-icon">
+                                <div class="t">Find Text</div>
+                            </div>
+                        </div><div class="art-BlockContent">
+                            <div class="art-BlockContent-body">
+                                <div><form method="get" id="newsletterform" action="javascript:void(0)">
+                                <input type="text" value="" name="email" id="s" style="width: 95%;" />
+                                <span class="art-button-wrapper">
+                                    <span class="l"> </span>
+                                    <span class="r"> </span>
+                                    <input class="art-button" type="submit" name="search" value="Search"/>
+                                </span>
+                                </form></div>
+                            </div>
+                        </div>
+                    </div>
+                </div> 
+                -->
+                
+                <!-- News/Updates Block -->
+                <div class="art-Block">
+                    <div class="art-Block-tl"></div>
+                    <div class="art-Block-tr"></div>
+                    <div class="art-Block-bl"></div>
+                    <div class="art-Block-br"></div>
+                    <div class="art-Block-tc"></div>
+                    <div class="art-Block-bc"></div>
+                    <div class="art-Block-cl"></div>
+                    <div class="art-Block-cr"></div>
+                    <div class="art-Block-cc"></div>
+                    <div class="art-Block-body">
+                        <div class="art-BlockHeader">
+                            <div class="l"></div>
+                            <div class="r"></div>
+                            <div class="art-header-tag-icon">
+                                <div class="t">Recent News</div>
+                            </div>
+                        </div><div class="art-BlockContent">
+                            <div class="art-BlockContent-body">
+                                <div>
+                                    <p><b>Sep 05, 2017</b><br/>
+                                    Official Release of CAMPARI version 3! 
+                                    As usual, check out the <a href="http://sourceforge.net/projects/campari/">Sourceforge Page</a> for
+                                    further details and to keep up with bugfixes, additions, ongoing development, <i>etc</i>.
+                                    Forums to request help, make suggestions, or report bugs are provided.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- End Sidebar -->
+
+            </div>
+        </div>
+    </div> <!-- End main page contents -->
+
+            
+    <!-- Footer -->
+    <div class="art-Footer">
+    <div class="art-Footer-background">
+    <div class="art-Footer-inner">
+        <a href="#" class="art-rss-tag-icon" title="RSS"></a>
+        <div class="art-Footer-text">
+        <p><a href="#">Contact Us</a> | <a href="#">Terms of Use</a>
+        | <a href="#">License Information</a><br />
+        Copyright &copy; 2010 - 2014 - 2017. All Rights Reserved.</p>
+        </div>
+    </div>
+    </div>
+    </div>
+    <p class="art-page-footer">XHTML and CSS valid. Powered by <a href="http://www.flashmint.com/">FlashMint</a> - flash templates provider.</p>
+    <div style="text-align: center; font-size: 0.75em;">Design downloaded from <a href="http://www.freewebtemplates.com/">free website templates</a>.</div>
+                
+</div>
+</body>
+</html>

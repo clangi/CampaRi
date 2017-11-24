@@ -1,0 +1,707 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!--
+############################################################################
+# LICENSE INFO:                                                            #
+############################################################################
+#    This file is part of CAMPARI.                                         #
+#                                                                          #
+#    Version 3.0                                                           #
+#                                                                          #
+#    Copyright (C) 2017, The CAMPARI development team (current and former  #
+#                        contributors)                                     #
+#                        Andreas Vitalis, Adam Steffen, Rohit Pappu, Hoang #
+#                        Tran, Albert Mao, Xiaoling Wang, Jose Pulido,     #
+#                        Nicholas Lyle, Nicolas Bloechliger, Marco Bacci,  #
+#                        Davide Garolini, Jiri Vymetal                     #
+#                                                                          #
+#    Website: http://sourceforge.net/projects/campari/                     #
+#                                                                          #
+#    CAMPARI is free software: you can redistribute it and/or modify       #
+#    it under the terms of the GNU General Public License as published by  #
+#    the Free Software Foundation, either version 3 of the License, or     #
+#    (at your option) any later version.                                   #
+#                                                                          #
+#    CAMPARI is distributed in the hope that it will be useful,            #
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of        #
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         #
+#    GNU General Public License for more details.                          #
+#                                                                          #
+#    You should have received a copy of the GNU General Public License     #
+#    along with CAMPARI.  If not, see <http://www.gnu.org/licenses/>.      #
+############################################################################
+# AUTHORSHIP INFO:                                                         #
+############################################################################
+#                                                                          #
+# MAIN AUTHOR:   Andreas Vitalis                                           #
+#                                                                          #
+############################################################################
+-->
+<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US" xml:lang="en">
+<head>
+    <!--
+    Designed by CAMPARI Development Group
+    Base template (without user's data) checked by http://validator.w3.org : "This page is valid XHTML 1.0 Transitional"
+    -->
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></meta>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge"></meta>
+    <title>CAMPARI Installation</title>
+    <link rel="stylesheet" href="style_red.css" type="text/css" media="screen"></link>
+</head>
+<body>
+<div id="art-page-background-simple-gradient"></div>
+<div id="art-main">
+    <!-- Header -->
+    <div class="art-Sheet2">
+        
+        <!-- Banner Art -->
+        <div class="art-Header">
+            <div class="art-Header-png"></div>
+        </div>
+                
+        <!-- Top Navigation Bar -->
+        <div class="art-nav">
+            <div class="l"></div>
+            <div class="r"></div>
+            <ul class="art-menu">
+                <li><a href="index.html"><span class="l"></span><span class="r"></span><span class="t">Home</span></a></li>
+                <li><a href="documentation.html" class=" active"><span class="l"></span><span class="r"></span><span class="t">Documentation</span></a></li>
+                <li><a href="references.html"><span class="l"></span><span class="r"></span><span class="t">References</span></a></li>
+                <li><a href="contact.html"><span class="l"></span><span class="r"></span><span class="t">Support</span></a></li>
+                <li><a href="download.html"><span class="l"></span><span class="r"></span><span class="t">Download</span></a></li>
+            </ul>
+        </div>
+            
+        <!-- Top Sub Navigation Bar -->
+        <div class="nav-menu">
+            <ul class="navlist">
+                <li><a href="documentation.html">Overview</a></li>
+                <li><a href="install.html" class=" active">Install</a></li>
+                <li><a href="tutorials.html">Tutorials</a></li>
+                <li><a href="inputfiles.html">Inputfiles</a></li>
+                <li><a href="keywords.html">Keywords</a></li>
+                <li><a href="outputfiles.html">Outputfiles</a></li>
+                <li><a href="parameters.html">Parameters</a></li>
+                <li><a href="development.html">Development</a></li>
+                <li></li>
+            </ul>
+        </div> 
+    </div>
+        
+    <!-- Main Page Contents -->
+    <div class="art-Sheet">
+        <div class="art-Sheet-bl"></div>
+        <div class="art-Sheet-br"></div>
+        <div class="art-Sheet-bc"></div>
+        <div class="art-Sheet-cl"></div>
+        <div class="art-Sheet-cr"></div>
+        <div class="art-Sheet-cc"></div>
+        <div class="art-Sheet-body">
+            
+            <div class="art-contentLayout">
+                <!-- Page Contents -->
+                <div class="art-content">
+                <div class="art-Post">
+                <div class="art-Post-body">
+<div class="art-PostContent">
+<br/>
+<h2>CAMPARI Installation</h2>
+<h3>Coding Style:</h3>
+CAMPARI is - with the exception of the use of external libraries - written entirely in Fortran which utilizes
+some features of the 2008 standard but is otherwise compliant with the 2003 standard. Because it has evolved
+over many years and many modern features were not widely supported compilers 5-10 years ago, CAMPARI does
+not adhere to strict standards, for example regarding the use of interfaces or the use of ISO names for
+architecture abstraction in variable typing. A second reason is the somewhat incremental support model compilers
+offer for modern Fortran features, <i>i.e.</i>, it is quite pointless to use 2008 features not yet supported by the
+compilers on the computers that the software needs to run on.<br/>
+CAMPARI uses - with very few exceptions - dynamic memory allocation and calculations on small systems usually 
+do not require more than a few MB of memory. This is implemented exclusively via arrays which have the <code>ALLOCATABLE</code>
+attribute and not through pointers. However, the memory footprint for large systems may grow unfavorably
+with system size both in terms of stack usage and in terms of total memory usage. The general use and layout of memory is not tighly controlled
+at the moment, and this challenges cache use on modern multi-core chips. In case of stack overflows, CAMPARI
+will typically exit with an otherwise undocumented segmentation fault (this behavior is compiler-dependent and can often be
+remedied by manually increasing stack size for the shell from which CAMPARI is started [ulimit]). CAMPARI uses stack-allocated
+variables in particular in the inner loops of dynamics-based calculations. For total memory exceptions,
+disabling some of the calculation's optional features will be the only solution.<br/> 
+The source code frequently contains comparisons of floating point numbers
+which entails all the possible pitfalls of intrinsically inaccurate floating point arithmetics. Only some sensitive operations
+are made safe (precision-tolerant). The code assumes double precision throughout so aggressive optimization strategies
+of modern compilers have to be evaluated carefully (not all algorithms may tolerate precision loss and will respond
+with warning messages that may or may not imply that results are compromised). Basically, in most cases CAMPARI silently relies
+on hardware and compiler to implement floating-point arithmetics standards such as
+<a href="http://dx.doi.org/10.1109/IEEESTD.2008.4610935">IEEE 754-2008</a>.<br/>
+Lastly, for efficiency reasons,
+the code attempts to provide vectorizable loops in crucial execution paths as much as possible. This is the simplest
+form of parallelism and supported (often by default) by almost all modern compilers. Vectorization increases time required
+for compilation, but can very substantially reduce runtime. It is important as well to point out that it in general increases 
+the accuracy of sums accumulating very many small floating-point numbers (as is almost universally the case in the types
+of applications CAMPARI supports). These loops are also the main reason why performance across different compilers
+can differ substantially, <i>i.e.</i>, the various instructions in the SSE3, SSE4, AVX, AVX2, <i>etc.</i> instruction
+sets are not equally well identified as usable for a particular portion of the source code (the resultant machine codes differ
+substantially). CAMPARI does not call instruction set intrinsics directly because of limited personnel resources and the wide scope of
+functionality it supports.<br/>
+In summary, CAMPARI expects the compiler to be able to handle the following:<br/>
+<ul>
+<li>Allocatable arrays of variables of derived type which contain further allocatable arrays of built-in or derived types</li>
+<li>Preprocessing of C-style directives (<code>#ifdef ... #endif</code> and so on)</li>
+<li>Beyond standard math and built-in functions from the 2003 standards and before, support for built-in functions <code>erf</code> and <code>erfc</code> (these are formally
+introduced as part of the 2008 standard but were often available in compiler-specific implementations before)</li>
+<li>Full use of the language-intrinsic ISO_FORTRAN_ENV and ISO_C_BINDING modules</li>
+<li>Dynamic (implicit) allocation of deferred-length strings on assignment statements</li>
+<li>A way to set default floating point constants to double precision (this is crucial to avoid down-conversion of
+constants which may cause major problems in algorithms relying explicitly on double precision)</li>
+<li>For the multi-threaded versions, support for the OpenMP 4.0 (or higher) standard (it is, however, easy to modify it toward the 3.1 standard
+as the only feature from the 4.0 standard are very few PROC_BIND clauses to PARALLEL regions)</li>
+</ul>
+<h3>Compiler Optimization:</h3>
+The code was developed on UNIX systems with the Intel Fortran compiler and mostly run on Intel CPUs. This implies that executables
+generated with this particular combination of compiler and processor tend to run faster than alternatives (different processor
+or different compiler, notably we have used the Gnu, PGI, Cray, Absoft, and Oracle compilers, with Absoft and PGI
+producing unusable executables due to confirmed and/or likely compiler bugs).
+Users should keep this in mind. Publicly available benchmarks of Fortran compilers (such 
+as those available at <a href="http://www.polyhedron.com" target="_TOP">polyhedron</a>) can be useful but their overall
+picture may not be representative for any given specific code (like CAMPARI). As mentioned
+above, the validity of aggressive optimization options will have to be evaluated for each calculation.<br/>
+<h3>Installation Requirements:</h3>
+<ul>
+  <li>Preferably a Unix-type OS (note that CAMPARI has also been compiled on Windows and MacOS but not on any other OS such as Solaris or Irix) 
+in conjunction with a modern multi-core chip (we have only used recent Intel and AMD processor lines but not PowerPC, Compaq (DEC) Alpha, ...)</li>
+  <li>A Fortran03 compiler with the above attributes (we have used <a href="http://software.intel.com/en-us/intel-compilers/" target="_TOP">Intel</a>,
+<a href="http://gcc.gnu.org/wiki/GFortran/" target="_TOP">GNU</a>, Oracle (formerly SunStudio), Cray, PGI, and Absoft compilers)</li>
+  <li>For the MPI version: a Fortran03-compiled MPI implementation, against which to link the code (we recommend
+<a href="http://www.open-mpi.org/" target="_TOP">OpenMPI</a>, and this is often part of the default system installation, but the code has also been
+linked against <a href="https://mpich.org/" target="_TOP">MPICH</a>)</li>
+  <li>For using particle-mesh Ewald summation (see <a href="keywords.html#EWALD">here</a>): a properly compiled <a href="http://www.fftw.org/" target="_TOP">FFTW</a> (this may be available as part of your system installation and can then be linked by passing '-lfftw3' to the linker)</li>
+  <li>For using the preconditioned SHAKE algorithm to maintain holonomic constraints (see <a href="keywords.html#SHAKEMETHOD">here</a>) or principal component analysis (see <a href="keywords.html#PCAMODE">here</a>): a properly compiled <a href="http://www.netlib.org/lapack/" target="_TOP">LAPACK</a>
+-library to link against (for example version 3.2.2 with double precision routines &rarr; on UNIX, this often this will be part of the default system installation and may be activated by passing '-llapack' to the compiler)</li>
+ <li>For writing and reading NetCDF-files: a properly compiled NetCDF-library (see <a href="keywords.html#XYZPDB">here</a>) to link against which includes Fortran 90 API (developed and maintained by <a href="http://www.unidata.ucar.edu/software/netcdf" target="_TOP">Unidata</a>; this may be available as part of your system installation and can then be linked by passing '-lnetcdf -lnetcdff' to the linker)</li>
+ <li>For using some graph-based analyses (see <a href="keywords.html#EIGVAL_MD">spectral decompositions</a> and
+<a href="keywords.html#DOPFOLD">committor probabilities</a>):  a properly compiled version of the <a href="http://www.hsl.rl.ac.uk/" target="_TOP">HSL sparse matrix linear library</a> developed and maintained by the Science and Technology Facilities Council (STFC) in the UK.</li>
+  <li>A tar-ball (archived) or similar full copy of the <a href="http://sourceforge.net/projects/campari/files/" target="_TOP">CAMPARI</a> distribution</li>
+<li>Possibly a C- and C++-compiler to compile auxiliary libraries</li>
+</ul>
+<h3>Getting CAMPARI:</h3>
+The obvious first step is to extract the archive to your favorite
+destination (${CAMPARI_HOME}) or to get a copy through CVS if you are
+connected to a current CVS repository. Unlike most current Linux/Unix software, CAMPARI does not
+employ an explicit build system or configuration tool (<i>e.g.</i>, autoconf/automake or cmake) beyond a simple
+Makefile. The compilation task is so uniform that the required settings are small in number. The downside is that portability
+has to be ensured explicitly by the user by providing the correct flags to the compiler. This "localization"
+happens in a dedicated file edited by the user and the global Makefile expects this file to be 
+called "Makefile.local" and to be located in the source-subdirectory of the main distribution tree.
+Hence:<br/>
+<br/>
+<code>
+&nbsp;&nbsp;&nbsp; [user {subdir}]$ cvs checkout campari<br/>
+</code>
+<br/>
+Or:<br/>
+<br/>
+<code>
+&nbsp;&nbsp;&nbsp; [user {subdir}]$ tar -xjvf campari.tar.bz2<br/>
+</code>
+<br/>
+Then:<br/>
+<br/>
+<code>
+&nbsp;&nbsp;&nbsp; [user {subdir}]$ cd campari/source<br/>
+&nbsp;&nbsp;&nbsp; [user source]$ touch Makefile.local<br/>
+</code>
+<br/>
+
+<h3>Makefile:</h3>
+A Makefile is nothing but an advanced shell script (using its own scripting language) containing
+a series of compilation and linking commands to produce an executable from a set of sources.
+One of its core features is to use time stamps on source files to allow for safe incremental
+compilation (<i>i.e.</i>, to re-compile only those source files that have changed since the last compilation
+and to make sure all libraries and binaries are up-to-date). The global Makefile 
+is located in the source-directory and uses two auxiliary files: the aforementioned "Makefile.local"
+and a file called "DEPENDENCIES", which has to reside in the source-directory as well. The latter
+is automatically generated from the source files by executing:<br/>
+<br/>
+&nbsp;&nbsp;&nbsp; <code>[user source]$ ./make_dependencies.sh .</code><br/>
+<br/>
+The customization in "Makefile.local" requires two elements: 1) defining one or more directories for
+the local CAMPARI distribution, and 2) defining compilers and compiler flags to be used:
+<br/>
+Example of location-specific parameters in "Makefile.local":<br/>
+<hr/>
+<code>
+CAMPARI_HOME=/software/campari<br/>
+<br/>
+ARCH=Intel<br/>
+BIN_DIR=${CAMPARI_HOME}/bin<br/>
+LIB_DIR=${CAMPARI_HOME}/lib<br/>
+SRC_DIR=${CAMPARI_HOME}/source<br/>
+#<br/>
+# compiler settings<br/>
+WARNFLAGS= -warn alignments -warn declarations -warn usage -warn general -warn ignore_loc -warn truncated_source -warn uncalled -warn unused<br/>
+FF =ifort<br/>
+LFLAGS =-O3<br/>
+EXTRA_LIBS=/software/NetCDF/Intel/lib/libnetcdff.a /software/NetCDF/Intel/lib/libnetcdf.a /software/fftw/lib/libfftw3.a -llapack<br/>
+FFLAGS =-DLINK_NETCDF -DLINK_XDR -DLINK_LAPACK -DDISABLE_ERFTAB -DDISABLE_FLOAT -DLINK_FFTW -DLINK_HSL -I/software/fftw-3.2.2/include -I/software/NetCDF/netcdf-4.1.1/include ${WARNFLAGS} -axAVX -xAVX<br/>
+MPIFF =mpif90   # wrapper around ifort<br/>
+MPILFLAGS =-O3<br/>
+MPIFFLAGS =${FFLAGS}<br/>
+MPIEXTRA_LIBS=${EXTRA_LIBS}<br/>
+THREADFLAGS=-qopenmp # or -openmp for older versions<br/>
+CC =icc # Intel C compiler for XDR<br/>
+XDRFFLAGS=-O3 -axAVX -xAVX # not that the default options added to CAMPARI source file compilations are not included<br/>
+XDRCFLAGS=-O3 -axAVX -xAVX<br/>
+HSLFFLAGS=${XDRFFLAGS}<br/>
+HSLEXTRALIBS=-lblas<br/>
+</code>
+<hr/>
+<br/>
+The above "Makefile.local" illustrates settings for a standard installation framework using Intel compilers with compiler support for AVX and lower (but not AVX2)
+instructions. If an installation on only a single or otherwise homogeneous architecture is required, these instruction set support options should for
+simplicity be set to let the compiler detect the supported architecture itself.
+Note that the settings for CAMPARI_HOME and SRC_DIR 
+have to correspond to the extracted archive (see above) while those for BIN_DIR and LIB_DIR are arbitrary. The specifications 
+for "CAMPARI_HOME" (root directory) and "ARCH" (subdirectory in "lib" and "bin") should determine entirely the location of compiler-generated files.
+Because "Makefile.local" is read and processed by "Makefile", it is possible to maintain multiple versions (differing in compiler, debugging options,
+ architecture, <i>etc.</i>) from the same source tree by simply making copies of both files, <i>, e.g.</i>, to "Makefile_New" and "Makefile_New.local". 
+Then, in "Makefile_New" the include statement should be changed from "include Makefile.local" to "include Makefile_New.local". By now modifying both
+files according to the desired outcome, a completely independent installation is obtained
+when running "make -f Makefile_new &lt;target&gt;" where the various targets are explained below.<br/>
+Further modifications to the global Makefile should be restricted to the lines controlling default compiler options. For the 
+Oracle, Cray, PGI, Gnu, and Intel compilers, the Makefile contains a fair amount
+of default settings (SUNDEFAULTS, CRAYDEFAULTS, PGIDEFAULTS, GNUDEFAULTS, INTELDEFAULTS) which on Linux systems can often be used "as is".
+In addition, there are analogous (but less complete) debugging options (SUNDEBUG, CRAYDEBUG, PGIDEBUG, GNUDEBUG, INTELDEBUG).
+The variable COMPDEFAULTS holds the actual default compiler options and can be set, for example, as "COMPDEFAULTS=${GNUDEFAULTS} ${GNUDEBUG}".
+These options are further appended by "FFLAGS" or "MPIFFLAGS" as specified in the localization file (see example above).
+Changes to default options can be required for a number reasons, for example, because of a change in software or hardware architecture.
+Also, files included from external libraries may occasionally clash with pedantic language standard options.
+The reason that only a few settings are left "Makefile.local" is that the others should not be changed from 
+the behavior described above. Otherwise, the resultant code may fail or not produce correct results. Lastly, the
+variable "THREADFLAGS" should hold all options desired and required to enable OpenMP support for the compiler in use. Compilers
+have been lagging somewhat in supporting the OpenMP standard fully, and consequently options may continue to evolve
+(for Intel and Gnu, respectively, "-openmp" and "-fopenmp" are generally sufficient).<br/>
+Two possible libraries, when requested for linking (HSL and XDR), can be embedded in the Makefile of CAMPARI because they cannot be obtained easily
+through system or other precompiled packages (which NetCDF, FFTW, and LAPACK can be). There are flags in the global Makefile to enable this embedded 
+compiling and linking of this library, which is still conditional upon passing the flags "-DLINK_XDR" and "-DLINK_HSL", respectively. These flags
+are called "USE_INTERNAL_XDR" and "USE_INTERNAL_HSL" and setting them to zero allows linking against versions of these libraries compiled
+externally. Obviously, compilation and/or linking will fail in this case if the external version(s) are missing. The internal (embedded) compilation happens
+in subdirectories "xdr" and "hsl" of the source directory, use separate Makefiles, and should be largely automatic (dependencies are tracked).
+For XDR, CAMPARI distributes the source code, so there is no obvious benefit of compiling and linking it separately. 
+The XDR library is used to write compressed trajectories in xtc-format (see <a href="keywords.html#XYZPDB">here</a>). The situation for HSL
+is different due to the licensing terms of HSL. You will need to obtain your own copy of HSL. Then, you can either copy the required source files
+into the "hsl" subdirectory (as decribed in the <a href="download.html">download instructions</a>), or you can treat is an external library 
+as desribed above.
+The embedded compilations of libraries can be customized with regards 
+to options by additional specifications in Makefile.local, specifically "CC" and "XDRCFLAGS" (C compiler and flags for XDR),
+"XDRFFLAGS" and "HSLFFLAGS" (Fortran compiler options for XDR and HSL, respectively), and "HSLEXTRALIBS" (which may be needed to solve LAPACK/BLAS
+dependencies of HSL).<br/>
+Two notes on the passed flags DISABLE_FLOAT and DISABLE_ERFTAB. CAMPARI could in the (distant) past be compiled globally as a single-precision variant by omitting this flag. This is presently not possible. Single precision floating point arithmetics are only permissible in certain computations, and the necessary effort to identify just the eligible
+ones has simply not been undertaken. That is why DISABLE_FLOAT should <i>always</i> be passed to the compiler (even though it presently has no effect). DISABLE_ERFTAB controls whether to use the compiler-provided "erf" and "erfc" (see above) or whether to 
+use a tabulated approximation (which does <i>not</i> avoid the need for "erf" and "erfc"). With modern (2016) compilers, the speed
+of the intrinsics is usually sufficient to warrant passing this flag.<br/>
+To provide additional pointers for the users, we also show an example "Makefile.local" for the GNU compiler below (this assumes that NetCDF, FFTW, and LPAPACK/BLAS are system-installed, that USE_INTERNAL_XDR and USE_INTERNAL_HSL are both 1, and that "mpif90" is a wrapper around "gfortran"):<br/>
+<hr/>
+<code>
+CAMPARI_HOME=/software/campari<br/>
+<br/>
+ARCH=Gnu<br/>
+BIN_DIR=${CAMPARI_HOME}/bin<br/>
+LIB_DIR=${CAMPARI_HOME}/lib<br/>
+SRC_DIR=${CAMPARI_HOME}/source<br/>
+FF = gfortran<br/>
+LFLAGS = -O3<br/>
+EXTRA_LIBS=-lfftw3 -lfftw3_threads -lblas -llapack -lnetcdf -lnetcdff<br/>
+FFLAGS =-DLINK_NETCDF -DLINK_XDR -DLINK_LAPACK -DDISABLE_ERFTAB -DDISABLE_FLOAT -DLINK_FFTW -DLINK_HSL -march=native -funroll-loops # note that sometimes the include path for NetCDF has to be added here as well<br/>
+MPIFF =mpif90   # wrapper around gfortran<br/>
+MPILFLAGS =-O3<br/>
+MPIFFLAGS =${FFLAGS}<br/>
+MPIEXTRA_LIBS=${EXTRA_LIBS}<br/>
+THREADFLAGS=-fopenmp<br/>
+CC =gcc # Gnu C compiler for XDR<br/>
+XDRFFLAGS=-O3 -march=native -funroll-loops<br/>
+XDRCFLAGS=-O3 -march=native -funroll-loops<br/>
+HSLFFLAGS=${XDRFFLAGS}<br/>
+HSLEXTRALIBS=-lblas<br/>
+</code>
+<hr/>
+<h3>Standard (Serial) Installation (Executables "campari" and "camp_ncminer"):</h3>
+To actually compile the code for serial execution, first create the directories ${LIB_DIR}/${ARCH} and ${BIN_DIR}/${ARCH} if
+they do not exist already (this follows the example above):<br/>
+<br/>
+<code>
+&nbsp;&nbsp;&nbsp; [user source]$ mkdir ../lib<br/>
+&nbsp;&nbsp;&nbsp; [user source]$ mkdir ../lib/Intel<br/>
+&nbsp;&nbsp;&nbsp; [user source]$ mkdir ../bin<br/>
+&nbsp;&nbsp;&nbsp; [user source]$ mkdir ../bin/Intel<br/>
+</code>
+<br/>
+Now do:<br/>
+<br/>
+<code>
+&nbsp;&nbsp;&nbsp; [user source]$ make campari<br/>
+</code>
+<br/>
+Given the warning messages requested, you should see warnings about the use of intrinsic erf() in Fortran 2003
+code, potential warnings about unused variables but no major or other minor complaints. The compilation can take a
+while to complete since the optimization procedures (vectorization, <i>etc</i> ...) require variable dependency
+checks in complicated loop structures, which often will require a lot of physical memory and CPU time.<br/>
+The processes executed by the Makefile will compile all module definition files mod_bar.f90 into module
+information files ${LIB_DIR}/${ARCH}/bar.mod as well as regular module object files ${LIB_DIR}/${ARCH}/bar.o. Similarly, source-files foo.f90 will be compiled
+into object files ${LIB_DIR}/${ARCH}/foo.o. Once finished, the Makefile will create a library out of all the object files
+called lcampari.a in ${LIB_DIR}/${ARCH}, and finally link the actual
+executable ("campari" in ${BIN_DIR}/${ARCH}/). In the future, after applying certain changes to the source code, CAMPARI
+may be compiled incrementally by executing the same command again. Note that if heavily used module files are changed,
+many source files will have to be re-compiled (see DEPENDENCIES).<br/>
+By the same technique, and relying on the same library, it is possible to also compile a different executable that
+is specialized in data mining of arbitrary input files (see the section on <a href="keywords.html#netcdf_analysis">NetCDF data mining</a>
+in the keywords documentation as a starting point). The target name is <b>camp_ncminer</b> instead of <b>campari</b>
+in the make command. This executable has an obligate requirement for linking to the NetCDF library (see "Linking against external libraries"
+below).<br/>
+<br/>
+
+<h3>Standard Thread-Parallel Installation (Executable "campari_threads" and "camp_ncminer_threads"):</h3>
+The <a href="keywords.html#NRTHREADS">shared memory, thread-based parallelization of CAMPARI</a> is compiled 
+in exactly the same way with two additional requirements: i) specifying "THREADFLAGS" in the Makefile localization (see above),
+ii) linking libraries also in their thread-parallel versions (currently, this only applies to FFTW). Thus:<br/>
+<br/>
+<code>
+&nbsp;&nbsp;&nbsp; [user source]$ mkdir ../lib<br/>
+&nbsp;&nbsp;&nbsp; [user source]$ mkdir ../lib/Intel<br/>
+&nbsp;&nbsp;&nbsp; [user source]$ mkdir ../lib/Intel/threads<br/>
+&nbsp;&nbsp;&nbsp; [user source]$ mkdir ../bin<br/>
+&nbsp;&nbsp;&nbsp; [user source]$ mkdir ../bin/Intel<br/>
+</code>
+<br/>
+Now do:<br/>
+<br/>
+<code>
+&nbsp;&nbsp;&nbsp; [user source]$ make campari_threads<br/>
+</code>
+<br/>
+The processes executed by the Makefile will compile all module definition files mod_bar.f90 into module
+information files ${LIB_DIR}/${ARCH}/threads/bar.mod as well as regular module object files ${LIB_DIR}/${ARCH}/threads/bar.o. Similarly, source-files foo.f90 will be compiled
+into object files ${LIB_DIR}/${ARCH}/threads/foo.o. Once finished, the Makefile will create a library out of all the object files
+called lcampari_threads.a in ${LIB_DIR}/${ARCH}/threads, and finally link the actual
+executable ("campari_threads" in ${BIN_DIR}/${ARCH}/).<br/>
+As for the serial case, it is possible to also compile a different executable that is specialized in data mining of arbitrary
+input files (see the section on <a href="keywords.html#netcdf_analysis">NetCDF data mining</a>
+in the keywords documentation as a starting point), and the target name is <b>camp_ncminer_threads</b> instead of <b>campari_threads</b>.<br/>
+<br/>
+<h3>Linking Against External Libraries:</h3>
+In general, external libraries are necessary to support certain features within CAMPARI as outlined above. The user
+may instruct the preprocessor to include the respective sections of code by passing flags to it:
+LINK_FFTW to link against the library for fast discrete Fourier transforms, LINK_LAPACK to link against the LAPACK
+linear algebra library, LINK_XDR to link against compression
+routines needed to write trajectory data in .xtc-format, LINK_NETCDF to link against routines to create
+NetCDF data archives, and LINK_HSL to link against the sparse matrix linear algebra library, which additionally
+depends on BLAS (see example "Makefile.local" above and section on installation requirements). As mentioned,
+XDR and HSL are embedded with CAMPARI and can be compiled automatically, which is enabled by control flags
+in the global Makefile ("USE_INTERNAL_XDR" and "USE_INTERNAL_HSL").
+For successful compilation and linking, one (for embedded libraries) or two (external) extensions are required:<br/>
+<ol>
+  <li>Pass the environmental LINK_FOO to the compiler (flag
+-DLINK_FOO).</li>
+  <li>Point the compiler to the library using the EXTRA_LIBS
+macro in Makefile.local (<i>e.g.</i>, "EXTRA_LIBS=${whatever_path}/libfoo.a" or "EXTRA_LIBS=-lfoo").
+This is not necessary for embedded compilation of HSL and XDR.</li>
+</ol>
+Note that the order in which external libraries are linked may matter. A symbol occurring in a library function called by 
+a CAMPARI function must be defined <i>after</i> the library function has been defined. This means that if the symbol is defined
+in "libfoo1.a" and the library function in "libfoo2.a" the correct order of linking is "libfoo2.a libfoo1.a". Normally,
+an external library should of course contain all its symbols. On many systems, one or more libraries may also
+be available form default system locations, <i>e.g.</i> by "-llapack" instead of the full path.<br/>
+The XDR library requires special comments: CAMPARI supports .xtc-files for writing and reading trajectory data.
+These highly compressed binary files are employed by the GROMACS simulation software which has by now incorporated
+its own XDR support due to a lack of an officially supported distribution (original credits to Frans van Hoesel).
+For reference, CAMPARI provides a minimal XDR distribution. For setup as an external library, go to the root directory
+and find the file called "xdr_basic.tar.bz2". Unpack
+this archive, edit the Makefile and compile it (see supplied README.txt). Conversely, the embedded version
+is found in the source subdirectory "xdr" and should be compiled automatically if the required customization
+in "Makefile.local" has been done (see above).<br/>
+Similarly, the required HSL routines are embedded in a source subdirectory called "hsl". Compilation will again be 
+automatic if "DLINK_HSL" is passed to the compiler. You should already have or independently obtain
+a license for using HSL.<br/> 
+External libraries may have been compiled into thread-aware versions, but the only example where CAMPARI currently makes use of this
+is for the discrete Fourier transforms provided by FFTW. If "campari_threads" is built with FFTW support, it may
+thus be necessary to also supply the threads version of the FFTW library to "EXTRA_LIBS".<br/>
+When linking system-installed libraries (this is currently possible for FFTW, NetCDF, and LAPACK, see the example
+"Makefile.local" for GNU above), it is
+important to install all relevant packages. For FFTW, this usually means installing at least two packages
+(core and development, both in double precision). For NetCDF it can imply installing several packages
+(core and development for both standard C and Fortran interfaces). The compilation can fail if module or include files
+for NetCDF and/or FFTW are missing. In these cases, it is recommended to try to locate the files on your computer and add the include
+path to the compiler flags. If they are not found, the most common reason is that the corresponding development package was
+not installed. The linking fails if one or more symbols cannot be resolved. The internet is usually a good
+resource to at least pin down the origin of linking errors (for common libraries).
+If the problem persists, you are of course invited to
+post on <a href="http://sourceforge.net/projects/campari/support">the SourceForge page</a>.
+<h3>Pure MPI Installation (Executable "campari_mpi"):</h3>
+The Message Passing Interface (MPI) is a standard for creating parallel software, <i>i.e.</i>, programs
+running simultaneously in multiple instances on different processors or processor cores. These instances
+exchange information by passing messages to one another. This is what MPI libraries accomplish.<br/>
+Changes from serial to parallel versions of a program are often relatively large since meaningful parallelism
+requires exchange and synchronization of information between the individual instances as well as ordering
+mechanism for sensitive operations (writing to files, <i>etc</i> ...) which may otherwise entail race conditions. The
+Makefile therefore treats the serial and parallel version independently with completely separate directories
+for all libraries and binaries.<br/>
+To install CAMPARI's MPI version, install an MPI distribution first (like OpenMpi), if it
+is not already installed on your system. Usually, when building MPI
+from source, there is a chance to supply a Fortran90 compiler, which
+will then generate an MPI-compiler (like "mpif90") which is
+automatically linked against that MPI library. It is crucial to either 
+compile the MPI library yourself or to create an appropriate wrapper compiler
+by passing on additional flags and libraries to MPIEXTRA_LIBS and MPIFFLAGS in "Makefile.local".
+Precompiled libraries such as those found in RPMs may not provide
+adequate wrapper compilers on their own. To figure out which compiler was used to compile the libraries,
+"mpif90 -showme" is a command that might work.
+<br/>
+Using the above example, next create a new directory (if it does not exist already):<br/>
+<br/>
+<code>
+&nbsp;&nbsp;&nbsp; [user source]$ mkdir ../lib<br/>
+&nbsp;&nbsp;&nbsp; [user source]$ mkdir ../lib/Intel<br/>
+&nbsp;&nbsp;&nbsp; [user source]$ mkdir ../lib/Intel/mpi<br/>
+&nbsp;&nbsp;&nbsp; [user source]$ mkdir ../bin<br/>
+&nbsp;&nbsp;&nbsp; [user source]$ mkdir ../bin/Intel<br/>
+</code>
+<br/>
+Now do:<br/>
+<br/>
+<code>
+&nbsp;&nbsp;&nbsp; <samp>[user source]$ make campari_mpi</samp><br/>
+</code>
+<br/>
+This will compile all module definition files mod_bar.f90 into module
+information files ${LIB_DIR}/${ARCH}/mpi/bar.mod as well as regular module object files ${LIB_DIR}/${ARCH}/mpi/bar.o. 
+It will furthermore compile all source-files foo.f90 into
+${LIB_DIR}/${ARCH}/mpi/foo.o, create a library out of all the object
+files called lcampari_mpi.a in ${LIB_DIR}/${ARCH}/mpi and finally
+compile and link the actual executable ("campari_mpi" in
+${BIN_DIR}/${ARCH} which can be used in conjunction with mpirun or its equivalent).<br/>
+As you can tell, all object files (and even the Fortran90 module
+declarations) are kept in separate directories such that both targets
+can be dealt with independently.<br/>
+Note that CAMPARI's support for MPI is restricted to an "outer" parallel approach, <i>i.e.</i>
+managing multiple copies of the same or similar tasks that sporadically need to exchange information. 
+Conversely, it does not support standard domain-wise parallelization as most other molecular simulation
+packages (see <a href="keywords.html#MPI_settings">here</a>). The inner layer of parallelism 
+(speeding up a single task by distributing its workload) is handled exclusively by the OpenMP 
+shared memory parallelization. This is also why it is not necessary or correct to
+link specifically to MPI-enabled versions of external libraries.
+Both MPI and OpenMP can be used simultaneously, and this is described next.<br/>
+<br/>
+<h3>Hybrid MPI/OpenMP Installation (Executable "campari_mpi_threads"):</h3>
+CAMPARI allows a hybrid parallelization using both MPI (for communication between multiple copies of 
+the same or similar tasks) and OpenMP (for speeding up individual tasks).
+To install CAMPARI's hybrid MPI/OpenMP version, the requirements for the production of both the 
+pure MPI and OpenMP executables described above have to be met.
+<br/>
+Using the above example, create new directories (if they do not exist already):<br/>
+<br/>
+<code>
+&nbsp;&nbsp;&nbsp; [user source]$ mkdir ../lib<br/>
+&nbsp;&nbsp;&nbsp; [user source]$ mkdir ../lib/Intel<br/>
+&nbsp;&nbsp;&nbsp; [user source]$ mkdir ../lib/Intel/mpi_threads<br/>
+&nbsp;&nbsp;&nbsp; [user source]$ mkdir ../bin<br/>
+&nbsp;&nbsp;&nbsp; [user source]$ mkdir ../bin/Intel<br/>
+</code>
+<br/>
+Now do:<br/>
+<br/>
+<code>
+&nbsp;&nbsp;&nbsp; <samp>[user source]$ make campari_mpi_threads</samp><br/>
+</code>
+<br/>
+This will compile all module definition files mod_bar.f90 into module
+information files ${LIB_DIR}/${ARCH}/mpi_threads/bar.mod as well as regular module object files ${LIB_DIR}/${ARCH}/mpi_threads/bar.o. 
+It will furthermore compile all source-files foo.f90 into
+${LIB_DIR}/${ARCH}/mpi_threads/foo.o, create a library out of all the object
+files called lcampari_mpi_threads.a in ${LIB_DIR}/${ARCH}/mpi_threads and finally
+compile and link the actual executable ("campari_mpi_threads" in
+${BIN_DIR}/${ARCH} which can be used in conjunction with mpirun or its equivalent).
+On modern multicore and multi-socket machines, the mapping of program threads created by such an
+executable to the actual hardware resources is a complicated issue (<i>e.g.</i>, a process of 4 MPI tasks 
+and an allocation of 2 machines with 2 sockets of 16 core CPUs each should probably run such that each MPI task 
+occupies all the cores of an entire socket but can be mapped in a myriad number of suboptimal ways).<br/>
+<br/>
+<h3>Cleaning Up:</h3>
+Execute: <br/>
+<br/>
+&nbsp;&nbsp;&nbsp; <samp>[user source]$ make clean</samp><br/>
+<br/>
+to delete all objects, compiled module files, and libraries in ${LIB_DIR}/${ARCH}, ${LIB_DIR}/${ARCH}/threads, ${LIB_DIR}/${ARCH}/mpi, and
+${LIB_DIR}/${ARCH}/mpi_threads, and also wipe out all binaries
+in ${BIN_DIR}/${ARCH}. This includes removing compiled files associated
+with embedded libraries (XDR and HSL). Note that it
+is possible to support multiple architectures within the same tree,
+since ${ARCH} will be different, and only the "currently active"
+distributions will be cleaned up (or compiled for that matter). Note that
+this will also delete copies of object, module, and library files (or symbolic links to those files) 
+that were placed in the corresponding directory manually, <i>e.g.</i> to simplify 
+linking to external libraries, as long as these files feature the same
+ending.<br/>
+<br/>
+Execute:<br/>
+<br/>
+&nbsp;&nbsp;&nbsp; <samp>[user source]$ make objclean</samp><br/>
+<br/>
+to just delete all object files and libraries.<br/>
+<br/>
+Execute:<br/>
+<br/>
+&nbsp;&nbsp;&nbsp; <samp>[user source]$ make extclean</samp><br/>
+<br/>
+to just delete all object files and libraries associated with embedded versions of XDR and HSL.<br/>
+<br/>
+<h3>Debugging:</h3>
+Particular compilers or older operating systems can of course cause problems. When we have encountered these issues in the past
+and there was no workaround from the compiler side, we introduced additional compiler flags to be passed.
+Currently these are "ORACLE_FORTRAN", "PGI_FORTRAN", and "DISABLE_OPENMP4" (not explained here any further). If you run into problems, do not
+hesitate to post on the <a href="http://sourceforge.net/projects/campari/support">SourceForge forums</a>.<br/>
+<br/>
+<br/>
+</div>
+                    
+                </div>
+                </div>
+                </div>
+                
+            <!-- Side Navigation Bar -->
+            <!--<div class="art-sidebar1">-->                                    
+                <!-- Contributors Block -->
+                <!--<div class="art-Block">
+                    <div class="art-Block-tl"></div>
+                    <div class="art-Block-tr"></div>
+                    <div class="art-Block-bl"></div>
+                    <div class="art-Block-br"></div>
+                    <div class="art-Block-tc"></div>
+                    <div class="art-Block-bc"></div>
+                    <div class="art-Block-cl"></div>
+                    <div class="art-Block-cr"></div>
+                    <div class="art-Block-cc"></div>
+                    <div class="art-Block-body">
+                        <div class="art-BlockHeader">
+                            <div class="l"></div>
+                            <div class="r"></div>
+                            <div class="art-header-tag-icon">
+                                <div class="t">Contributors - Links</div>
+                            </div>
+                        </div><div class="art-BlockContent">
+                            <div class="art-BlockContent-body">
+                                <div>
+                                <b>Pappu Lab</b><br />
+                                Washington University in St. Louis, MO<br />
+                                Website: <a href="lima.wustl.edu">lima.wustl.edu</a><br />
+                                Phone: (999) 999-9999 <br/>
+                                <br/>
+                                <b>Andreas Vitalis</b><br />
+                                Unistat de Zurich<br />
+                                Website: <a href="papajohns.com">vitalis.net</a><br />
+                                Phone: (111) 999-9999 <br/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>-->
+                
+                <!-- Search Block -->
+                <!--
+                <div class="art-Block">
+                    <div class="art-Block-tl"></div>
+                    <div class="art-Block-tr"></div>
+                    <div class="art-Block-bl"></div>
+                    <div class="art-Block-br"></div>
+                    <div class="art-Block-tc"></div>
+                    <div class="art-Block-bc"></div>
+                    <div class="art-Block-cl"></div>
+                    <div class="art-Block-cr"></div>
+                    <div class="art-Block-cc"></div>
+                    <div class="art-Block-body">
+                        <div class="art-BlockHeader">
+                            <div class="l"></div>
+                            <div class="r"></div>
+                            <div class="art-header-tag-icon">
+                                <div class="t">Find Text</div>
+                            </div>
+                        </div><div class="art-BlockContent">
+                            <div class="art-BlockContent-body">
+                                <div><form method="get" id="newsletterform" action="javascript:void(0)">
+                                <input type="text" value="" name="email" id="s" style="width: 95%;" />
+                                <span class="art-button-wrapper">
+                                    <span class="l"> </span>
+                                    <span class="r"> </span>
+                                    <input class="art-button" type="submit" name="search" value="Search"/>
+                                </span>
+                                </form></div>
+                            </div>
+                        </div>
+                    </div>
+                </div> 
+                -->
+                
+                <!-- News/Updates Block -->
+                <!--
+                <div class="art-Block">
+                    <div class="art-Block-tl"></div>
+                    <div class="art-Block-tr"></div>
+                    <div class="art-Block-bl"></div>
+                    <div class="art-Block-br"></div>
+                    <div class="art-Block-tc"></div>
+                    <div class="art-Block-bc"></div>
+                    <div class="art-Block-cl"></div>
+                    <div class="art-Block-cr"></div>
+                    <div class="art-Block-cc"></div>
+                    <div class="art-Block-body">
+                        <div class="art-BlockHeader">
+                            <div class="l"></div>
+                            <div class="r"></div>
+                            <div class="art-header-tag-icon">
+                                <div class="t">Recent News</div>
+                            </div>
+                        </div><div class="art-BlockContent">
+                            <div class="art-BlockContent-body">
+                                <div>
+                                    <p><b>Jun 14, 2008</b><br/>
+                                    Aliquam sit amet felis. Mauris semper, 
+                                    velit semper laoreet dictum, quam 
+                                    diam dictum urna, nec placerat elit 
+                                    nisl in quam. Etiam augue pede, 
+                                    molestie eget, rhoncus at, convallis 
+                                    ut, eros. Aliquam pharetra.<br/>
+                                    <a href="javascript:void(0)">Read more...</a></p>
+                                                          
+                                    <p><b>Aug 24, 2008</b><br/>
+                                    Aliquam sit amet felis. Mauris semper, 
+                                    velit semper laoreet dictum, quam 
+                                    diam dictum urna, nec placerat elit 
+                                    nisl in quam. Etiam augue pede, 
+                                    molestie eget, rhoncus at, convallis 
+                                    ut, eros. Aliquam pharetra.<br/>
+                                    <a href="javascript:void(0)">Read more...</a></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> --><!-- End Sidebar -->
+
+            </div>
+        </div>
+    </div> <!-- End main page contents -->
+
+            
+    <!-- Footer -->
+    <div class="art-Footer">
+    <div class="art-Footer-background">
+    <div class="art-Footer-inner">
+        <a href="#" class="art-rss-tag-icon" title="RSS"></a>
+        <div class="art-Footer-text">
+        <p><a href="#">Contact Us</a> | <a href="#">Terms of Use</a>
+        | <a href="#">License Information</a><br />
+        Copyright &copy; 2010 . All Rights Reserved.</p>
+        </div>
+    </div>
+    </div>
+    </div>
+    <p class="art-page-footer">XHTML and CSS valid. Powered by <a href="http://www.flashmint.com/">FlashMint</a> - flash templates provider.</p>
+    <div style="text-align: center; font-size: 0.75em;">Design downloaded from <a href="http://www.freewebtemplates.com/">free website templates</a>.</div>
+                
+</div>
+</body>
+</html>

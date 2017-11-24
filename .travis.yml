@@ -1,3 +1,5 @@
+
+
 # R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
 language: r
 # pandoc_version: 1.16 # crashing because it is trying to fetch .deb from github (not existant url)
@@ -43,12 +45,27 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then  rm '/usr/local/bin/pandoc'; fi # must be specified
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then  rm '/usr/local/share/man/man1/pandoc.1'; fi # must be specified
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install pandoc; fi # must be specified
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install fftw; fi # must be specified
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install open-mpi; fi # must be specified
+  
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libnetcdff5; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libnetcdf-dev; fi # must be specified
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libarpack2-dev; fi # must be specified
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install netcdf-bin; fi # must be specified
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install pandoc; fi # must be specified
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then  apt-get install -y libblas-common; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then  apt-get install -y liblapack-dev; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then  apt-get install -y libfftw3-dev; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then  apt-get install -y libfftw3-bin; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then  apt-get install -y libopenmpi-dev; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then  apt-get install -y openmpi-bin; fi
+#  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then  apt-get install -y automake; fi
+#  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then  apt-get install -y gfortran; fi
+#  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then  apt-get install -y libnetcdff6; fi
+#  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then  apt-get install -y libnetcdff-dev; fi
+#  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then  apt-get install -y netcdf-bin; fi
+
 
 
 # the following seems not necessary
