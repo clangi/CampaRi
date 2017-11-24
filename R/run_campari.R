@@ -497,12 +497,12 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
       stop('======== detected CAMPARI CRASHED in log. Please check it for details ========')
   }else if(run_in_background){
     if(!silent) cat('Direct console printing disabled (it will run in background). Please check', log_f, ' file for real time logging.\n')
-    if(!silent) suppressWarnings(system(paste0(campari_main_exe, " -k ", key_f, " > ", log_f, "&")))
+    suppressWarnings(system(paste0(campari_main_exe, " -k ", key_f, " > ", log_f, "&")))
     if(any(grepl(x = suppressWarnings(system(paste0("tail -n8 ", log_f), intern = TRUE)), pattern = "CAMPARI CRASHED")))
       stop('======== detected CAMPARI CRASHED in log. Please check it for details ========')
   }else{
     if(!silent) cat('Direct console printing disabled. Please check', log_f, ' file for real time logging (at the end it will be tailed).\n')
-    if(!silent) suppressWarnings(system(paste0(campari_main_exe, " -k ", key_f, " > ", log_f)))
+    suppressWarnings(system(paste0(campari_main_exe, " -k ", key_f, " > ", log_f)))
     if(!silent) cat('\n')
     if(!silent) suppressWarnings(system(paste0("tail -n7 ", log_f)))
     if(any(grepl(x = suppressWarnings(system(paste0("tail -n8 ", log_f), intern = TRUE)), pattern = "CAMPARI CRASHED")))

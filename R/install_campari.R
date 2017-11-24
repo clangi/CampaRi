@@ -8,12 +8,13 @@
 #' @param install_ncminer If true the executable for netcdf and ascii (tsv, csv) file handling will be installed on the top of normal installation.
 #' @param install_threads If this option is true and you have some multithreading fortran compiler (e.g. openmp) the campari_threads will be installed.
 #' @param install_mpi If this option is true and you have some MPI fortran compiler the campari_mpi will be installed.
+#' @param silent_built The configuration and make step will not print anything to console.
 #' @details For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
 #' 
 #' @export install_campari
 
 
-install_campari <- function(installation_location = NULL, install_ncminer = FALSE, install_threads = FALSE, install_mpi = FALSE, silent = FALSE){
+install_campari <- function(installation_location = NULL, install_ncminer = FALSE, install_threads = FALSE, install_mpi = FALSE, silent_built = FALSE){
   
   # insertion checks
   campari_source <- system.file("for_campari/", package = "CampaRi")
@@ -27,12 +28,14 @@ install_campari <- function(installation_location = NULL, install_ncminer = FALS
     stop('install_threads must be a logical value.')
   if(!is.logical(install_mpi))
     stop('install_mpi must be a logical value.')
+  if(!is.logical(silent_built))
+    stop('silent_built must be a logical value.')
 
   ori_wd <- getwd()
   
   if(!is.null(installation_location)){
     cat('Copying source files in installation directory...')
-    suppressWarnings(system(paste0('cp -r ', campari_source, ' ', installation_location)))
+    suppressWarnings(system(paste0('cp -r ', campari_source, ' ', installation_location), ignore.stdout = !silent_built))
     installing_place <- installation_location
   }else{
     installing_place <- campari_source
@@ -41,22 +44,22 @@ install_campari <- function(installation_location = NULL, install_ncminer = FALS
   cat('Changing directory...\n')
   setwd(paste0(installing_place, 'source/'))
   cat('\n\n############ installing classic campari executable ############\n\n')
-  suppressWarnings(system(command = './configure'))
-  suppressWarnings(system(command = 'make campari'))
+  suppressWarnings(system(command = './configure', ignore.stdout = !silent_built))
+  suppressWarnings(system(command = 'make campari', ignore.stdout = !silent_built))
   if(install_threads && !install_mpi){
     cat('\n\n############ installing campari_threads executable ############\n\n')
-    suppressWarnings(system(command = './configure --enable-threads'))
-    suppressWarnings(system(command = 'make campari_threads'))
+    suppressWarnings(system(command = './configure --enable-threads', ignore.stdout = !silent_built))
+    suppressWarnings(system(command = 'make campari_threads', ignore.stdout = !silent_built))
   }
   if(install_mpi && !install_threads){
     cat('\n\n############ installing campari_mpi executable ############\n\n')
-    suppressWarnings(system(command = './configure --enable-mpi'))
-    suppressWarnings(system(command = 'make campari_mpi'))
+    suppressWarnings(system(command = './configure --enable-mpi', ignore.stdout = !silent_built))
+    suppressWarnings(system(command = 'make campari_mpi', ignore.stdout = !silent_built))
   }
   if(install_threads && install_mpi){
     cat('\n\n############ installing campari_mpi_threads executable ############\n\n')
-    suppressWarnings(system(command = './configure --enable-threads --enable-mpi'))
-    suppressWarnings(system(command = 'make campari_mpi_threads'))
+    suppressWarnings(system(command = './configure --enable-threads --enable-mpi', ignore.stdout = !silent_built))
+    suppressWarnings(system(command = 'make campari_mpi_threads', ignore.stdout = !silent_built))
   }
   
   # nc_minare

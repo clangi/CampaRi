@@ -5,7 +5,7 @@
 \title{Installing the original Fortran code}
 \usage{
 install_campari(installation_location = NULL, install_ncminer = FALSE,
-  install_threads = FALSE, install_mpi = FALSE)
+  install_threads = FALSE, install_mpi = FALSE, silent_built = FALSE)
 }
 \arguments{
 \item{installation_location}{It defaults to the package installation path (package/inst/campari) but this can be copied in another directory and installed from there.
@@ -16,6 +16,8 @@ NB: it will contain a source directory with its configure file and therefore mus
 \item{install_threads}{If this option is true and you have some multithreading fortran compiler (e.g. openmp) the campari_threads will be installed.}
 
 \item{install_mpi}{If this option is true and you have some MPI fortran compiler the campari_mpi will be installed.}
+
+\item{silent_built}{The configuration and make step will not print anything to console.}
 }
 \description{
 \code{install_campari} is able to install the original campari Fortran code in the default directory (package/inst) or in a specified one. 
