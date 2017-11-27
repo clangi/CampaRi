@@ -30,6 +30,9 @@ install_campari <- function(installation_location = NULL, install_ncminer = FALS
     stop('install_mpi must be a logical value.')
   if(!is.logical(silent_built))
     stop('silent_built must be a logical value.')
+  if(install_ncminer && install_mpi)
+    stop('ncminer option cannot be installed using mpi.')
+  
   
   # checking for install-sh config.sub config.guess and add them eventually
   cat('Checking for the presence of install-sh, config.guess and config.sub ....')
