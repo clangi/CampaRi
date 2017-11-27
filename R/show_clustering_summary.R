@@ -23,7 +23,7 @@
 #' 
 
 
-show_clustering_summary <- function(log_file, fyc_file = NULL, verbose = TRUE, which_first_clusters = NULL, which_cluster = NULL, sub_sampling_factor = 1,
+show_clustering_summary <- function(log_file, fyc_file = NULL, verbose = TRUE, which_first_clusters = NULL, which_cluster = NULL,
                                     return_centers = FALSE, return_angles = FALSE){
   
   if(is.null(which_first_clusters) && is.null(which_cluster)){

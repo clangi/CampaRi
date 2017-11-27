@@ -10,3 +10,4 @@ ISSUE_TEMPLATE\.md
 ^vignettes/rsconnect/$
 ^vignettes/to_d$
 ^inst/doc/$
+_config.yml

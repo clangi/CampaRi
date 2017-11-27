@@ -47,7 +47,7 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install pandoc; fi # must be specified
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install fftw; fi # must be specified
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install open-mpi; fi # must be specified
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install automake; fi # must be specified
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew upgrade automake; fi # must be specified
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pwd; fi # must be specified
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then cp /usr/share/automake-*/install-sh inst/extdata/for_campari/source/. ; fi # must be specified
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then cp /usr/share/automake-*/config.sub inst/extdata/for_campari/source/. ; fi # must be specified

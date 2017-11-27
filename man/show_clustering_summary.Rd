@@ -6,7 +6,7 @@
 \usage{
 show_clustering_summary(log_file, fyc_file = NULL, verbose = TRUE,
   which_first_clusters = NULL, which_cluster = NULL,
-  sub_sampling_factor = 1, return_centers = FALSE, return_angles = FALSE)
+  return_centers = FALSE, return_angles = FALSE)
 }
 \arguments{
 \item{log_file}{log output of a campari run in which a clustering was performed}
