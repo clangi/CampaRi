@@ -9,7 +9,7 @@ test_that('Test run_campari from installation', {
   system('printf "NBU\nEND" &> nbu.in')
   expect_error(run_campari(FMCSC_SEQFILE="nbu.in", campari_exe = ca_exe, # you must have it defined according to CAMPARI's rules
                           # FMCSC_BASENAME="NBU", # lets try the base_name option
-                          base_name = "NBU", print_status = F, # it will take 55 s in background ~
+                          base_name = "NBU", print_status = T, # it will take 55 s in background ~
                           PARAMETERS="oplsaal.prm", # if this variable it is not supplied will be automatically assigned to <full path to folder>/campari/params/abs3.2_opls.prm
                           FMCSC_SC_IPP=0.0,
                           FMCSC_SC_BONDED_T=1.0,
