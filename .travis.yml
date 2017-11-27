@@ -49,9 +49,9 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install open-mpi; fi # must be specified
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install automake; fi # must be specified
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pwd; fi # must be specified
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then cp /usr/share/automake-*/install-sh CampaRi/inst/extdata/for_campari/source/. ; fi # must be specified
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then cp /usr/share/automake-*/config.sub CampaRi/inst/extdata/for_campari/source/. ; fi # must be specified
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then cp /usr/share/automake-*/config.guess CampaRi/inst/extdata/for_campari/source/. ; fi # must be specified
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then cp /usr/share/automake-*/install-sh inst/extdata/for_campari/source/. ; fi # must be specified
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then cp /usr/share/automake-*/config.sub inst/extdata/for_campari/source/. ; fi # must be specified
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then cp /usr/share/automake-*/config.guess inst/extdata/for_campari/source/. ; fi # must be specified
   
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libnetcdff5; fi
@@ -65,9 +65,9 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -y openmpi-bin; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -y automake; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then pwd; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cp /usr/share/automake-*/install-sh CampaRi/inst/extdata/for_campari/source/. ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cp /usr/share/automake-*/config.sub CampaRi/inst/extdata/for_campari/source/. ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cp /usr/share/automake-*/config.guess CampaRi/inst/extdata/for_campari/source/. ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cp /usr/share/automake-*/install-sh inst/extdata/for_campari/source/. ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cp /usr/share/automake-*/config.sub inst/extdata/for_campari/source/. ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cp /usr/share/automake-*/config.guess inst/extdata/for_campari/source/. ; fi
 
 #  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then  apt-get install -y gfortran; fi
 #  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then  apt-get install -y libnetcdff6; fi
