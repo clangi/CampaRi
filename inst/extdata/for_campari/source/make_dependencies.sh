@@ -94,18 +94,11 @@ do
   echo \${LIB_DIR}/\${ARCH}/${i%.f90}.o \${LIB_DIR}/\${ARCH}/mpi/${i%.f90}.o \${LIB_DIR}/\${ARCH}/threads/${i%.f90}.o \${LIB_DIR}/\${ARCH}/mpi_threads/${i%.f90}.o: \${SRC_DIR}/${i} >> ${SRC_DIR}/DEPENDENCIES
 done
 
-<<<<<<< make_dependencies.sh
 echo 'DEPENDENCIES: loading macros.i relationships...'
 MDEPS=`grep -H -l1 "#include \"macros.i\"" ${SOURCES} | awk '{print "${LIB_DIR}/${ARCH}/" $1}' | sed -e "s/\.f90/.o/"`
 MDEPS2=`grep -H -l1 "#include \"macros.i\"" ${SOURCES} | awk '{print "${LIB_DIR}/${ARCH}/mpi/" $1}' | sed -e "s/\.f90/.o/"`
 MDEPS3=`grep -H -l1 "#include \"macros.i\"" ${SOURCES} | awk '{print "${LIB_DIR}/${ARCH}/threads/" $1}' | sed -e "s/\.f90/.o/"`
 MDEPS4=`grep -H -l1 "#include \"macros.i\"" ${SOURCES} | awk '{print "${LIB_DIR}/${ARCH}/mpi_threads/" $1}' | sed -e "s/\.f90/.o/"`
-=======
-MDEPS=`grep -H -l1 "#include \"macros.i\"" ${SOURCES} | awk '{print "${LIB_DIR}/${ARCH}/" $1}' | sed -e "s/\.f90/.o/"`
-MDEPS2=`grep -H -l1 "#include \"macros.i\"" ${SOURCES} | awk '{print "${LIB_DIR}/${ARCH}/mpi/" $1}' | sed -e "s/\.f90/.o/"`
-MDEPS3=`grep -H -l1 "#include \"macros.i\"" ${SOURCES} | awk '{print "${LIB_DIR}/${ARCH}/threads/" $1}' | sed -e "s/\.f90/.o/"`
-MDEPS4=`grep -H -l1 "#include \"macros.i\"" ${SOURCES} | awk '{print "${LIB_DIR}/${ARCH}/mpi_threads/" $1}' | sed -e "s/\.f90/.o/"`
->>>>>>> 1.23
 echo ${MDEPS} ${MDEPS2} ${MDEPS3} ${MDEPS4}: \${SRC_DIR}/macros.i >> ${SRC_DIR}/DEPENDENCIES
 
 MDEPS=`grep -H -l1 "#include \"macros.i\"" ${MODOS} | awk '{print "${LIB_DIR}/${ARCH}/" $1}' | sed -e "s/\.f90/.o/"`
