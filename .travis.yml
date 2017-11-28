@@ -48,6 +48,7 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install fftw; fi # must be specified
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install open-mpi; fi # must be specified
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew upgrade automake; fi # must be specified
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.locate.plist; fi # must be specified
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then locate automake; fi # must be specified
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then locate install-sh; fi # must be specified
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pwd; fi # must be specified
