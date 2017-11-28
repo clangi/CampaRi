@@ -38,7 +38,7 @@ test_that('Test run_campari from installation', {
   trj <- data.table::fread("FYC.dat", header = F, skip = 1, data.table = FALSE)[,-1]
   trj <- sapply(trj, as.numeric) # always be sure that it is numeric!
   trj <- matrix(trj, nrow = 1000, ncol =3) # always be sure that it is numeric!
-  run_campari(trj = trj, base_name = "ascii_based_analysis",
+  run_campari(trj = trj, base_name = "ascii_based_analysis", campari_exe = ca_exe,
               FMCSC_CPROGINDMODE=1, #mst
               FMCSC_CCOLLECT=1, print_status = T,
               FMCSC_CMODE=4,
