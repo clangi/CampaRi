@@ -6,7 +6,9 @@ test_that('Test run_campari from installation', {
   ca_exe <- paste0(bin_dir, dir(bin_dir)[1], '/', list.files(paste0(bin_dir, dir(bin_dir)[1]))[1])
   expect_true(is.character(ca_exe))
   expect_true(ca_exe != "")
-  system('printf "NBU\nEND" &> nbu.in')
+  # system('printf "NBU\nEND" &> nbu.in')
+  data.table::fwrite(list('NBU'), file = 'nbu.in', row.names = F, col.names = F)
+  data.table::fwrite(list('END'), file = 'nbu.in', append = T, row.names = F, col.names = F)
   expect_error(run_campari(FMCSC_SEQFILE="nbu.in", campari_exe = ca_exe, # you must have it defined according to CAMPARI's rules
                           # FMCSC_BASENAME="NBU", # lets try the base_name option
                           base_name = "NBU", print_status = T, # it will take 55 s in background ~
@@ -52,6 +54,7 @@ test_that('Test run_campari from installation', {
   if(file.exists('FYC.dat')) file.remove('FYC.dat')
   if(file.exists('NBU.key')) file.remove('NBU.key')
   if(file.exists('NBU.log')) file.remove('NBU.log')
+  if(file.exists('nbu.in')) file.remove('nbu.in')
   if(file.exists('NBU_END.int')) file.remove('NBU_END.int')
   if(file.exists('NBU_END.pdb')) file.remove('NBU_END.pdb')
   if(file.exists('NBU_START.int')) file.remove('NBU_START.int')
