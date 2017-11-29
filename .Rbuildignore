@@ -11,3 +11,4 @@ ISSUE_TEMPLATE\.md
 ^vignettes/to_d$
 ^inst/doc/$
 _config.yml
+^src/to_del*

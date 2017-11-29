@@ -61,9 +61,8 @@ subroutine generate_neighbour_list( &
 #ifdef LINK_NETCDF
   use netcdf
   use m_mst_dumping
-#else
-  use m_mst !   use m_mst_dumping
 #endif
+  use m_mst !   use m_mst_dumping
   implicit none
 
   ! INPUT VARIABLES
@@ -89,21 +88,24 @@ subroutine generate_neighbour_list( &
   integer i ! helper variables
   integer nzeros ! nzeros = number of not connected components (dis .le. 0)
   ! character(len=1024) :: format_var !format for above mentioned dumping
-  real t2,t1 !timing variables
-
+  real t2, t1 !timing variables
+  logical run_online ! ----------------------------------------
+  ! the last variable is momentaneously set to return_tree_in_r as it
+  ! seems that a lot of files are not touched otherwise. (m_mst is not explored
+  ! if the installation has already NETCDF in it)
 
   ! OUTPUT VARIABLES !strict output collaboration with R ! TODO: dummy var to lower memory need
   integer, intent(inout) :: max_degr !maximum degree of the adjlist
   integer, intent(inout) :: adjl_deg(dfffo)
-  integer, intent(inout) :: adjl_ix(dfffo,dfffo)
-  real, intent(inout) :: adjl_dis(dfffo,dfffo)
+  integer, intent(inout) :: adjl_ix(dfffo, dfffo)
+  real, intent(inout) :: adjl_dis(dfffo, dfffo)
 
   ! N B :
   ! clu_hardcut is used for distances between different clusters snapshos as
   ! a threshold in leader clusting (MST).
   ! If the intent is in this cannot be an ALLOCATABLE variable
 
-
+  run_online = return_tree_in_r
   n_xyz = n_xyz_in
   n_snaps = n_snaps_in
   mute = mute_in
@@ -134,11 +136,17 @@ subroutine generate_neighbour_list( &
   c_nhier = tree_height_in !height of the tree
   ! default vars that should be set from main function TODO
   ! cprogindrmax = max(floor((n_snaps*7.0)/100),min(n_snaps,5)) !def 7/100
+  cprogindrmax2 = n_search_attempts_in
+  cprogbatchsz2 = 1  !  batch size for random stretches aka dim of random branches def = 1 TODO
+  cprogrdepth2 = 0   !  auxiliary search depth def = 0 TODO
+  if(cprogrdepth2.gt.c_nhier) cprogrdepth2 = c_nhier
+#ifdef LINK_NETCDF
   cprogindrmax = n_search_attempts_in
   cprogbatchsz = 1  !  batch size for random stretches aka dim of random branches def = 1 TODO
   cprogrdepth = 0   !  auxiliary search depth def = 0 TODO
   if(cprogrdepth.gt.c_nhier) cprogrdepth = c_nhier
-  if(cmaxrad.le.radius) cmaxrad = 2.0*radius
+#endif
+if(cmaxrad.le.radius) cmaxrad = 2.0*radius
   c_multires = 0 !inital value of FMCSC_BIRCHMULTI TODO
   ordering = 1 !TODO
 
@@ -158,19 +166,22 @@ subroutine generate_neighbour_list( &
   !   end if
   ! end if
 
-
   call sl()
   call sl()
+  if(.not.run_online) then
 #ifdef LINK_NETCDF
-  call spr("Starting analysis in Fortran [with netcdf dumping]...")
+    call spr("Starting analysis in Fortran [with netcdf dumping]...")
 #else
-  call spr("Starting analysis in Fortran [no netcdf dumping]...")
+    call spr("Starting analysis in Fortran [no netcdf dumping]...")
 #endif
+  else
+    call spr("Starting analysis in Fortran [no netcdf dumping]...")
+  end if
   call spr('------------------------------------------------------------')
-  call sipr("Selected distance: ",dis_method)
+  call sipr("Selected distance: ", dis_method)
   call sl()
-  call sipr("Number of snapshots: ",n_snaps)
-  call sipr("Number of variables: ",n_xyz)
+  call sipr("Number of snapshots: ", n_snaps)
+  call sipr("Number of variables: ", n_xyz)
   call sl()
 
   ! if(superver) then
@@ -193,27 +204,27 @@ subroutine generate_neighbour_list( &
     call sl()
     call spr( 'Neighbor list generated.')
     call sl()
-      nzeros = 0
-      do i=1,n_snaps
-        if (cnblst(i)%nbs.le.0) then
-          nzeros = nzeros + 1
-          ! call sipr('Warning. Snapshot # ',i,' is with 0 degree'
-       end if
-      end do
-      if (nzeros.gt.0) then
-        call sipr( 'Warning. The following snapshots are without a neighbor &
-        &(similar) structure. This may in some cases cause the clustering &
-        &algorithm to misbehave.',nzeros)
-      end if
-      call sl()
-      do i=1,n_clu_alc_sz_gen
-        if (allocated(scluster(i)%snaps).EQV..true.) deallocate(scluster(i)%snaps)
-        if (allocated(scluster(i)%sums).EQV..true.) deallocate(scluster(i)%sums)
-        if (allocated(scluster(i)%tmpsnaps).EQV..true.) deallocate(scluster(i)%tmpsnaps)
-        if (allocated(scluster(i)%children).EQV..true.) deallocate(scluster(i)%children)
-      end do
-      deallocate(scluster)
-
+    nzeros = 0
+    do i=1,n_snaps
+      if (cnblst(i)%nbs.le.0) then
+        nzeros = nzeros + 1
+        ! call sipr('Warning. Snapshot # ',i,' is with 0 degree'
+     end if
+    end do
+    if (nzeros.gt.0) then
+      call sipr( 'Warning. The following snapshots are without a neighbor &
+      &(similar) structure. This may in some cases cause the clustering &
+      &algorithm to misbehave.',nzeros)
+    end if
+    call sl()
+    do i=1,n_clu_alc_sz_gen
+      if (allocated(scluster(i)%snaps).EQV..true.) deallocate(scluster(i)%snaps)
+      if (allocated(scluster(i)%sums).EQV..true.) deallocate(scluster(i)%sums)
+      if (allocated(scluster(i)%tmpsnaps).EQV..true.) deallocate(scluster(i)%tmpsnaps)
+      if (allocated(scluster(i)%children).EQV..true.) deallocate(scluster(i)%children)
+    end do
+    deallocate(scluster)
+    if(.not.run_online) then
 #ifdef LINK_NETCDF
       call CPU_time(t1)
       call gen_MST_from_nbl_w()
@@ -238,7 +249,26 @@ subroutine generate_neighbour_list( &
         deallocate(cnblst)
       end if
 #endif
-  else
+    else
+      if(do_mst) then
+        call CPU_time(t1)
+        call gen_MST_from_nbl(adjl_deg,adjl_ix,adjl_dis,max_degr)
+        call CPU_time(t2)
+        call srpr( 'TIME elapsed for MST building (s): ',t2-t1)
+      else
+        do i=1,n_snaps
+          adjl_deg(i) = cnblst(i)%nbs
+          adjl_ix(i,:) = cnblst(i)%idx
+          adjl_dis(i,:) = cnblst(i)%dis
+          ! the max search is again needed if not MST is built
+          if(i .eq. 1 .OR. max_degr .lt. cnblst(i)%nbs) max_degr = cnblst(i)%nbs
+          if (allocated(cnblst(i)%dis).EQV..true.) deallocate(cnblst(i)%dis)
+          if (allocated(cnblst(i)%idx).EQV..true.) deallocate(cnblst(i)%idx)
+        end do
+        deallocate(cnblst)
+      end if
+    end if
+  else !THIS IS THE BIRCH SST
     call CPU_time(t1)
     call birch_clustering(trj_data)
     call CPU_time(t2)
@@ -246,11 +276,15 @@ subroutine generate_neighbour_list( &
     call spr('Birch clustering completed.')
     call spr('------------------------------------------------------------')
     call CPU_time(t1)
+    if(.not.run_online) then
 #ifdef LINK_NETCDF
-    call gen_MST_from_treeclustering_w(trj_data)
+      call gen_MST_from_treeclustering_w(trj_data)
 #else
-    call gen_MST_from_treeclustering(adjl_deg, adjl_ix, adjl_dis, max_degr, trj_data)
+      call gen_MST_from_treeclustering(adjl_deg, adjl_ix, adjl_dis, max_degr, trj_data)
 #endif
+    else
+      call gen_MST_from_treeclustering(adjl_deg, adjl_ix, adjl_dis, max_degr, trj_data)
+    end if
     call CPU_time(t2)
     call srpr('Time elapsed for SST building (s): ',t2-t1)
     call spr('SST generated from tree-based clustering successfully.')
@@ -259,38 +293,44 @@ subroutine generate_neighbour_list( &
   end if
 
   ! Dumping to netcdf if necessary
+  ! this step  can be available ONLY if netcdf was used.
+  ! the obj approxmst belongs only to m_mst_dumping
+  if(.not.run_online) then
 #ifdef LINK_NETCDF
-  call spr('DUMPING THE MST/SST to netcdf...')
-  call sl()
-  ! #ifdef LINK_NETCDF
-  call CPU_time(t1)
-  call dump_nbl_nc()
-  call CPU_time(t2)
-  call sl()
-  call srpr('Time elapsed for mst dumping (s): ',t2-t1)
-  call spr('...file-mst dumping done.')
-  if(return_tree_in_r) then
+    call spr('DUMPING THE MST/SST to netcdf...')
     call sl()
-    call spr('As you have the R-based tree handling active, now the tree &
-    will return to the glorious hands of R...')
-    do i=1,n_snaps
-      adjl_deg(i) = approxmst(i)%deg
-      adjl_ix(i,:) = approxmst(i)%adj(1:approxmst(i)%deg)
-      adjl_dis(i,:) = approxmst(i)%dist(1:approxmst(i)%deg)
-      if(i .eq. 1 .OR. max_degr .lt. approxmst(i)%deg) max_degr = approxmst(i)%deg
-    end do
-    call spr('...done')
-  end if
-  ! deallcoating the sst used for dumping to netcdf
-  if (allocated(approxmst).EQV..true.) then
-    do i=1,size(approxmst)
-      if (allocated(approxmst(i)%adj).EQV..true.) deallocate(approxmst(i)%adj)
-      if (allocated(approxmst(i)%dist).EQV..true.) deallocate(approxmst(i)%dist)
-    end do
-    deallocate(approxmst)
-  end if
-  call spr('------------------------------------------------------------')
+    call CPU_time(t1)
+    call dump_nbl_nc()
+    call CPU_time(t2)
+    call sl()
+    call srpr('Time elapsed for mst dumping (s): ',t2-t1)
+    call spr('...file-mst dumping done.')
+    if(return_tree_in_r) then
+      call sl()
+      call spr('As you have the R-based tree handling active, now the tree &
+      will return to the glorious hands of R...')
+      do i=1,n_snaps
+        adjl_deg(i) = approxmst(i)%deg
+        adjl_ix(i,:) = approxmst(i)%adj(1:approxmst(i)%deg)
+        adjl_dis(i,:) = approxmst(i)%dist(1:approxmst(i)%deg)
+        if(i .eq. 1 .OR. max_degr .lt. approxmst(i)%deg) max_degr = approxmst(i)%deg
+      end do
+      call spr('...done')
+    end if
+    ! deallcoating the sst used for dumping to netcdf
+    ! if the obj does not exist this throw an error
+    if (allocated(approxmst).EQV..true.) then
+      do i=1,size(approxmst)
+        if (allocated(approxmst(i)%adj).EQV..true.) deallocate(approxmst(i)%adj)
+        if (allocated(approxmst(i)%dist).EQV..true.) deallocate(approxmst(i)%dist)
+      end do
+      deallocate(approxmst)
+    end if
+    call spr('------------------------------------------------------------')
 #endif
+  end if
+! here the else is not necessary because in the case of no netcdf
+! the objects will be loaded on the fly
 
   ! deallocate the distance matrix if mode is 12
   if(dis_method .eq. 12) deallocate(distance_mat)

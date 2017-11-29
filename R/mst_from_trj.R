@@ -6,7 +6,7 @@
 #' @param trj Input trajectory (variables on the columns and equal-time spaced snpashots on the row). It must be a \code{matrix} or a \code{data.frame} of numeric.
 #' @param dump_to_netcdf If \code{FALSE} the netcdf support will be used. The minimum spanning tree will be dumped to file for further analysis.
 #' @param mode It takes a string in input and can be either "fortran" (highly advised and default) or "R".
-#' @param distance_method Distance metric between snapshots. This value can be set 1 (dihedral angles) or 5 (root mean square deviation) or 11 (balistic distance) 
+#' @param distance_method Distance metric between snapshots. This value can be set 1 (dihedral angles) or 5 (root mean square deviation) or 11 (balistic distance)
 #' or 12 (mahalanobis distance - matrix to be inserted).
 #' @param clu_radius This numeric argument is used in the clustering step in order to make clusters of the same radius at the base level.
 #' @param clu_hardcut This option is used only with \code{birch_clu=F} and defines the inter-clusters distance threshold.
@@ -90,7 +90,7 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
   #   #     command_loc <- system(paste0("which ",data_management))
   #   #     if(command_loc=="") stop("No support for hdf5. Please check installation and correct linkage of the command to your enviroment.")
   # }
-  
+
   # Input setting
   n_snaps <- nrow(trj)
   n_xyz <- ncol(trj)
@@ -100,7 +100,7 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
   if(length(distance_method) != 1) stop('When using the birch clustering algorithm (SST) only one distance is available per time.')
   if(!is.numeric(distance_method) || !(distance_method %in% sup_dist)) stop("The distance inserted is not valid. Check the documentation for precise values.")
   if(distance_method%%1 != 0) stop('distance_method must be an integer.')
-  
+
   # Checking the Mahalanobis distance insertion
   if(!is.null(distance_matrix)){
     if(!is.matrix(distance_matrix)){
@@ -113,7 +113,7 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
       stop('distance_matrix must be a squared matrix. ')
     if(nrow(distance_matrix) != n_xyz)
       stop('distance_matrix must have same rows and columns as the number of features in input (columns of trj).')
-    cat('Mahalanobis distance inserted for generic euclidean distance metric use. 
+    cat('Mahalanobis distance inserted for generic euclidean distance metric use.
         This method will use the input matrix distance_matrix to compute the sapphire pipeline.\n')
     if(distance_method != 12) stop('Please insert the distance_method accordingly to the Mahalanobis distance_matrix mode.')
   }else{
@@ -346,9 +346,10 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
       if(n_snaps > 25000)
         stop("Using more than 25000 snapshots with no memory handling will generate a memory overflow (tested with 16gb RAM).
              Please set the option dump_to_netcdf as TRUE.")
-      adj_deg <- as.integer(rep(0,n_snaps))
-      adj_ix <- matrix(as.integer(rep(0,n_snaps*n_snaps)),n_snaps,n_snaps)
-      adj_dis <- matrix(as.single(rep(0.0,n_snaps*n_snaps)),n_snaps,n_snaps)
+      adj_deg <- as.integer(rep(0, n_snaps))
+      adj_ix <- matrix(as.integer(rep(0, n_snaps*n_snaps)), n_snaps, n_snaps)
+      adj_dis <- matrix(as.single(rep(0.0, n_snaps*n_snaps)), n_snaps, n_snaps)
+      dfffo <- n_snaps
     }
     # setting the input-output silly variables (R-Fortran communication needs)
     attr(adj_dis, "Csingle") <- TRUE
@@ -359,7 +360,7 @@ mst_from_trj<-function(trj, dump_to_netcdf=FALSE, mode = "fortran",
                         trj_data=trj,
                         n_xyz_in=as.integer(n_xyz),
                         n_snaps_in=as.integer(n_snaps),
-                        dfffo=as.integer(n_snaps), # dimensional_flag_for_fixed_out
+                        dfffo=as.integer(dfffo), # dimensional_flag_for_fixed_out
                         clu_radius_in=as.single(clu_radius),
                         clu_hardcut_in=as.single(clu_hardcut),
                         #output
