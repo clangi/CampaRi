@@ -35,25 +35,25 @@ install_campari <- function(installation_location = NULL, install_ncminer = FALS
   
   
   # checking for install-sh config.sub config.guess and add them eventually
-  if(.get_os() == 'linux')
+  if(.get_os() == 'linux'){
     automake_path <- '/usr/share/'
-  else if(.get_os() == 'osx')
-    automake_path <- '/usr/local/'
+    automake_name <- dir(automake_path, pattern = 'automake-*')[1]
+  }else if(.get_os() == 'osx'){
+    automake_path <- '/usr/local/Cellar/automake/'
+    automake_name <- dir(automake_path, pattern = '[0-9].[0.9]*')[1]
+  }
   cat('Checking for the presence of install-sh, config.guess and config.sub ....')
   if(!file.exists(paste0(campari_source, 'source/install-sh'))){
-    automake_name <- dir(automake_path, pattern = 'automake-*')
     if(!file.exists(paste0(automake_path, automake_name, '/install-sh')))
       stop('Please install automake on your computer (e.g. apt install automake) and be sure that there is this file: /usr/share/automake-*/install-sh .')
     file.copy(from = paste0(automake_path, automake_name, '/install-sh'), to = paste0(campari_source, 'source/'), overwrite = TRUE)
   }
   if(!file.exists(paste0(campari_source, 'source/config.sub'))){
-    automake_name <- dir(automake_path, pattern = 'automake-*')
     if(!file.exists(paste0(automake_path, automake_name, '/config.sub')))
       stop('Please install automake on your computer (e.g. apt install automake) and be sure that there is this file: /usr/share/automake-*/config.sub .')
     file.copy(from = paste0(automake_path, automake_name, '/config.sub'), to = paste0(campari_source, 'source/'), overwrite = TRUE)
   }
   if(!file.exists(paste0(campari_source, 'source/config.guess'))){
-    automake_name <- dir(automake_path, pattern = 'automake-*')
     if(!file.exists(paste0(automake_path, automake_name, '/config.guess')))
       stop('Please install automake on your computer (e.g. apt install automake) and be sure that there is this file: /usr/share/automake-*/config.guess .')
     file.copy(from = paste0(automake_path, automake_name, '/config.guess'), to = paste0(campari_source, 'source/'), overwrite = TRUE)

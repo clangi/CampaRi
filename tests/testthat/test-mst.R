@@ -1,6 +1,8 @@
 context('mst')
 
 test_that('Building a minimum spanning tree', {
+	expect_error(adjl <- mst_from_trj(trj = matrix(rnorm(1000), nrow = 100, ncol = 10), distance_method = 1, dump_to_netcdf = FALSE), NA)
+	expect_error(adjl <- mst_from_trj(trj = matrix(rnorm(1000), nrow = 100, ncol = 10), distance_method = 1, dump_to_netcdf = TRUE), NA)
 	expect_error(adjl <- mst_from_trj(trj = matrix(rnorm(1000), nrow = 100, ncol = 10), dump_to_netcdf = FALSE), NA)
 	expect_true(!is.null(adjl))
 	expect_error(adjl2 <- contract_mst(adjl, n_fold = 2), NA)
