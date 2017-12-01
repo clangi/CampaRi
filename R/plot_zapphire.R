@@ -851,7 +851,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   if(timeline || annotate_snap_dist){ # 'black' is the standard along with uniform_color_timeline = T if put 'annotation' it uses the trace
     if(!.isSingleElement(which_uniform_color_timeline))
       stop('which_uniform_color_timeline must be a single element.')
-    if(which_uniform_color_timeline != 'annotation' && !uniform_color_timeline){ 
+    if(which_uniform_color_timeline == 'annotation' && !uniform_color_timeline){ 
       warning('Detected insertion of which_uniform_color_timeline without the uniform_color_timeline mode active. It has been automatically activated.')
       uniform_color_timeline <- T
     }
@@ -866,7 +866,8 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
     }else{
       single_line_general_ann <- array(which_uniform_color_timeline, dim = Nsnap)
     }
-    color_timeline <- single_line_general_ann
+    #color_timeline <- single_line_general_ann # clangi
+    color_timeline <- specific_palette_annotation[ann_tr]
   }
   # -------------------------------------------------------------------------------------
   # plotting the distance between snapshots (on top of everything)
