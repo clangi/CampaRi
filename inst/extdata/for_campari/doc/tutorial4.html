@@ -1,0 +1,545 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!--
+############################################################################
+# LICENSE INFO:                                                            #
+############################################################################
+#    This file is part of CAMPARI.                                         #
+#                                                                          #
+#    Version 3.0                                                           #
+#                                                                          #
+#    Copyright (C) 2017, The CAMPARI development team (current and former  #
+#                        contributors)                                     #
+#                        Andreas Vitalis, Adam Steffen, Rohit Pappu, Hoang #
+#                        Tran, Albert Mao, Xiaoling Wang, Jose Pulido,     #
+#                        Nicholas Lyle, Nicolas Bloechliger, Marco Bacci,  #
+#                        Davide Garolini, Jiri Vymetal                     #
+#                                                                          #
+#    Website: http://sourceforge.net/projects/campari/                     #
+#                                                                          #
+#    CAMPARI is free software: you can redistribute it and/or modify       #
+#    it under the terms of the GNU General Public License as published by  #
+#    the Free Software Foundation, either version 3 of the License, or     #
+#    (at your option) any later version.                                   #
+#                                                                          #
+#    CAMPARI is distributed in the hope that it will be useful,            #
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of        #
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         #
+#    GNU General Public License for more details.                          #
+#                                                                          #
+#    You should have received a copy of the GNU General Public License     #
+#    along with CAMPARI.  If not, see <http://www.gnu.org/licenses/>.      #
+############################################################################
+# AUTHORSHIP INFO:                                                         #
+############################################################################
+#                                                                          #
+# MAIN AUTHOR:   Andreas Vitalis                                           #
+#                                                                          #
+############################################################################
+-->
+<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" xml:lang="en" lang="en-US">
+<head>
+<!--
+    Designed by CAMPARI Development Group
+    Base template (without user's data) checked by http://validator.w3.org : "This page is valid XHTML 1.0 Transitional"
+    -->
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></meta>
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge"></meta>
+  <title>CAMPARI Tutorial 4</title>
+  <link rel="stylesheet" href="style_red.css" type="text/css" media="screen"></link>
+</head>
+<body>
+<div id="art-page-background-simple-gradient"></div>
+<div id="art-main"><!-- Header -->
+<div class="art-Sheet2"><!-- Banner Art -->
+<div class="art-Header">
+<div class="art-Header-png"></div>
+</div>
+<!-- Top Navigation Bar -->
+<div class="art-nav">
+<div class="l"></div>
+<div class="r"></div>
+<ul class="art-menu">
+  <li><a href="index.html"><span class="l"></span><span class="r"></span><span
+ class="t">Home</span></a></li>
+  <li><a href="documentation.html" class=" active"><span class="l"></span><span
+ class="r"></span><span class="t">Documentation</span></a></li>
+  <li><a href="references.html"><span class="l"></span><span class="r"></span><span
+ class="t">References</span></a></li>
+  <li><a href="contact.html"><span class="l"></span><span class="r"></span><span
+ class="t">Support</span></a></li>
+  <li><a href="download.html"><span class="l"></span><span class="r"></span><span
+ class="t">Download</span></a></li>
+</ul>
+</div>
+<!-- Top Sub Navigation Bar -->
+<div class="nav-menu">
+<ul class="navlist">
+  <li><a href="documentation.html">Overview</a></li>
+  <li><a href="install.html">Install</a></li>
+  <li><a href="tutorials.html" class=" active">Tutorials</a></li>
+  <li><a href="inputfiles.html">Inputfiles</a></li>
+  <li><a href="keywords.html">Keywords</a></li>
+  <li><a href="outputfiles.html">Outputfiles</a></li>
+  <li><a href="parameters.html">Parameters</a></li>
+  <li><a href="development.html">Development</a></li>
+  <li><br/>
+  </li>
+</ul>
+</div>
+</div>
+<!-- Main Page Contents -->
+<div class="art-Sheet">
+<div class="art-Sheet-bl"></div>
+<div class="art-Sheet-br"></div>
+<div class="art-Sheet-bc"></div>
+<div class="art-Sheet-cl"></div>
+<div class="art-Sheet-cr"></div>
+<div class="art-Sheet-cc"></div>
+<div class="art-Sheet-body">
+<div class="art-contentLayout"><!-- Page Contents -->
+<div class="art-content">
+<div class="art-Post">
+<div class="art-Post-body">
+<div class="art-PostContent">
+<br/>
+<h2>Tutorial 4: Testing Move Sets - How to Establish Global Balance in a
+Monte Carlo Move Set</h2>
+<h3>Preface:</h3>
+In conformational space sampling whether it be using Monte Carlo
+Sampling or
+Dynamics, one can define a "degree of freedom" as any system descriptor
+that changes during the sampling process. In Cartesian sampling
+the degrees
+of freedom are the X, Y, and Z positions of all atoms. In a sufficient space
+of internal coordinates (Z-matrix), the degrees for freedom for molecular systems
+can correspond to the bond lengths, bond angles and torsional angles
+of the structure. The transformation operation to convert between the
+two coordinate frames has to be well-defined (unique, reversible mapping).
+In multimolecular systems, intermolecular degrees of freedom could be 
+expressed by pseudo-internal coordinates that, however, do not carry
+intuitive meaning. Therefore, it is just as well possible to define
+the reference frame for each molecule by using that molecule's first three
+atoms' coordinates. This implies six degrees of freedom (nine total minus
+one implied bond angle minus two implied bond lengths).<br/><br/>
+Monte Carlo sampling in CAMPARI happens explicitly in a rigid-body /
+torsional coordinate frame, <i>i.e.</i>, an internal coordinate reference frame
+that used explicit constraints on bond lengths and bond angles.
+There are exceptions to the imposition of constraints, for example
+when using the simplified concerted approach of <a href="references.html#ref14_3">Ulmschneider and Jorgensen</a> (see <a
+ href="keywords.html#ANGCRFREQ">FMCSC_ANGCRFREQ</a>), when
+sampling the puckering of 5-membered rings (see <a
+ href="keywords.html#PKRFREQ">FMCSC_PKRFREQ</a> and <a
+ href="keywords.html#SUGARFREQ">FMCSC_SUGARFREQ</a>), and when using
+inexact chemical crosslinks (see <a
+ href="keywords.html#CRLK_MODE">FMCSC_CRLK_MODE</a>). In general, however, the 
+Monte Carlo degrees of freedom sampled in CAMPARI are the
+torsional angles of the backbone, the torsional angles of sidechains,
+and the rigid-body coordinates of all molecules (rotation and translation).<br/>
+&nbsp;<br/>
+The simplest type of sampling move changes the value of only one degree of freedom
+in completely random (unbiased) fashion as an elementary step. CAMPARI also implements several
+advanced sampling techniques, such as concerted rotations, <i>i.e.</i>
+concerted (coupled) changes to several degrees of freedom at once in order
+to satisfy some external constraint. These complex moves
+usually serve to increase the efficiency of sampling certain regions of
+conformational space that are easily only accessible through correlated
+changes in several degrees of freedom at once (and not via multiple,
+independent perturbations of individual degrees of freedom). The domain of a
+single degree of freedom is the range of all possible values it can
+assume.<br/><br/>
+We can therefore define "ergodicity" for the move set as the requirement
+to - at least theoretically - be able to construct a chain of Monte Carlo moves, which
+allow the system to visit any point in phase space given the coordinate frame phase space
+is defined in. We can also define that "global balance" holds
+if each point in phase space is visited with equal likelihood in the absence of
+an energetic bias (Boltzmann weights are all equal).<br/>
+In reality, ergodicity is usually easier to understand conceptually given a move set.
+Numerically, establishing ergodicity and global balance require the
+same basic methodology. Note that a move set consists of different move types,
+and that it is quite possible for individual move types to fail the "ergodicity"
+requirement if considered by themselves. Such a case exists for instance with exact concerted
+rotation moves for which the ends of the chain are strictly unable to move relative to one
+another (and which therefore have to combined with other move types to yield
+an ergodic move set).<br/>
+Global balance is much trickier to assert conceptually, and often entails the use of
+elaborate corrections in the MC acceptance step. To circumvent having to perform
+any numerical tests of ergodicity and global balance, 
+it is often formally proven that the move set obeys detailed balance, 
+a sufficient but not necessary condition ensuring global balance. For this
+reason and the reason that such a formal proof does not constitute a test
+of an actual implementation, one can and should perform basic numerical
+tests as is done in this tutorial.<br/><br/>
+Most often it will only be possible to collect 1D-histograms for most of the degrees
+of freedom in the infinite temperature (maximum entropy) limit, <i>i.e.</i>
+in the absence of a Hamiltonian. When plotting those histograms, we 
+expect them to be flat within some level of noise stemming from the
+finite length of the simulation. This does not address other parts of global balance
+such as the statistical independence of conceptually independent degrees
+of freedom. For example, a move set that randomly sets the &phi;/&psi;-angles in 
+a polypeptide to the <i>same</i> random value would appear balanced when analyzing
+1D-histograms only. If we, however, create a 2D-histogram of &phi;/&psi;-values
+it would become immediately clear that such a move is not ergodic, and will not
+- even when mixed with other moves - produce a globally balanced distribution.
+This example shows that ultimately it is the N<sub>f</sub>-dimensional 
+distribution function that is of interest to us (N<sub>f</sub> being
+the number of degrees of freedom) that is of course impossible to
+analyze directly for any system of appreciable size.<br/><br/>
+In the following, we will guide you through the process of testing
+whether a given CAMPARI move set appears unbiased when considering 
+low-dimensional projections. With explicit knowledge of the level of coupling
+introduced by the move set, this can often be enough to safely conclude
+that it is in fact globally balanced.<br/>
+<h3>Step-by-Step:</h3>
+<h5>Step 1 -
+Study and understand the components of the move set</h5>
+Inspect the section titled "# Monte Carlo Sampler" in the 
+<a href="../examples/tutorial4/MOVESETS.key">key-file for this tutorial</a>
+found in the corresponding subdirectory (example/tutorial4/). The move set
+in CAMPARI is a binary decision tree with the parameters for each binary
+decision being controllable through a single "frequency" keyword. Binary 
+decisions toward the root of the tree will naturally effect the <i>overall</i>
+frequency of moves accessible in all downstream branches.<br/>
+<br/>
+The primary classes of moves are controlled by the following keywords (ordered hierarchically
+starting at the root):<br/>
+<a href="keywords.html#PARTICLEFLUCFREQ">FMCSC_PARTICLEFLUCFREQ</a> - Moves for the grand-canonical
+ensemble (sampling particle number as degree of freedom)<br/>
+<a href="keywords.html#RIGIDFREQ">FMCSC_RIGIDFREQ</a> - Moves for rigid-body coordinates of molecules<br/>
+<a href="keywords.html#CHIFREQ">FMCSC_CHIFREQ</a> - Moves for dihedral angles in branches (sidechains) of polymers<br/>
+<a href="keywords.html#CRFREQ">FMCSC_CRFREQ</a> - Concerted rotation moves for polypeptides<br/>
+<a href="keywords.html#OMEGAFREQ">FMCSC_OMEGAFREQ</a> - &omega;-angle sampling for polypeptides<br/>
+<a href="keywords.html#NUCFREQ">FMCSC_NUCFREQ</a> - Sampling moves for nucleic acids<br/>
+<a href="keywords.html#PKRFREQ">FMCSC_PKRFREQ</a> - Sampling moves for pucker angles in polypeptides<br/>
+<a href="keywords.html#OTHERFREQ">FMCSC_OTHERFREQ</a> - Sampling moves for single dihedral angles<br/>
+<a href="keywords.html#PIVOTMODE">&phi;/&psi;-moves</a> - The "drop-through" moves are polypeptide &phi;/&psi;-moves<br/>
+<br/>
+It is important to realize that some of these moves contain much more complex subbranches than
+others. For instance, &omega;-moves for polypeptides are only split into two variants - 
+stepwise vs. fully randomizing (&rarr; <a href="keywords.html#OMEGARDFREQ">FMCSC_OMEGARDFREQ</a>).
+Conversely, the nucleic acid branch contains several different moves
+(&rarr; <a href="keywords.html#NUCCRFREQ">FMCSC_NUCCRFREQ</a> or <a href="keywords.html#SUGARFREQ">FMCSC_SUGARFREQ</a>).
+This tutorial tests elements in all of the above branches with the exception of the branch
+pertaining to particle number fluctuations.
+If you inspect the <a href="../examples/tutorial4/MOVESETS.key">key-file</a>
+further, you may also note that:<br/>
+<ol>
+<li>Alternative implementations of &phi;/&psi;-moves for polypeptides are not tested (&rarr;
+<a href="keywords.html#COUPLE">FMCSC_COUPLE</a> or <a href="keywords.html#PIVOTMODE">FMCSC_PIVOTMODE</a>).</li>
+<li>Concerted rotation for polypeptides with bond angle variations is disabled (&rarr; <a
+ href="keywords.html#ANGCRFREQ">FMCSC_ANGCRFREQ</a>).</li>
+<li>No exclusive rotations (without translation) of rigid-bodies are attempted (&rarr;
+<a href="keywords.html#ROTFREQ">FMCSC_ROTFREQ</a>).</li>
+<li>Moves operating on unsupported residues in CAMPARI (compare <a href="tutorial12.html">Tutorial 12</a>) are
+excluded (&rarr; <a href="keywords.html#OTHERUNKFREQ">FMCSC_OTHERUNKFREQ</a>).</li>
+<li>Titration pseudo-moves are omitted (&rarr;
+<a href="keywords.html#PHFREQ">FMCSC_PHFREQ</a>).</li>
+<li>Only a single setting for each dependent control keyword will be explored (<i>e.g.</i>, <a href="keywords.html#NRCHI">FMCSC_NRCHI</a>).</li>
+</ol>
+Some features are skipped because they do not qualify as proper MC moves, because
+usage is discouraged (quasi-obsolete features), or because they are incompatible
+with other more important features. Take the time to read up on the move types
+that are going to be in use as a conceptual understanding of the
+moves is indispensable in order to interpret the results. You should be
+familiar with all of the dependent keywords. If you plan to test
+a specific move set meant to be used in actual simulations, simply replace the appropriate
+settings.<br/>
+<br/>
+If you inspect the section titled "# Hamiltonian" in the <a href="../examples/tutorial4/MOVESETS.key">key-file</a>,
+you will note that two energy terms are in fact enabled. These are bonded
+potentials. Bond length energies should remain rigorously constant throughout
+the simulation (this can be used as a test to the rigorous enforcement of
+the implied constraints). Bond angle terms are needed for two algorithms
+dedicated to the sampling of ring pucker states (&rarr; <a href="keywords.html#PKRFREQ">FMCSC_PKRFREQ</a>
+and <a href="keywords.html#SUGARFREQ">FMCSC_SUGARFREQ</a>) that fail numerically
+if extreme values for bond angles were allowed. Given an implicit set of constraints
+(here, constant bond lengths all around), it is not at all easy to define a meaningful
+expectation for the infinite temperature ensemble either. We will therefore sample
+ring pucker states given a (strictly local) Hamiltonian. The property
+of bonded potentials to only affect those degrees of freedom they act on
+directly is very important since it allows the remainder of the results
+to stay meaningful.<br/>
+<h5>Step 2 -
+Run the simulation to obtain distribution (histogram) data on degrees of freedom</h5>
+Copy all the files from the examples/tutorial4/ subdirectory into a writable
+working directory. Adjust any file paths as needed. Note that the
+<a href="../examples/tutorial4/tutorial4.seq">sequence file in use</a>
+corresponds to an arbitrary system meant to allow for testing most of the
+possible move types in a single simulation.<br/>
+<br/>
+The actual calculation is run by:<br/>
+<br/><tt>
+campari -k MOVESETS.key &gt;&amp; movesets.log<br/>
+</tt>
+<br/>
+Even though only extremely limited energy evaluations are needed, the calculation
+will need some time to complete due to the computational cost of exact concerted
+rotation moves (&rarr; <a href="keywords.html#TORCRFREQ">FMCSC_TORCRFREQ</a> and
+<a href="keywords.html#NUCCRFREQ">FMCSC_NUCCRFREQ</a>) and, to a lesser extent,
+the cost of data collection routines. That said,
+the run should not take more than a few hours at the specified length. While it is certainly possible
+to shorten runtime by reducing <a href="keywords.html#NRSTEPS">NRSTEPS</a>, a proper
+result in statistical terms does in fact require a fairly lengthy simulation.<br/>
+<h5>Step 3 -
+Analyze distribution data</h5>
+Once the simulation is finished, we can use the simulation output to collect evidence 
+that the move set works properly. It is important to note that from the construction
+of the move set we know that certain degrees of freedom will always be sampled independent
+of one another. Therefore, we can also analyze them independently:<br/>
+<ol type="A">
+  <li>Rigid-body coordinates:<br/>
+It is rather inconvenient to obtain the spatial distribution function with
+respect to the laboratory frame, so we will instead analyze the relative
+distribution functions by means of pair correlation functions g(r) obtained
+between the centers of mass of the individual molecules. For this, simply plot
+all columns in output file <a href="outputfiles.html#RBC_PC.dat">RBC_PC.dat</a>
+from the third one up against the intermolecular distance in the first column.
+Apart from noise, they should all be flat and equal to unity everywhere.
+We do not test rigid-body rotation here (see below).</li>
+  <li>Sidechain dihedral (&chi;-)angles:<br/>
+Freely rotatable &chi;-angles are sampled by at most two types of moves, <i>viz.</i>, 
+<a href="keywords.html#CHIFREQ">dedicated sidechain moves</a> and 
+<a href="keywords.html#OTHERNATFREQ">single torsion pivot moves on native CAMPARI degrees of freedom</a>.
+This implies that only very basic moves are applied to these dihedral angles.
+The first thing you can do is to open output file
+<a href="outputfiles.html#INTERNAL_COORDS.idx">INTERNAL_COORDS.idx</a>,
+and to search manually for the correct entries in the dihedrals section.
+Then, plot the appropriate columns in the final containing torsional
+histograms, <i>viz.</i>, <a href="outputfiles.html#INTHISTS_DI.dat">INTHISTS_DI.dat</a>.
+All the corresponding histograms should be flat. To test for independence between
+concurrently sampled &chi;-angles, open output file <a href="outputfiles.html#FYC.dat">FYC.dat</a>,
+and identify two or more columns giving the values for &chi;-angles on
+the <i>same</i> residue. Given the chosen <a href="keywords.html#TOROUT">output mode</a> for this file,
+you may require a <a href="outputfiles.html#basename_START.int">Z-matrix file</a> for 
+reference. Construct 2D or higher histograms and visualize them; they
+again should be flat.</li>
+  <li>Pucker states:<br/>
+Variables characterizing saliently the pucker state of each flexible ring in the
+system (including bond angles) would be reported in output file <a href="outputfiles.html#FYC.dat">FYC.dat</a>
+for the other <a href="keywords.html#TOROUT">output mode</a>. In our case, only dihedral angles
+will be listed.
+Therefore, for bond angles, plot the data in <a href="outputfiles.html#INTHISTS_BA.dat">INTHISTS_BA.dat</a> to
+look at the 1D histograms directly. Use <a href="outputfiles.html#INTERNAL_COORDS.idx">INTERNAL_COORDS.idx</a> to identify
+the correct columns.
+Plot the implied probability densities along
+with the correct weights expected for an isolated (<i>i.e.</i>, not coupled to other degrees of freedom
+by a set of constraints) bond angle of each type.
+These can be constructed as p(&alpha;)=exp[-U(&alpha;)/k<sub>B</sub>T<sub>sim</sub>]/(Q&#183;&delta;<sub>bin</sub>). Here,
+k<sub>B</sub>T<sub>sim</sub> is the thermal energy, U(&alpha;) is the bonded
+potential in use for a particular angle, Q is the appropriate normalization constant
+(partition function), and &delta;<sub>bin</sub> is the bin size used to 
+construct the simulation histogram. By having specified <a href="keywords.html#BONDREPORT">FMCSC_BONDREPORT</a>
+to be true, the log file will contain a section listing explicitly which
+bond angle potential acts on which combination of atoms. With this number, consult
+the parameter file in use (<a href="keywords.html#abs32_charmm_prm">abs3.2_charmm.prm</a> here)
+and the <a href="parameters.html#S6_Bond_angle_potential_types">proper documentation</a>
+to find parameters and functional form that will allow you to compute U(&alpha;) explicitly.
+This is only an approximate test meant to identify major flaws (quantitative
+matches cannot be expected). It should not be used for cases where the set of coupled bond
+angle parameters produces stress in conjunction with the fixed bond lengths (can be diagnosed
+by isolating the residue in question and evaluating the total bond angle energy in <a href="outputfiles.html#ENERGY.dat">ENERGY.dat</a>
+of a new simulation). For the particular case here, the analysis for proline is probably more meaningful than
+that for nucleotides.
+Note that potentials acting on dependent angle terms involving atoms bound covalently
+to ring atoms also influence the distributions.
+All the pucker degrees of freedom are coupled, and probing their independence
+is meaningless (although visualizing their level of coupling may be instructive).
+As one additional test, you can compare the dihedral angle statistics for two
+proline residues with opposite chirality and make sure they are mirror images
+of one another (for example for the C<sub>i-1</sub>-N-C<sub>&alpha;</sub>-C<sub>&beta;</sub> torsion).</li>
+  <li>Polypeptide &phi;/&psi;-angles:<br/>
+Visualize the 2D-histogram corresponding to the &phi;/&psi;-distribution for
+the lysine residue in the second molecule in the <a href="../examples/tutorial4/tutorial4.seq">sequence file</a>.
+This residue is only sampled by regular pivot &phi;/&psi;-moves. The 
+<a href="outputfiles.html#RESRAMA_xxxxx.dat">output file</a> should be called
+"RESRAMA_00013.dat". Next, do the same for the two residues for which
+we also requested residue-specific &phi;/&psi;-maps (via keyword
+<a href="keywords.html#RAMARES">FMCSC_RAMARES</a>). These are both
+part of a longer polypeptide and are therefore sampled by all types
+of polypeptide backbone moves that we enabled. All of the histograms
+should appear flat. Lastly, find entries corresponding to &phi;/&psi;-angles
+by either of the two methods used above and (construct and) visualize 
+the corresponding 1D histograms. Inspect those histograms corresponding
+to the first polypeptide with particular care as the biased move types applied to it are much more likely to introduce minor errors.
+Feel free to attempt constructing higher-dimensional distribution functions
+(the theoretical level of coupling for concerted rotation moves is too high, though)
+from the data in <a href="outputfiles.html#FYC.dat">FYC.dat</a>.</li>
+ <li>Nucleic acid backbone dihedral angles:<br/>
+Proceed exactly as for &phi;/&psi;-angles. The only exceptions are that 
+you need to create all 2D (or higher) histograms yourself, and that the
+reference system using only pivot-type nucleic acid backbone moves is 
+the free deoxycytidine monophosphate (CMP). The pivot moves come from two different classe,
+<i>viz.</i>, <a href="keywords.html#OTHERNATFREQ">single torsion pivot moves on native CAMPARI degrees of freedom</a>
+and <a href="keywords.html#NUCFREQ">dedicated nucleic acid pivot moves</a>.</li>
+  <li>Other dihedral angles:<br/>
+Freely rotatable dihedral angles not covered thus far are sample by exactly one move type, <i>i.e.</i>
+<a href="keywords.html#OTHERFREQ">single torsion pivot moves</a>.
+These moves are very simple, and biases are highly unlikely. Nevertheless,
+proceed as before using the output in <a href="outputfiles.html#FYC.dat">FYC.dat</a>
+and <a href="outputfiles.html#INTHISTS_DI.dat">INTHISTS_DI.dat</a> to produce or 
+inspect the relevant histograms. Use a <a href="outputfiles.html#basename_START.int">Z-matrix file</a> 
+to identify the indices associated with these degrees of freedom. Since these degrees of freedom
+are accessed individually and not on a per-residue basis (as for most other moves), there
+is no theoretical foundation to assume correlations to appear.</li>
+</ol>
+If desired, the simulation can of course be modified to offer much more output that can be used
+to assess the sanity of move sets through alternative routes. Keep in mind, however,
+that more complex and indirect functions of degrees of freedom may help with analyses
+of coupling, but may also mask errors otherwise.<br/>
+<br/>
+The following aspects are not at all tested when following the instructions above:<br/>
+<ul>
+  <li>Rigid-body rotation: Testing this is not trivial, but is crudely
+done by taking a molecule with non-spherical symmetry and applying only
+rotation moves to it. The resultant gyration tensor with respect to the static
+laboratory frame should then be isotropic.</li>
+  <li>Absolute spatial sampling with respect to the laboratory frame. This can be 
+analyzed by performing <a href="keywords.html#EMCALC">spatial density analysis</a> 
+and subsequent visualization. Note that this tutorial uses <a href="keywords.html#BOUNDARY">3D periodic boundary conditions</a>.
+In restraining boundary conditions, there is an additional complication related to 
+<a href="keywords.html#RIGIDRDFREQ">randomizing rigid-body moves</a> (see also discussion
+on keyword <a href="keywords.html#RIGIDRDBUF">FMCSC_RIGIDRDBUF</a>).</li>
+  <li>Modified move sets that are conceptually identical but use (drastically) different
+choices for dependent parameters.</li>
+  <li>Additional move set options as mentioned previously.</li>
+</ul>
+Aside from these caveats, it should inspire confidence if all the performed tests
+suggest that the move set is in fact ergodic and globally balanced. This is an important
+test since it can be very tricky to diagnose/isolate a problem with the move set itself in
+actual production simulations.<br/>
+</div>
+</div>
+</div>
+</div>
+<!-- Side Navigation Bar --><!--<div class="art-sidebar1">--><!-- Contributors Block --><!--<div class="art-Block">
+                    <div class="art-Block-tl"></div>
+                    <div class="art-Block-tr"></div>
+                    <div class="art-Block-bl"></div>
+                    <div class="art-Block-br"></div>
+                    <div class="art-Block-tc"></div>
+                    <div class="art-Block-bc"></div>
+                    <div class="art-Block-cl"></div>
+                    <div class="art-Block-cr"></div>
+                    <div class="art-Block-cc"></div>
+                    <div class="art-Block-body">
+                        <div class="art-BlockHeader">
+                            <div class="l"></div>
+                            <div class="r"></div>
+                            <div class="art-header-tag-icon">
+                                <div class="t">Contributors - Links</div>
+                            </div>
+                        </div><div class="art-BlockContent">
+                            <div class="art-BlockContent-body">
+                                <div>
+                                <b>Pappu Lab</b><br />
+                                Washington University in St. Louis, MO<br />
+                                Website: <a href="lima.wustl.edu">lima.wustl.edu</a><br />
+                                Phone: (999) 999-9999 <br/>
+                                <br/>
+                                <b>Andreas Vitalis</b><br />
+                                Unistat de Zurich<br />
+                                Website: <a href="papajohns.com">vitalis.net</a><br />
+                                Phone: (111) 999-9999 <br/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>--><!-- Search Block --><!--
+                <div class="art-Block">
+                    <div class="art-Block-tl"></div>
+                    <div class="art-Block-tr"></div>
+                    <div class="art-Block-bl"></div>
+                    <div class="art-Block-br"></div>
+                    <div class="art-Block-tc"></div>
+                    <div class="art-Block-bc"></div>
+                    <div class="art-Block-cl"></div>
+                    <div class="art-Block-cr"></div>
+                    <div class="art-Block-cc"></div>
+                    <div class="art-Block-body">
+                        <div class="art-BlockHeader">
+                            <div class="l"></div>
+                            <div class="r"></div>
+                            <div class="art-header-tag-icon">
+                                <div class="t">Find Text</div>
+                            </div>
+                        </div><div class="art-BlockContent">
+                            <div class="art-BlockContent-body">
+                                <div><form method="get" id="newsletterform" action="javascript:void(0)">
+                                <input type="text" value="" name="email" id="s" style="width: 95%;" />
+                                <span class="art-button-wrapper">
+                                    <span class="l"> </span>
+                                    <span class="r"> </span>
+                                    <input class="art-button" type="submit" name="search" value="Search"/>
+                                </span>
+                                </form></div>
+                            </div>
+                        </div>
+                    </div>
+                </div> 
+                --><!-- News/Updates Block --><!--
+                <div class="art-Block">
+                    <div class="art-Block-tl"></div>
+                    <div class="art-Block-tr"></div>
+                    <div class="art-Block-bl"></div>
+                    <div class="art-Block-br"></div>
+                    <div class="art-Block-tc"></div>
+                    <div class="art-Block-bc"></div>
+                    <div class="art-Block-cl"></div>
+                    <div class="art-Block-cr"></div>
+                    <div class="art-Block-cc"></div>
+                    <div class="art-Block-body">
+                        <div class="art-BlockHeader">
+                            <div class="l"></div>
+                            <div class="r"></div>
+                            <div class="art-header-tag-icon">
+                                <div class="t">Recent News</div>
+                            </div>
+                        </div><div class="art-BlockContent">
+                            <div class="art-BlockContent-body">
+                                <div>
+                                    <p><b>Jun 14, 2008</b><br/>
+                                    Aliquam sit amet felis. Mauris semper, 
+                                    velit semper laoreet dictum, quam 
+                                    diam dictum urna, nec placerat elit 
+                                    nisl in quam. Etiam augue pede, 
+                                    molestie eget, rhoncus at, convallis 
+                                    ut, eros. Aliquam pharetra.<br/>
+                                    <a href="javascript:void(0)">Read more...</a></p>
+                                                          
+                                    <p><b>Aug 24, 2008</b><br/>
+                                    Aliquam sit amet felis. Mauris semper, 
+                                    velit semper laoreet dictum, quam 
+                                    diam dictum urna, nec placerat elit 
+                                    nisl in quam. Etiam augue pede, 
+                                    molestie eget, rhoncus at, convallis 
+                                    ut, eros. Aliquam pharetra.<br/>
+                                    <a href="javascript:void(0)">Read more...</a></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> --><!-- End Sidebar -->
+</div>
+</div>
+</div>
+<!-- End main page contents --><!-- Footer -->
+<div class="art-Footer">
+<div class="art-Footer-background">
+<div class="art-Footer-inner"> <a href="#" class="art-rss-tag-icon"
+ title="RSS"></a>
+<div class="art-Footer-text">
+<p><a href="#">Contact Us</a> | <a href="#">Terms of Use</a> | <a
+ href="#">License Information</a><br/>
+Copyright © 2010 . All Rights Reserved.</p>
+</div>
+</div>
+</div>
+</div>
+<p class="art-page-footer">XHTML and CSS valid. Powered by <a
+ href="http://www.flashmint.com/">FlashMint</a> - flash templates
+provider.</p>
+<div style="text-align: center; font-size: 0.75em;">Design downloaded
+from <a href="http://www.freewebtemplates.com/">free website templates</a>.</div>
+</div>
+</body>
+</html>

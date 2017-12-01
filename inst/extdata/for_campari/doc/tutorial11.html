@@ -1,0 +1,555 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!--
+############################################################################
+# LICENSE INFO:                                                            #
+############################################################################
+#    This file is part of CAMPARI.                                         #
+#                                                                          #
+#    Version 3.0                                                           #
+#                                                                          #
+#    Copyright (C) 2017, The CAMPARI development team (current and former  #
+#                        contributors)                                     #
+#                        Andreas Vitalis, Adam Steffen, Rohit Pappu, Hoang #
+#                        Tran, Albert Mao, Xiaoling Wang, Jose Pulido,     #
+#                        Nicholas Lyle, Nicolas Bloechliger, Marco Bacci,  #
+#                        Davide Garolini, Jiri Vymetal                     #
+#                                                                          #
+#    Website: http://sourceforge.net/projects/campari/                     #
+#                                                                          #
+#    CAMPARI is free software: you can redistribute it and/or modify       #
+#    it under the terms of the GNU General Public License as published by  #
+#    the Free Software Foundation, either version 3 of the License, or     #
+#    (at your option) any later version.                                   #
+#                                                                          #
+#    CAMPARI is distributed in the hope that it will be useful,            #
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of        #
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         #
+#    GNU General Public License for more details.                          #
+#                                                                          #
+#    You should have received a copy of the GNU General Public License     #
+#    along with CAMPARI.  If not, see <http://www.gnu.org/licenses/>.      #
+############################################################################
+# AUTHORSHIP INFO:                                                         #
+############################################################################
+#                                                                          #
+# MAIN AUTHOR:   Andreas Vitalis                                           #
+# CONTRIBUTIONS: Nicolas Bloechliger                                       #
+#                                                                          #
+############################################################################
+-->
+<html xml:lang="en" dir="ltr" xmlns="http://www.w3.org/1999/xhtml" lang="en-US">
+<head>
+<!--
+    Designed by CAMPARI Development Group
+    Base template (without user's data) checked by http://validator.w3.org : "This page is valid XHTML 1.0 Transitional"
+    -->
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></meta>
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge"></meta>
+  <title>CAMPARI Tutorial 11</title>
+  <link rel="stylesheet" href="style_red.css" type="text/css" media="screen"></link>
+</head>
+<body>
+<div id="art-page-background-simple-gradient"></div>
+<div id="art-main"><!-- Header -->
+<div class="art-Sheet2"><!-- Banner Art -->
+<div class="art-Header">
+<div class="art-Header-png"></div>
+</div>
+<!-- Top Navigation Bar -->
+<div class="art-nav">
+<div class="l"></div>
+<div class="r"></div>
+<ul class="art-menu">
+  <li><a href="index.html"><span class="l"></span><span class="r"></span><span
+ class="t">Home</span></a></li>
+  <li><a href="documentation.html" class=" active"><span class="l"></span><span
+ class="r"></span><span class="t">Documentation</span></a></li>
+  <li><a href="references.html"><span class="l"></span><span class="r"></span><span
+ class="t">References</span></a></li>
+  <li><a href="contact.html"><span class="l"></span><span class="r"></span><span
+ class="t">Support</span></a></li>
+  <li><a href="download.html"><span class="l"></span><span class="r"></span><span
+ class="t">Download</span></a></li>
+</ul>
+</div>
+<!-- Top Sub Navigation Bar -->
+<div class="nav-menu">
+<ul class="navlist">
+  <li><a href="documentation.html">Overview</a></li>
+  <li><a href="install.html">Install</a></li>
+  <li><a href="tutorials.html" class=" active">Tutorials</a></li>
+  <li><a href="inputfiles.html">Inputfiles</a></li>
+  <li><a href="keywords.html">Keywords</a></li>
+  <li><a href="outputfiles.html">Outputfiles</a></li>
+  <li><a href="parameters.html">Parameters</a></li>
+  <li><a href="development.html">Development</a></li>
+  <li><br/>
+  </li>
+</ul>
+</div>
+</div>
+<!-- Main Page Contents -->
+<div class="art-Sheet">
+<div class="art-Sheet-bl"></div>
+<div class="art-Sheet-br"></div>
+<div class="art-Sheet-bc"></div>
+<div class="art-Sheet-cl"></div>
+<div class="art-Sheet-cr"></div>
+<div class="art-Sheet-cc"></div>
+<div class="art-Sheet-body">
+<div class="art-contentLayout"><!-- Page Contents -->
+<div class="art-content">
+<div class="art-Post">
+<div class="art-Post-body">
+<div class="art-PostContent">
+<br/>
+<h2>Tutorial 11: Structural Clustering and Related Methods in CAMPARI</h2>
+<h3>Preface:</h3>
+This tutorial can be viewed as a follow-up to <a href="tutorial10.html">Tutorial 10</a>, as it
+covers the analysis of a trajectory with rather specific tasks in mind. Specifically,
+here we wish to run clustering and related algorithms on a trajectory of a toy system
+(<i>n</i>-butane) exhibiting clear and intuitive state partitioning.<br/>
+<br/>
+<h3>Step-by-Step:</h3>
+<h5>Step 1 - Generating a suitable trajectory</h5>
+The molecule under study, <i>n</i>-butane, is so small that it is feasible and convenient to generate a statistically
+meaningful trajectory within this tutorial. Since some of the algorithms tested here respond
+to kinetics, we will obtain a stochastic dynamics trajectory in torsional space
+via the following key-file:<br/>
+<br/>
+<tt>
+<a href="keywords.html#PARAMETERS">PARAMETERS</a> &lt;full path to folder&gt;/campari/params/<a href="keywords.html#OPLSAAL">oplsaal.prm</a><br/>
+<a href="keywords.html#SEQFILE">FMCSC_SEQFILE</a> <a href="../examples/tutorial11/nbu.in">nbu.in</a><br/>
+<a href="keywords.html#BASENAME">FMCSC_BASENAME</a> NBU<br/>
+<a href="keywords.html#SC_IPP">FMCSC_SC_IPP</a> 0.0<br/>
+<a href="keywords.html#SC_BONDED_T">FMCSC_SC_BONDED_T</a> 1.0<br/>
+<a href="keywords.html#DYNAMICS">FMCSC_DYNAMICS</a> 3<br/>
+<a href="keywords.html#FRICTION">FMCSC_FRICTION</a> 3.0  # 1/ps<br/>
+<a href="keywords.html#TIMESTEP">FMCSC_TIMESTEP</a> 0.005  # ps<br/>
+<a href="keywords.html#TEMP">FMCSC_TEMP</a> 400.0  # K<br/>
+<a href="keywords.html#NRSTEPS">FMCSC_NRSTEPS</a> 10000000<br/>
+<a href="keywords.html#EQUIL">FMCSC_EQUIL</a> 0<br/>
+<a href="keywords.html#XYZOUT">FMCSC_XYZOUT</a> 100<br/>
+<a href="keywords.html#XYZPDB">FMCSC_XYZPDB</a> 3<br/>
+<a href="keywords.html#TOROUT">FMCSC_TOROUT</a> 100<br/>
+<a href="keywords.html#COVCALC">FMCSC_COVCALC</a> 20000000 # disable<br/>
+<a href="keywords.html#SAVCALC">FMCSC_SAVCALC</a> 20000000 # disable<br/>
+<a href="keywords.html#POLCALC">FMCSC_POLCALC</a> 20000000 # disable<br/>
+<a href="keywords.html#RHCALC">FMCSC_RHCALC</a> 20000000 # disable<br/>
+<a href="keywords.html#INTCALC">FMCSC_INTCALC</a> 20000000 # disable<br/>
+<a href="keywords.html#POLOUT">FMCSC_POLOUT</a> 20000000 # disable<br/>
+<a href="keywords.html#ENSOUT">FMCSC_ENSOUT</a> 20000000 # disable<br/>
+<a href="keywords.html#ENOUT">FMCSC_ENOUT</a> 20000000 # disable<br/>
+<a href="keywords.html#RSTOUT">FMCSC_RSTOUT</a> 20000000 # disable<br/>
+</tt>
+<br/>
+After copying over the <a href="../examples/tutorial11/nbu.in">sequence file</a> to an empty working
+directory, and after pasting the above into a key-file "simul.key", you should be able to run:<br/>
+<br/><tt>
+campari -k simul.key &gt;&amp; tutorial11_simul.log<br/>
+mv NBU_traj.dcd NBU.dcd<br/>
+mv FYC.dat NBU.fyc<br/>
+</tt>
+<br/>
+This generates a <a href="outputfiles.html#trajectory_output">dcd-trajectory</a> of 50ns length
+with structures saved every 0.5ps (100000 snapshots). The degrees
+of freedom are the central torsion angle (C-C-C-C) and the two methyl spins (all-atom representation),
+which are all independent of one another on account of the Hamiltonian chosen (purely torsional potentials).
+The simulation itself should take no longer than 5-15 minutes on a modern desktop machine.
+Aside from the trajectory ("NBU.dcd"), an auxiliary output file is produced listing
+the actual values for the three torsional angles for every trajectory snapshot
+in columns 3-5 (renamed to <a href="outputfiles.html#FYC.dat">NBU.fyc</a>).<br/>
+<h5>Step 2 - Simple Clustering</h5>
+Clustering, <i>i.e.</i>, the grouping of similar objects (here, trajectory snapshots that 
+represent molecular conformations) into sets, is a task that - without additional constraints - 
+lacks universal criteria of optimality or appropriateness, and therefore requires considerable
+user input. In CAMPARI, clustering is performed as a post-processing operation on selected features
+of a trajectory extracted during an analysis run (this example) or during a simulation (feature extraction on-the-fly). This means that there
+are some possible memory limitations
+on very large data sets (CAMPARI does not yet support stream-like handling of trajectories within the
+clustering routines), <i>e.g.</i>, when extracting 10<sup>7</sup> instances of 100 double precision numbers
+each from a trajectory, the memory requirement already has a lower bound of 8 · 10<sup>9</sup> bytes (8GB).<br/>
+The most basic keywords required for an analysis run with structural clustering here are as follows:<br/>
+<br/>
+<tt>
+<a href="keywords.html#SEQFILE">FMCSC_SEQFILE</a> <a href="../examples/tutorial11/nbu.in">nbu.in</a><br/>
+<a href="keywords.html#PARAMETERS">PARAMETERS</a> &lt;full path to folder&gt;/campari/params/oplsaal.prm<br/>
+<a href="keywords.html#PDBANALYZE">FMCSC_PDBANALYZE</a> 1<br/>
+<a href="keywords.html#DCDFILE">FMCSC_DCDFILE</a> NBU.dcd<br/>
+<a href="keywords.html#PDB_FORMAT">FMCSC_PDB_FORMAT</a> 4<br/>
+<a href="keywords.html#SC_IPP">FMCSC_SC_IPP</a> 0.0<br/>
+<a href="keywords.html#NRSTEPS">FMCSC_NRSTEPS</a> 100000<br/>
+<a href="keywords.html#EQUIL">FMCSC_EQUIL</a> 0<br/>
+<a href="keywords.html#CCOLLECT">FMCSC_CCOLLECT</a> 1 # use every snapshot<br/>
+</tt>
+<br/>
+You could put the above in a new key-file, and it should run through fine. However, default algorithm,
+feature selection, and parameters are not appropriate for this system, which is why the results 
+are most likely meaningless. Instead, we first add specific requests:<br/>
+<br/>
+<tt>
+<a href="keywords.html#CMODE">FMCSC_CMODE</a> 5 # use tree-like algorithm<br/>
+<a href="keywords.html#CDISTANCE">FMCSC_CDISTANCE</a> 1 # use dihedral angles to represent each snapshot<br/>
+<a href="keywords.html#CRADIUS">FMCSC_CRADIUS</a> 60.0 # threshold radius (in degrees) of clusters<br/>
+<a href="keywords.html#BIRCHHEIGHT">FMCSC_BIRCHHEIGHT</a> 8 # tree height<br/>
+<a href="keywords.html#CMAXRAD">FMCSC_CMAXRAD</a> 120.0 # coarsest threshold level in tree<br/>
+</tt>
+<br/>
+Here, we select the tree-like algorithm of <a href="references.html#ref23_4">Vitalis and Caflisch</a> via
+keyword <a href="keywords.html#CMODE">FMCSC_CMODE</a>. Details are provided in the corresponding
+documentation and of course in the reference publication. As a choice of representation ("feature selection"),
+we pick all dihedral angles of the system (the natural degrees of freedom for our sampling engine here).
+By supplying both <a href="keywords.html#CDISTANCE">FMCSC_CDISTANCE</a> and an auxiliary input file
+for <a href="keywords.html#CFILE">FMCSC_CFILE</a>, it is possible to select subsets of features
+(for example, for <i>n</i>-butane one could cluster purely based on the central torsion angle). How this is done
+in detail is explained <a href="keywords.html#CFILE">elsewhere</a>. The last two options control
+parameters of the tree-based algorithm, <i>i.e.</i>, its height (&rarr;
+<a href="keywords.html#BIRCHHEIGHT">FMCSC_BIRCHHEIGHT</a>) and a coarse threshold radius that should
+correspond roughly to the maximum pairwise distance observed between snapshots (&rarr;
+<a href="keywords.html#CMAXRAD">FMCSC_CMAXRAD</a>). Finally, the choice for 
+<a href="keywords.html#CRADIUS">FMCSC_CRADIUS</a> sets a threshold radius parameter for the final clusters
+obtained (all algorithms in CAMPARI currently offer control over cluster size rather than cluster number).
+Here, the chosen value of 60.0&deg; corresponds to the expected results for this system. Specifically,
+the torsional potentials partition every dihedral angle into three well-defined states spaced 120&deg; apart.
+This means that we expect 3<sup>3</sup>=27 well-defined states overall with 9 of those being more likely than
+the other 18 due to the central torsion angle energetically favoring the <i>anti</i> state over the two
+<i>gauche</i> states.<br/>
+Before running the clustering, it is convenient to disable some analyses and outputs turned on by default:<br/>
+<br/>
+<tt>
+<a href="keywords.html#XYZOUT">FMCSC_XYZOUT</a> 20000000 # disable<br/>
+<a href="keywords.html#TOROUT">FMCSC_TOROUT</a> 20000000 # disable<br/>
+<a href="keywords.html#COVCALC">FMCSC_COVCALC</a> 20000000 # disable<br/>
+<a href="keywords.html#SAVCALC">FMCSC_SAVCALC</a> 20000000 # disable<br/>
+<a href="keywords.html#POLCALC">FMCSC_POLCALC</a> 20000000 # disable<br/>
+<a href="keywords.html#RHCALC">FMCSC_RHCALC</a> 20000000 # disable<br/>
+<a href="keywords.html#INTCALC">FMCSC_INTCALC</a> 20000000 # disable<br/>
+<a href="keywords.html#POLOUT">FMCSC_POLOUT</a> 20000000 # disable<br/>
+<a href="keywords.html#ENSOUT">FMCSC_ENSOUT</a> 20000000 # disable<br/>
+<a href="keywords.html#ENOUT">FMCSC_ENOUT</a> 20000000 # disable<br/>
+<a href="keywords.html#RSTOUT">FMCSC_RSTOUT</a> 20000000 # disable<br/>
+</tt>
+<br/>
+After pasting all the above keywords into a key-file "clustering.key", you can run:<br/>
+<br/><tt>
+campari -k clustering.key &gt;&amp; tutorial11.log<br/>
+</tt>
+<br/>
+This run should finish within seconds due to the computational efficiency of the algorithm we picked
+and due to the low dimensionality of representation.
+You should examine "tutorial11.log" in some detail, as it lists valuable information regarding
+the clustering. In particular, for each cluster, its number of snapshots, a putative central snapshot,
+and some information regarding size are provided. If our conjecture regarding the system is correct, 
+and if the cluster settings are appropriate, the first 9 clusters should correspond to all possible
+states with the limitation that the central torsion angle be in <i>anti</i>. To check whether this is 
+the case, we can utilize the output in NBU.fyc and tutorial11.log as follows:<br/>
+<br/><tt>
+for i in `grep -F 'CLUSTER SUMMARY' -A 10 tutorial11.log | tail -n 9 | awk '{print $3}'`; do (j=`echo -e "$i + 1" | bc`; head -n $j NBU.fyc | tail -n 1 | awk '{printf("Step %10i: C1C2C3C4: %10.3f C3C2C1H11: %10.3f C2C3C4H41: %10.3f\n",$1/10,$2,$3,$4)}') done<br/>
+</tt>
+<br/>
+This identifies the representative snapshots for the 9 largest clusters (clusters are ordered by decreasing
+size) and finds the corresponding values for the three torsion angles in NBU.fyc printing them
+in user-friendly fashion.
+The above command should (at least in most cases) indeed yield the expected result, <i>i.e.</i>,
+values should be close to the energetic minima (-60&deg;, 60&deg; and 180&deg;), and the "C1C2C3C4" 
+values should all be close to 180&deg; (note that 
+torsion angles are defined over the interval [-180&deg;180&deg;], which implies that values close
+to either -180&deg; or 180&deg; are technically adjacent). The tree-based algorithm is particularly
+appropriate here, because it effectively chooses cluster centroids based on local data density (similar to
+what a hierarchical scheme would do). The partitioning inherent to the system should also be apparent
+in the cluster sizes, <i>i.e.</i>, tutorial11.log should show relatively clearly that the first 9 clusters
+are significantly larger than the rest. You should consider investigating whether the mapping
+between largest clusters and expected states continues to hold even for those states where the central
+torsion is not in <i>anti</i> (it usually works for most if not all of the 27 largest clusters).<br/>
+This concludes a first structural clustering on a toy system yielding interpretable results.<br/> 
+<h5>Step 3 - Additional Output</h5>
+The analysis run in the previous step should have produced some additional output files, specifically
+a <a href="outputfiles.html#STRUCT_CLUSTERING.vmd">VMD visualization script</a>, which will not be
+discussed further here, and two other files, <i>viz</i>.,
+<a href="outputfiles.html#STRUCT_CLUSTERING.clu">STRUCT_CLUSTERING.clu</a> and
+<a href="outputfiles.html#STRUCT_CLUSTERING.graphml">STRUCT_CLUSTERING.graphml</a>.
+The former is an annotated trajectory specifying for each snapshot the number of the cluster 
+it belongs to (numbering as in tutorial11.log). In other words, it provides a coarse-grained
+mesostate trajectory, from which a network model can be constructed. Such a network model
+or graph is indeed what is provided in the latter file, and you can load and visualize it like
+any other graph in .graphml format (using packages such as <a href="https://gephi.org/">Gephi</a> or <a href="http://visone.info/">Visone</a>).
+Based on these output files, you could perform a Markov model analysis in CAMPARI: there is not only an option
+to directly read the coarse-grained trajectory back in (&rarr; <a href="keywords.html#CLUFILE">FMCSC_CLUFILE</a> 
+via option 6 or 7 for <a href="keywords.html#CMODE">FMCSC_CMODE</a>) but of course also to do it in one shot.
+You could, for example, compute committor probabilities (see <a href="keywords.html#DOPFOLD">FMCSC_DOPFOLD</a>) between
+(groups of) reference states and subsequently use this information to construct
+a <a href="keywords.html#CMSMCFEP">cut-based (pseudo-)free energy profile</a>.<br/>
+
+<h5>Step 4 - Tuning Options and Choices for Clustering</h5>
+Here we will use RMSD of the Cartesian coordinates of the carbon atoms to measure distance between snapshots.
+First, change the value for <a href="keywords.html#CDISTANCE">FMCSC_CDISTANCE</a> to 5, which selects RMSD
+(<a href="keywords.html#CALIGN">pairwise alignment</a> is turned on by default). Atom selections are passed
+to CAMPARI via an additional <a href="keywords.html#CFILE">input file</a> containing the atom indices.
+To do so, write the numbers 1, 2, 3, 4 to "carbons.lst" (one number per line), and add the following keyword:<br/>
+<br/>
+<tt>
+<a href="keywords.html#CDISTANCE">FMCSC_CDISTANCE</a> 5 # RMSD of atomic coordinates (in Angstrom) <br/>
+<a href="keywords.html#CFILE">FMCSC_CFILE</a> carbons.lst # atom selection for clustering<br/>
+</tt>
+<br/>
+Note that atom numbers have to be given according to CAMPARI's numbering scheme, which can be found in
+"<a href="outputfiles.html#basename_END.pdb">yourcalc_END.pdb</a>" and might differ from the scheme
+used by other software. Keep that in mind when analyzing trajectories not generated with CAMPARI.
+Since we changed the distance function, adjust the threshold parameters as follows:<br/>
+<br/>
+<tt>
+<a href="keywords.html#CRADIUS">FMCSC_CRADIUS</a> 0.02 # threshold radius (in Angstrom) of clusters<br/>
+<a href="keywords.html#CMAXRAD">FMCSC_CMAXRAD</a> 1.0 # coarsest threshold level in tree<br/>
+</tt>
+<br/>
+You can now run<br/>
+<br/><tt>
+campari -k clustering.key &gt;&amp; tutorial11.log<br/>
+</tt>
+<br/>
+and examine the resulting output. Note that the output files from Step 2 are overwritten. Because we selected the carbon atoms only for
+the RMSD computation, we do not expect to observe the same state partitioning as before. Specifically, the information on the methyl
+groups is lost (cluster centroid positions for these two torsion angles should approximately appear as if drawn randomly from the underlying 
+distribution).<br/>
+<br/>
+An additional clustering method offered by CAMPARI is hierarchical clustering. Copy "clustering.key" to "hierachicalClustering.key" and change the clustering specific keywords to<br/>
+<br/>
+<tt>
+<a href="keywords.html#CMODE">FMCSC_CMODE</a> 3 # use hierarchical clustering<br/>
+<a href="keywords.html#CDISTANCE">FMCSC_CDISTANCE</a> 1 # use dihedral angles to represent each snapshot<br/>
+<a href="keywords.html#CRADIUS">FMCSC_CRADIUS</a> 30.0 # threshold radius (in degrees) of clusters<br/>
+<a href="keywords.html#CMAXRAD">FMCSC_CMAXRAD</a> 30.0 # threshold radius (in degrees) for truncated leader algorithm used for preprocessing<br/>
+<a href="keywords.html#CCUTOFF">FMCSC_CCUTOFF</a> 60.0 # cutoff distance for neighbor list<br/>
+<a href="keywords.html#CLINKAGE">FMCSC_CLINKAGE</a> 3 # linkage criterion (3 = mean)<br/>
+</tt>
+<br/>
+Do not forget to remove the entry for <a href="keywords.html#CFILE">FMCSC_CFILE</a>. In theory, hierarchical clustering requires all the N(N-1)/2 pairwise distances. To speed up the algorithm, the following heuristics are used by CAMPARI. First the data are preprocessed by leader clustering with cluster size set by <a href="keywords.html#CMAXRAD">FMCSC_CMAXRAD</a>. Based on that, truncated neighbor lists are computed with a truncation cutoff set by <a href="keywords.html#CCUTOFF">FMCSC_CCUTOFF</a>. This cutoff has to be at least twice as large as the target threshold radius for the clustering (&rarr; <a href="keywords.html#CRADIUS">FMCSC_CRADIUS</a>). During the last stage of the algorithm the chosen <a href="keywords.html#CLINKAGE">linkage criterion</a> is also a critical setting for efficiency (maximum linkage is very slow). Since the algorithm is not scalable, we subsample the trajectory and set:<br/>
+<br/>
+<tt>
+<a href="keywords.html#CCOLLECT">FMCSC_CCOLLECT</a> 10 # use only every 10th snapshot<br/>
+</tt>
+<br/>
+You can now run:<br/>
+<br/><tt>
+campari -k hierarchicalClustering.key &gt;&amp; tutorial11_hierarchicalClustering.log<br/>
+</tt>
+<br/>
+As with the tree-based algorithm discussed in Step 2, a cluster summary is written to the log file and the same additional output files are produced (<a href="outputfiles.html#STRUCT_CLUSTERING.vmd">STRUCT_CLUSTERING.vmd</a>, <a href="outputfiles.html#STRUCT_CLUSTERING.clu">STRUCT_CLUSTERING.clu</a>, and <a href="outputfiles.html#STRUCT_CLUSTERING.graphml">STRUCT_CLUSTERING.graphml</a>). There may be an additional output file (<a href="outputfiles.html#FRAMES_NBL.nc">FRAMES_NBL.nc</a>) that
+is a representation of the mutual neighbor relationships amongst snapshots (binary). You should perform the same tests as above to verify that the clustering
+is meaningful:<br/>
+<br/><tt>
+for i in `grep -F 'CLUSTER SUMMARY' -A 10 tutorial11_hierarchicalClustering.log | tail -n 9 | awk '{print $3}'`; do (j=`echo -e "10*$i + 1" | bc`; head -n $j NBU.fyc | tail -n 1 | awk '{printf("Step %10i: C1C2C3C4: %10.3f C3C2C1H11: %10.3f C2C3C4H41: %10.3f\n",$1/100,$2,$3,$4)}') done<br/>
+</tt><br/>
+Note that the command is slightly modified compared to above. In particular, the altered setting for <a href="keywords.html#CCOLLECT">FMCSC_CCOLLECT</a> must be reflected appropriately. If not, the centroid positions extracted from "NBU.fyc" will be incorrect. Because data density is reduced, the state partitioning may be noisier (even though the algorithm itself is superior).<br/>
+<h5>Step 5 - Advanced Algorithms</h5>
+Here we apply the method of <a href="references.html#ref23_5">Blöchliger <i>et al.</i></a> to study the metastable states sampled in our simulation.
+We start with a new key-file from scratch. As for the case of simple clustering, the following basic keywords are required:<br/>
+<br/>
+<tt>
+<a href="keywords.html#SEQFILE">FMCSC_SEQFILE</a> <a href="../examples/tutorial11/nbu.in">nbu.in</a><br/>
+<a href="keywords.html#PARAMETERS">PARAMETERS</a> &lt;full path to folder&gt;/campari/params/oplsaal.prm<br/>
+<a href="keywords.html#PDBANALYZE">FMCSC_PDBANALYZE</a> 1<br/>
+<a href="keywords.html#DCDFILE">FMCSC_DCDFILE</a> NBU.dcd<br/>
+<a href="keywords.html#PDB_FORMAT">FMCSC_PDB_FORMAT</a> 4<br/>
+<a href="keywords.html#SC_IPP">FMCSC_SC_IPP</a> 0.0<br/>
+<a href="keywords.html#NRSTEPS">FMCSC_NRSTEPS</a> 100000<br/>
+<a href="keywords.html#EQUIL">FMCSC_EQUIL</a> 0<br/>
+<a href="keywords.html#CCOLLECT">FMCSC_CCOLLECT</a> 1 # use every snapshot<br/>
+</tt>
+<br/>
+Again, we disable some analyses and outputs turned on by default:<br/>
+<br/>
+<tt>
+<a href="keywords.html#XYZOUT">FMCSC_XYZOUT</a> 20000000 # disable<br/>
+<a href="keywords.html#TOROUT">FMCSC_TOROUT</a> 20000000 # disable<br/>
+<a href="keywords.html#COVCALC">FMCSC_COVCALC</a> 20000000 # disable<br/>
+<a href="keywords.html#SAVCALC">FMCSC_SAVCALC</a> 20000000 # disable<br/>
+<a href="keywords.html#POLCALC">FMCSC_POLCALC</a> 20000000 # disable<br/>
+<a href="keywords.html#RHCALC">FMCSC_RHCALC</a> 20000000 # disable<br/>
+<a href="keywords.html#INTCALC">FMCSC_INTCALC</a> 20000000 # disable<br/>
+<a href="keywords.html#POLOUT">FMCSC_POLOUT</a> 20000000 # disable<br/>
+<a href="keywords.html#ENSOUT">FMCSC_ENSOUT</a> 20000000 # disable<br/>
+<a href="keywords.html#ENOUT">FMCSC_ENOUT</a> 20000000 # disable<br/>
+<a href="keywords.html#RSTOUT">FMCSC_RSTOUT</a> 20000000 # disable<br/>
+</tt>
+<br/>
+The progress index method has a number of auxiliary keywords, and we make the following choices:<br/>
+<br/>
+<tt>
+<a href="keywords.html#CMODE">FMCSC_CMODE</a> 4 # selects the analysis method<br/>
+<a href="keywords.html#CPROGINDMODE">FMCSC_CPROGINDMODE</a> 2 # use fast approximate algorithm<br/>
+<a href="keywords.html#CDISTANCE">FMCSC_CDISTANCE</a> 1 # use dihedral angles to represent each snapshot<br/>
+<a href="keywords.html#CRADIUS">FMCSC_CRADIUS</a> 60.0 # threshold radius (in degrees) of clusters<br/>
+<a href="keywords.html#BIRCHHEIGHT">FMCSC_BIRCHHEIGHT</a> 8 # tree height<br/>
+<a href="keywords.html#CMAXRAD">FMCSC_CMAXRAD</a> 120.0 # coarsest threshold level in tree<br/>
+<a href="keywords.html#CPROGINDRMAX">FMCSC_CPROGINDRMAX</a> 7000 # number of search attempts<br/>
+<a href="keywords.html#CPROGINDSTART">FMCSC_CPROGINDSTART</a> 1 # start from the first snapshot in the trajectory (default)<br/>
+</tt>
+<br/>
+Here, we select the method of <a href="references.html#ref23_5">Blöchliger <i>et al.</i></a> via keyword <a href="keywords.html#CMODE">FMCSC_CMODE</a>. Details are provided in the corresponding documentation and in the reference publication. As in Step 2, we pick all the dihedral angles to represent the system. We use the fast approximate algorithm (&rarr; <a href="keywords.html#CPROGINDMODE">FMCSC_CPROGINDMODE</a>), which relies, for efficiency only, on preorganizing the data via the tree-like algorithm of <a href="references.html#ref23_4">Vitalis and Caflisch</a> discussed in Step 2. We use the same settings for this auxiliary clustering. In addition, two keywords have to be specified. <a href="keywords.html#CPROGINDRMAX">FMCSC_CPROGINDRMAX</a> sets the number of search attempts for the approximate algorithm (a higher value gives more accurate results), and <a href="keywords.html#CPROGINDSTART">FMCSC_CPROGINDSTART</a> specifies the starting snapshot for the resulting profile. After pasting all the above keywords into a key-file "oneshot.key", you can run:<br/>
+<br/><tt>
+campari -k oneshot.key &gt;&amp; tutorial11_oneshot.log<br/>
+</tt>
+<br/>
+The cost of the algorithm scales roughly linearly with the <a href="keywords.html#CPROGINDRMAX">number of search attempts</a>. Given the relatively high value, the generation of the approximate minimum spanning tree may take a few minutes. The resulting output is collected in the file <a href="outputfiles.html#PROGIDX_xxxxxxxxxxxx.dat">PROGIDX_000000000001.dat</a> and plotting the fourth column will give you the desired profile. You can use this <a href="../examples/tutorial11/plotOneShot.R">R-script</a> to plot the output with some structural annotation by running:<br/>
+<br/><tt>
+Rscript plotOneShot.R<br/>
+</tt>
+<br/>
+The plot saved to "oneShot.eps" should look similar to Fig. 2 in the <a href="references.html#ref23_5">reference paper</a> for this method. In particular, there should be 27 distinct non-overlapping basins. The output is a combination of cut-based and structural annotations. It would therefore be interesting to obtain a direct comparison to a cut-based pseudo free energy profile. For this, add and/or change the key-file as follows:<br/>
+<br/>
+<tt>
+<a href="keywords.html#CPROGINDSTART">FMCSC_CPROGINDSTART</a> -2 # consistently use largest cluster or representative thereof for reference in profiles<br/>
+<a href="keywords.html#CMSMCFEP">FMCSC_CMSMCFEP</a> 1 # request MFPT-based cFEP<br/>
+<a href="keywords.html#CRADIUS">FMCSC_CRADIUS</a> 20.0 # threshold radius (in degrees) of clusters<br/>
+<a href="keywords.html#CPROGINDRMAX">FMCSC_CPROGINDRMAX</a> 1500 # number of search attempts<br/>
+</tt>
+<br/>
+We improve the resolution of the clustering so that analyses based on the coarse-grained trajectory can still be meaningful.
+Now run CAMPARI for the final time:<br/>
+<br/><tt>
+campari -k oneshot.key &gt;&amp; tutorial11_final.log<br/>
+</tt>
+<br/>
+This will create a progress index output file as before, but using a different starting snapshot (reflected in the name of the file). The relevant information can be obtained from log output. It will also create an output file called <a href="outputfiles.html#MFPT_yyy_CFEP_xxxxxxxx.dat">MFPT_FWD_CFEP_00000001.dat</a>, and a plot of columns 3 against 5 would
+provide output comparable to the annotation we studied before. It is left as an exercise to modify or create plotting commands preparing an explicit
+comparison of the data (refer to publications on <a href="references.html#ref23_5">progress index</a> and <a href="references.html#ref23_4">clustering</a>
+for details).
+<br/><br/>
+
+</div>
+</div>
+</div>
+</div>
+<!-- Side Navigation Bar --><!--<div class="art-sidebar1">--><!-- Contributors Block --><!--<div class="art-Block">
+                    <div class="art-Block-tl"></div>
+                    <div class="art-Block-tr"></div>
+                    <div class="art-Block-bl"></div>
+                    <div class="art-Block-br"></div>
+                    <div class="art-Block-tc"></div>
+                    <div class="art-Block-bc"></div>
+                    <div class="art-Block-cl"></div>
+                    <div class="art-Block-cr"></div>
+                    <div class="art-Block-cc"></div>
+                    <div class="art-Block-body">
+                        <div class="art-BlockHeader">
+                            <div class="l"></div>
+                            <div class="r"></div>
+                            <div class="art-header-tag-icon">
+                                <div class="t">Contributors - Links</div>
+                            </div>
+                        </div><div class="art-BlockContent">
+                            <div class="art-BlockContent-body">
+                                <div>
+                                <b>Pappu Lab</b><br />
+                                Washington University in St. Louis, MO<br />
+                                Website: <a href="lima.wustl.edu">lima.wustl.edu</a><br />
+                                Phone: (999) 999-9999 <br/>
+                                <br/>
+                                <b>Andreas Vitalis</b><br />
+                                Unistat de Zurich<br />
+                                Website: <a href="papajohns.com">vitalis.net</a><br />
+                                Phone: (111) 999-9999 <br/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>--><!-- Search Block --><!--
+                <div class="art-Block">
+                    <div class="art-Block-tl"></div>
+                    <div class="art-Block-tr"></div>
+                    <div class="art-Block-bl"></div>
+                    <div class="art-Block-br"></div>
+                    <div class="art-Block-tc"></div>
+                    <div class="art-Block-bc"></div>
+                    <div class="art-Block-cl"></div>
+                    <div class="art-Block-cr"></div>
+                    <div class="art-Block-cc"></div>
+                    <div class="art-Block-body">
+                        <div class="art-BlockHeader">
+                            <div class="l"></div>
+                            <div class="r"></div>
+                            <div class="art-header-tag-icon">
+                                <div class="t">Find Text</div>
+                            </div>
+                        </div><div class="art-BlockContent">
+                            <div class="art-BlockContent-body">
+                                <div><form method="get" id="newsletterform" action="javascript:void(0)">
+                                <input type="text" value="" name="email" id="s" style="width: 95%;" />
+                                <span class="art-button-wrapper">
+                                    <span class="l"> </span>
+                                    <span class="r"> </span>
+                                    <input class="art-button" type="submit" name="search" value="Search"/>
+                                </span>
+                                </form></div>
+                            </div>
+                        </div>
+                    </div>
+                </div> 
+                --><!-- News/Updates Block --><!--
+                <div class="art-Block">
+                    <div class="art-Block-tl"></div>
+                    <div class="art-Block-tr"></div>
+                    <div class="art-Block-bl"></div>
+                    <div class="art-Block-br"></div>
+                    <div class="art-Block-tc"></div>
+                    <div class="art-Block-bc"></div>
+                    <div class="art-Block-cl"></div>
+                    <div class="art-Block-cr"></div>
+                    <div class="art-Block-cc"></div>
+                    <div class="art-Block-body">
+                        <div class="art-BlockHeader">
+                            <div class="l"></div>
+                            <div class="r"></div>
+                            <div class="art-header-tag-icon">
+                                <div class="t">Recent News</div>
+                            </div>
+                        </div><div class="art-BlockContent">
+                            <div class="art-BlockContent-body">
+                                <div>
+                                    <p><b>Jun 14, 2008</b><br/>
+                                    Aliquam sit amet felis. Mauris semper, 
+                                    velit semper laoreet dictum, quam 
+                                    diam dictum urna, nec placerat elit 
+                                    nisl in quam. Etiam augue pede, 
+                                    molestie eget, rhoncus at, convallis 
+                                    ut, eros. Aliquam pharetra.<br/>
+                                    <a href="javascript:void(0)">Read more...</a></p>
+                                                          
+                                    <p><b>Aug 24, 2008</b><br/>
+                                    Aliquam sit amet felis. Mauris semper, 
+                                    velit semper laoreet dictum, quam 
+                                    diam dictum urna, nec placerat elit 
+                                    nisl in quam. Etiam augue pede, 
+                                    molestie eget, rhoncus at, convallis 
+                                    ut, eros. Aliquam pharetra.<br/>
+                                    <a href="javascript:void(0)">Read more...</a></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> --><!-- End Sidebar --> </div>
+</div>
+</div>
+<!-- End main page contents --><!-- Footer -->
+<div class="art-Footer">
+<div class="art-Footer-background">
+<div class="art-Footer-inner"> <a href="#" class="art-rss-tag-icon"
+ title="RSS"></a>
+<div class="art-Footer-text">
+<p><a href="#">Contact Us</a> | <a href="#">Terms of Use</a> | <a
+ href="#">License Information</a><br/>
+Copyright © 2010 . All Rights Reserved.</p>
+</div>
+</div>
+</div>
+</div>
+<p class="art-page-footer">XHTML and CSS valid. Powered by <a
+ href="http://www.flashmint.com/">FlashMint</a> - flash templates
+provider.</p>
+<div style="text-align: center; font-size: 0.75em;">Design downloaded
+from <a href="http://www.freewebtemplates.com/">free website templates</a>.</div>
+</div>
+</body>
+</html>

@@ -1,3 +1,5 @@
+
+
 # R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
 language: r
 # pandoc_version: 1.16 # crashing because it is trying to fetch .deb from github (not existant url)
@@ -36,6 +38,7 @@ before_install:
   - if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then sudo chown -R $(whoami) /usr/local; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update ; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then rm '/usr/local/bin/gfortran' ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then rm '/usr/local/include/c++' ; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install gcc; fi
   - if [[ "${TRAVIS_OS_NAME}" = "osx" ]]; then brew link --overwrite --force cmake; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install netcdf --with-fortran --without-test; fi # must be specified
@@ -43,12 +46,30 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then  rm '/usr/local/bin/pandoc'; fi # must be specified
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then  rm '/usr/local/share/man/man1/pandoc.1'; fi # must be specified
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install pandoc; fi # must be specified
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install fftw; fi # must be specified
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install open-mpi; fi # must be specified
+  #- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew upgrade automake; fi # must be specified
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew info automake; fi # must be specified
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pwd; fi # must be specified
+  
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libnetcdff5; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libnetcdf-dev; fi # must be specified
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libarpack2-dev; fi # must be specified
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install netcdf-bin; fi # must be specified
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install pandoc; fi # must be specified
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -y libfftw3-dev; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -y libfftw3-bin; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -y libopenmpi-dev; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -y openmpi-bin; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -y automake; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then pwd; fi
+
+#  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then  apt-get install -y gfortran; fi
+#  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then  apt-get install -y libnetcdff6; fi
+#  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then  apt-get install -y libnetcdff-dev; fi
+#  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then  apt-get install -y netcdf-bin; fi
+
 
 
 # the following seems not necessary
@@ -70,6 +91,7 @@ r_github_packages:
   - jimhester/covr
   - cran/WGCNA
   - cran/PairViz # it can not be seen by mac?
+  - rstudio/rmarkdown
 
 r-packages:
   - bio3d
@@ -91,12 +113,13 @@ r-packages:
   - plotly
   - ggfortify
   - Rtsne
+  - TSA
 #  - PairViz
 #  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; WGCNA ; fi 
 
-output:
-  html_document: 
-    smart: false
+#output: # pandoc must be installed with dev options from github
+#  html_document: 
+#    smart: false
 
 after_script:
   - ls -lah

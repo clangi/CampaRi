@@ -1,0 +1,1205 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!--
+############################################################################
+# LICENSE INFO:                                                            #
+############################################################################
+#    This file is part of CAMPARI.                                         #
+#                                                                          #
+#    Version 3.0                                                           #
+#                                                                          #
+#    Copyright (C) 2017, The CAMPARI development team (current and former  #
+#                        contributors)                                     #
+#                        Andreas Vitalis, Adam Steffen, Rohit Pappu, Hoang #
+#                        Tran, Albert Mao, Xiaoling Wang, Jose Pulido,     #
+#                        Nicholas Lyle, Nicolas Bloechliger, Marco Bacci,  #
+#                        Davide Garolini, Jiri Vymetal                     #
+#                                                                          #
+#    Website: http://sourceforge.net/projects/campari/                     #
+#                                                                          #
+#    CAMPARI is free software: you can redistribute it and/or modify       #
+#    it under the terms of the GNU General Public License as published by  #
+#    the Free Software Foundation, either version 3 of the License, or     #
+#    (at your option) any later version.                                   #
+#                                                                          #
+#    CAMPARI is distributed in the hope that it will be useful,            #
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of        #
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         #
+#    GNU General Public License for more details.                          #
+#                                                                          #
+#    You should have received a copy of the GNU General Public License     #
+#    along with CAMPARI.  If not, see <http://www.gnu.org/licenses/>.      #
+############################################################################
+# AUTHORSHIP INFO:                                                         #
+############################################################################
+#                                                                          #
+# MAIN AUTHOR:   Andreas Vitalis                                           #
+# CONTRIBUTIONS: Adam Steffen                                              #
+#                                                                          #
+############################################################################
+-->
+<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US" xml:lang="en">
+<head>
+    <!--
+    Designed by CAMPARI Development Group
+    Base template (without user's data) checked by http://validator.w3.org : "This page is valid XHTML 1.0 Transitional"
+    -->
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></meta>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge"></meta>
+    <title>CAMPARI Parameter Files</title>
+    <link rel="stylesheet" href="style_red.css" type="text/css" media="screen"></link>
+</head>
+<body>
+<div id="art-page-background-simple-gradient"></div>
+<div id="art-main">
+    <!-- Header -->
+    <div class="art-Sheet2">
+        
+        <!-- Banner Art -->
+        <div class="art-Header">
+            <div class="art-Header-png"></div>
+        </div>
+                
+        <!-- Top Navigation Bar -->
+        <div class="art-nav">
+            <div class="l"></div>
+            <div class="r"></div>
+            <ul class="art-menu">
+                <li><a href="index.html"><span class="l"></span><span class="r"></span><span class="t">Home</span></a></li>
+                <li><a href="documentation.html" class=" active"><span class="l"></span><span class="r"></span><span class="t">Documentation</span></a></li>
+                <li><a href="references.html"><span class="l"></span><span class="r"></span><span class="t">References</span></a></li>
+                <li><a href="contact.html"><span class="l"></span><span class="r"></span><span class="t">Support</span></a></li>
+                <li><a href="download.html"><span class="l"></span><span class="r"></span><span class="t">Download</span></a></li>
+            </ul>
+        </div>
+            
+        <!-- Top Sub Navigation Bar -->
+        <div class="nav-menu">
+            <ul class="navlist">
+                <li><a href="documentation.html">Overview</a></li>
+                <li><a href="install.html">Install</a></li>
+                <li><a href="tutorials.html">Tutorials</a></li>
+                <li><a href="inputfiles.html">Inputfiles</a></li>
+                <li><a href="keywords.html">Keywords</a></li>
+                <li><a href="outputfiles.html">Outputfiles</a></li>
+                <li><a href="parameters.html" class=" active">Parameters</a></li>
+                <li><a href="development.html">Development</a></li>
+                <li></li>
+            </ul>
+        </div> 
+    </div>
+        
+    <!-- Main Page Contents -->
+    <div class="art-Sheet">
+        <div class="art-Sheet-bl"></div>
+        <div class="art-Sheet-br"></div>
+        <div class="art-Sheet-bc"></div>
+        <div class="art-Sheet-cl"></div>
+        <div class="art-Sheet-cr"></div>
+        <div class="art-Sheet-cc"></div>
+        <div class="art-Sheet-body">
+            
+            <div class="art-contentLayout">
+                <!-- Page Contents -->
+                <div class="art-content">
+                <div class="art-Post">
+                <div class="art-Post-body">
+<div class="art-PostContent">
+<br/>
+<h2><a id="TOP" class="NoHi">CAMPARI Parameter Files</a></h2>
+<h3><a id="S0_Overview" class="NoHi">Overview</a></h3>
+Here we outline the strategy used in
+creating, reading and using parameter files for CAMPARI:<br/><br/>
+1) <a href="parameters.html#S1_Biotypes">Biotypes</a><br/>
+2) <a href="parameters.html#S2_LJ-types">Lennard-Jones (atom) types</a><br/>
+3) <a href="parameters.html#S3_Charge_types">Charge types</a><br/>
+4) <a href="parameters.html#S4_Free_energies_of_solvation">Free energies of solvation</a><br/>
+5) <a href="parameters.html#S5_Bond_length_potential_types">Bond length potential types</a><br/>
+6) <a href="parameters.html#S6_Bond_angle_potential_types">Angle bending potential types</a><br/>
+7) <a href="parameters.html#S7_Dihedral_angle_torsional_potential">Dihedral angle (torsional) potential types</a><br/>
+8) <a href="parameters.html#S8_CMAP_potential_types">CMAP (grid correction map) potential types</a><br/>
+9) <a href="parameters.html#S9_Bonded_types">Bonded types</a><br/>
+<br/>
+<br/>
+<br/>
+<h3><a class="NoHi" id="S1_Biotypes">1) Biotypes:</a></h3>
+<hr style="width: 100%; height: 2px;"></hr> (<a href="parameters.html#TOP">back to top</a>)<br/>
+<br/>
+Everything starts with the definition of biotypes. A biotype may be thought of 
+as the parsing of atoms into categories which preserve the maximum amount
+of chemical information. This implies that the only atoms which should ever be pooled into
+the same biotype are those which are chemically indistinguishable, <i>i.e.</i>, are at most
+prochiral. Naturally this would lead to an inordinate number of biotypes 
+(and consequently parameter assignments) since - for example - even an alanine C<sub>&alpha;</sub> in the sequence
+CMATS is different from one in the sequence YMATS. This leads to a compromise in which
+the grouping mostly follows a residue-level paradigm and in which biotypes are re-used
+for enantiomers and diastereomers for instance. Since there are
+hard-coded references to biotypes, these are cast in stone. It is easy
+to add biotypes but impossible to renumber existing biotypes (without
+having to apply major changes to the code). This may lead to biotypes
+not being properly grouped at times, but this should represent only a minor
+inconvenience. Changes to the code involving a re-assignment of biotypes have to be 
+realized in <i>all</i> parameter files as well.<br/>
+<br/>
+Each biotype should have an associated LJ-type, an associated charge
+type, and an associated bonded type. Since there are comparably few LJ-types, general atom information
+(mass, atomic number, valence) is included in these. Charge types,
+conversely, contain information only about atomic point charges. Bonded types
+are assignments which do not contain any information themselves but represent
+an additional level of grouping of biotypes into chemically similar ones.<br/>
+<br/>
+The proper specification of a biotype is henceforth:<br/>
+-----------------------------------------------------------------------<br/>
+<span style="font-style: italic;">biotype&nbsp; xxx&nbsp;
+abc&nbsp; "arbitrary string" &nbsp; i&nbsp; j&nbsp; k</span><br/>
+-----------------------------------------------------------------------<br/>
+<i>xxx</i> is the number of the biotype, and <i>i, j</i>, and <i>k</i> are the LJ-, the
+charge-, and the bonded types, respectively. The string should always
+be descriptive (indicate the residue and atom type within) and is read
+and stored (notice, however, that the storage string is of fixed
+length, and that an oversize string might be truncated). Finally, <i>abc</i>
+is the biotype indicator, a 3-element string of alphanumeric
+characters. This is the unique identifier when using (<i>i.e.</i>, writing and
+reading) pdb-formats (although additional numbering is introduced there
+for chemically identical atoms). <br/>
+<br/>
+The right start when building a parameter file from scratch is to take
+all the biotype definitions and initialize all the LJ-, charge, and bonded types
+to 0, as this will indicate to the program that the parameter file is
+basically fine, but that all these residues will not be supported. This
+will allow you to start supporting the sequence database by adding the
+appropriate parameters when they are actually needed. Because there is a hard-coded
+match between the residue database CAMPARI supports natively and the biotypes, it is <b>not
+permissible</b> to edit the structure of the existing biotype section,
+<i>i.e.</i>, to renumber (even swap), or delete biotype entries.<br/>
+<br/>
+In simulations or analysis runs with unsupported entities, it is often convenient
+to add parameters through the parameter file itself. For this purpose, CAMPARI offers
+a <a href="inputfiles.html#FMCSC_BIOTYPEPATCHFILE">patch facility for biotypes</a> that
+can also be used to change biotypes for any other atom. Note that this will (re)assign 
+all atom-specific information encoded in biotypes. To allow parameter support for unsupported
+entities, biotypes may be added to the parameter file. Continuous numbering is enforced.<br/>
+<br/>
+<br/>
+<br/>
+<h3><a class="NoHi" id="S2_LJ-types">2) Lennard-Jones (atom) types:</a></h3>
+<hr style="width: 100%; height: 2px;"></hr> (<a href="parameters.html#TOP">back to top</a>)<br/>
+<br/>
+As mentioned above, LJ-types encapsulate basic atomic parameters like
+weight or valence which are used in various places in the code. Their
+other function is to define the excluded volume and dispersive
+interactions between two non-bonded atoms <i>i</i>, and <i>j</i>. The <a href="keywords.html#SC_IPP">inverse power potential</a> is a
+suitable example but the <a href="keywords.html#SC_ATTLJ">dispersive term</a>  and the <a href="keywords.html#SC_WCA">WCA potential</a>
+employ the same set of parameters:<br/>
+<br/>
+E<sub>IPP</sub> = c<sub>IPP</sub>&#183;4.0&#931;&#931;<sub>i,j</sub>&#949;<sub>ij</sub>f<sub>1-4,ij</sub>&#183;(&#963;<sub>ij</sub>/r<sub>ij</sub>)<sup>t</sup><br/>
+<br/>
+<!--
+<img style="width: 296px; height: 23px;"
+ alt="V_ij = 4.0*lj_eps(ij) * (f_1*(lj_sig(ij)/r(ij)^12 - f_2*(lj_sig(ij)/r(ij)^6)"
+ src="website_equations/parameters_LJtypes.gif"><br/>
+<br/>
+-->
+To define basic parameters, the following line is used:<br/>
+---------------------------------------------------------------------------------<br/>
+<span style="font-style: italic;">atom &nbsp; xxx&nbsp;&nbsp;
+abc&nbsp;&nbsp; "arbitrary string"&nbsp;&nbsp; z&nbsp;&nbsp; mass
+&nbsp; v</span><br/>
+---------------------------------------------------------------------------------<br/>
+Here, <i>xxx</i> is the number of the atom type (continuous numbering is
+enforced), <i>abc</i> is a generic descriptor (usually the atomic symbol), the
+string should be used to describe the atom type (like "sp3 carbon"), <i>z</i>
+is the atomic number, <i>mass</i> is the atomic mass (in units of a.m.u or
+g/mol), and <i>v</i> is the valence (the number of unique atoms directly
+bonded to this atom type). Note that just like for biotypes, the string
+has to be within double quotes, and that it is again stored in a
+fixed-size array (truncation might occur). <i>xxx</i> is the number to be used
+when specifying LJ types in the biotype section. It is recommended to use
+the atomic symbol for the correct element as <i>abc</i> in case that 
+residues/molecules not natively supported by CAMPARI are part of the system.
+It is possible to reassign atom types for individual atoms
+through the <a href="inputfiles.html#FMCSC_LJPATCHFILE">Lennard-Jones patch facility</a>. Note
+that this does not reassign any of the other specifications (mass, valency, <i>etc</i>).<br/>
+<br/>
+After defining an atom type in this way, there are two necessary lines
+to define the symmetric LJ interaction parameters for this atom type
+(<i>i.e.</i>, the &#963;<sub>ii</sub> and the &#949;<sub>ii</sub>).<br/>
+---------------------------------------<br/>
+<span style="font-style: italic;">contact&nbsp;&nbsp; i &nbsp; i
+&nbsp; &#963;<sub>ii</sub></span><br/>
+<span style="font-style: italic;">interact&nbsp;&nbsp;
+i&nbsp;&nbsp; i&nbsp;&nbsp; &#949;<sub>ii</sub></span><br/>
+---------------------------------------<br/>
+Here, <i>i</i> is the atom type, and &#963;<sub>ii</sub> and &#949;<sub>ii</sub> are the
+aforementioned LJ interaction parameters given as non-negative floating
+point numbers. Note that these lines are mandatory, <i>i.e.</i>, it is
+impossible to define an atom type without defining its self-terms for
+the LJ potential.<br/>
+<br/>
+By default, the program will construct pairwise LJ parameters for
+different types <i>i</i> and <i>j</i> from the symmetric ones through the specified
+combination rule (see <a href="keywords.html#EPSRULE">FMCSC_EPSRULE</a>
+and <a href="keywords.html#SIGRULE">FMCSC_SIGRULE</a>).
+However, in order to allow special cases to be handled, the user can
+overwrite this default behavior by adding lines to the parameter file:<br/>
+---------------------------------------<br/>
+<span style="font-style: italic;">contact&nbsp;&nbsp; i &nbsp; j
+&nbsp; &#963;<sub>ij</sub></span><br/>
+<span style="font-style: italic;">interact&nbsp;&nbsp;
+i&nbsp;&nbsp; j &nbsp; &#949;<sub>ij</sub></span><br/>
+---------------------------------------<br/>
+Here, the pairwise term for atom types <i>i</i> and <i>j</i> is specifically set to
+the given floating point numbers. This is trivially possible since the
+code pre-computes and stores all pairwise LJ parameters (whether
+constructed by the default rule, or by exception). Note that the code
+does no checks whatsoever on how meaningful these values are, so it is
+imperative to be careful when constructing these exceptions in the
+parameter file. It is not possible to alter the numerical values of the interaction parameters directly
+through a patch. A particular level of optimization is reserved for water-like
+molecules with more than atom, but only a single Lennard-Jones site. Here, CAMPARI
+may enable the use of specialized loops in <a href="keywords.html#DYNAMICS">dynamics calculations</a>
+if it detects that the corresponding molecules are all at the end of the sequence input
+and conform to the correct Lennard-Jones interaction patterns. This 
+information is provided in the calculation summary.<br/>
+<br/>
+Force fields would not be force fields were it not for further exceptions.
+A particularly messy area is the treatment of non-bonded interactions for
+atoms separated by only three bonds (1-4) and the user may read up on this
+<a href="keywords.html#FUDGE_ST_14">elsewhere</a>. The parameter allows one
+to specify specific Lennard-Jones parameters used only in such 1-4-interactions:<br/>
+---------------------------------------<br/>
+<span style="font-style: italic;">contact_14&nbsp;&nbsp; i &nbsp; j
+&nbsp; &#963;<sub>ij,14</sub></span><br/>
+<span style="font-style: italic;">interact_14&nbsp;&nbsp;
+i&nbsp;&nbsp; j &nbsp; &#949;<sub>ij,14</sub></span><br/>
+---------------------------------------<br/>
+&#963;<sub>ij,14</sub> and &#949;<sub>ij,14</sub> will be used only if 
+CAMPARI determines the two atoms <i>i</i> and <i>j</i> to be 1-4 relative
+to one another (see <a href="keywords.html#MODE_14">MODE_14</a>). Note that
+additional but flat (universal) fudging of interactions may be applied.
+The user is advised to check the <a href="keywords.html#GROMOS">GROMOS parameter implementation</a> to 
+see an example of complicated LJ parameters.<br/>
+<br/>
+As an additional note, the solvent-accessible volume (SAV), which is a
+central portion of CAMPARI's implicit solvation model (ABSINTH), relies on the
+&#963;<sub>ii</sub> (see <a href="keywords.html#SC_IMPSOLV">FMCSC_SC_IMPSOLV</a>, 
+<a href="keywords.html#SAVPATCHFILE">FMCSC_SAVPATCHFILE</a>,
+<a href="keywords.html#ASRPATCHFILE">FMCSC_ASRPATCHFILE</a>, <i>etc.</i> for details).
+Computing SAVs mandates the &#963;<sub>ii</sub> to be representative
+of the actual geometric size of that solvation site since the
+extracted parameters are the atomic radii for the LJ types. CAMPARI rigorously enforces 
+that all atomic radii be finite, which may necessitate the use of radius overrides (see below).
+Problems for the ABSINTH model may arise in two scenarios:<br/>
+<ol style="list-style-type: lower-roman;">
+  <li>Sometimes sizeless particles are used (<i>e.g.</i>, the
+ &#963;<sub>ii</sub>, and &#949;<sub>ii</sub> for hydrogens in common water models are
+both zero). This implies a strange and most likely unwanted
+perturbation to the SAV calculation (since these atoms are still
+existing sites). In this case, one could define a small
+enough value for &#963;<sub>ii</sub> but explicitly set the &#963;<sub>ij</sub> and
+&#949;<sub>ij</sub> for hydrogen bonding partners (H-O/N/S) to zero since these
+interactions are what the hydrogens are made sizeless for. The use of the radius
+keyword explained below is of course much cleaner.</li>
+  <li>Sometimes heavily bloated particles (&#963;<sub>ii</sub> large) with
+minuscule &#949;<sub>ii</sub> are used which give rise to an effective size
+which is much less than the apparent one (for example &#8491;qvist's ion
+parameters). This is a difficult problem as it breaks the strict
+coupling between excluded volume size (what SAV needs to know) and LJ
+parameter size (what &#963;<sub>ii</sub> specifies).</li>
+</ol>
+In order to fix these issues CAMPARI allows the user to specify rules
+to overwrite the default behavior, by which radii are extracted as
+0.5&#183;&#963;<sub>ii</sub>:<br/>
+---------------------------------------------------<br/>
+<span style="font-style: italic;">radius&nbsp;&nbsp;
+i&nbsp;&nbsp; r<sub>i</sub></span><br/>
+---------------------------------------------------<br/>
+Obviously, <i>r<sub>i</sub></i> denotes the replacement radius (in &#8491;) to be
+used in all radius-dependent analyses (related to the <a href="keywords.html#SC_IMPSOLV">ABSINTH model</a>, to
+<a href="keywords.html#SAVCALC">solvation analysis</a>, or <a href="keywords.html#SC_EMICRO">spatial
+density</a> techniques) for LJ atom type <i>i</i>. If the LJ report flag is turned on (see <a
+ href="keywords.html#VDWREPORT">FMCSC_VDWREPORT</a>), such overwritten values
+will be reported in the log-file. Note that only positive values are
+allowed, but that there are no constraints otherwise. It is generally
+not recommended to use these as free parameters, <i>i.e.</i>, they should
+either agree with the LJ parameters, or should be set to a hard value
+from reference data (<i>i.e.</i>, atomic (covalent) or ionic radii). Like most other
+parameters, these radii can also be altered through atom-specific patches by
+a <a href="inputfiles.html#FMCSC_RPATCHFILE">dedicated patch facility</a>.<br/>
+<br/>
+<br/>
+<br/>
+<h3><a class="NoHi" id="S3_Charge_types">3) Charge types:</a></h3>
+<hr style="width: 100%; height: 2px;"></hr> (<a href="parameters.html#TOP">back to top</a>)<br/>
+<br/>
+Charge types do nothing but define an integer (the type number) and an
+associated charge (in units of e):<br/>
+----------------------------------------------------------<br/>
+<span style="font-style: italic;">charge &nbsp; xxx &nbsp;
+"arbitrary string" &nbsp; a</span><br/>
+----------------------------------------------------------<br/>
+Here, <i>xxx</i> is the number of the charge type, the string is analogous to
+previous cases, and <i>a</i> is the actual charge value (an arbitrary floating
+point number). Most of CAMPARI's current parameter files use a generic
+charge type for non-charged atoms. <i>xxx</i> is the number to be used when
+specifying charge types in the biotype section. Partial charges are the key parameters for the evaluation
+of <a href="keywords.html#SC_POLAR">Coulomb's law</a> for non-bonded atoms:<br/>
+<br/>
+E<sub>POLAR</sub> = c<sub>POLAR</sub>&#183;&#931;&#931;<sub>i,j</sub> [ (f<sub>1-4,C,ij</sub>&#183;q<sub>i</sub>q<sub>j</sub>) / (4.0&pi;&#949;<sub>0</sub>&#183;r<sub>ij</sub>)]<br/>
+<br/>
+Here, the q<sub>i</sub> and q<sub>j</sub> are the charges of atoms <i>i</i> and <i>j</i>, respectively,
+and those parameters are what is supplied through the parameter file. Note that
+no information except q<sub>i</sub> is stored and used, which means that it has
+no negative side effects to reuse partial charge values for different biotypes.<br/>
+<br/>
+Charges can be messy due to the strength and long range of the Coulomb
+interaction. The code ensures sanity of the parameters by i) checking for
+the system's net charge and ii) warning when a net-neutral but ampholytic macromolecule
+is simulated in the absence of any mobile counterions. Partial charges 
+can generally be expected to group into net neutral groups and groups
+carrying an integer net charge. This can happen at different hierarchy levels and
+is relevant for two purposes, <i>viz.</i>, for <a href="keywords.html#CUTOFFMODE">cutoffs</a>
+in particular in <a href="keywords.html#BOUNDARY">periodic boundary conditions (PBC)</a>,
+and for <a href="keywords.html#ELECMODEL">short-range electrostatics</a>:<br/>
+<ol>
+  <li>When using cutoffs, it is a common trap to break up dipole
+groups in the cutoff treatment. In PBC this can lead to the generation
+of an artificial electric field, which ends up aligning the
+system. In CAMPARI, the sanity of cutoffs in PBC is ensured by treating cutoffs at the residue level,
+<i>i.e.</i>, any residue in the sequence is always completely in- or excluded
+in/from an interaction to another residue. Hence, at the cutoff level
+the effective charge groups are given by whole residues, which means that there
+could be arbitrary charge distributions within a residue as long as
+the target net charge (usually zero) is met. There are special rules available
+for dealing with interactions beyond the cutoff distance, and these are documented
+for keywords <a href="keywords.html#LREL_MC">FMCSC_LREL_MC</a> and
+<a href="keywords.html#LREL_MD">FMCSC_LREL_MD</a>.</li>
+  <li>The point charge assumption becomes weak when describing short-range interactions
+between atoms that are topologically connected. It is common
+practice in biomolecular force fields to address this point by a combination of
+<a href="keywords.html#ELECMODEL">exclusion rules</a>
+(<i>e.g.</i>, 1-2 and 1-3 nonbonded interactions are not computed) and
+<a href="keywords.html#FUDGE_EL_14">fudge factors</a> to correct for the resultant errors.
+Errors arise because the parameterization becomes hypersensitive to these short-range terms
+due to the inverse dependence on distance. 
+Because of the rigid geometry paradigm employed
+in <a href="keywords.html#CARTINT">torsional space simulations</a>,
+CAMPARI may not compute non-bonded interactions
+over rigid or semi-rigid units (see <a href="keywords.html#INTERMODEL">FMCSC_INTERMODEL</a>).
+Specifically for electrostatics, this may then further alter the details of the electrostatic
+interaction model (see <a href="keywords.html#ELECMODEL">FMCSC_ELECMODEL</a> for details).</li>
+</ol>
+The documentation on <a href="keywords.html#ELECMODEL">FMCSC_ELECMODEL</a> outlines the
+relevance of charge groups constructed within residues (most often, small groups that are net neutral).
+While there is some <a href="keywords.html#NCPATCHFILE">control over the partitioning</a>, 
+CAMPARI generally employs an automatic detection scheme for 
+grouping partial charges, which works as follows:
+<ol>
+<li>If the residue carries a net charge, the first attempt is to find a charge group
+matching that integer charge (or multiple ones in case there are multiple
+functional sites). These preliminary choices of targets are often hard-coded (based on 
+knowledge of the supported residues and their default titration states) to
+prevent counterintuitive assignments by atoms being absorbed into net neutral groups
+(as an example consider a lysine: were the code to look for net-neutral groups first,
+it may assign part of the NH<sub>3</sub><sup>+</sup> functional group to a net-neutral
+group preventing it from finding the most intuitive site for the net integer charged
+group).</li>
+<li>Starting generally with arbitrary sites (which are systematically scanned for each level) a hierarchical 
+search is performed slowly extending the topological distance other atoms may have to be part
+of the same dipole/charge group (charge groups always first as explained above).
+This attempts to ensure <i>locality</i> of the obtained parsing.</li>
+<li>Whenever a group is found, a few sanity checks are applied: Does the group encompass only
+one of a set of chemically equivalent atoms? Does the group trap another polar atom not part
+of any group yet? If either of those checks fails, the group is discarded.</li>
+<li>The atoms of a successfully assigned group are removed from the list.</li>
+<li>When the highest supported level of hierarchy is reached but no assignment was found,
+the code either proceeds to the next target (if there is one), or all remaining atoms are assigned to the
+same group. This group will never satisfy all
+the requirements and a warning is printed (but the grouping may still be meaningful).</li>
+<li>Especially in ring systems, a prior assignment may have been made that satisfies all the
+criteria, but is nonunique. In case the remaining atoms had to be pooled to form a 
+nonoptimal group, swap attempts - again with some maximal hierarchy - are performed
+to find a better parsing by exchanging (groups of) atoms with the same net charge.</li>
+<li>The resultant parsing is output to <a href="outputfiles.html#DIPOLE_GROUPS.vmd">DIPOLE_GROUPS.vmd</a> if
+so <a href="keywords.html#DIPREPORT">requested</a>.</li>
+</ol>
+<br/>
+Partial charges play a hugely important role to the parameterization of most force fields.
+Note that the grouping scheme above is not necessarily relevant to a simulation itself.
+Like most other parameters, partial charges can be altered in atom-specific fashion by the
+<a href="inputfiles.html#FMCSC_CPATCHFILE">charge patch facility</a>. As mentioned before,
+charge groups and status of groups as ionic can be modified by 
+<a href="inputfiles.html#FMCSC_NCPATCHFILE">a separate patch facility</a> and 
+keyword <a href="keywords.html#POLTOL">FMCSC_POLTOL</a>.
+<br/>
+<br/>
+<br/>
+<h3><a class="NoHi" id="S4_Free_energies_of_solvation">4) Free energies of solvation:</a></h3>
+<hr style="width: 100%; height: 2px;"></hr> (<a href="parameters.html#TOP">back to top</a>)<br/>
+<br/>
+Currently, this section of the parameter file is relevant only if 
+the <a href="keywords.html#SC_IMPSOLV">ABSINTH implicit solvation model</a>
+is in use, and it is recommended to <a href="references.html#ref19_1">read up on that first</a>.
+Because the parsing of arbitrary molecules into the appropriate model
+compounds (for which reference free energies of solvation are
+available) is not straightforward and does not always match the other
+hierarchical levels the program employs (<i>i.e.</i>, residues or molecules),
+the read-in and use of the free energies of solvation for the direct mean field
+interaction (<a href="keywords.html#SC_IMPSOLV">DMFI</a>) of the continuum model is not
+fully available or controlled through the parameter file. Instead, there are several
+related keywords (<i>e.g.</i>, <a href="keywords.html#FOSMID">FMCSC_FOSMID</a> or 
+<a href="keywords.html#IMPDIEL">FMCSC_IMPDIEL</a>). The parameter file merely contains
+the reference free energy of solvation values for various model compounds:<br/>
+----------------------------<br/>
+<span style="font-style: italic;">fos &nbsp; AAA &nbsp; a &nbsp; b &nbsp; c</span><br/>
+----------------------------<br/>
+Here, <i>AAA</i> is the unique identifier, and <i>a</i> is the free energy of
+solvation for the target model compound which <i>AAA</i> indicates. This is the only
+required value. Values <i>b</i> and <i>c</i> correspond to
+temperature-independent enthalpies and heat capacities of the same
+transfer process that the free energy (<i>a</i>) refers to. By adding values of this type
+to the parameter file, it is possible to use a temperature-dependent
+<a href="keywords.html#SC_IMPSOLV">ABSINTH implicit solvation model</a>.
+This choice is controlled by keyword <a href="keywords.html#FOSMODE">FMCSC_FOSMODE</a>. If there are
+no values supplied for <i>b</i> and <i>c</i>, they are automatically adjusted to yield
+a temperature-independent model (see below). This is the case for all parameter
+files shipped with CAMPARI by default. Note that the interpretation of the parameters
+as enthalpies and heat capacities matters only semantically. Technically, they can just
+as well be free fitting parameters to reference data on temperature-dependent free energies of solvation.
+Using the identifiers defined above, the formula is:<br/>
+<br/>
+&Delta;G(T) = (<i>a</i> - <i>b</i>)T/T<sub>0</sub> + <i>b</i> +  <i>c</i>[T[1 - ln(T/T<sub>0</sub>)] - T<sub>0</sub>]<br/>
+<br/>
+The values <i>a</i> and <i>b</i> are assumed to be in kcal/mol, whereas those for <i>a</i> are assumed
+to be in cal mol<sup>-1</sup> K<sup>-1</sup>. T<sub>0</sub> is the reference temperature that
+<i>a</i> is associated with (set by keyword <a href="keywords.html#FOSREFT">FMCSC_FOSREFT</a>).
+If <i>b</i> and <i>c</i> are not provided, they
+are taken as <i>a</i> and zero, respectively, which makes the free energies of solvation independent
+of temperature (as mentioned). If just <i>c</i> is not provided, it is taken to be zero. It is not possible to 
+supply <i>c</i>, but not <i>b</i>. Note that the expression for &Delta;G(T) is additive in 
+all three input values, which is relevant for model compound decompositions explained below.<br/>
+<br/>
+Next, the various categories that <i>AAA</i> can belong to are discussed.
+For small molecule residues there are entries for which <i>AAA</i> is exactly
+the same as one would use in the <a href="inputfiles.html#FMCSC_SEQFILE">sequence file</a>. This is the
+simplest case and does not require any assumptions. For polypeptides,
+the model compound needs to be obtained through formal decomposition of
+the polymer, which entails two challenges, i) the identification of the
+proper compound, and ii) the proper determination of topology-derived
+maximum solvent-accessible volumes (see further below).<br/>
+<br/>
+--- Proper model compounds and parameter dependencies:<br/>
+First of all, the list of model compounds comprises terms like ALA for
+all peptide residues with a sidechain. The model compound is just the
+sidechain capped by an extra hydrogen atom (or two). This assumes that
+the linkage between sidechain CB and backbone CA is not eliminating
+important sites for solvation. Since the linkage is always aliphatic,
+this assumption is generally valid. Note that the code makes implicit
+assumptions about the relative magnitude of sidechain model compounds
+to one another. Several sidechains (like THR or TYR) are really
+composites, for which advantage is taken of the fact that a smaller
+model compound is the dominant solvation species. As an example, the
+threonine sidechain (ethanol) is really modelled as a composite of two
+groups: methanol and an extra methyl unit. It assigns the value
+for methanol (as supplied through the entry "<i>fos SER x</i>") to the
+hydroxyl unit, and the difference between the THR and SER entries to
+the methyl group. This means that the sum for the two sub-blocks will
+always yield the correct limiting value supplied for THR, but(!) also
+that the fine-parsing can be severely corrupted by supplying an
+inappropriate value for SER. <br/>
+<br/>
+A list of coupled parameters is given:<br/>
+&nbsp;&nbsp;&nbsp; THR: relies on SER<br/>
+&nbsp;&nbsp;&nbsp; TYR and TYO (as well as small molecule PCR): rely on PHE<br/>
+&nbsp;&nbsp;&nbsp; MET: relies on NLE<br/>
+&nbsp;&nbsp;&nbsp; TRP: relies on the value for naphthalene (occurs for small molecule NAP)<br/>
+&nbsp;&nbsp;&nbsp; GLN: relies on ASN<br/>
+&nbsp;&nbsp;&nbsp; SEP: relies on NUC_PO4<br/>
+&nbsp;&nbsp;&nbsp; TPO: relies on NUC_PO4 and SEP<br/>
+&nbsp;&nbsp;&nbsp; PTR: relies on NUC_PO4 and PHE<br/>
+&nbsp;&nbsp;&nbsp; GLH: relies on ASH<br/>
+&nbsp;&nbsp;&nbsp; LYD, KAC, KM1, and KM2: rely on PRP<br/>
+<br/>
+Crosslinked residues (see <a href="inputfiles.html#FMCSC_SEQFILE">here</a> and
+ <a href="keywords.html#CRLK_MODE">here</a>) constitute a special case since a native
+amino acid sidechain is covalently linked to another one to constitute a 
+new solvation group. For code-internal convenience, this new group will
+be split into two halves. The only currently supported crosslink is the disulfide
+linkage between two cysteine sidechains. The new model compound is dimethyl disulfide
+and the FOS for each -S-CH<sub>3</sub> moiety is expected to be supplied by <i>fos LINK_CC x</i>.
+In general, an asymmetric crosslink would require two keywords LINK_XY and LINK_YX,
+where X and Y are the one-letter codes of the corresponding amino acid sidechains.
+<br/>
+Furthermore, there is a set of entries for the backbone of
+polypeptides. Within the chain, the peptide unit is taken as the model
+compound (<i>i.e.</i>, CONH spanning residues rs and rs+1). This parameter is
+given by PEP_BB. Note that the same assumption stated for the model
+compounds holds for this particular parsing. By choosing the CA as the
+linkage point it is only aliphatic hydrogens which need to be
+reconstructed to obtain back the full model compound, which is
+generally NMA. Exceptions exist for proline (rs+1), NH2 (rs+1), and FOR
+(rs): PEP_PRO_BB, PEP_BB_NH2, PEP_BB_FOR, as well as for formylproline:
+PEP_PRO_BB_FOR. Termini are supported similarly and here the model
+compound is generally methylamine or acetate: PEP_CNT and PEP_CCT for
+charged termini, and PEP_UNT and PEP_UCT for uncharged termini
+(currently not supported). Again, exceptions occur with proline
+(PEP_PRO_CNT and PEP_PRO_UNT).<br/>
+<br/>
+Polynucleotides, which can be thought of as being composed of a sugar,
+a phosphate, and a base, pose a much greater challenge. One reason is
+that the natural break points for a decomposition procedure are all
+bonds (ester, glycosyl)&nbsp;obtained under loss of important solvation
+units (OH). This means that reconstructing model compounds
+corresponding to the free H<sub>2</sub>PO<sub>4</sub><sup>-</sup> or the free ribose would significantly
+overestimate the magnitude of the (favorable) solvation free energy for
+the corresponding unit in the polymer given that free hydroxyls
+contribute very substantially to free energies of solvation. Hence, our
+approach needs to be modified to reconstruct compounds such as
+dimethylphosphate or N(1)-methyluracil, for which no measurements or
+sometimes even calculations exist. This is particularly cumbersome for
+the sugar, for which 12 distinct compounds can be formulated. The
+polynucleotide implementation is therefore INCOMPLETE(!) pending the
+availability of the proper parameters.<br/>
+<br/>
+For the five currently supported bases (A, C, T, U, G), which are
+considered to be the nucleic acid sidechains for the purpose of model
+compounds, we choose the N1- or N9-methylated forms. These
+heteroaromatic compounds are more complicated than peptide sidechains,
+and from comparative analysis an implementation was chosen which tries
+to isolate subgroups which have a large impact on the net favorable
+free energy of solvation (as before, the sum is always assured to be
+correct, but dependencies matter):<br/>
+&nbsp;&nbsp;&nbsp; XXU (and URA): relies on the value for benzene (used for small molecule BEN) <br/>
+&nbsp;&nbsp;&nbsp; XXT (and THY): relies on the value for benzene (see above) and
+on XXU<br/>
+&nbsp;&nbsp;&nbsp; XXC (and CYT): relies on the value for benzene (see above) and
+on XXU<br/>
+&nbsp;&nbsp;&nbsp; XXA (and ADE): relies on the value for purine (used for small molecule PUR)<br/>
+&nbsp;&nbsp;&nbsp; XXG (and GUA): relies on the value for purine (see above) and
+on XXA<br/>
+<br/>
+For the phosphate unit there are only two possibilities: the monoester
+(terminal) and the diester (non-terminal): NUC_HPO4 and NUC_PO4. Note
+that NUC_HPO4 relies on NUC_PO4. For the sugars, the implementation is
+oversimplified at the current stage due to the otherwise overwhelming
+complexity outlined above. Basically, we assume 2-methyltetrahydrofuran
+as the base compound, which it more or less is for deoxyribonucleotides
+in the middle of a chain. For terminal residues, for free sugars, and
+for ribonucleotides there is always at least one extra free
+hydroxyl-unit. The maximum number of hydroxyls in any of the currently
+supported residues is three. As a simple solution, model compounds with
+the same number of free hydroxyls but different topology are treated
+identically. The difference in the free energy of solvation to the next
+lower compound is always assigned to the extra hydroxyl. This means
+that these parameters all depend back on the previous ones:<br/>
+&nbsp;&nbsp;&nbsp; NUC_SUG_0: no hydroxyls<br/>
+&nbsp;&nbsp;&nbsp; NUC_SUG_1: one free hydroxyl; relies on NUC_SUG_0<br/>
+&nbsp;&nbsp;&nbsp; NUC_SUG_2: two free hydroxyls; relies on NUC_SUG_0
+and NUC_SUG_1<br/>
+&nbsp;&nbsp;&nbsp; NUC_SUG_3: three free hydroxyls; relies on
+NUC_SUG_0, NUC_SUG_1, and NUC_SUG_2<br/>
+<br/>
+Note that the small molecules adenine (ADE), cytosine (CYT), <i>etc.</i> correspond
+to the free, heteroaromatic bases, which implies that there is a polar hydrogen
+at that nitrogen atom, which is normally involved in the glycosylic linkage. If supported in ABSINTH,
+this means that the values for the polynucleotide sidechain term (<i>e.g.</i>, XPA) should 
+not be the same as those for the free base (ADE). As mentioned before, this is different from polypeptides,
+which involve a simple aliphatic linkage. This difference creates a peculiarity for the
+small molecule purine. The value for PUR is important for setting terms
+XXA and XXG, and should consequently refer to the <i>methylated derivative</i>. To recover
+simulations for the small molecule purine, CAMPARI will automatically add the 
+difference between XPA and ADE, and assign it to the polar NH unit. This means
+that the value for PUR in the parameter file is generally <b>not</b> the resultant
+total free energy of solvation for free (9<i>H</i>)-purine. Instead, this
+number is computed as the values PUR+ADE-XPA.<br/>
+<br/>
+--- Topology-derived maximum solvent-accessible volume fractions:<br/>
+The function setup_savol() in the source-file <a href="../source/sav_auxil.f90">sav_auxil.f90</a> is
+responsible for (almost) nothing but determining what the maximum
+solvent-accessible volume would be in the context of the model compound
+for a unit which is really part of a polymer. This is necessary in
+order to make sure that there is a clean limiting case for fully
+solvated units, which in the context of the polymer should never be
+achieved, but in the context of the model compound should be achieved
+rigorously. The procedure re-builds the missing parts of the
+model compound (usually hydrogens) and ignores the rest of the context.
+Note that this is relevant <b>even though</b> the actual solvation group might
+not contain all atoms which comprise the model compound. The effect is
+through adjustment of the relevant atoms' maximum solvation state.
+The fact that CAMPARI recomputes these values for every run relying on initial (built-in) geometries
+may not always be satisfactory. Therefore, the maximum solvent-accessible volume 
+fractions can be <a href="inputfiles.html#FMCSC_SAVPATCHFILE">patched in atom-specific manner</a>.
+The same holds for <a href="keywords.html#ASRPATCHFILE">pairwise overlap reduction factors</a>.
+<br/>
+<br/>
+The code may check (and eventually warn) that certain free energies of
+solvation, which can be specified separately, but effectively
+correspond to the same model compound, are in fact identical (examples
+are: NMA/PEP_BB, DMA/PEP_PROBB, NVA/PRO, SER/MOH, ...). Keep in mind
+that these free energies of solvation are all assumed to be transfer
+free energies from the gas phase into dilute aqueous solution (and <b>not</b>
+transfer free energies of the native state under standard conditions
+into dilute aqueous solution, which are equivalent to solubilities in
+water).<br/>
+<br/>
+The mapping of solvation groups to atoms is not part of the parameter file.
+This implies that the parameter file can be used to modify a simulation of, <i>e.g.</i>, polyalanine  
+by adjusting the reference free energy of solvation for all alanine sidechains, but
+that it cannot be used to alter the fact that the solvation group encompasses the CH<sub>3</sub>
+group with identical weights for all atoms, or to modify the reference free energy of solvation
+for an individual alanine sidechain. For the latter, an
+<a href="inputfiles.html#FMCSC_FOSPATCHFILE">extensive patch facility</a> is available.
+The default mappings can be visualized with output file <a href="outputfiles.html#FOS_GROUPS.vmd">FOS_groups.vmd</a>.
+<br/>
+<br/>
+<br/>
+<h3><a class="NoHi" id="S5_Bond_length_potential_types">5) Bond length potential types:</a></h3>
+<hr style="width: 100%; height: 2px;"></hr> (<a href="parameters.html#TOP">back to top</a>)<br/>
+<br/>
+If the intended simulation is to use Cartesian coordinates exclusively,
+molecules with fixed topology require the definition of various
+restraints to keep the bond lengths, angles, and certain dihedral
+angles in the chemically proper range. Bond length potential types are
+nothing but a list of integers with an associated unique potential
+specification, but <i>without</i> any declaration of the (bonded) atom types
+the particular potential applies to.<br/>
+-----------------------------------------<br/>
+<span style="font-style: italic;">bond&nbsp;&nbsp; xxx &nbsp;
+i&nbsp;&nbsp; a<sub>kl</sub>&nbsp;&nbsp; b<sub>kl</sub> &nbsp; c<sub>kl</sub></span><br/>
+-----------------------------------------<br/>
+The integer identifier for this particular bond length potential is
+given by <i>xxx</i>. The parameter file reader requires these to be
+continuously numbered from unity upwards. The floating point numbers <i>a</i>,
+<i>b</i>, and eventually <i>c</i> are the parameters for this potential and their
+interpretation depends on the choice of type of potential as given by
+the integer <i>i</i>. Writing d for a particular bond distance, right now
+CAMPARI supports as choices for <i>i</i>:<br/>
+<br/>
+<i>i</i> = 1: The potential is harmonic and for atoms k and l separated by distance r<sub>kl</sub> given by:<br/>
+<br/>
+E<sub>BONDED_B</sub> = c<sub>BONDED_B</sub>&#183;a<sub>kl</sub>&#183;(r<sub>kl</sub> - b<sub>kl</sub>)<sup>2</sup><br/>
+<br/>
+<!--<img
+ style="width: 126px; height: 17px;" alt="V(d) = a*(d-b)^2"
+ src="website_equations/parameters_bl.gif">.-->
+As for units, b<sub>kl</sub> is in &#8491; and a<sub>kl</sub> must be given in kcal&#183;mol<sup>-1</sup>A<sup>-2</sup>.
+c<sub>BONDED_B</sub> is the outside scaling factor specified by keyword <a href="keywords.html#SC_BONDED_B">FMCSC_SC_BONDED_B</a>.<br/>
+<br/>
+<i>i</i> = 2: The potential is a Morse potential and for atoms k and l separated by distance r<sub>kl</sub> given by:<br/>
+<br/>
+E<sub>BONDED_B</sub> = c<sub>BONDED_B</sub>&#183;c<sub>kl</sub>&#183;(1.0 - e<sup>-a<sub>kl</sub>&#183;(r<sub>kl</sub> - b<sub>kl</sub>)</sup>)<sup>2</sup><br/>
+<br/>
+<!--<img
+ style="width: 181px; height: 18px;"
+ alt="V(d) = c*(1.0 - exp(-a*(d-b)))^2"
+ src="website_equations/parameters_bl2.gif">.-->
+As for units, b<sub>kl</sub> is in &#8491;, a<sub>kl</sub> is in &#8491;<sup>-1</sup>, and c is in kcal/mol.
+Note that the treatment of non-bonded interactions does not respond to the anharmonicity at all, <i>i.e.</i>,
+dissociated particles will <b>not</b> "feel each other" beyond the effect of
+E<sub>BONDED_B</sub>.<br/>
+<br/>
+<i>i</i> = 3: The potential is quartic and for atoms k and l separated by distance r<sub>kl</sub> given by:<br/>
+<br/>
+E<sub>BONDED_B</sub> = 0.25&#183;c<sub>BONDED_B</sub>&#183;a<sub>kl</sub>&#183;(r<sub>kl</sub><sup>2</sup> - b<sub>kl</sub><sup>2</sup>)<sup>2</sup><br/>
+<br/>
+As for units, b<sub>kl</sub> is in &#8491; and a<sub>kl</sub> must be given in kcal&#183;mol<sup>-1</sup>A<sup>-2</sup>.
+This potential is supported to conform with the <a href="references.html#ref1_6">GROMACS/GROMOS standard</a>. Note 
+that it is the only one scaling the force constant by a constant pre-factor.<br/>
+<br/>
+For a typical force field, this list would be relatively short as bond
+distances are often derived from chemical consideration and are hence
+considered to be identical for various linkages. As an example, there
+is typically only one potential form to describe aliphatic
+carbon-carbon linkages.<br/>
+<br/>
+<br/>
+<br/>
+<h3><a class="NoHi" id="S6_Bond_angle_potential_types">6) Bond angle potential types:</a></h3>
+<hr style="width: 100%; height: 2px;"></hr> (<a href="parameters.html#TOP">back to top</a>)<br/>
+<br/>
+This is analogous to bond length potential types. It involves the
+specification of unique potentials to describe angle bending.<br/>
+-----------------------------------------------------------<br/>
+<span style="font-style: italic;">angle&nbsp;&nbsp; xxx &nbsp;
+i&nbsp;&nbsp; a<sub>jkl</sub>&nbsp;&nbsp; b<sub>jkl</sub> &nbsp; c<sub>jkl</sub>&nbsp;&nbsp; d<sub>jkl</sub></span><br/>
+-----------------------------------------------------------<br/>
+The integer identifier for this particular bond angle potential is
+given by <i>xxx</i>. The parameter file reader requires these to be
+continuously numbered from unity upwards. The floating point numbers a<sub>jkl</sub>,
+b<sub>jkl</sub>, c<sub>jkl</sub> and eventually d<sub>jkl</sub> are
+the parameters for this potential and their
+interpretation depends on the choice of type of potential as given by
+the integer <i>i</i>. Writing &alpha; for the bond angle created by atoms <i>j, k</i>, and <i>l</i>, right now CAMPARI
+supports as choices for <i>i</i>:<br/>
+<br/>
+i = 1: The potential is harmonic and given by:<br/>
+<!--<img style="width: 121px; height: 17px;" alt="V(t) = a*(t-b)^2"
+ src="website_equations/parameters_ang.gif">.-->
+<br/>
+E<sub>BONDED_A</sub> = c<sub>BONDED_A</sub>&#183;a<sub>jkl</sub>&#183;(&alpha; - b<sub>jkl</sub>)<sup>2</sup><br/>
+<br/>
+As for units, b<sub>jkl</sub> is in degrees and a<sub>jkl</sub> must be given
+in kcal&#183;mol<sup>-1</sup>rad<sup>-2</sup>. c<sub>BONDED_A</sub> is the outside scaling factor specified by 
+keyword <a href="keywords.html#SC_BONDED_A">FMCSC_SC_BONDED_A</a>. This is merely a matter of convenience, as the force
+constants would be very small in units of kcal&#183;mol<sup>-1</sup>deg<sup>-2</sup>.<br/>
+<br/>
+i = 2: The potential is of the so-called "Urey-Bradley" type in which
+the distance between the two outer atoms making up the bond angle is
+restrained additionally. If r<sub>jl</sub> denotes their distance, then the potential
+is given by:<br/>
+<br/>
+E<sub>BONDED_A</sub> = c<sub>BONDED_A</sub>&#183;[ a<sub>jkl</sub>&#183;(&alpha; - b<sub>jkl</sub>)<sup>2</sup> + c<sub>jkl</sub>&#183;(r<sub>jl</sub> - d<sub>jkl</sub>)<sup>2</sup> ]<br/>
+<br/>
+<!--&nbsp;<img style="width: 197px; height: 17px;"
+ alt="V(t,r) = a*(t-b)^2 + c*(r-d)^2"
+ src="website_equations/parameters_ang2.gif">.-->
+As for units, b<sub>jkl</sub> is in degrees, a<sub>jkl</sub> must be given in kcal&#183;mol<sup>-1</sup>rad<sup>-2</sup>,
+d is in &#8491;, and c is in kcal&#183;mol<sup>-1</sup>&#8491;<sup>-2</sup>. Note that this potential is a bit redundant (a
+combination of two harmonic terms), but since it requires and implements 1-3-distance
+restraints, it is supported explicitly. Urey-Bradley terms are common
+in CHARMM.<br/>
+<br/>
+i = 3: The potential is a cosine-based harmonic. It is supported to conform with the GROMACS/GROMOS standard
+but does not take advantage of the minuscule performance benefit it could offer. With definitions as before, the potential
+is given by:<br/>
+<br/>
+E<sub>BONDED_A</sub> = 0.5&#183;c<sub>BONDED_A</sub>&#183;a<sub>jkl</sub>&#183;(cos(&alpha;) - cos(b<sub>jkl</sub>))<sup>2</sup><br/>
+<br/>
+<!--&nbsp;<img style="width: 197px; height: 17px;"
+ alt="V(t,r) = a*(t-b)^2 + c*(r-d)^2"
+ src="website_equations/parameters_ang2.gif">.-->
+As for units, b<sub>jkl</sub> is in degrees and a<sub>jkl</sub> must be given in kcal&#183;mol<sup>-1</sup>.
+The GROMACS developers suggest the following relationship between an angular harmonic potential and the
+cosine-based (subscripted c) variant: 2&#183;a<sub>jkl,a</sub> = sin<sup>2</sup>(b<sub>jkl,c</sub>)&#183;a<sub>jkl,c</sub>.
+Note that this potential is the only one employing a 1/2 pre-factor. <br/>
+<br/>
+Note that bond angles are technically confined to the interval
+from 0 to 180&deg;. Potentials written such that the value of the angle is
+required run the risk of creating numerical instabilities if the fast
+and simple inverse cosine of the dot product of the normed vectors is
+used. CAMPARI therefore employs a half-angle formula using the inverse
+sine instead which circumvents this problem.<br/>
+<br/>
+<br/>
+<br/>
+<h3><a class="NoHi" id="S7_Dihedral_angle_torsional_potential">7) Dihedral angle (torsional) potential types:</a></h3>
+<hr style="width: 100%; height: 2px;"></hr> (<a href="parameters.html#TOP">back to top</a>)<br/>
+<br/>
+This is analogous to bond length or angle potential types. It involves
+the specification of unique potentials to describe rotational barriers
+around axes, <i>i.e.</i> dihedral angles. Note, however, that these potentials
+can also be accessed by pseudo-dihedral angles ("impropers"), which
+describe the stereochemistry around a trigonal or tetrahedral center.<br/>
+--------------------------------------------------------------------------------------------------------<br/>
+<span style="font-style: italic;">torsion&nbsp;&nbsp;
+xxx&nbsp;&nbsp; i&nbsp;&nbsp; a<sub>jklm</sub>&nbsp;&nbsp; b<sub>jklm</sub>&nbsp;&nbsp; c<sub>jklm</sub> &nbsp;
+d<sub>jklm</sub>&nbsp;&nbsp; e<sub>jklm</sub>&nbsp;&nbsp; f<sub>jklm</sub>&nbsp;&nbsp; g<sub>jklm</sub></span><br/>
+--------------------------------------------------------------------------------------------------------<br/>
+The integer identifier for this particular torsional potential is given
+by <i>xxx</i>. The parameter file reader requires these to be continuously
+numbered from unity upwards. The floating point numbers a-f<sub>jklm</sub> are not
+always all needed, but specify the parameters for this potential. As
+before, their interpretation depends on the choice of type of potential
+as given by the integer <i>i</i>. Writing &phi; for the dihedral formed by atoms
+<i>j, k, l</i>, and <i>m</i> (in this order), right now CAMPARI supports as choices for <i>i</i>:<br/>
+<br/>
+i = 1: The potential is of the so-called "Ryckaert-Bellemans" type,
+<i>i.e.</i>, it is a power expansion of cosines. It is given by:<br/>
+<br/>
+E<sub>BONDED_T/I</sub> = c<sub>BONDED_T/I</sub>&#183; [ a<sub>jklm</sub> + b<sub>jklm</sub>cos&phi; +
+c<sub>jklm</sub>cos<sup>2</sup>&phi; +
+d<sub>jklm</sub>cos<sup>3</sup>&phi; +
+e<sub>jklm</sub>cos<sup>4</sup>&phi; +
+f<sub>jklm</sub>cos<sup>5</sup>&phi; +
+g<sub>jklm</sub>cos<sup>6</sup>&phi; ]<br/>
+<br/> 
+<!--<img style="width: 474px; height: 17px;"
+ alt="V(t) = a + b*cos(t) + c*cos(t)^2 + d*cos(t)^3 + e*cos(t)^4 + f*cos(t)^5"
+ src="website_equations/parameters_tor1.gif">.-->
+As for units, all parameters are given in kcal/mol. c<sub>BONDED_T/I</sub> is the outside scaling factor
+for either the proper dihedral or the improper dihedral term depending on what angle
+atoms <i>j-m</i> form (see <a href="keywords.html#SC_BONDED_T">FMCSC_SC_BONDED_T</a> and
+<a href="keywords.html#SC_BONDED_I">FMCSC_SC_BONDED_I</a>). Note that the parameters
+of almost all torsional potentials involving Fourier terms can be
+converted to the Ryckaert-Bellemans form using standard relationships
+for trigonometric functions. This assumes &phi; to be defined over the
+interval from -180&deg; to 180&deg;, <i>i.e.</i>, 0&deg; is <i>cis</i>, and -180&deg;/180&deg; is <i>trans</i>.<br/>
+<br/>
+i = 2: The potential is harmonic and the potential is given by:<br/>
+<br/>
+E<sub>BONDED_T/I</sub> = 0.5&#183;c<sub>BONDED_T/I</sub>&#183;a<sub>jklm</sub>&#183;(&phi; - b<sub>jklm</sub>)<sup>2</sup><br/>
+<br/>
+<!--<img style="width: 140px; height: 17px;" alt="V(t) = 0.5*a*(t-b)^2"
+ src="website_equations/parameters_tor2.gif">.-->
+As for units, b<sub>jklm</sub> is in degrees, and a<sub>jklm</sub> must be given in kcal/mol<sup>-1</sup>&#183;rad<sup>-2</sup>.<br/>
+<br/>
+i = 3: The potential is of the "Ryckaert-Bellemans" type. This choice
+assumes the potential to be written over dihedrals defined over the
+interval from 0&deg; to 360&deg;. Conversion to the internal convention is
+achieved by multiplying b, d, and f with -1.<br/>
+<br/>
+Note that dihedral angles in CAMPARI are technically confined to the
+interval from -180&deg; to 180&deg;. When using potentials written directly over the
+dihedral angle such as harmonic restraints, the necessary wrap-around creates a
+discontinuity in both gradients and angular distances. While the latter
+can be corrected for easily, the former is a more serious problem.
+<a href="references.html#ref2_20">Blondel and Karplus</a> designed a
+strategy around all singularities, and their method is employed in
+CAMPARI. If only the value of the dihedral angle is needed, a strategy
+identical to that for bond angles is used to avoid numerical
+instabilities.<br/>
+<br/>
+<br/>
+<br/>
+<h3><a class="NoHi" id="S8_CMAP_potential_types">8) CMAP (grid correction map) potential types:</a></h3>
+<hr style="width: 100%; height: 2px;"></hr> (<a href="parameters.html#TOP">back to top</a>)<br/>
+<br/>
+In an endless effort to fit molecular mechanics force field parameters
+to new or additional reference data sets, the developers of the CHARMM force field
+introduced a new type of correction by allowing a potential grid
+to be read in and - using bicubic splines - to be interpolated to yield
+a correction potential E<sub>CMAP</sub> as a function of two torsional
+angles, specifically the &phi;- and &psi;-angles in polypeptides.<br/>
+It should be noted upfront that such a correction essentially represents
+an arbitrary number of free parameters that will in general be difficult to determine.
+On the plus side, CMAPs allow arbitrarily shaped corrections to
+the local energy landscape of biomolecules that are not tied to the
+stipulated form of - for instance - Ryckaert-Bellemans type dihedral potentials (see above).
+CAMPARI supports CMAP corrections as follows:<br/>
+---------------------------------------------------<br/>
+<span style="font-style: italic;">cmap&nbsp;&nbsp;
+xxx&nbsp;&nbsp; i&nbsp;&nbsp; nb&nbsp;&nbsp; &lt;input.dat&gt;</span><br/>
+---------------------------------------------------<br/>
+Here, <i>xxx</i> is the (continuously) numbered instance of unique CMAP potential surfaces,
+<i>i</i> is the type (see below) and <i>&lt;input.dat&gt;</i> is the filename for
+the surface data itself relative to a directory specified by keyword
+<a href="keywords.html#CMAPDIR">FMCSC_CMAPDIR</a>. The use of a directory keyword
+allows the parameter file itself to remain unmodified.<br/>
+The surface data are simply a matrix of <i>nb x nb</i> floating point numbers specifying
+the energies in kcal/mol at the grid points. The maps have to be symmetric in size,
+and are <i>always</i> assumed to cover the entire available space (-180&deg; to 180&deg; on both axes)
+and to possess even bin-spacing. This is a technical requirement which simplifies the
+application of any interpolation scheme, in particular since the periodic boundary conditions
+set additional constraints for the splines. The first torsional angle (see below) is assumed to
+vary with row number, the second with column number. An outside scaling factor,
+<a href="keywords.html#SC_BONDED_M">c<sub>BONDED_M</sub></a>, is applied to all CMAP corrections.<br/>
+<br/>
+The integer <i>i</i> determines the type of splines to be used and can assume values from 1-4:
+<ol>
+<li>Non-interpolating cardinal B-splines are used which assume that the tabulated values are values at the
+centers of each square bin. This type of spline is only appropriate for finely tabulated data. An interpolation
+order of 3 is enough to obtain a continuously differentiable surface (set by <a href="keywords.html#CMAPORDER">FMCSC_CMAPORDER</a>).</li>
+<li>This option is identical to the previous one only that the tabulated values are assumed to be the values at 
+the lower left corners of each square bin.</li>
+<li>Bicubic interpolating splines are used which assume that the tabulated values are values at the
+centers of each square bin. Bicubic splines are constructed by generating estimates of the two first and the cross-derivative
+at each grid-point. Those estimates are themselves spline-based. This ensures that the first derivatives of the resultant
+interpolated surface are smooth and second derivatives hence continuous (but not smooth).</li>
+<li>This option is identical to the previous one only that the tabulated values are assumed to be the values at 
+the lower left corners of each square bin. This is the reference implementation
+as found in CHARMM starting with version 31.</li>
+</ol>
+In terms of assigning CMAP potentials to pairs of torsional angles, CAMPARI currently uses a somewhat rigid scheme.
+The basic rule is that all atoms have to be part of the backbone, possess at least two neighbor atoms along the main chain,
+and that three of the four atoms have to be shared by the two dihedral angles. This includes combinations such as &phi;/&psi;-angles,
+nuc_bb<sub>2</sub>/nuc_bb<sub>3</sub> or &psi;/&omega;-angles but excludes combinations such as nuc_bb<sub>1</sub>/nuc_bb<sub>4</sub>-angles or
+&chi;<sub>2</sub>/&chi;<sub>3</sub>-angles (see <a href="inputfiles.html#FMCSC_SEQFILE">sequence input</a>).
+<br/>
+<br/>
+<br/>
+<h3><a class="NoHi" id="S9_Bonded_types">9) Bonded types:</a></h3>
+<hr style="width: 100%; height: 2px;"></hr> (<a href="parameters.html#TOP">back to top</a>)<br/>
+<br/>
+Bonded types are another subtype each biotype is assigned, similar to
+charge- and LJ-types. They describe what a biotype is chemically more
+so than any other subtype, as chemical considerations are often the
+primary determinant in designed parameters for bonded interactions.
+Bonded types are not listed explicitly, and have no unique type-wise
+parameters associated with them. They merely represent a parsing of the
+supported biotypes into classes of chemical equivalence. The file
+"bondedlst.prm" in the params/-directory contains an example list at
+the very end for illustrative purposes alone. Bonded types are used
+exclusively to simplify assigning bonded potential terms (bond length,
+angle, (improper) torsional and CMAP restraints) to biotypes. If such an assignment
+were done with biotypes directly, the number of entries in the lists
+explained below would become unfeasibly large very quickly. On the
+other hand, they have to be more discriminating than LJ-types and
+generally follow different considerations than charge types, which
+makes the definition of a separate type necessary. Note that the
+parameter reader still checks whether all listed bonded types in the
+biotype section form a continuously numbered list. Zero can be used to
+indicate that a specific biotype can never be part of any bonded
+interactions (such as a monoatomic ion).<br/>
+<br/>
+First of all, the parameter
+file may contain entries to assign a specific bond length potential to
+a pair of bonded types:<br/>
+------------------------------------------------<br/>
+<span style="font-style: italic;">bonded_type_bond&nbsp;&nbsp;
+j&nbsp;&nbsp; k&nbsp;&nbsp; i</span><br/>
+------------------------------------------------<br/>
+Here, <i>j</i> and <i>k</i> are integers identifying two bonded types, and <i>i</i> is an
+integer identifying a unique member of the list of bond length
+potentials (see above). If bonded interactions are used, the code will
+then scan the ACTUAL atoms in the system it built, go through the list
+of all ACTUALLY bonded atoms (as defined by molecular
+topology, which is hard-coded for supported residues and <a href="keywords.html#PDB_TEMPLATE">inferred
+from geometry</a> for unsupported residues), determine the bonded types for the particular pair at hand,
+and then search the list of terms "bonded_type_bond" for a match. If
+one is found, the parameters as specified in the corresponding "bond"
+specification are assigned to this particular bonded interaction. It is
+important to understand the sequence of events here, since it means
+that only atoms which are actually bonded can be subjected
+to a potential of this type. It is IMPOSSIBLE to create extra
+restraints for distal atoms in the system using this formalism (at
+least as of now). Note that if a simulation is performed entirely in
+Cartesian coordinates the program will exit if for a bonded pair of
+atoms in the system no match in the list of "bonded_type_bond" entries
+is found. Note that all pairs <i>j k</i> need to be unique, <i>i.e.</i>, it is not
+permissible to specify more than one bond length potential for a pair
+of&nbsp; bonded types. Also, <i>k j</i> is duly recognized as a redundant
+permutation.<br/>
+<br/>
+Similarly, bond angle terms are assigned by:<br/>
+---------------------------------------------------<br/>
+<span style="font-style: italic;">bonded_type_angle &nbsp;
+j&nbsp;&nbsp; k &nbsp; l &nbsp; i</span><br/>
+---------------------------------------------------<br/>
+This works analogously to the "bonded_type_bond" entries. The integers
+<i>j, k,</i> and <i>l</i> are the three bonded types forming the angle, and <i>i</i> is the
+choice of potential. Note that the sequence of bonded types matters,
+i.e., <i>j k l</i> implies that <i>k</i> is the middle atom, and hence is different
+from <i>j l k</i>. The only redundant permutation of <i>j k l</i> is <i>l k j</i> and
+is recognized as such by the code.<br/>
+<br/>Next in line, dihedral angle terms
+are assigned using:<br/>
+--------------------------------------------------------------<br/>
+<span style="font-style: italic;">bonded_type_torsion &nbsp;
+j&nbsp;&nbsp; k&nbsp;&nbsp; l&nbsp;&nbsp; m &nbsp; i</span><br/>
+--------------------------------------------------------------<br/>
+Again this work mostly analogously. The integer <i>j, k, l,</i> and <i>m</i> are the
+four bonded types forming the dihedral angle, and <i>i</i> is the choice of
+potential from the "torsion" entries (see above). The order matters as
+<i>k</i> and <i>l</i> are assumed to be two bonded types making up the axis, with <i>j</i>
+being connected to <i>k</i>, and <i>m</i> being connected to <i>l</i>. Therefore the only
+redundant permutation is in fact <i>m l k j</i>. Note, however, that
+permutations disappear if the four bonded types are not unique. Another
+important difference is that dihedral terms are not mandatory, <i>i.e.</i>,
+once the program goes through the list of ACTUAL torsions for the
+system it created, it will not exit fatally, should it fail to find a
+corresponding entry. There is a report flag which can be used to
+diagnose such (potentially missing) terms (see <a
+ href="keywords.html#BONDREPORT">FMCSC_BONDREPORT</a>).<br/><br/>
+Improper dihedrals are assigned by:<br/>
+--------------------------------------------------------------<br/>
+<span style="font-style: italic;">bonded_type_imptors&nbsp;&nbsp;
+j &nbsp; k&nbsp;&nbsp; l &nbsp; m &nbsp; i</span><br/>
+--------------------------------------------------------------<br/>
+This works similarly to "bonded_type_torsion" entries. The main
+difference is the interpretation of the integers <i>j, k, l,</i> and <i>m</i>. For
+impropers, <i>j</i> is the bonded type of the central atom, and <i>k, l,</i> and <i>m </i>are bonded types of atoms directly
+attached to it. In atom number space, let us denote the four atoms as w x y z. Then, the only redundant permutation is "w y x z".
+Right now, CAMPARI only supports trigonal centers (typically sp2 carbons or
+nitrogens), although impropers can just as well be used to maintain
+chirality at tetrahedral centers. Given atom w, an improper dihedral is defined as the angle
+between the x y z reference plane, and anyone of the three (six) possible
+planes involving atom w and two of out of x y z. This means that impropers
+are non-unique and generally messy to set up and/or port from force field
+to force field.
+In CAMPARI, if w-z all have different bonded types, three permutations are considered
+and dealt with independently:
+<i>j k l m</i> (equ. <i>j l k m</i>), <i>j m l k</i> (equ. <i>j l m k</i>), and <i>j k m l</i> (equ. <i>j m k l</i>).
+It gets more complicated if the bonded types of two of the atoms bonded to the trigonal
+center are identical (such as at a carboxylate carbon). Then, the atom corresponding
+to the unique bonded type (identified so far by mass only) is to be placed at
+each of the three possible positions exactly once (<i>i.e., j k l l, j l k l,</i> and <i>j l l k</i>).
+While the first and second are identical in terms of bonded types, they can be used to target
+one of the specific instances of that bonded type (<i>i.e.</i>, specific atoms) over the other (figuring out which can
+most likely be done only by trial-and-error, however). If all three atoms have the same bonded type,
+three separate entries <i>j k k k</i> are accepted (again, targeting specific ones will only work via
+trial-and-error).<br/>
+<br/>
+Lastly, CMAP corrections are assigned through:<br/>
+-----------------------------------------------------------------<br/>
+<span style="font-style: italic;">bonded_type_cmap&nbsp;&nbsp;
+j &nbsp; k&nbsp;&nbsp; l &nbsp; m &nbsp; o &nbsp; i</span><br/>
+-----------------------------------------------------------------<br/>
+This works somewhat similar to proper dihedral assignments but covers
+two of those angles instead which are directly in sequence. This means that atoms
+<i>j, k, l,</i> and <i>m</i> may form the first dihedral but that <i>k, l, </i>and<i> m</i> also
+have to be the first three constituent atoms of the second dihedral completed
+by atom <i>o</i>. <i>i</i> is an integer identifying a unique member of the list of CMAP
+potentials (see above). Unlike for the other bonded type assignments, there are 
+assignment restrictions beyond the mere topological ones: All five atoms
+have to be part of the biomolecule's backbone and be strictly located on the main chain,
+<i>i.e.</i>, each of the five atoms has to have at least two bonded partners.
+With arbitrary assignments, the number of CMAP potentials which could be considered
+would become unfeasibly large. There are no redundant permutations since the 
+inverted case is a unique assignment in itself.
+<br/>
+<br/>
+All bonded parameter assignments can be patched through the <a href="keywords.html#BPATCHFILE">dedicated patch faciliy</a>.
+For example, this would allow to change the bond angle potential acting on three
+specific atoms that are connected covalently. This offers very good control, but
+becomes tedious if many patches are required. In the latter case,
+CAMPARI also offers to indirectly alter bonded parameter assignments by
+<a href="keywords.html#BIOTYPEPATCHFILE">patching biotypes</a>, which (re)assigns bonded 
+types. It is not possible to directly patch bonded types for existing biotypes.<br/><br/>
+As a final note, it is worth
+pointing out that there is no requirement to specify anything more in
+these lists than the terms relevant for simulating the system at hand.
+No checks are performed outside of i) the lists only having valid
+entries, <i>i.e.</i>, existing bonded types and existing potential types and
+ii) there being support for all bond lengths and angles actually
+present in the system. The file "bondedlst.prm" in the
+params/ directory contains a template for setting up exhaustive support
+using a parsing of bonded types as provided in "template.prm".<br/>
+<br/>
+</div>
+                    
+                </div>
+                </div>
+                </div>
+                
+            <!-- Side Navigation Bar -->
+            <!--<div class="art-sidebar1">-->                                    
+                <!-- Contributors Block -->
+                <!--<div class="art-Block">
+                    <div class="art-Block-tl"></div>
+                    <div class="art-Block-tr"></div>
+                    <div class="art-Block-bl"></div>
+                    <div class="art-Block-br"></div>
+                    <div class="art-Block-tc"></div>
+                    <div class="art-Block-bc"></div>
+                    <div class="art-Block-cl"></div>
+                    <div class="art-Block-cr"></div>
+                    <div class="art-Block-cc"></div>
+                    <div class="art-Block-body">
+                        <div class="art-BlockHeader">
+                            <div class="l"></div>
+                            <div class="r"></div>
+                            <div class="art-header-tag-icon">
+                                <div class="t">Contributors - Links</div>
+                            </div>
+                        </div><div class="art-BlockContent">
+                            <div class="art-BlockContent-body">
+                                <div>
+                                <b>Pappu Lab</b><br />
+                                Washington University in St. Louis, MO<br />
+                                Website: <a href="lima.wustl.edu">lima.wustl.edu</a><br />
+                                Phone: (999) 999-9999 <br/>
+                                <br/>
+                                <b>Andreas Vitalis</b><br />
+                                Unistat de Zurich<br />
+                                Website: <a href="papajohns.com">vitalis.net</a><br />
+                                Phone: (111) 999-9999 <br/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>-->
+                
+                <!-- Search Block -->
+                <!--
+                <div class="art-Block">
+                    <div class="art-Block-tl"></div>
+                    <div class="art-Block-tr"></div>
+                    <div class="art-Block-bl"></div>
+                    <div class="art-Block-br"></div>
+                    <div class="art-Block-tc"></div>
+                    <div class="art-Block-bc"></div>
+                    <div class="art-Block-cl"></div>
+                    <div class="art-Block-cr"></div>
+                    <div class="art-Block-cc"></div>
+                    <div class="art-Block-body">
+                        <div class="art-BlockHeader">
+                            <div class="l"></div>
+                            <div class="r"></div>
+                            <div class="art-header-tag-icon">
+                                <div class="t">Find Text</div>
+                            </div>
+                        </div><div class="art-BlockContent">
+                            <div class="art-BlockContent-body">
+                                <div><form method="get" id="newsletterform" action="javascript:void(0)">
+                                <input type="text" value="" name="email" id="s" style="width: 95%;" />
+                                <span class="art-button-wrapper">
+                                    <span class="l"> </span>
+                                    <span class="r"> </span>
+                                    <input class="art-button" type="submit" name="search" value="Search"/>
+                                </span>
+                                </form></div>
+                            </div>
+                        </div>
+                    </div>
+                </div> 
+                -->
+                
+                <!-- News/Updates Block -->
+                <!--
+                <div class="art-Block">
+                    <div class="art-Block-tl"></div>
+                    <div class="art-Block-tr"></div>
+                    <div class="art-Block-bl"></div>
+                    <div class="art-Block-br"></div>
+                    <div class="art-Block-tc"></div>
+                    <div class="art-Block-bc"></div>
+                    <div class="art-Block-cl"></div>
+                    <div class="art-Block-cr"></div>
+                    <div class="art-Block-cc"></div>
+                    <div class="art-Block-body">
+                        <div class="art-BlockHeader">
+                            <div class="l"></div>
+                            <div class="r"></div>
+                            <div class="art-header-tag-icon">
+                                <div class="t">Recent News</div>
+                            </div>
+                        </div><div class="art-BlockContent">
+                            <div class="art-BlockContent-body">
+                                <div>
+                                    <p><b>Jun 14, 2008</b><br/>
+                                    Aliquam sit amet felis. Mauris semper, 
+                                    velit semper laoreet dictum, quam 
+                                    diam dictum urna, nec placerat elit 
+                                    nisl in quam. Etiam augue pede, 
+                                    molestie eget, rhoncus at, convallis 
+                                    ut, eros. Aliquam pharetra.<br/>
+                                    <a href="javascript:void(0)">Read more...</a></p>
+                                                          
+                                    <p><b>Aug 24, 2008</b><br/>
+                                    Aliquam sit amet felis. Mauris semper, 
+                                    velit semper laoreet dictum, quam 
+                                    diam dictum urna, nec placerat elit 
+                                    nisl in quam. Etiam augue pede, 
+                                    molestie eget, rhoncus at, convallis 
+                                    ut, eros. Aliquam pharetra.<br/>
+                                    <a href="javascript:void(0)">Read more...</a></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> --><!-- End Sidebar -->
+
+            </div>
+        </div>
+    </div> <!-- End main page contents -->
+
+            
+    <!-- Footer -->
+    <div class="art-Footer">
+    <div class="art-Footer-background">
+    <div class="art-Footer-inner">
+        <a href="#" class="art-rss-tag-icon" title="RSS"></a>
+        <div class="art-Footer-text">
+        <p><a href="#">Contact Us</a> | <a href="#">Terms of Use</a>
+        | <a href="#">License Information</a><br />
+        Copyright &copy; 2010 . All Rights Reserved.</p>
+        </div>
+    </div>
+    </div>
+    </div>
+    <p class="art-page-footer">XHTML and CSS valid. Powered by <a href="http://www.flashmint.com/">FlashMint</a> - flash templates provider.</p>
+    <div style="text-align: center; font-size: 0.75em;">Design downloaded from <a href="http://www.freewebtemplates.com/">free website templates</a>.</div>
+                
+</div>
+</body>
+</html>

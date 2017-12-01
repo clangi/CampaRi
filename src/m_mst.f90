@@ -46,11 +46,11 @@ module m_mst
     real mind ! distance to nearest snapshot of tree, equals length(mine)
     integer ptr ! simple pointer
   end type t_progindextree
-  type(t_progindextree), ALLOCATABLE:: tmptree(:)
-  integer cdevalcnt !faith mystery (some kind of count)
-  integer cprogbatchsz ! cprogbatchsz       : if cmode = 4 and cprogindex = 2: batch size for random stretches aka dim of random branches
-  integer cprogrdepth ! cprogrdepth        : if cmode = 4 and cprogindex = 2: auxiliary search depth
-  integer cprogindrmax ! this must be an INPUT MAIN: it is the number of guesses
+  type(t_progindextree), ALLOCATABLE:: tmptree2(:)
+  integer cdevalcnt2 !faith mystery (some kind of count)
+  integer cprogbatchsz2 ! cprogbatchsz2       : if cmode = 4 and cprogindex = 2: batch size for random stretches aka dim of random branches
+  integer cprogrdepth2 ! cprogrdepth2        : if cmode = 4 and cprogindex = 2: auxiliary search depth
+  integer cprogindrmax2 ! this must be an INPUT MAIN: it is the number of guesses
 
 
 
@@ -316,8 +316,8 @@ module m_mst
   ! this subroutine generates a set of links and their lengths that constitute an approximate
   ! minimum spanning tree (SST) based on results from tree-based clustering in the birchtree object
   ! it then transcribes this into an adjacency list object
-  ! the accuracy of the SST depends on the number of guesses (cprogindrmax), the properties
-  ! of the clustering, and the auxiliary search depth being utilized (cprogrdepth)
+  ! the accuracy of the SST depends on the number of guesses (cprogindrmax2), the properties
+  ! of the clustering, and the auxiliary search depth being utilized (cprogrdepth2)
   !
   subroutine gen_MST_from_treeclustering(adjl_deg2,adjl_ix2,adjl_dis2,max_degree,trj2)
   !
@@ -381,7 +381,7 @@ module m_mst
     tdcnt = 0
     nmstedges = 0
   !
-    allocate(tmptree(ntrees))
+    allocate(tmptree2(ntrees))
     allocate(csnap2tree(n_snaps))
     allocate(csnap2clus(n_snaps,c_nhier+1))
     allocate(mstedges(2,n_snaps-1))
@@ -390,15 +390,15 @@ module m_mst
     call sl()
     call spr('Now generating approximate MST (SST) based on tree-based clustering ...')
     do i=1,ntrees !ntrees is initialized with number of snapshots (cstored)
-      allocate(tmptree(i)%snaps(1)) !there are n_snaps trees allocated. For each the first snap is allocated
-      tmptree(i)%snaps(1) = i
+      allocate(tmptree2(i)%snaps(1)) !there are n_snaps trees allocated. For each the first snap is allocated
+      tmptree2(i)%snaps(1) = i
       csnap2tree(i) = i
     end do
-    tmptree(:)%nsnaps = 1
-    tmptree(:)%mine(1) = -1
-    tmptree(:)%mine(2) = -1
-    tmptree(:)%mind = HUGE(jkdist)
-    tmptree(:)%nsibalsz = 0
+    tmptree2(:)%nsnaps = 1
+    tmptree2(:)%mine(1) = -1
+    tmptree2(:)%mine(2) = -1
+    tmptree2(:)%mind = HUGE(jkdist)
+    tmptree2(:)%nsibalsz = 0
   !
   ! Generate map (snapshot, tree level) -> cluster based on birchtree;
   ! in the process remove double entries for non-terminal levels and populate persistent tree index vector per cluster
@@ -484,7 +484,7 @@ module m_mst
         ishfx = i
         l = snplst(ishfx) ! this is remembered across Boruvka stages
         ! write(ilog,*) "asdadsdads", snplst(ishfx)
-        do while (satisfied(ishfx).lt.cprogindrmax)
+        do while (satisfied(ishfx).lt.cprogindrmax2)
   !
           mycl = csnap2clus(i,l)
           tmpcld(1:n_xyz) = trj2(i,1:n_xyz)
@@ -494,7 +494,7 @@ module m_mst
           ixx2 = 0
           i1 = -1
           i2 = -1
-          if ((cprogindrmax-satisfied(ishfx)).gt.a) then
+          if ((cprogindrmax2-satisfied(ishfx)).gt.a) then
             thismode = 1 ! determ required
             cbnds(:) = 0
           else if (boruvkasteps.gt.0) then
@@ -528,14 +528,14 @@ module m_mst
               i2 = 0
               cbnds(2) = 1
             end if
-            if ((i1+i2).gt.(cprogindrmax-satisfied(ishfx))) then
+            if ((i1+i2).gt.(cprogindrmax2-satisfied(ishfx))) then
               thismode = 0
             else
               thismode = 1
             end if
           else if (boruvkasteps.eq.0) then
             cbnds(:) = 0
-            if ((a-1).gt.(cprogindrmax-satisfied(ishfx))) then
+            if ((a-1).gt.(cprogindrmax2-satisfied(ishfx))) then
               thismode = 0
             else
               thismode = 1
@@ -635,9 +635,9 @@ module m_mst
               end if
             end if
             if (boruvkasteps.gt.0) then
-              do while (satisfied(ishfx).lt.cprogindrmax)
+              do while (satisfied(ishfx).lt.cprogindrmax2)
                 kk = int(random_or()*m) + b2
-                do ki=1,cprogbatchsz
+                do ki=1,cprogbatchsz2
                   kix = kk
                   if (kix.gt.a) kix = kix - a
                   if (kix.le.0) kix = kix + a
@@ -689,14 +689,14 @@ module m_mst
                   kk = kk + 1
                   if (kk.gt.(m+b2-1)) kk = b2
                   satisfied(ishfx) = satisfied(ishfx) + 1
-                  if (satisfied(ishfx).eq.cprogindrmax) exit
+                  if (satisfied(ishfx).eq.cprogindrmax2) exit
                 end do
               end do
             else !boruvkasteps == 0
-              kixi = max(1,a/cprogbatchsz)
-              do while (satisfied(ishfx).lt.cprogindrmax)
+              kixi = max(1,a/cprogbatchsz2)
+              do while (satisfied(ishfx).lt.cprogindrmax2)
                 kk = int(random_or()*a)
-                do ki=1,cprogbatchsz
+                do ki=1,cprogbatchsz2
                   kix = kk
                   if (kix.gt.a) kix = kix - a
                   if (kix.le.0) kix = kix + a
@@ -740,14 +740,14 @@ module m_mst
                   kk = kk + kixi
                   if (kk.gt.a) kk = kk - a
                   satisfied(ishfx) = satisfied(ishfx) + 1
-                  if (satisfied(ishfx).eq.cprogindrmax) exit
+                  if (satisfied(ishfx).eq.cprogindrmax2) exit
                 end do
               end do
             end if
           end if
           l = l - 1
           if (satisfied(ishfx).eq.0) snplst(ishfx) = l
-          if ((snplst(ishfx)-(l+1)).eq.cprogrdepth) exit
+          if ((snplst(ishfx)-(l+1)).eq.cprogrdepth2) exit
           if (l.eq.0) exit
         end do
       end do
@@ -786,23 +786,23 @@ module m_mst
       end do
       do k=1,ntrees ! could be made faster for first stage at least
         if (testlst(k,3).gt.0) then
-          if (tmpdis(testlst(k,4),testlst(k,3)).lt.tmptree(k)%mind) then
-            tmptree(k)%mind = tmpdis(testlst(k,4),testlst(k,3))
-            tmptree(k)%mine(1) = testlst(k,1)
-            tmptree(k)%mine(2) = testlst(k,2)
+          if (tmpdis(testlst(k,4),testlst(k,3)).lt.tmptree2(k)%mind) then
+            tmptree2(k)%mind = tmpdis(testlst(k,4),testlst(k,3))
+            tmptree2(k)%mine(1) = testlst(k,1)
+            tmptree2(k)%mine(2) = testlst(k,2)
           end if
         end if
       end do
   !
   ! merge trees (& update approximate minimum spanning tree):
-      tmptree(1:ntrees)%nsiblings = 0
+      tmptree2(1:ntrees)%nsiblings = 0
       do k=1,ntrees
-        tmptree(k)%ptr = k
+        tmptree2(k)%ptr = k
       end do
   !
       do e=1,ntrees ! nedges
-        i1 = tmptree(e)%ptr                               ! tree index of first edge endpoint
-        i2 = tmptree(csnap2tree(tmptree(e)%mine(2)))%ptr  ! tree index of second edge endpoint
+        i1 = tmptree2(e)%ptr                               ! tree index of first edge endpoint
+        i2 = tmptree2(csnap2tree(tmptree2(e)%mine(2)))%ptr  ! tree index of second edge endpoint
         if (i1.ne.i2) then ! edge does not introduce cycle
   ! add corresponding edge to approximate minimum spanning tree:
           nmstedges = nmstedges+1
@@ -810,27 +810,27 @@ module m_mst
             call fexit('Fatal. The number of edges in the approximate minimum spanning &
             &tree is not correct. Please report this bug.')
           end if
-          mstedges(1,nmstedges) = tmptree(e)%mine(1) ! edgelst(e,1)
-          mstedges(2,nmstedges) = tmptree(e)%mine(2) ! edgelst(e,2)
-          lmstedges(nmstedges) = tmptree(e)%mind     ! ledgelst(e)
+          mstedges(1,nmstedges) = tmptree2(e)%mine(1) ! edgelst(e,1)
+          mstedges(2,nmstedges) = tmptree2(e)%mine(2) ! edgelst(e,2)
+          lmstedges(nmstedges) = tmptree2(e)%mind     ! ledgelst(e)
   ! update pointer for tree and all its siblings obtained through prior merge operations
-          tmptree(i1)%ptr = i2
-          tmptree(i2)%nsiblings = tmptree(i2)%nsiblings + 1
-          if (tmptree(i2)%nsiblings.gt.tmptree(i2)%nsibalsz) call pidxtree_growsiblings(tmptree(i2))
-          tmptree(i2)%siblings(tmptree(i2)%nsiblings) = i1
-          do j=1,tmptree(i1)%nsiblings
-            mm = tmptree(i1)%siblings(j)
-            tmptree(i2)%nsiblings = tmptree(i2)%nsiblings + 1
-            if (tmptree(i2)%nsiblings.gt.tmptree(i2)%nsibalsz) call pidxtree_growsiblings(tmptree(i2))
-            tmptree(i2)%siblings(tmptree(i2)%nsiblings) = mm
-            tmptree(mm)%ptr = i2
+          tmptree2(i1)%ptr = i2
+          tmptree2(i2)%nsiblings = tmptree2(i2)%nsiblings + 1
+          if (tmptree2(i2)%nsiblings.gt.tmptree2(i2)%nsibalsz) call pidxtree_growsiblings(tmptree2(i2))
+          tmptree2(i2)%siblings(tmptree2(i2)%nsiblings) = i1
+          do j=1,tmptree2(i1)%nsiblings
+            mm = tmptree2(i1)%siblings(j)
+            tmptree2(i2)%nsiblings = tmptree2(i2)%nsiblings + 1
+            if (tmptree2(i2)%nsiblings.gt.tmptree2(i2)%nsibalsz) call pidxtree_growsiblings(tmptree2(i2))
+            tmptree2(i2)%siblings(tmptree2(i2)%nsiblings) = mm
+            tmptree2(mm)%ptr = i2
           end do
   ! decrease forest size
         end if
       end do
   ! reassign csnap2tree based on pointer
       do j=1,n_snaps
-        csnap2tree(j) = tmptree(csnap2tree(j))%ptr
+        csnap2tree(j) = tmptree2(csnap2tree(j))%ptr
       end do
   ! now construct a new set of sorted from csnap2tree and readjust csnap2tree (this does not scale)
       mm = 0
@@ -848,9 +848,9 @@ module m_mst
         csnap2tree(j) = -testlst(csnap2tree(j),3)
       end do
       do j=ntrees+1,oldntrees
-        if (allocated(tmptree(j)%siblings).EQV..true.) deallocate(tmptree(j)%siblings)
+        if (allocated(tmptree2(j)%siblings).EQV..true.) deallocate(tmptree2(j)%siblings)
       end do
-      tmptree(1:ntrees)%mind = HUGE(jkdist)
+      tmptree2(1:ntrees)%mind = HUGE(jkdist)
   !
       boruvkasteps = boruvkasteps+1
   ! manage stored guesses
@@ -885,7 +885,7 @@ module m_mst
   !
     end do
   !
-    cdevalcnt = testcnt
+    cdevalcnt2 = testcnt
   !
     deallocate(testlst)
     deallocate(snplst)
@@ -917,10 +917,10 @@ module m_mst
     call gen_MST(adjl_deg2,adjl_ix2,adjl_dis2, &
     mstedges,lmstedges,max_degree)
     do i=1,ntrees
-      if (allocated(tmptree(i)%snaps).EQV..true.) deallocate(tmptree(i)%snaps)
-      if (allocated(tmptree(i)%siblings).EQV..true.) deallocate(tmptree(i)%siblings)
+      if (allocated(tmptree2(i)%snaps).EQV..true.) deallocate(tmptree2(i)%snaps)
+      if (allocated(tmptree2(i)%siblings).EQV..true.) deallocate(tmptree2(i)%siblings)
     end do
-    deallocate(tmptree)
+    deallocate(tmptree2)
     deallocate(csnap2tree)
     deallocate(csnap2clus)
     deallocate(mstedges)
@@ -939,7 +939,7 @@ module m_mst
     end if
   !
   !  77 format(a,20(i18,1x))
-    call sipr('... done after the following additional distances evaluations: ',cdevalcnt)
+    call sipr('... done after the following additional distances evaluations: ',cdevalcnt2)
     call sl()
   !
   end

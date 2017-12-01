@@ -18,7 +18,9 @@ test_that('pre-processing with network inference', {
   expect_error(path_net <- generate_network(trj, method = 'minkowski', post_processing_method = 'path_minkowski', window = 15), NA)
   expect_error(SVD_net <- generate_network(trj, method = 'minkowski', post_processing_method = 'svd', window = 20), NA)
   # expect_error(MI_net <- generate_network(trj, method = 'MI', post_processing_method = "SymmetricUncertainty", window = 7), NA)
- 
+  # testing for time line
+  expect_error(net_joint_tr <- generate_network(matrix(rnorm(51000), nrow = 1000, ncol = 51), method = 'minkowski', window = 18), NA)
+  
   # testing for tsne
   # -----------------------------------
   expect_error(tsne_net <- generate_network(trj, method = 'minkowski', post_processing_method = 'tsne', window = 20, tsne_pearagd = 3))
@@ -45,8 +47,8 @@ test_that('pre-processing with network inference', {
   if(my_libs) c <- periodogram(y = c(trj[1:5, 1], trj[1:5, 1]), plot = test_plotting)
   if(my_libs) d <- periodogram(y = c(trj[1:5, 2], trj[1:5, 2]), plot = test_plotting)
   # final check of equality
-  expect_true(all(c$spec == asd[1, 1:5]))
-  expect_true(all(d$spec == asd[1, 6:10]))
+  if(my_libs) expect_true(all(c$spec == asd[1, 1:5]))
+  if(my_libs) expect_true(all(d$spec == asd[1, 6:10]))
   
   if(test_plotting) plot(y = c$spec, x = c$freq, type = 'h')
   if(test_plotting) plot(y = asd[1, 1:5], x = c$freq, type = 'h')
@@ -56,12 +58,14 @@ test_that('pre-processing with network inference', {
   # more staff -> range & freq
   # amplitude (range)
   expect_warning(asd <- generate_network(trj, post_processing_method = "amplitude", window = 10))
+  expect_error(asd <- generate_network(trj, post_processing_method = "amplitude", window = 10), NA)
   res <- c()
   for(i in 1:ncol(trj))
     res <- c(res, diff(range(c(trj[1:5, i], trj[1:5, i]))))
   expect_true(all(res == asd[1, ]))
   # maxfreq
   expect_warning(asd <- generate_network(trj, post_processing_method = "maxfreq", window = 10))
+  expect_error(asd <- generate_network(trj, post_processing_method = "maxfreq", window = 10), NA)
   res <- c()
   if(my_libs){
     for(i in 1:ncol(trj)){
@@ -72,6 +76,7 @@ test_that('pre-processing with network inference', {
   }
   # both
   expect_warning(asd <- generate_network(trj, post_processing_method = "amplitude_maxfreq", window = 10))
+  expect_error(asd <- generate_network(trj, post_processing_method = "amplitude_maxfreq", window = 10), NA)
   
   # this test needs further packages. They should not be a forced installation
   # expect_error(tsne_net <- generate_network(trj, method = 'MI', post_processing_method = 'tsne', window = 20), NA)

@@ -1,0 +1,686 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!--
+############################################################################
+# LICENSE INFO:                                                            #
+############################################################################
+#    This file is part of CAMPARI.                                         #
+#                                                                          #
+#    Version 3.0                                                           #
+#                                                                          #
+#    Copyright (C) 2017, The CAMPARI development team (current and former  #
+#                        contributors)                                     #
+#                        Andreas Vitalis, Adam Steffen, Rohit Pappu, Hoang #
+#                        Tran, Albert Mao, Xiaoling Wang, Jose Pulido,     #
+#                        Nicholas Lyle, Nicolas Bloechliger, Marco Bacci,  #
+#                        Davide Garolini, Jiri Vymetal                     #
+#                                                                          #
+#    Website: http://sourceforge.net/projects/campari/                     #
+#                                                                          #
+#    CAMPARI is free software: you can redistribute it and/or modify       #
+#    it under the terms of the GNU General Public License as published by  #
+#    the Free Software Foundation, either version 3 of the License, or     #
+#    (at your option) any later version.                                   #
+#                                                                          #
+#    CAMPARI is distributed in the hope that it will be useful,            #
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of        #
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         #
+#    GNU General Public License for more details.                          #
+#                                                                          #
+#    You should have received a copy of the GNU General Public License     #
+#    along with CAMPARI.  If not, see <http://www.gnu.org/licenses/>.      #
+############################################################################
+# AUTHORSHIP INFO:                                                         #
+############################################################################
+#                                                                          #
+# MAIN AUTHOR:   Andreas Vitalis                                           #
+#                                                                          #
+############################################################################
+-->
+<html xml:lang="en" dir="ltr" xmlns="http://www.w3.org/1999/xhtml" lang="en-US">
+<head>
+<!--
+    Designed by CAMPARI Development Group
+    Base template (without user's data) checked by http://validator.w3.org : "This page is valid XHTML 1.0 Transitional"
+    -->
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></meta>
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge"></meta>
+  <title>CAMPARI Tutorial 10</title>
+  <link rel="stylesheet" href="style_red.css" type="text/css" media="screen"></link>
+</head>
+<body>
+<div id="art-page-background-simple-gradient"></div>
+<div id="art-main"><!-- Header -->
+<div class="art-Sheet2"><!-- Banner Art -->
+<div class="art-Header">
+<div class="art-Header-png"></div>
+</div>
+<!-- Top Navigation Bar -->
+<div class="art-nav">
+<div class="l"></div>
+<div class="r"></div>
+<ul class="art-menu">
+  <li><a href="index.html"><span class="l"></span><span class="r"></span><span
+ class="t">Home</span></a></li>
+  <li><a href="documentation.html" class=" active"><span class="l"></span><span
+ class="r"></span><span class="t">Documentation</span></a></li>
+  <li><a href="references.html"><span class="l"></span><span class="r"></span><span
+ class="t">References</span></a></li>
+  <li><a href="contact.html"><span class="l"></span><span class="r"></span><span
+ class="t">Support</span></a></li>
+  <li><a href="download.html"><span class="l"></span><span class="r"></span><span
+ class="t">Download</span></a></li>
+</ul>
+</div>
+<!-- Top Sub Navigation Bar -->
+<div class="nav-menu">
+<ul class="navlist">
+  <li><a href="documentation.html">Overview</a></li>
+  <li><a href="install.html">Install</a></li>
+  <li><a href="tutorials.html" class=" active">Tutorials</a></li>
+  <li><a href="inputfiles.html">Inputfiles</a></li>
+  <li><a href="keywords.html">Keywords</a></li>
+  <li><a href="outputfiles.html">Outputfiles</a></li>
+  <li><a href="parameters.html">Parameters</a></li>
+  <li><a href="development.html">Development</a></li>
+  <li><br/>
+  </li>
+</ul>
+</div>
+</div>
+<!-- Main Page Contents -->
+<div class="art-Sheet">
+<div class="art-Sheet-bl"></div>
+<div class="art-Sheet-br"></div>
+<div class="art-Sheet-bc"></div>
+<div class="art-Sheet-cl"></div>
+<div class="art-Sheet-cr"></div>
+<div class="art-Sheet-cc"></div>
+<div class="art-Sheet-body">
+<div class="art-contentLayout"><!-- Page Contents -->
+<div class="art-content">
+<div class="art-Post">
+<div class="art-Post-body">
+<div class="art-PostContent">
+<br/>
+<h2>Tutorial 10: Utilizing CAMPARI to Analyze Trajectory Data</h2>
+<h3>Preface:</h3>
+While all previous tutorials have covered simulation (or equivalent) tasks, one of CAMPARI's strong
+points is the ability to use a trajectory in a variety of binary and human-readable formats 
+as input via keyword  <a href="keywords.html#PDBANALYZE">FMCSC_PDBANALYZE</a>. In essence,
+propagating through the trajectory replaces actual sampling, and the functionality of the 
+program is otherwise the same. There are a few peculiarities, however, that are most easily
+illustrated by an example.<br/>
+<br/>
+<h3>Step-by-Step:</h3>
+<h5>Step 1 - Basic settings</h5>
+Many of the keywords needed otherwise are no longer required in trajectory analysis mode, and
+can be left at default values. We will therefore construct a key-file from scratch. A short trajectory
+distributed along with the code serves as an example, although the tutorial will probably me
+more useful if it is modified to be able to work on a custom trajectory of actual interest.<br/>
+We start as follows:<br/>
+<br/>
+<tt>
+<a href="keywords.html#PARAMETERS">PARAMETERS</a> &lt;full path to folder&gt;/campari/params/oplsaal.prm<br/>
+<a href="keywords.html#PDBANALYZE">FMCSC_PDBANALYZE</a> 1<br/>
+<a href="keywords.html#SC_IPP">FMCSC_SC_IPP</a> 0.0<br/>
+<a href="keywords.html#UNSAFE">FMCSC_UNSAFE</a> 1<br/>
+<a href="keywords.html#UAMODEL">FMCSC_UAMODEL</a> 0<br/>
+</tt>
+<br/>
+This turns off the only energy term that is turned on by default in order not to compute energies
+for every trajectory snapshot. A parameter file is still required, and it should support the
+system of interest as much as possible. The setting of <a href="keywords.html#UNSAFE">FMCSC_UNSAFE</a>
+ensures that certain setup errors that could be critical issues in simulations will not cause
+CAMPARI to abort the run. For this example we use a trajectory with all-atom representation
+(&rarr; <a href="keywords.html#UAMODEL">FMCSC_UAMODEL</a>), but it is important to remember
+to change this setting if necessary.<br/>
+<h5>Step 2 - Input files</h5>
+Before CAMPARI can run, we of course need to specify which file(s) to use as input.
+In this particular case, the distributed <a href="../examples/tutorial10/tutorial10.xtc">example trajectory</a> is in xtc-format. This
+along with knowledge of the specifications of the underlying simulation makes
+the following choices necessary:<br/>
+<br/>
+<tt> 
+<a href="keywords.html#PDB_FORMAT">FMCSC_PDB_FORMAT</a> 3  # 1 for pdb, 4 for dcd, 5 for NetCDF<br/>
+<a href="keywords.html#XTCFILE">FMCSC_XTCFILE</a> <a href="../examples/tutorial10/tutorial10.xtc">tutorial10.xtc</a>
+# you need to either copy the file or change the path<br/>
+<a href="keywords.html#SEQFILE">FMCSC_SEQFILE</a> <a href="../examples/tutorial10/tutorial10.in">tutorial10.in</a> # ditto<br/>
+<a href="keywords.html#BOUNDARY">FMCSC_BOUNDARY</a> 4<br/>
+<a href="keywords.html#SHAPE">FMCSC_SHAPE</a> 2<br/>
+<a href="keywords.html#SIZE">FMCSC_SIZE</a> 40.0<br/>
+<a href="keywords.html#ORIGIN">FMCSC_ORIGIN</a> 0. 0. 0.<br/>
+<a href="keywords.html#NRSTEPS">FMCSC_NRSTEPS</a> 1995<br/>
+<a href="keywords.html#EQUIL">FMCSC_EQUIL</a> 0<br/>
+</tt>
+<br/>
+Since the binary trajectory was generated by CAMPARI itself, no template pdb file is needed.
+If this were not the case, keyword <a href="keywords.html#PDB_TEMPLATE">FMCSC_PDB_TEMPLATE</a> allows
+you to supply such a template pdb file, from which CAMPARI will infer the order of atoms in the
+binary trajectory. An example usage is demonstrated later in this tutorial. As can be gleaned from
+the sequence file, the calculation involved a peptide composed of proline and glycine along
+with three, identical small molecules. This is why it is important to specify the boundary
+conditions and system dimensions in the key-file (otherwise, analyses relying on intermolecular
+distances may give incorrect results). This information is (currently) not read from the trajectory data
+itself. Similarly, the number of snapshots (steps) in the trajectory file needs to be set explicitly
+via <a href="keywords.html#NRSTEPS">FMCSC_NRSTEPS</a>. It is not generally safe to simply set this
+to a large number as CAMPARI will have to terminate unexpectedly upon failing to read in the next snapshot.
+While it should lead to a normal program termination, this can sometimes cause issues with the normalization
+of measured averages and distributions.
+Note that the referencing to step numbers will now exclusively refer to the trajectory file, which
+is why we chose not to discard any additional steps as equilibration in the above example.<br/>
+<h5>Step 3 - Straightforward analysis requests</h5>
+Now it is time to decide which of the built-in analysis features we wish to use (see <a href="outputfiles.html">elsewhere</a> for
+a summary of output files and <a href="keywords.html#output_analysis">documentation of associated keywords</a>). Most of the calculation frequency settings for analyses we are interested in will be set to 1.
+The system contains the capped polypeptide Ace-P<sub>5</sub>G<sub>5</sub>-Nme along with three
+small molecules (ethylmethylthioether). In a first effort, we want to generate Ramachandran maps
+for the peptide and information about contact information both within the peptide and between the
+different molecules. We will also disable analyses that would otherwise clutter the directory with
+output files. Unlike in prior tutorials, we do not use the meta-keyword
+<a href="keywords.html#DISABLE_ANALYSIS">FMCSC_DISABLE_ANALYSIS</a> here so that the list
+below can serve as an overview what other analyses could be performed.<br/>
+<br/>
+<tt> 
+<a href="keywords.html#ANGCALC">FMCSC_ANGCALC</a> 1<br/>
+<a href="keywords.html#ANGRES">FMCSC_ANGRES</a> 6.0<br/>
+<a href="keywords.html#CONTACTCALC">FMCSC_CONTACTCALC</a> 1 <br/>
+<a href="keywords.html#CLUSTERCALC">FMCSC_CLUSTERCALC</a> 1 <br/>
+<a href="keywords.html#CONTACTOFF">FMCSC_CONTACTOFF</a> 0 <br/>
+<a href="keywords.html#CONTACTCOM">FMCSC_CONTACTCOM</a> 5.0 <br/>
+<a href="keywords.html#CONTACTMIN">FMCSC_CONTACTMIN</a> 3.5 <br/>
+<a href="keywords.html#INTCALC">FMCSC_INTCALC</a> 10000000<br/>
+<a href="keywords.html#SAVCALC">FMCSC_SAVCALC</a> 10000000<br/>
+<a href="keywords.html#SEGCALC">FMCSC_SEGCALC</a> 10000000<br/>
+<a href="keywords.html#DSSPCALC">FMCSC_DSSPCALC</a> 10000000<br/>
+<a href="keywords.html#DIPCALC">FMCSC_DIPCALC</a> 10000000<br/>
+<a href="keywords.html#POLCALC">FMCSC_POLCALC</a> 10000000<br/>
+<a href="keywords.html#PCCALC">FMCSC_PCCALC</a> 10000000<br/>
+<a href="keywords.html#RHCALC">FMCSC_RHCALC</a> 10000000<br/>
+<a href="keywords.html#EMCALC">FMCSC_EMCALC</a> 10000000<br/>
+<a href="keywords.html#CCOLLECT">FMCSC_CCOLLECT</a> 10000000<br/>
+<a href="keywords.html#ENOUT">FMCSC_ENOUT</a> 10000000<br/>
+<a href="keywords.html#POLOUT">FMCSC_POLOUT</a> 10000000<br/>
+<a href="keywords.html#TOROUT">FMCSC_TOROUT</a> 10000000<br/>
+<a href="keywords.html#XYZOUT">FMCSC_XYZOUT</a> 10000000<br/>
+</tt>
+<br/>
+For details regarding the individual keywords, please follow the links.
+After copying the tutorial files to a local directory, and pasting the above information
+to a file called "trajan.key", you should now be able to execute:<br/>
+<br/>
+<tt>
+campari -k trajan.key &gt;&amp; log1<br/>
+cp RAMACHANDRAN.dat all.rama<br/>
+</tt>
+<br/>
+This run should finish in a second or less due to the small number of steps and limited analyses
+requested. Have a look (especially the 2D files will require using a suitable plotting software) at the produced output files; they should be
+<a href="outputfiles.html#CONTACTMAP.dat">CONTACTMAP.dat</a>, 
+<a href="outputfiles.html#CONTACT_HISTOGRAMS.dat">CONTACT_HISTOGRAMS.dat</a>, 
+<a href="outputfiles.html#CLUSTERS.dat">CLUSTERS.dat</a>, 
+<a href="outputfiles.html#MOLCLUSTERS.dat">MOLCLUSTERS.dat</a>, 
+<a href="outputfiles.html#COOCLUSTERS.dat">COOCLUSTERS.dat</a>,
+<a href="outputfiles.html#basename_END.pdb">yourcalc_END.pdb, yourcalc_END.int</a>,
+<a href="outputfiles.html#JCOUPLING.dat">JCOUPLING.dat</a>,
+and <a href="outputfiles.html#RAMACHANDRAN.dat">RAMACHANDRAN.dat</a>.
+While the &phi;/&psi;-analysis should be as expected, the output for the contact-based
+analysis is actually not what we wanted or expected. If you inspect <a href="outputfiles.html#MOLCLUSTERS.dat">MOLCLUSTERS.dat</a>
+for example, you will note that data were only obtained for one of the four molecules in the
+system, <i>i.e.</i>, the peptide, and are therefore quite uninformative. As can
+be <a href="inputfiles.html#FMCSC_ANGRPFILE">gleaned from the documentation</a>, the reason lies in the fact that by
+default CAMPARI will interpret small molecules (consisting of only a single "residue")
+as solvent-like molecules, and ignore them for certain classes of analyses.
+To change this behavior, we need to utilize the concept of analysis groups. Paste
+the following into a file called "angrp.in":<br/>
+<br/>
+<tt>
+M<br/>
+1<br/>
+2<br/>
+3<br/>
+4<br/>
+</tt>
+<br/>
+By picking different positive numbers for each molecule (mode "M" references molecules by number
+of occurrence in the sequence file), we instruct CAMPARI to regard all four molecules as
+independent solutes. It would also be possible to use mode "T" or to pick the same number
+for all small molecules, in which case those quantities for which averaging over molecules
+of the same type applies would be reported only as the average over the three
+individual molecules. Append the key-file with:<br/>
+<br/>
+<tt> 
+<a href="keywords.html#ANGRPFILE">FMCSC_ANGRPFILE</a> angrp.in<br/>
+<a href="keywords.html#SEQREPORT">FMCSC_SEQREPORT</a> 1<br/>
+</tt>
+<br/>
+Then rerun:<br/>
+<br/>
+<tt>
+campari -k trajan.key &gt;&amp; log2<br/>
+</tt>
+<br/>
+Note that this will <b>overwrite</b> the previously generated output files (the only
+exception to this general rule are  <a href="outputfiles.html#Trajectory_output">trajectory files</a>
+and, in <a href="keywords.html#RESTART">simulation restarts</a>, files like 
+<a href="outputfiles.html#N_000_REXTRACE.dat">N_000_REXTRACE.dat</a> or <a href="outputfiles.html#ELS_WFRAMES.dat">ELS_WFRAMES.dat</a>).
+If you copy or move the old files beforehand, you can use "diff" or a similar utility to
+quickly verify that <a href="outputfiles.html#RAMACHANDRAN.dat">RAMACHANDRAN.dat</a> is unchanged,
+but that the contact-based output files are indeed extended to include information
+about the small molecules as well.<br/>
+<h5>Step 4 - Customizing analyses</h5>
+Suppose that you are interested in further properties, say simple polymeric 
+characteristics of the peptide. Maybe, due to the diblock copolymeric character of the peptide,
+it is even of interest to compute properties for different segments of each peptide.
+Sometimes it may also be desirable to process the trajectory with different software packages, and in such a case, it may be 
+necessary to preprocess the data (for pruning see below; for alignment, see <a href="keywords.html#ALIGNCALC">FMCSC_ALIGNCALC</a>):<br/>
+<br/>
+<tt> 
+<a href="keywords.html#POLCALC">FMCSC_POLCALC</a> 1<br/>
+<a href="keywords.html#RGBINSIZE">FMCSC_RGBINSIZE</a> 0.1<br/>
+<a href="keywords.html#XYZOUT">FMCSC_XYZOUT</a> 1<br/>
+<a href="keywords.html#XYZPDB">FMCSC_XYZPDB</a> 4<br/>
+<a href="keywords.html#TRAJIDXFILE">FMCSC_TRAJIDXFILE</a> justpeptide.idx<br/>
+</tt>
+<br/>
+The above turns on analysis of simple polymeric properties, and trajectory output in xtc-format. You should
+make sure to <i>replace</i> the entry for <a href="keywords.html#XYZOUT">FMCSC_XYZOUT</a> in the key-file.
+It generally works to append the key-file with updated entries as well, since in such a case CAMPARI will
+read the keyword two or more times and only remember the last one (furthest down in the key-file). However, for 
+new users, this can lead to confusing "mistakes". Notably, the input file <a href="keywords.html#TRAJIDXFILE">FMCSC_TRAJIDXFILE</a> allows you
+to exactly specify which atoms to keep in the trajectory output. It uses simple
+atomic indices that correspond to CAMPARI's internal ordering, which can (<a href="keywords.html#PDB_NUCMODE">almost always</a>)
+be taken from the <a href="outputfiles.html#basename_END.pdb">reference pdb file</a> written out at the end.
+To create these files, it is advisable to use a combination of typical command line tools
+such as grep and awk. For example:<br/>
+<br/>
+<tt>
+grep ATOM yourcalc_END.pdb | awk '{print $2}' &gt; justpeptide.idx<br/>
+</tt>
+<br/>
+Here, we take advantage of the small molecules using the pdb idenfitier "HETATM". Now rerun 
+CAMPARI, and rename the produced trajectory.:<br/>
+<br/>
+<tt>
+campari -k trajan.key &gt;&amp; log3<br/>
+mv yourcalc_traj.xtc justpeptide.xtc<br/>
+cp yourcalc_END.pdb justpeptide.pdb<br/>
+</tt>
+<br/>
+Of course, the polymeric analyses requested had access to the full system, and you should
+check the produced output files, <i>i.e.</i>, <a href="outputfiles.html#POLYAVG.dat">POLYAVG.dat</a>, 
+<a href="outputfiles.html#RGHIST.dat">RGHIST.dat</a>,
+<a href="outputfiles.html#PERSISTENCE.dat">PERSISTENCE.dat</a>, 
+<a href="outputfiles.html#DENSPROF.dat">DENSPROF.dat</a>, 
+<a href="outputfiles.html#TURNS_RES.dat">TURNS_RES.dat</a>,  
+<a href="outputfiles.html#RETEHIST.dat">RETEHIST.dat</a>, and
+<a href="outputfiles.html#RDHIST.dat">RDHIST.dat</a>, to make sure that they
+conform to our request of all being considered independent solute molecules
+(via <a href="keywords.html#ANGRPFILE">FMCSC_ANGRPFILE</a>). There is an important
+caveat, however, and that lies in the fact that not all analyses apply
+to all molecule types. In the case considered here, the small molecule
+will for instance not produce any data for end-to-end distances (in <a href="outputfiles.html#RETEHIST.dat">RETEHIST.dat</a> 
+and <a href="outputfiles.html#POLYAVG.dat">POLYAVG.dat</a>).
+Feel free to verify that the resultant trajectory does indeed only retain information
+about the peptide:<br/>
+<br/>
+<tt>
+vmd yourcalc_END.pdb justpeptide.xtc<br/>
+</tt>
+<br/>
+For the sake of this tutorial, we are only going to use "justpeptide.xtc" in an auxiliary role. CAMPARI
+handles molecule-specific analyses well as is. Instead, we will attempt
+two more advanced tasks.<br/>
+<h5>Step 4a - Radius of gyration of hydrophobic sidechains</h5>
+The first task is to find out the radius of gyration distribution of the sidechains
+of the proline residues. Such subset radii of gyration of hydrophobic moieties are often evoked as putative
+order parameters in the analysis of peptide and protein conformational equilibria. Unfortunately,
+the <a href="keywords.html#ANGRPFILE">analysis group facility</a> does not allow you to split
+a molecule into different parts. We will therefore utilize a trick to get around this restriction.
+First, "justpeptide.xtc" is pruned further. Change the relevant entries in the key-file to:<br/>
+<br/>
+<tt>
+<a href="keywords.html#TRAJIDXFILE">FMCSC_TRAJIDXFILE</a> justprolylsidechains.idx<br/>
+<a href="keywords.html#XTCFILE">FMCSC_XTCFILE</a> justpeptide.xtc<br/>
+</tt>
+<br/>
+Next, remove the three "EMT" entries from the sequence file in the local directory and execute:<br/>
+<br/>
+<tt>
+grep PRO yourcalc_END.pdb | grep -v " [N,C,O] " | grep -v " .A " | awk '{print $2}' &gt; justprolylsidechains.idx<br/>
+campari -k trajan.key &gt;&amp; log4<br/>
+mv yourcalc_traj.xtc justprolylsidechains.xtc<br/>
+mv yourcalc_END.pdb justprolylsidechains.pdb<br/>
+</tt>
+<br/>
+It would of course also have been possible to retain the full sequence and trajectory files and do the same
+extraction from there.
+You can again use VMD to verify the sanity of the produced trajectory. The coordinates are now no
+longer recognizable as polypeptide residues due to the complete absence of the backbone. There
+are two paths to obtain the desired data. First, we could set <a href="keywords.html#POLOUT">FMCSC_POLOUT</a>
+to 1, create a sequence file that pretends that the individual sidechains are small molecules, change the residue
+names in "justprolylsidechains.pdb", instruct CAMPARI to read both the pdb file (as a template) and "justprolylsidechains.idx", and get system-wide
+polymeric output in <a href="outputfiles.html#POLYMER.dat">POLYMER.dat</a>. This file would then
+hold the instantaneous radii of gyration for every snapshot, from which the desired distribution (histogram)
+could be computed. Alternatively (and this is done explicitly in this tutorial), we can create a sequence file that pretends that
+the system in the xtc-file is still a polymer:<br/>
+<br/>
+<tt>
+PRN_N<br/>
+PRX<br/>
+PRX<br/>
+PRX<br/>
+PRC_C<br/>
+END<br/>
+</tt>
+<br/>
+Paste the above into a file called "justprolylsidechains.in". Next, edit "justprolylsidechains.pdb" to 
+correspond to the sequence file in terms of residue names (<i>i.e.</i>, replace all entries PRO with PRN/PRX/PRC using a text editor
+or a command line utility such as sed). We are pretending that CAMPARI has no internal
+representation of these residues, and therefore need to avoid using three-letter codes that correspond
+to <a href="inputfiles.html#FMCSC_SEQFILE">any of the internally supported residues</a>. Even though the residues
+all possess the same set of atoms, unsupported and terminal residues in polymers must be distinguished by name (and not just by
+the "_N" addition). This is because rules of the interaction models, <i>etc.</i> depend on whether a residue is terminal or not.
+Next, change/append the key-file as follows:<br/>
+<br/>
+<tt>
+<a href="keywords.html#SEQFILE">FMCSC_SEQFILE</a> justprolylsidechains.in<br/>
+<a href="keywords.html#XTCFILE">FMCSC_XTCFILE</a> justprolylsidechains.xtc<br/>
+<a href="keywords.html#PDB_TEMPLATE">FMCSC_PDB_TEMPLATE</a> justprolylsidechains.pdb<br/>
+<a href="keywords.html#TRAJIDXFILE"># FMCSC_TRAJIDXFILE</a> justprolylsidechains.idx<br/>
+</tt>
+<br/>
+The template pdb file is absolutely required, since this is where CAMPARI infers the necessary settings from
+(topology and some required parameters). Commenting out (or removing) the entry for <a href="keywords.html#TRAJIDXFILE">FMCSC_TRAJIDXFILE</a>
+is needed since the input no longer applies (it refers to the numbering in justpeptide.xtc). Execute:<br/>
+<br/>
+<tt>
+campari -k trajan.key &gt;&amp; log5<br/>
+</tt>
+<br/>
+First, have a look at <a href="outputfiles.html#basename_END.int">yourcalc_END.int</a>, as it will tell
+you which internal topology was inferred. The method outlined here may not always work as expected,
+and this is a good diagnosis tool. Consulting the log-file, 
+"log5", you will find summary information on how CAMPARI coped with these unknown residues. Note that the handling
+of unsupported residues itself is explained in more detail in <a href="tutorial12.html">Tutorial 12</a>. From the log-file
+it should be clear why <a href="keywords.html#UNSAFE">FMCSC_UNSAFE</a> was set to 1 (because
+the automatic inference of atom types leads to valence errors), and why
+certain analyses are no longer available and were automatically disabled (because the polymer
+is no longer of recognized type). After making sure
+that everything seems to have behaved as expected, you can now plot the data in <a href="outputfiles.html#RGHIST.dat">RGHIST.dat</a>
+or <a href="outputfiles.html#RDHIST.dat">RDHIST.dat</a>, or simply consult the mean in 
+<a href="outputfiles.html#POLYAVG.dat">POLYAVG.dat</a>. When using a strategy like the one
+just described, it is always necessary to keep in mind what kind of information is needed for
+the respective analyses. For example, the data in <a href="outputfiles.html#DENSPROF.dat">DENSPROF.dat</a>
+require atomic masses that have to be guessed based on pdb-names, and in such a case it is worthwhile
+to double check the implied assignment. Pending any other relevant patches (see <a href="keywords.html#MPATCHFILE">FMCSC_MPATCHFILE</a>
+or <a href="keywords.html#BIOTYPEPATCHFILE">FMCSC_BIOTYPEPATCHFILE</a>), this information is also printed 
+to <a href="outputfiles.html#basename_END.int">yourcalc_END.int</a> (the third column gives the guessed atom (LJ) type
+&rarr; <a href="parameters.html#S2_LJ-types">elsewhere</a>). In conjunction with the parameter file, this allows
+extraction of the desired information.<br/>
+<h5>Step 4b - Angular correlation functions of subsequences</h5>
+We start by reverting the key-file to the state before we began step 4a with one modification to
+<a href="keywords.html#TRAJIDXFILE">FMCSC_TRAJIDXFILE</a>:<br/>
+<br/>
+<tt>
+<a href="keywords.html#XTCFILE">FMCSC_XTCFILE</a> justpeptide.xtc<br/>
+<a href="keywords.html#SEQFILE">FMCSC_SEQFILE</a> tutorial10.in<br/>
+<a href="keywords.html#PDB_TEMPLATE"># FMCSC_PDB_TEMPLATE</a> justprolylsidechains.pdb<br/>
+<a href="keywords.html#TRAJIDXFILE">FMCSC_TRAJIDXFILE</a> justglycine.idx<br/>
+</tt>
+<br/>
+Suppose we want to first analyze the <a href="outputfiles.html#PERSISTENCE.dat">angular correlation function</a>
+of the glycine stretch. The goal is to create an artificial system that - unlike in the previous case -
+is still recognized by CAMPARI as a polypeptide. We want to pretend that the glycine residues are capped on
+both sides (the C-terminal NME already being in place). In this particular case, we could actually emulate a completely sane
+peptide chain by picking out and renaming atoms of the last proline residue to pretend it were ACE instead. CAMPARI does,
+however, automatically recognize certain atom names, so that we can achieve what we want with slightly less work:<br/>
+<br/>
+<tt>
+echo -e "63\n64\n65\n66" &gt; justglycine.idx<br/>
+grep ATOM justpeptide.pdb | grep -v PRO | grep -v ACE | awk '{print $2}' &gt;&gt; justglycine.idx<br/>
+rm yourcalc_traj.xtc<br/>
+campari -k trajan.key &gt;&amp; log6<br/>
+mv yourcalc_END.pdb justglycine.pdb<br/>
+mv yourcalc_traj.xtc justglycine.xtc<br/>
+</tt>
+<br/>
+Now paste the following into a new sequence input file "justgylcine.in":<br/>
+<br/>
+<tt>
+PRX_N<br/>
+GLY<br/>
+GLY<br/>
+GLY<br/>
+GLY<br/>
+GLY<br/>
+NME<br/>
+END<br/>
+</tt>
+<br/>
+Next, in analogy to before, the residue name for the first residue in "justglycine.pdb" from PRO to PRX.
+The key-file has to be modified as follows (this should be fairly straightforward by now):<br/>
+<br/>
+<tt>
+<a href="keywords.html#SEQFILE">FMCSC_SEQFILE</a> justglycine.in<br/>
+<a href="keywords.html#XTCFILE">FMCSC_XTCFILE</a> justglycine.xtc<br/>
+<a href="keywords.html#PDB_TEMPLATE">FMCSC_PDB_TEMPLATE</a> justglycine.pdb<br/>
+<a href="keywords.html#TRAJIDXFILE"># FMCSC_TRAJIDXFILE</a> justglycine.idx<br/>
+</tt>
+<br/>
+We can then rerun CAMPARI:<br/>
+<br/>
+<tt>
+campari -k trajan.key &gt;&amp; log7<br/>
+cp PERSISTENCE.dat justglycine.pers<br/>
+cp RAMACHANDRAN.dat justglycine.rama<br/>
+</tt>
+<br/>
+As before, inspect the log-file and the remaining diagnostic output to verify that the 
+artificial construct was interpreted as intended. In particular, "log7" should clearly
+spell out that residue "PRX" was identified as a bona fide polypeptide residue. If we had not
+emulated an N-terminal cap, the <a href="outputfiles.html#RAMACHANDRAN.dat">Ramachandran analysis</a>
+for instance would not contain information about the first of the glycine residues
+(despite it being a nonterminal polypeptide residue in the original peptide). Note of course
+that this type of trickery is only required for certain analyses. Quantities that are
+<i>per se</i> reported at residue-level resolution (for example the data in
+<a href="outputfiles.html#TURNS_RES.dat">TURNS_RES.dat</a> or <a href="outputfiles.html#CONTACTMAP.dat">CONTACTMAP.dat</a>)
+are either nonsensical or redundant to decompose in this way.<br/><br/>
+Naturally, the procedure to perform the same analysis for the proline stretch is highly analogous.
+We start by again reverting the key-file to the state before we began step 4a (with a single modification):<br/>
+<br/>
+<tt>
+<a href="keywords.html#XTCFILE">FMCSC_XTCFILE</a> justpeptide.xtc<br/>
+<a href="keywords.html#SEQFILE">FMCSC_SEQFILE</a> tutorial10.in<br/>
+<a href="keywords.html#PDB_TEMPLATE"># FMCSC_PDB_TEMPLATE</a> justglycine.pdb<br/>
+<a href="keywords.html#TRAJIDXFILE">FMCSC_TRAJIDXFILE</a> justproline.idx<br/>
+</tt>
+<br/>
+It continues by identifying those atoms of the first of the glycine residue that can reconstitute
+a proper C-terminal cap:<br/>
+<br/>
+<tt>
+echo -e "77\n78\n79\n81" &gt; justproline.idx<br/>
+grep ATOM justpeptide.pdb | grep -v GLY | grep -v NME | awk '{print $2}' &gt;&gt; justproline.idx<br/>
+rm yourcalc_traj.xtc<br/>
+campari -k trajan.key &gt;&amp; log8<br/>
+mv yourcalc_END.pdb justproline.pdb<br/>
+mv yourcalc_traj.xtc justproline.xtc<br/>
+</tt>
+<br/>
+Now paste the following into a new sequence input file "justproline.in":<br/>
+<br/>
+<tt>
+ACE<br/>
+PRO<br/>
+PRO<br/>
+PRO<br/>
+PRO<br/>
+PRO<br/>
+GLX_C<br/>
+END<br/>
+</tt>
+<br/>
+Next, analogously to before change the residue name for the last residue in "justproline.pdb" from GLY to GLX, and
+modify again the key-file:<br/>
+<br/>
+<tt>
+<a href="keywords.html#SEQFILE">FMCSC_SEQFILE</a> justproline.in<br/>
+<a href="keywords.html#XTCFILE">FMCSC_XTCFILE</a> justproline.xtc<br/>
+<a href="keywords.html#PDB_TEMPLATE">FMCSC_PDB_TEMPLATE</a> justproline.pdb<br/>
+<a href="keywords.html#TRAJIDXFILE"># FMCSC_TRAJIDXFILE</a> justproline.idx<br/>
+</tt>
+<br/>
+Run again:<br/>
+<br/>
+<tt>
+campari -k trajan.key &gt;&amp; log9<br/>
+cp PERSISTENCE.dat justproline.pers<br/>
+cp RAMACHANDRAN.dat justproline.rama<br/>
+</tt>
+<br/>
+Now you can directly compare the results for the proline stretch to those for the glycine stretch. It may
+be pedagogically helpful to compare the two Ramachandran plots ("justproline.rama" and "justglycine.rama")
+to the one obtained in Step 1 ("all.rama"); in fact, the average of the two split maps should agree exactly (within
+rounding error) with the data in "all.rama". If not, this would indicate that something went wrong in the interpretation
+of the artificial constructs in Step 4b. Note that a similar reconstruction of the properties for the
+entire peptide is of course not possible for other quantities such as angular correlation function, density
+profile, radius of gyration histograms, <i>etc.</i><br/>
+The tools introduced in this tutorial should have familiarized you with the concepts underlying the usage of
+CAMPARI as a trajectory analysis tool and in particular should have demonstrated some more advanced techniques
+to get around restrictions imposed by the organization of representations of molecules within CAMPARI.<br/>
+<br/><br/>
+</div>
+</div>
+</div>
+</div>
+<!-- Side Navigation Bar --><!--<div class="art-sidebar1">--><!-- Contributors Block --><!--<div class="art-Block">
+                    <div class="art-Block-tl"></div>
+                    <div class="art-Block-tr"></div>
+                    <div class="art-Block-bl"></div>
+                    <div class="art-Block-br"></div>
+                    <div class="art-Block-tc"></div>
+                    <div class="art-Block-bc"></div>
+                    <div class="art-Block-cl"></div>
+                    <div class="art-Block-cr"></div>
+                    <div class="art-Block-cc"></div>
+                    <div class="art-Block-body">
+                        <div class="art-BlockHeader">
+                            <div class="l"></div>
+                            <div class="r"></div>
+                            <div class="art-header-tag-icon">
+                                <div class="t">Contributors - Links</div>
+                            </div>
+                        </div><div class="art-BlockContent">
+                            <div class="art-BlockContent-body">
+                                <div>
+                                <b>Pappu Lab</b><br />
+                                Washington University in St. Louis, MO<br />
+                                Website: <a href="lima.wustl.edu">lima.wustl.edu</a><br />
+                                Phone: (999) 999-9999 <br/>
+                                <br/>
+                                <b>Andreas Vitalis</b><br />
+                                Unistat de Zurich<br />
+                                Website: <a href="papajohns.com">vitalis.net</a><br />
+                                Phone: (111) 999-9999 <br/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>--><!-- Search Block --><!--
+                <div class="art-Block">
+                    <div class="art-Block-tl"></div>
+                    <div class="art-Block-tr"></div>
+                    <div class="art-Block-bl"></div>
+                    <div class="art-Block-br"></div>
+                    <div class="art-Block-tc"></div>
+                    <div class="art-Block-bc"></div>
+                    <div class="art-Block-cl"></div>
+                    <div class="art-Block-cr"></div>
+                    <div class="art-Block-cc"></div>
+                    <div class="art-Block-body">
+                        <div class="art-BlockHeader">
+                            <div class="l"></div>
+                            <div class="r"></div>
+                            <div class="art-header-tag-icon">
+                                <div class="t">Find Text</div>
+                            </div>
+                        </div><div class="art-BlockContent">
+                            <div class="art-BlockContent-body">
+                                <div><form method="get" id="newsletterform" action="javascript:void(0)">
+                                <input type="text" value="" name="email" id="s" style="width: 95%;" />
+                                <span class="art-button-wrapper">
+                                    <span class="l"> </span>
+                                    <span class="r"> </span>
+                                    <input class="art-button" type="submit" name="search" value="Search"/>
+                                </span>
+                                </form></div>
+                            </div>
+                        </div>
+                    </div>
+                </div> 
+                --><!-- News/Updates Block --><!--
+                <div class="art-Block">
+                    <div class="art-Block-tl"></div>
+                    <div class="art-Block-tr"></div>
+                    <div class="art-Block-bl"></div>
+                    <div class="art-Block-br"></div>
+                    <div class="art-Block-tc"></div>
+                    <div class="art-Block-bc"></div>
+                    <div class="art-Block-cl"></div>
+                    <div class="art-Block-cr"></div>
+                    <div class="art-Block-cc"></div>
+                    <div class="art-Block-body">
+                        <div class="art-BlockHeader">
+                            <div class="l"></div>
+                            <div class="r"></div>
+                            <div class="art-header-tag-icon">
+                                <div class="t">Recent News</div>
+                            </div>
+                        </div><div class="art-BlockContent">
+                            <div class="art-BlockContent-body">
+                                <div>
+                                    <p><b>Jun 14, 2008</b><br/>
+                                    Aliquam sit amet felis. Mauris semper, 
+                                    velit semper laoreet dictum, quam 
+                                    diam dictum urna, nec placerat elit 
+                                    nisl in quam. Etiam augue pede, 
+                                    molestie eget, rhoncus at, convallis 
+                                    ut, eros. Aliquam pharetra.<br/>
+                                    <a href="javascript:void(0)">Read more...</a></p>
+                                                          
+                                    <p><b>Aug 24, 2008</b><br/>
+                                    Aliquam sit amet felis. Mauris semper, 
+                                    velit semper laoreet dictum, quam 
+                                    diam dictum urna, nec placerat elit 
+                                    nisl in quam. Etiam augue pede, 
+                                    molestie eget, rhoncus at, convallis 
+                                    ut, eros. Aliquam pharetra.<br/>
+                                    <a href="javascript:void(0)">Read more...</a></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> --><!-- End Sidebar --> </div>
+</div>
+</div>
+<!-- End main page contents --><!-- Footer -->
+<div class="art-Footer">
+<div class="art-Footer-background">
+<div class="art-Footer-inner"> <a href="#" class="art-rss-tag-icon"
+ title="RSS"></a>
+<div class="art-Footer-text">
+<p><a href="#">Contact Us</a> | <a href="#">Terms of Use</a> | <a
+ href="#">License Information</a><br/>
+Copyright © 2010 . All Rights Reserved.</p>
+</div>
+</div>
+</div>
+</div>
+<p class="art-page-footer">XHTML and CSS valid. Powered by <a
+ href="http://www.flashmint.com/">FlashMint</a> - flash templates
+provider.</p>
+<div style="text-align: center; font-size: 0.75em;">Design downloaded
+from <a href="http://www.freewebtemplates.com/">free website templates</a>.</div>
+</div>
+</body>
+</html>

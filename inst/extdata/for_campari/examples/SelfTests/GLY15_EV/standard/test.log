@@ -1,0 +1,232 @@
+ 
+ --- Summary of vdW Parameters ---
+ 
+ Combination rules:
+****   Sigma   : Arithmetic
+****   Epsilon : Geometric
+ 
+ Exceptions to Combination Rules:
+Distance for types    1 and    4:  1.00 *  1.8500 A
+Distance for types    4 and    5:  1.00 *  1.8500 A
+Distance for types    4 and    6:  1.00 *  2.0000 A
+Distance for types    4 and    7:  1.00 *  2.3000 A
+Distance for types    4 and    8:  1.00 *  1.8500 A
+Distance for types    4 and   10:  1.00 *  2.1000 A
+Distance for types    4 and   11:  1.00 *  1.8500 A
+Distance for types   14 and   15:  1.00 *  2.0827 A
+Distance for types   16 and   17:  1.00 *  2.0753 A
+Distance for types   17 and   18:  1.00 *  2.0000 A
+ 
+ Self-Terms (From Which to Combine):
+Type    1: Sigma   =  1.00 *  2.7000 A
+         : Epsilon =   0.2000 kcal/mol
+Type    2: Sigma   =  1.00 *  3.3000 A
+         : Epsilon =   0.1000 kcal/mol
+Type    3: Sigma   =  1.00 *  3.0000 A
+         : Epsilon =   0.1000 kcal/mol
+Type    4: Sigma   =  1.00 *  2.0000 A
+         : Epsilon =   0.0250 kcal/mol
+Type    5: Sigma   =  1.00 *  2.7000 A
+         : Epsilon =   0.2000 kcal/mol
+Type    6: Sigma   =  1.00 *  3.0000 A
+         : Epsilon =   0.2000 kcal/mol
+Type    7: Sigma   =  1.00 *  3.6000 A
+         : Epsilon =   0.3000 kcal/mol
+Type    8: Sigma   =  1.00 *  2.7000 A
+         : Epsilon =   0.2000 kcal/mol
+Type    9: Sigma   =  1.00 *  2.0000 A
+         : Epsilon =   0.0250 kcal/mol
+Type   10: Sigma   =  1.00 *  3.2000 A
+         : Epsilon =   0.2000 kcal/mol
+Type   11: Sigma   =  1.00 *  2.7000 A
+         : Epsilon =   0.2000 kcal/mol
+Type   12: Sigma   =  1.00 *  3.3304 A
+         : Epsilon =   0.0028 kcal/mol
+Type   13: Sigma   =  1.00 *  4.4172 A
+         : Epsilon =   0.1180 kcal/mol
+Type   14: Sigma   =  1.00 *  3.1656 A
+         : Epsilon =   0.1554 kcal/mol
+Type   15: Sigma   =  1.00 *  2.0000 A
+         : Epsilon =   0.0000 kcal/mol
+Type   16: Sigma   =  1.00 *  3.1507 A
+         : Epsilon =   0.1521 kcal/mol
+Type   17: Sigma   =  1.00 *  2.0000 A
+         : Epsilon =   0.0000 kcal/mol
+Type   18: Sigma   =  1.00 *  3.1536 A
+         : Epsilon =   0.1550 kcal/mol
+Type   19: Sigma   =  1.00 *  2.0000 A
+         : Epsilon =   0.0000 kcal/mol
+Type   20: Sigma   =  1.00 *  4.9346 A
+         : Epsilon =   0.0003 kcal/mol
+Type   21: Sigma   =  1.00 *  4.6238 A
+         : Epsilon =   0.0900 kcal/mol
+Type   22: Sigma   =  1.00 *  6.7160 A
+         : Epsilon =   0.0001 kcal/mol
+Type   23: Sigma   =  1.00 *  5.4000 A
+         : Epsilon =   0.0700 kcal/mol
+ 
+Type   12: Radius  =  0.95 A
+Type   13: Radius  =  1.81 A
+Type   20: Radius  =  1.51 A
+Type   21: Radius  =  1.95 A
+Type   22: Radius  =  1.81 A
+Type   23: Radius  =  2.16 A
+ 
+ 
+ Initialized PRNG with Seed of        12345
+ 
+ WARNING: Within a SINGLE molecular reference frame, it is redundant to do C-ter
+ minal alignment -> turned off.
+ 
+ 
+ --- SUMMARY OF CALCULATION ---
+ 
+ **IMPORTANT FILES:
+ Parameter file used   :  /packages/absinth/params/fmsmc_exp3.prm
+ Sequence file used    :  GLY15.in
+ BB-segment file used  :  /packages/absinth/data/bbseg2.dat
+ Basename for output   :  TEST
+ 
+ **GENERAL PARAMETERS:
+ Number of steps     :          100
+ Equilibration steps :           10
+ A soft-wall residue-based boundary condition (SWBC) is used.
+ Force constant      :            1.0000
+ The simulation system is a sphere.
+ Sphere center (A)   :    0.0000   0.0000   0.0000
+ Sphere radius (A)   :  200.0000
+ Simulation uses pure Monte Carlo sampling (see TECHNICAL SETTINGS below).
+ Simulation is performed in the isochoric-isothermal ensemble (NVT).
+ Desired temperature :          298.0000
+ 
+ **ENERGY TERMS:
+ Scale for inverse power potential :      1.000
+ Exponent for IPP                  :     12.000
+ Scale factor for atomic radii     :      1.000
+ Sigma combination rule code       :          1
+ Epsilon combination rule code     :          2
+ Scale for struct. correction terms:      0.000
+ Scale for attractive Lennard-Jones:      0.000
+ Scale for implicit solvent poten. :      0.000
+ Scale for polar interaction term  :      0.000
+ Scale factor for 1-4 interactions :      1.000
+ Mode for 1-4 interactions         :          1
+ Scale for WCA potential           :      0.000
+ Scale for torsional terms (bias)  :      0.000
+ Scale for polymeric terms (bias)  :      0.000
+ Scale for global 2-structure term :      0.000
+ Scale for tabulated pot. term     :      0.000
+ Scale for distance restraint term :      0.000
+ Scale for LCT pot. term           :      0.000
+ 
+ **TECHNICAL SETTINGS:
+ Frequency of rigid-body moves :            0.000
+ Fraction of torsional moves
+ amongst total moves           :            1.000
+ Frequency of sidechain moves  :            0.000
+ Chain alignment mode          :            1
+ Fraction of concerted rotation
+ moves amongst backbone moves  :            0.000
+ Fraction of omega moves amongst
+ backbone pivot moves          :            0.100
+ Fraction of full randomization
+ attempts amongst omega moves  :            0.100
+ Step sz. for local omega moves:            5.000
+ Fraction of nucleic acid moves amongst 
+ remaining backbone moves      :            0.000
+ Fraction of regular (uncoupled) phi/psi-
+ moves amongst bb pivot moves  :            1.000
+ Fraction of full randomization
+ attempts amongst pivot moves  :            0.300
+ Step size for local pivot m.  :           10.000
+ 
+ **OUTPUT AND ANALYSIS PARAMETERS:
+ Restart file output interval       :        10000
+ Structures only written in pdb-format.
+ Structures output interval         :      9999999
+ Torsions output interval           :           10
+ Angular distribution calc. interval:           10
+ Resolution in deg.      :          6.0000
+ BB-segment distrib. calc. interval :           10
+ Center of alpha-basin    :    -60.000  -50.000
+ Radius of alpha-basin    :     35.000
+ Steepness of alpha-basin :      0.002
+ Center of beta-basin     :   -155.000  160.000
+ Radius of beta-basin     :     35.000
+ Steepness of beta-basin  :      0.002
+ Sys. polymer stat. output interval :           10
+ Polymer stat. calculation interval :           10
+ Bin-size for Rg-axis of histogram  :          0.5000
+ Hydrodynamic radius calc. interval :           10
+ Pair correlation calc. interval    :         1000
+ Bin-size in Angstrom    :          0.5000
+ Number of unique PCs    :            0
+ Energy output interval             :           10
+ Acceptance output interval         :           10
+ Contact analysis calc. interval    :      9999999
+ Dipole analysis calc. interval     :      9999999
+ LC of torsions calc. interval      :      9999999
+ Covariance analysis calc. interval :      9999999
+ Solvent-acc. volume calc. interval :      9999999
+ Scattering calculation interval    :           10
+ Hole analysis calculation interval :       100000
+ Diffraction calculation interval   :   2147483647
+ 
+ This is a single-CPU (non-MPI) calculation.
+ 
+ **CUTOFF SETTINGS:
+ Residue-based cutoff (IPP/LJ) :       10.000
+ 
+ 14-Interactions included in energy calculation.
+ 
+ 
+ Polymer chains (if any) are linear and non-cyclic.
+ 
+ System was initially IPP-randomized.
+ 
+ 
+ SUMMARY OF DEGREES OF FREEDOM IN SYSTEM:
+ Torsional degrees of freedom    :         46
+ Rigid-body degrees of freedom   :          6
+ SUMMARY OF ATOM-ATOM INTERACTIONS IN SYSTEM:
+ Intra-residue                   :        111
+ Neighboring residues            :        626
+ Remaining residue pairs         :       5671
+ Total number                    :       6408
+ Initial energy (accurate)       :    22456.39    
+ Initial energy (cutoffs)        :    22456.39    
+ Energy reset interval           :     100000
+ Steric pre-screen used (height) :    10000.00    
+ 
+ --- END OF SUMMARY ---
+ 
+ 
+ Residue-resolved acceptance counts (int. moves):
+ 
+              OMEGA      PIVOT
+ACE:   1          0          0
+GLY:   2          2          2
+GLY:   3          0          8
+GLY:   4          1          1
+GLY:   5          1          9
+GLY:   6          0          4
+GLY:   7          1          5
+GLY:   8          3          3
+GLY:   9          2          3
+GLY:  10          0          5
+GLY:  11          0          7
+GLY:  12          1          3
+GLY:  13          1          2
+GLY:  14          1          1
+GLY:  15          0          3
+GLY:  16          0          5
+NME:  17          0          0
+ 
+ 
+ Total CPU time elapsed [s]     :   0.170974000000000     
+ Fraction for energy functions  :    46.7843063857663      %
+ Fraction for analysis routines :    28.0703498777592      %
+ Fraction for initial setup     :    17.5441880051938      %
+ Fraction of remainder          :    7.60115573128079      %
+ 
+ Execution ended at 16:39 on 04/17/2008.

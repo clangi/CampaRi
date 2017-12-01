@@ -19,7 +19,8 @@
 #'            \item "\code{movav}" for moving average filter
 #'            \item "\code{SG}" for savitzkyGolay filter
 #'       }
-#' @param plot A logical value indicating whether to display the SAPPHIRE plot with the resulting partitions or not. Black partitions are the matched ones, blue ones derive only from the dynamic analysis and orange ones only from the kinetic analysis. Default value is \code{FALSE}.
+#' @param plot A logical value indicating whether to display the SAPPHIRE plot with the resulting partitions or not. Black partitions are the matched ones, blue ones derive only from the dynamic analysis and orange ones only from the kinetic analysis. The green curve is the kinetic annotation (black curve) where the parabolic shape has been subtracted, i.e. the actual curve used for the peaks identification. Default value is \code{FALSE}.
+#' @param new.dev A logical value indicating whether a new window/device has to plotted or not when \code{plot=TRUE}.
 #' @param out.file A logical value indicating whether to write an output file with the state sequence ordered with respect to the PI. Default value is \code{TRUE}.
 #' @param silent A logical value indicating whether the function has to remain silent or not. Default value is \code{FALSE}
 #' @param ...
@@ -59,7 +60,7 @@
 #' @importFrom data.table fread fwrite
 #' @export basins_recognition
 
-basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, match=FALSE, dyn.check=1, avg.opt=c("movav", "SG"), plot=FALSE, out.file=TRUE, silent=FALSE, ...) {
+basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, match=FALSE, dyn.check=1, avg.opt=c("movav", "SG"), plot=FALSE, new.dev=TRUE, out.file=TRUE, silent=FALSE, ...) {
     call <- match.call()
     
     if(!is.character(data) && !is.data.frame(data)) stop("data must be a string or a data frame")
@@ -70,6 +71,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
     if(!is.logical(match)) stop("match must be a logical value")
     if(!(dyn.check %in% c(1:10))) stop("dyn.check value not valid")
     if(!is.logical(plot)) stop("plot must be a logical value")
+    if(!is.logical(new.dev)) stop("new.dev must be a logical value")
     if(!is.logical(out.file)) stop("out.file must be a logical value")
     avg.opt.arg <- c("movav", "SG")
     if(!(avg.opt[1] %in% avg.opt.arg)) stop("Average option not valid")
@@ -482,12 +484,12 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
 
         if(any(breaks.tot==hist$x[nx])) breaks.tot <- breaks.tot[-which(breaks.tot==hist$x[nx])]
         if(any(breaks.tot==hist$x[1])) breaks.tot <- breaks.tot[-which(breaks.tot==hist$x[1])]
-        
+
 #################################################################################
         ## HISTOGRAM of each PARTITION 
 ################################################################################
-        if(is.null(breaks.tot)) {
-            brk.dyn <- NULL
+        if(.lt(breaks.tot)==2) {
+            brk.dyn <- breaks.tot
         } else {
             ## Breaks.Tot
             for(iii in seq(dyn.check)) {  
@@ -503,7 +505,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
                         ncls <- which(hist$x==breaks.tot[i])+1
                         ncle <- which(hist$x==breaks.tot[i+1])
                     }
-                    ## ColSums doesn't work if ncls==ncle 
+                    ## ColSums doesn't work if ncls==ncle
                     for (j in 1:ny) brkjy[j,i] <- sum(hist$counts[c(ncls:ncle),j])
                 }
                 dens <- apply(brkjy, 2, function(x) x/sum(x))
@@ -544,7 +546,8 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
                             unif1[j] <- ncounts[j]-sum(dum)
                             unif2[j] <- sum(dum)
                         }
-                        sampleHell[idx] <- myHell(unif1/sum(unif1), unif2/sum(unif2))
+                        if(sum(unif1)==0 || sum(unif2)==0) sampleHell[idx] <- 1
+                        else sampleHell[idx] <- myHell(unif1/sum(unif1), unif2/sum(unif2))
                     }
                     grubbsHell <- grubbs.test(c(sampleHell, distHell[i]), type=10)
                     if (distHell[i] < max(sampleHell) | grubbsHell$p.value>conf.lev) {
@@ -568,6 +571,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
                 ## if(iii==1) probdist.comparison(progind$Time, rawset, hist, joinx, breaks.tot, distHell, brk.dyn, new=TRUE)
                 ## else probdist.comparison(progind$Time, rawset, hist, joinx, breaks.tot, distHell, brk.dyn, new=FALSE)
                 breaks.tot <- brk.dyn
+                if(.lt(brk.dyn) == 2) break
             }
         }
         if(!silent) cat("End of the dynamic analysis\n")
@@ -730,8 +734,9 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
         if(out.file) {
             output.match <- data.frame(PI=progind$PI, Time=progind$Time, State=seq.st)
             if(is.character(data)) {
-                if(!silent) cat("Writing", gsub("PROGIDX", "BASINS", strsplit(data,"/",fixed=T)[[1]][.lt(strsplit(data,"/",fixed=T)[[1]])]), "...\n")
-                fwrite(output.match, file=gsub("PROGIDX", "BASINS", data), sep='\t', row.names=FALSE, col.names=FALSE)
+                fileout <- gsub("PROGIDX", "BASINS", strsplit(data,"/",fixed=T)[[1]][.lt(strsplit(data,"/",fixed=T)[[1]])])
+                if(!silent) cat("Writing", fileout, "...\n")
+                fwrite(output.match, file=fileout, sep='\t', row.names=FALSE, col.names=FALSE)
             } else {
                 if(!silent) cat(paste0("Writing BASINS_", as.character(progind$Time[1]), ".dat\n"))
                 fwrite(output.match, file=paste("./BASINS_", as.character(progind$Time[1]), ".dat", sep=""), sep='\t', row.names=FALSE, col.names=FALSE)
@@ -753,8 +758,9 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
         if(out.file) {
             output.match <- data.frame(PI=progind$PI, Time=progind$Time, State=seq.st)
             if(is.character(data)) {
-                if(!silent) cat("Writing", gsub("PROGIDX", "BASINS", strsplit(data,"/",fixed=T)[[1]][.lt(strsplit(data,"/",fixed=T)[[1]])]), "...\n")
-                fwrite(output.match, file=gsub("PROGIDX", "BASINS", data), sep='\t', row.names=FALSE, col.names=FALSE)
+                fileout <- gsub("PROGIDX", "BASINS", strsplit(data,"/",fixed=T)[[1]][.lt(strsplit(data,"/",fixed=T)[[1]])])
+                if(!silent) cat("Writing", fileout, "...\n")
+                fwrite(output.match, file=fileout, sep='\t', row.names=FALSE, col.names=FALSE)
             } else {
                 if(!silent) cat(paste0("Writing BASINS_", as.character(progind$Time[1]), ".dat\n"))
                 fwrite(output.match, file=paste("./BASINS_", as.character(progind$Time[1]), ".dat", sep=""), sep='\t', row.names=FALSE, col.names=FALSE)
@@ -780,7 +786,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
 ####################################################################
 
     if(plot == TRUE){
-        dev.new(width=15, height=10)
+        if(new.dev) dev.new(width=15, height=10)
         par(mgp=c(0, 0.4, 0))
         par(ps=6)
         par(mar = c(3.5, 0, 1, 3), oma = c(2, 4, 2, 2))
@@ -808,6 +814,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
         } else lst <- c(1:cstored)
         points(progind$PI[lst], max(progind$Time[lst])+progind$Time[lst]*(sc-1), cex=0.005, col="tomato1")
         lines(xr1, scale(kin.pl), lwd=1, col="black")
+        lines(xr1, scale(kin[xr1]), lwd=1, col="forestgreen")
         if(only.kin) abline(v=breaks, lwd=0.7, col="orange4")
         else if(!match) {
             ## Not-matched vdyn

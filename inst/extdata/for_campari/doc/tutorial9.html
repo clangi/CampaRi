@@ -1,0 +1,300 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> 
+<!--
+############################################################################
+# LICENSE INFO:                                                            #
+############################################################################
+#    This file is part of CAMPARI.                                         #
+#                                                                          #
+#    Version 3.0                                                           #
+#                                                                          #
+#    Copyright (C) 2017, The CAMPARI development team (current and former  #
+#                        contributors)                                     #
+#                        Andreas Vitalis, Adam Steffen, Rohit Pappu, Hoang #
+#                        Tran, Albert Mao, Xiaoling Wang, Jose Pulido,     #
+#                        Nicholas Lyle, Nicolas Bloechliger, Marco Bacci,  #
+#                        Davide Garolini, Jiri Vymetal                     #
+#                                                                          #
+#    Website: http://sourceforge.net/projects/campari/                     #
+#                                                                          #
+#    CAMPARI is free software: you can redistribute it and/or modify       #
+#    it under the terms of the GNU General Public License as published by  #
+#    the Free Software Foundation, either version 3 of the License, or     #
+#    (at your option) any later version.                                   #
+#                                                                          #
+#    CAMPARI is distributed in the hope that it will be useful,            #
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of        #
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         #
+#    GNU General Public License for more details.                          #
+#                                                                          #
+#    You should have received a copy of the GNU General Public License     #
+#    along with CAMPARI.  If not, see <http://www.gnu.org/licenses/>.      #
+############################################################################
+# AUTHORSHIP INFO:                                                         #
+############################################################################
+#                                                                          #
+# MAIN AUTHOR:   Nicholas Lyle                                             #
+# CONTRIBUTIONS: Adam Steffen, Andreas Vitalis                             #
+#                                                                          #
+############################################################################
+-->
+<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" xml:lang="en" lang="en-US">
+<head> 
+<!--
+    Designed by CAMPARI Development Group
+    Base template (without user's data) checked by http://validator.w3.org : "This page is valid XHTML 1.0 Transitional"
+    --> 
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></meta>
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge"></meta>
+  <title>CAMPARI Tutorial 9</title> 
+  <link rel="stylesheet" href="style_red.css" type="text/css" media="screen"></link>
+</head> 
+<body> 
+<div id="art-page-background-simple-gradient"></div> 
+<div id="art-main"><!-- Header --> 
+<div class="art-Sheet2"><!-- Banner Art --> 
+<div class="art-Header"> 
+<div class="art-Header-png"></div> 
+</div> 
+<!-- Top Navigation Bar --> 
+<div class="art-nav"> 
+<div class="l"></div> 
+<div class="r"></div> 
+<ul class="art-menu"> 
+  <li><a href="index.html"><span class="l"></span><span class="r"></span><span 
+ class="t">Home</span></a></li> 
+  <li><a href="documentation.html" class=" active"><span class="l"></span><span 
+ class="r"></span><span class="t">Documentation</span></a></li> 
+  <li><a href="references.html"><span class="l"></span><span class="r"></span><span 
+ class="t">References</span></a></li> 
+  <li><a href="contact.html"><span class="l"></span><span class="r"></span><span 
+ class="t">Support</span></a></li> 
+  <li><a href="download.html"><span class="l"></span><span class="r"></span><span 
+ class="t">Download</span></a></li> 
+</ul> 
+</div> 
+<!-- Top Sub Navigation Bar --> 
+<div class="nav-menu"> 
+<ul class="navlist"> 
+  <li><a href="documentation.html">Overview</a></li> 
+  <li><a href="install.html">Install</a></li> 
+  <li><a href="tutorials.html" class=" active">Tutorials</a></li> 
+  <li><a href="inputfiles.html">Inputfiles</a></li> 
+  <li><a href="keywords.html">Keywords</a></li> 
+  <li><a href="outputfiles.html">Outputfiles</a></li> 
+  <li><a href="parameters.html">Parameters</a></li> 
+  <li><a href="development.html">Development</a></li> 
+  <li><br/> 
+  </li> 
+</ul> 
+</div> 
+</div> 
+<!-- Main Page Contents --> 
+<div class="art-Sheet"> 
+<div class="art-Sheet-bl"></div> 
+<div class="art-Sheet-br"></div> 
+<div class="art-Sheet-bc"></div> 
+<div class="art-Sheet-cl"></div> 
+<div class="art-Sheet-cr"></div> 
+<div class="art-Sheet-cc"></div> 
+<div class="art-Sheet-body"> 
+<div class="art-contentLayout"><!-- Page Contents --> 
+<div class="art-content"> 
+<div class="art-Post"> 
+<div class="art-Post-body"> 
+<div class="art-PostContent">
+<br/> 
+<h2>Tutorial 9: Using Umbrella Sampling to Assess the Ability of Polyglutamine (Q<sub>30</sub>) to Access Conformations with High &beta;-Content</h2>
+
+<h3>Preface:</h3>
+<p>
+Polyglutamine (polyQ) expansions have been implicated in several neurodegenerative diseases. These expansions are long, continuous repeats of glutamine (Q) residues present in several different disease related proteins. In healthy individuals, several proteins have polyQ expansions, but the expansion is not long enough to cause disease. For example, the wild-type protein "huntingtin" implicated in Huntington's disease (HD) contains a small polyQ repeat which does not cause disease. If this expansion becomes longer than a threshold of around 35 glutamine residues, then Huntington's disease (HD) develops within the human life span. The longer the polyQ expansion, the earlier affected individuals develop symptoms and the more severe the disease.
+</p>
+<p>
+Individuals with polyQ expansion diseases contain polyQ-rich protein aggregates in the brain. These aggregates are thought to cause neuronal cell death. These Q-rich aggregates are rich in &beta;-sheet. However, simulation and experimental evidence suggests that individual polyQ peptides (monomers) are disordered, meaning that they do not adopt any repeating structure (implying that they do not contain any discernible amount of &beta;-sheet). In <a href="tutorial1.html">earlier tutorials</a>, you have simulated polyQ monomers. A good exploratory exercise would be to go back to these simulations and query the amount of &beta;-sheet you observed (aside from <a href="outputfiles.html#Trajectory_output">trajectory data</a>, potential output files helpful with this
+are <a href="outputfiles.html#DSSP.dat">DSSP.dat</a> or <a href="outputfiles.html#ZSEC_HIST.dat">ZSEC_HIST.dat</a>). It should be fairly low.
+</p>
+<p>
+If the &beta;-sheet content of polyQ monomers is low, then why are large polyQ-rich aggregates rich in &beta;-sheet? Simplistically, one can hypothesize that the high &beta;-sheet content arises from two limiting cases, <i>viz.</i>, <b>a)</b> monomers spontaneously forming &beta;-sheet rich structures, then aggregating, or <b>b)</b> polyQ forming disordered aggregates before the intermolecular interactions and flanking protein sequences cause a conversion to &beta;-sheet rich aggregates. The focus of this tutorial is to evaluate the free energy penalty for monomeric polyQ to form structures with high &beta;-content. Note that this does not allow us to pick which hypothesis is correct, but is the first step in collecting evidence to build a case for which appears more plausible.
+</p>
+<p>
+To understand the context of these two hypotheses and the bigger picture of this research we direct you to work from the <a href="references.html#ref2_19">Wetzel group</a> (evidence for hypothesis <b>a</b>) and to recent <a href="references.html#ref24_4">computational</a> and <a href="references.html#ref2_18">experimental</a> work that provides support for hypothesis <b>b</b>. There is additional evidence that <a href="references.html#ref24_6">flanking sequences</a> play an important role in altering the mechanism of polyQ aggregation. The main body of work from which this tutorial is derived is found in the following publication: <a href="references.html#ref24_5">Thermodynamics of &beta;-Sheet Formation in Polyglutamine</a>.  Given that the focus of this tutorial is to learn how to use umbreall sampling in CAMPARI with a nontrivial restraint potential, most of the interesting and salient points of the research on which this tutorial is based are either glossed over or not covered at all.
+</p> 
+
+<h3>Use of umbrella sampling and structural restraints:</h3>
+<big style="font-style: italic; text-decoration: underline;">Technical clarifications</big><br/>
+<p>
+Up to this point, we have been referring to &beta;-sheet content, which can be, for example, defined by the fraction of residues that make a specific pattern of intra-backbone hydrogen bonds. A precise definition is offered by <a href="references.html#ref20_1">Kabsch and Sander's DSSP algorithm</a> and corresponds to the fraction of residues assigned to the "E", or "extended" structural classifier. &beta;-Content, which is discussed below, is a superset (more generic) of &beta;-sheet content and is the fraction of residues whose backbone &phi;/&psi;-angles are contained in the &beta;-basin of the Ramachandran map. The exact definition is given in the documentation on <a href="keywords.html#SC_ZSEC">FMCSC_SC_ZSEC</a>.
+</p>
+<p>
+Existing experimental evidence suggests that polyQ forms disordered, collapsed structures with almost no secondary structure content. The goal of this tutorial is to ascertain the free energy penalty associated with a polyQ monomer adopting high &beta;-content conformations. Thus, we need to know the relative probabilities of sampling high &beta;-content conformations vis-à-vis those of visiting disordered conformations. These structural transitions are exceedingly rare and need to be well sampled to obtain accurate statistics. Using brute-force, equilibrium sampling approaches to study these rare events is highly inefficient and generally infeasible. To solve this problem, we use an artificial potential which biases sampling toward these rare conformational states, which enables us to obtain reliable statistics on these states and reconstruct the potential of mean force (PMF) along a reaction coordinate measuring &beta;-content.
+</p>
+<big style="font-style: italic; text-decoration: underline;">A harmonic restraint potential on global secondary structure content</big><br/>
+<br/>
+We use a harmonic structural restraint potential U<sub>f&beta;</sub> to bias sampling of conformations with high &beta; content. Our total potential U<sub>tot</sub> then becomes:
+<br/><br/>
+U<sub>tot</sub> =  U<sub>f&beta;</sub> + W<sub>abs</sub>
+<br/><br/>
+where W<sub>abs</sub> is the unbiased <a href="references.html#ref19_1">ABSINTH potential energy function</a>. The documentation for keyword <a href="keywords.html#SC_ZSEC">FMCSC_SC_ZSEC</a> provides the definition for U<sub>f&beta;</sub> (and the keyword itself is the "outside" scale factor for this term).
+<p>
+f&beta; (the global &beta;-content) is a progress variable or reaction coordinate that corresponds to the fraction of residues that sample backbone dihedral angles from the β-basin in φ,ψ-space. f&beta; ranges from 0 to 1. Proteins which are almost entirely &beta;-sheet have f&beta; values between 0.7 and 0.8 (the necessary presence of turns makes the values significantly smaller than 1.0). For a more detailed description of f&beta;, we refer you to the following work: <a href="references.html#ref24_5">Thermodynamics of &beta;-Sheet Formation in Polyglutamine</a>. There exists a more recent application using the f&beta; biasing potential to <a href="references.html#ref24_9">describe the monomeric Alzheimer's amyloid-β peptide</a>. U<sub>f&beta;</sub> is used to restrain a simulation to a particular target value of f&beta;, referred to as f&beta;<sup>0</sup>. Thus, given a large enough
+<a href="keywords.html#ZS_FR_KB">force constant</a>, the f&beta; distribution of a restrained simulation should be approximately peaked at its value of f&beta;<sup>0</sup>.
+</p>
+<p>
+To ensure adequate sampling in f&beta; space, we will run multiple simulations each at a different target f&beta;<sup>0</sup> value. The set of f&beta;<sup>0</sup> values we will use are: {0.0, 0.1, 0.25, 0.3, 0.4, 0.5, 0.6, 0.75, 0.8, 0.9, 1.0}. Replica exchange is used to further enhance sampling. If you have completed the <a href="tutorial3.html">tutorial on the FS-peptide</a>, you already have some experience with using replica exchange. However, with this exercise, we exchange coordinates across simulations with different f&beta;<sup>0</sup> values as opposed to different temperatures. For this tutorial, all of the data will be collected at a constant temperature of 298K.
+</p>
+<p>
+We will post-process the simulation results using the <a href="references.html#ref2_17">WHAM method</a> to obtain an unbiased probability distribution in f&beta; space. This allows us to compute the PMF as a function of f&beta; and answers the original question of what is the free energy penalty associated with accessing conformations with high &beta;-content (high values of f&beta;).
+</p>
+
+<h3>Step-by-Step:</h3>
+
+<big style="font-style: italic; text-decoration: underline;">Step 1 - Build the appropriate key-file</big><br/>
+<br/>
+Download the following key-file: <a href="../examples/tutorial9/fb.key">fb.key</a> and save it as fb.key in an empty folder for this tutorial. Open the key-file and let us look at the sections most relevant for this simulation:<br/>
+<br/>
+<tt>
+<a href="keywords.html#SHAPE"> FMCSC_SHAPE</a> 2<br/>
+<a href="keywords.html#SIZE">FMCSC_SIZE</a> 150<br/>
+<a href="keywords.html#BOUNDARY">FMCSC_BOUNDARY</a> 4<br/>
+</tt>
+<br/>
+We will use a spherical droplet (<a href="keywords.html#SHAPE">FMCSC_SHAPE</a> is 2) with a radius of 150&#8491; and the setting for <a href="keywords.html#BOUNDARY">FMCSC_BOUNDARY</a> of 4, which corresponds to the atom-based soft-wall boundary conditions (a good choice for most systems using continuum models).<br/>
+<br/>
+<tt>
+<a href="keywords.html#NRSTEPS">FMCSC_NRSTEPS</a> 40000000<br/>
+<a href="keywords.html#EQUIL">FMCSC_EQUIL</a> 10000000<br/>
+</tt>
+<br/>
+This simulation will be run a total of 4x10<sup>7</sup> Monte Carlo (MC) steps. The first 10<sup>7</sup> of these steps will be considered equilibration, and will not be included in analysis output files and other system averages. Because we are using a restraint potential, discarding initial data points is particularly important (the system needs time to "find" values close to the target).<br/>
+<br/>
+<tt>
+<a href="keywords.html#SC_ZSEC">FMCSC_SC_ZSEC</a> 1.0<br/>
+<a href="keywords.html#ZS_FR_KB">FMCSC_ZS_FR_KB</a> 150<br/>
+</tt>
+<br/>
+As mentioned, <a href="keywords.html#SC_ZSEC">FMCSC_SC_ZSEC</a> is the outside scaling factor for the U<sub>f&beta;</sub> harmonic restraint potential and a value of zero would disable it. <a href="keywords.html#ZS_FR_KB">FMCSC_ZS_FR_KB</a> is the k<sub>&beta;</sub> value (force constant = restraint strength) in the restraint potential. If we have restraints only on &beta;-content, the use of <a href="keywords.html#SC_ZSEC">FMCSC_SC_ZSEC</a> and <a href="keywords.html#ZS_FR_KB">FMCSC_ZS_FR_KB</a> for scaling the potential is partially redundant (but both need to be specified as nonzero values since the product is taken). This potential is applied over all residues of the system (here, Q<sub>30</sub>) simultaneously, meaning that the average restraint strength per residue is <a href="keywords.html#ZS_FR_KB">FMCSC_ZS_FR_KB</a>&#183;N<sup>-1</sup> where N is the number of residues. When comparing systems with different chain lengths, one should probably have an approximately constant value for <a href="keywords.html#ZS_FR_KB">FMCSC_ZS_FR_KB</a>&#183;N<sup>-1</sup>, thus <a href="keywords.html#ZS_FR_KB">FMCSC_ZS_FR_KB</a> should be adjusted accordingly.<br/>
+<br/>
+<tt>
+<a href="keywords.html#SEGCALC">FMCSC_SEGCALC</a> 50<br/>
+</tt>
+<br/>
+The f&beta; histogram is updated, <i>i.e.</i>, data are accumulated, every 100 MC steps. It is beneficial for this to happen at very
+high frequency since this calculation is not cost-intensive, and since we are interested in obtaining the best statistics possible. These distributions will serve as raw data in the WHAM post-processing step.<br/>
+<br/>
+<tt>
+<a href="keywords.html#MPIAVG">FMCSC_MPIAVG</a> 0<br/>
+<a href="keywords.html#REMC">FMCSC_REMC</a> 1<br/>
+<a href="keywords.html#REPLICAS">FMCSC_REPLICAS</a> 11<br/>
+<a href="keywords.html#REDIM">FMCSC_REDIM</a> 1<br/>
+<a href="keywords.html#RENBMODE">FMCSC_RENBMODE</a> 2<br/>
+<a href="keywords.html#RESWAPS">FMCSC_RESWAPS</a> 10<br/>
+<a href="keywords.html#REFREQ">FMCSC_REFREQ</a> 10000<br/>
+</tt>
+<br/>
+The <a href="keywords.html#REMC">FMCSC_REMC</a> keyword enables replica exchange. By setting <a href="keywords.html#RENBMODE">FMCSC_RENBMODE</a> to 2, only neighbor swaps are attempted. This is common protocol for replica exchange simulations. Allowing non-neighbor swaps may sometimes provide further sampling boosts but can also complicate subsequent analyses (the proper
+ensemble re-weighting techniques become mandatory, see documentation
+on <a href="keywords.html#FRAMESFILE">FMCSC_FRAMESFILE</a>). For the system here, non-neighbor swaps would likely have very low acceptance rates anyway, which is due to the restraint potentials being harmonic but with clear differences in minimum position.
+The frequency of exchanges (swap cycles) is controlled by the <a href="keywords.html#REFREQ">FMCSC_REFREQ</a> keyword. Lastly, <a href="keywords.html#RESWAPS">FMCSC_RESWAPS</a> refers to the number of swaps that will be attempted for each swap cycle and is chosen to be equal to the number of possible neighbors (<a href="keywords.html#REPLICAS">FMCSC_REPLICAS</a> - 1) here.<br/>
+<br/>
+<tt>
+<a href="keywords.html#REFILE">FMCSC_REFILE</a>  <a href="../examples/tutorial9/remc.in">remc.in</a><br/>
+</tt>
+<br/>
+This file defines the quantity that is to be swapped across replicas which is defined on the first line of this input file. Note that the first line is NOT the total number of replicas (set by <a href="keywords.html#REPLICAS">FMCSC_REPLICAS</a>). The remaining lines define the target f&beta;<sup>0</sup> values for each replica. This automatically sets the value normally set through keyword <a href="keywords.html#ZS_FR_B">FMCSC_ZS_FR_B</a> for each replica.
+Download <a href="../examples/tutorial9/remc.in">remc.in</a> and place it in the same directory as the key-file.<br/>
+<br/>
+<tt>
+<a href="keywords.html#SEQFILE">FMCSC_SEQFILE</a> <a href="../examples/tutorial9/q30.in">q30.in</a><br/>
+</tt>
+<br/>
+Download the sequence file, <a href="../examples/tutorial9/q30.in">q30.in</a>, and place it in the same directory as the key-file. This defines the system that CAMPARI will simulate, which here is a polypeptide with 30 glutamine residues. The ends are capped with acetyl (ACE) and N-methylamide (NME) groups, respectively, neither of which carries a net charge. The starting configuration is drawn randomly from an excluded volume-like ensemble trying to avoid steric overlaps. The completely random nature of the protocol used to generate these structures ensures that there is no conformational bias engendered by the starting configuration. The last thing to do is to adjust the explicit paths for <a href="keywords.html#PARAMETERS">PARAMETERS</a> and <a href="keywords.html#BBSEGFILE">FMCSC_BBSEGFILE</a> in the key-file.<br/>
+<br/>
+<big style="font-style: italic; text-decoration: underline;">Step 2 - Launch the simulation</big><br/>
+<br/>
+Use of replica exchange calculations requires a CAMPARI executable compiled with MPI. See the <a href="install.html">installation instructions</a> to set this up correctly. Here, we require 11 replicas. Let us assume we have compute nodes available with 2 8-core CPUs each.
+If each replica runs on an entire CPU, we would need 5.5 nodes. If nodes can only be used as a whole, it may be
+useful to reconsider the f&beta; schedule and add a replica. As an MC calculation, the scaling with the number of 
+threads will be limited here, and it may be useful to first test with serial runs the parallel efficiency.
+Note that keyword <a href="keywords.html#NRTHREADS">NRTHREADS</a> only works with non-MPI OpenMP code.
+For the hybrid executable, we need to use the environment variable defined by the OpenMP standard
+(this is explained in more detail in <a href="tutorial7.html">Tutorial 7</a>.
+A direct invocation of "mpirun" as part of a job submission script may look like this if we assume OpenMPI syntax:<br/>
+<br/>
+<tt>
+export CAMPDIR=&lt;full path to CAMPARI bin-directory&gt;<br/>
+export OMP_NUM_THREADS=8<br/>
+mpirun -np 11 -npernode 2 ${CAMPDIR}/campari_mpi_threads -k fb.key &gt;&amp; masterlog<br/>
+<br/>
+</tt>
+These are only the minimal settings that are required. The command should work if the job scheduler (like SGE) granted the job 5.5 nodes
+and handles the distribution of resources to individual MPI processes intelligently by default.
+This may not always work as desired, and thus the mapping may have to be done explicitly. An example with the srun command
+of the SLURM scheduler (which abstracts the mpirun command) is as follows:<br/>
+<br/>
+<tt>
+export CAMPDIR=&lt;full path to CAMPARI bin-directory&gt;<br/>
+export SLURM_CPU_BIND=verbose<br/>
+export OMP_NUM_THREADS=8<br/>
+srun --unbuffered --ntasks-per-node 2 --cpus-per-task 8 --ntasks-per-core 1 -n 11 --cpu_bind=sockets ${CAMPDIR}/campari_mpi_threads -k fb.key &gt;&amp; masterlog<br/>
+<br/>
+</tt>
+Please refer to the documentation of the scheduler and/or MPI library you use for the necessary information.
+More explanations on the above example are provided in <a href="tutorial7.html">Tutorial 7</a>.<br/>
+<br/>
+<big style="font-style: italic; text-decoration: underline;">Step 3 - Sanity checking the simulation (before you waste too much time)</big><br/>
+<br/>
+First of all, make sure that you have simulated what you expect. The f&beta;<sup>0</sup> value is assigned one-to-one to the node number: replica 1 (N_000_* output) corresponds to f&beta;<sup>0</sup>=0, while replica 11 (N_010_* output) corresponds to f&beta;<sup>0</sup>=1.0. A quick sanity check is to plot the restraint energy potential found in <a href="outputfiles.html#ENERGY.dat">instantaneous energy output files</a>.
+Its average should be higher for unlikely values (here, values of f&beta;<sup>0</sup> close to 1.0). Note that the simulations start from excluded volume-informed coil-like structures, which means that there is no major barrier toward reaching a plateau level for the (purely torsional) potential from the initial configurations. In fact, the slow process is to find states that simultaneously allow chain compaction (ABSINTH water is a poor solvent under the chosen conditions) and satisfy the restraints. Once the equilibration period has passed, it is also possible to look at the simulation trajectory, which will allow a visual confirmation that, for example, there is minimal &beta;-content for low values of f&beta;<sup>0</sup> and high &beta;-content (polypeptide backbone forms linear segments, or there are &beta;-sheets present) for large f&beta;<sup>0</sup>. Visualization is most conveniently done using the
+<a href="outputfiles.html#basename_VIS.vmd">CAMPARI-generated VMD scripts</a>. From the directory containing the simulation output, issue, for example, the following command, which of course assumes presence of <a href="references.html#ref23_9">VMD</a>:<br/>
+<br/>
+<tt>
+vmd -e N_010___VIS.vmd<br/>
+<br/>
+</tt>
+Note that there are in fact 3 underscores between "010" and "VIS". This is due to the selection of "_" as the simulation's <a href="keywords.html#BASENAME">basic name</a> in the <a href="../examples/tutorial9/fb.key">supplied key-file</a>. From within the VMD console, the command "align_it" is available, which will perform an RMSD alignment of the polypeptide across all frames to ease visualization. Note that if you do this when the simulation is still running, there may be several drawing artifacts (long, nonsensical bonds) that occur because the <a href="outputfiles.html#basename_START.pdb">pdb-file of the initial structure</a> is used as a template; this issue resolves itself once the final <a href="outputfiles.html#basename_END.pdb">pdb-file</a> can be used, <i>i.e.</i>, upon completion of the simulation. If you copy trajectory files, make sure to also copy the available initial and/or final pdb files as they are required by VMD as a template to interpret the binary trajectory data. It is also perfectly possible to analyze (from a separate directory) trajectories of running simulations using CAMPARI's <a href="keywords.html#PDBANALYZE">trajectory analysis mode</a>, for example to obtain current copies of output files like <a href="outputfiles.html#ZSEC_HIST.dat">ZSEC_HIST.dat</a>.
+In case any of these checks yielded something unexpected, there may be issues with your key-file. Open the N_0xx.log files to review what may have gone wrong.<br/>
+<br/>
+<big style="font-style: italic; text-decoration: underline;">Step 4 - Output and Analysis</big><br/>
+<br/>
+If you have not already done so, copy the <a href="../examples/tutorial9/tutorial9.R">supplied R-script</a> to the same directory as the <a href="outputfiles.html#ZSEC_HIST.dat">N_*_ZSEC_HIST.dat</a> output files. This is the only required information from the simulation. Umbrella sampling runs are typically analyzed using the weighted histogram analysis method (WHAM). WHAM iteratively determines the relative free energies of neighboring windows exploiting the fact that, with knowledge of the exact nature of the restraint potential, the overall unbiased probability must be computable from the relative free energies and vice versa. Discretization errors on the restraint potential are typically neglected. In comparison to other relative free energy estimates such as those covered in <a href="tutorial7.html">Tutorial 7</a>, WHAM has the advantage of only requiring reaction coordinate histograms. In case you made any modifications to the tutorial regarding the choice of window centers in <a href="../examples/tutorial9/tutorial9.R">remc.in</a>, regarding <a href="keywords.html#TEMP">simulation temperature</a>, regarding <a href="keywords.html#ZS_FR_KB">the force constant</a>, or regarding the <a href="keywords.html#SC_ZSEC">scale factor for ZSEC</a>, those will have to be adjusted in the R-script. To obtain the WHAM reconstruction the potential of mean force (PMF) from the raw (biased) histograms in f&beta;, start R in your working directory and do:<br/>
+<br/>
+<tt>
+source("tutorial9.R")<br/>
+</tt>
+<br/>
+From the script, you will (hopefully) obtain two plots. The first is a simple plot of the biased distributions underlying the analysis. 
+The second is a plot of the PMF as a function of f&beta; along with the free energies of the windows (relative to a common reference) as a function of
+f&beta;<sup>0</sup> (note that these two horizontal axes are not the same). This will allow you to assess the free energy difference between conformations with high and low values of &beta;-content. Be advised that the results you are analyzing come from only one independent replica exchange simulation and may not be sampled enough, <i>i.e.</i>, the noise level may be high. Better statistics could of course be obtained by running multiple independent replica exchange simulations and averaging the results. 
+You should find that the PMF along f&beta; as reaction coordinate indicates a <i>large</i> free energy barrier to accessing configurations with a high amount of &beta;-content. This suggests that for monomeric Q<sub>30</sub> (and probably for similar chain lengths as well), the adoption of structures high in &beta;-content is rare. This provides some limited evidence that the high &beta;-sheet content of polyQ-rich aggregates may be a consequence of intermolecular interactions and not from assembly of well-ordered monomers. For more details, see <a href="references.html#ref24_5">our publication from 2009 on this topic</a>. It is left as an exercise to use trajectory analysis mode (which can be run in parallel as well, see for example <a href="keywords.html#REMC">FMCSC_REMC</a>) to calculate a block averaging error estimate for the PMF. This entails analyzing trajectories in separate blocks, reading block-specific f&beta; histograms into R, and calculating (and plotting) a standard deviation across the selected number of blocks.<br/>
+
+</div> 
+</div> 
+</div> 
+</div> 
+
+</div> 
+</div> 
+</div> 
+<!-- End main page contents --><!-- Footer --> 
+<div class="art-Footer"> 
+<div class="art-Footer-background"> 
+<div class="art-Footer-inner"> <a href="#" class="art-rss-tag-icon"
+ title="RSS"></a> 
+<div class="art-Footer-text"> 
+<p><a href="#">Contact Us</a> | <a href="#">Terms of Use</a> | <a 
+ href="#">License Information</a><br/> 
+Copyright © 2010 . All Rights Reserved.</p> 
+</div> 
+</div> 
+</div> 
+</div> 
+<p class="art-page-footer">XHTML and CSS valid. Powered by <a 
+ href="http://www.flashmint.com/">FlashMint</a> - flash templates
+provider.</p> 
+<div style="text-align: center; font-size: 0.75em;">Design downloaded
+from <a href="http://www.freewebtemplates.com/">free website templates</a>.</div> 
+</div> 
+</body> 
+</html> 
+
+

@@ -1,0 +1,317 @@
+
+ --------------------------------------------------------------------------
+
+                   ---        Welcome to CAMPARI       ---
+
+                   ---       Released Version 2.0      ---
+
+     Copyright (C) 2014, CAMPARI Development Team
+
+     Websites: http://campari.sourceforge.net
+               http://sourceforge.net/projects/campari/
+               http://pappulab.wustl.edu/campari
+
+     CAMPARI is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
+
+     CAMPARI is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details. 
+
+     You should have received a copy of the GNU General Public License
+     along with CAMPARI. If not, see <http://www.gnu.org/licenses/>.
+
+
+ --------------------------------------------------------------------------
+
+
+ Execution started on host gade at 16:11 on 07/25/2017.
+
+
+ Initialized PRNG with Seed of    352871081
+
+
+ ---   Now parsing keywords ...            ---
+
+ Invalid spec. for FMCSC_CRADIUS. Defaulting to    2.0000000000000000      .
+
+ While parsing keywords,      0 comment lines and      0 unidentified lines were read.
+
+ ---   ... finished parsing keywords.      ---
+
+ No patches to biotype (re)assignments applied (no file specified or file corrupt/unreadable).
+ No patches to atomic mass applied (no file specified or file corrupt/unreadable).
+ No patches to steric and dispersion parameters applied (no file specified or file corrupt/unreadable).
+ No patches to atomic radius applied (no file specified or file corrupt/unreadable).
+ No patches to atomic volume reduction factor applied (no file specified or file corrupt/unreadable).
+ No patches to atomic maximum SAV fraction applied (no file specified or file corrupt/unreadable).
+ WARNING: Cannot open spec.d input file (/usr/local/campari/examples/test_angrps.in) for FMCSC_ANGRPFILE. Assuming default assignment (per molecule type; all single-residue molecules are solvent).
+ Warning. When running trajectory analysis mode on a pdb file (FMCSC_PDBFILE), FMCSC_PDB_READMODE must be 2 (adjusted automatically), and the entire system must be present (otherwise an error will be produced).
+ No patches to bonded parameters applied (no file specified or file corrupt/unreadable).
+
+--- Now entering initial structure generation/augmentation routine ---
+--- Now exiting initial structure generation/augmentation routine ---
+
+ No polypeptides found with suitable residues to perform secondary structure segment or global content analyses. Turning off analyses.
+ Warning. No polypeptide residues found. Turning DSSP analysis and/or restraint potential off.
+ Warning. Within an MC simulation using a single molecular reference frame, it is probably inefficient to do (partial or rigorous) C-terminal alignment. Consider using N-terminal alignment instead.
+ Warning. Cannot open assumed input file (/usr/local/campari/examples/yourcalc.pfs) for FMCSC_PSWFILE. Assuming default weights (see documentation).
+ WARNING: Cannot open spec.d input file (/usr/local/campari/examples/test.idx) for FMCSC_PCCODEFILE. Turning off general PC analysis.
+ WARNING: Cannot open spec.d input file (/usr/local/campari/examples/clustering.idx) for FMCSC_CFILE. Assuming full-size request (all-atom, all-torsion, etc. ...).
+ Due to missing input for FMCSC_CFILE for distance criteria 7-9, a set of           42  interatomic distances with randomly selected atoms will be used.
+
+ Summary of randomly chosen interatomic distances for structural clustering:
+ ---------------------------------------------------------------------------
+Atoms      1 ( CT ) in Res.      1 (NBU) and      3 ( CB ) in Res.      1 (NBU)
+Atoms      6 ( HT ) in Res.      1 (NBU) and     11 ( HB ) in Res.      1 (NBU)
+Atoms      8 ( HB ) in Res.      1 (NBU) and     14 ( HT ) in Res.      1 (NBU)
+Atoms      7 ( HT ) in Res.      1 (NBU) and      9 ( HB ) in Res.      1 (NBU)
+Atoms      2 ( CB ) in Res.      1 (NBU) and      5 ( HT ) in Res.      1 (NBU)
+Atoms      7 ( HT ) in Res.      1 (NBU) and     10 ( HB ) in Res.      1 (NBU)
+Atoms      7 ( HT ) in Res.      1 (NBU) and     14 ( HT ) in Res.      1 (NBU)
+Atoms      5 ( HT ) in Res.      1 (NBU) and      8 ( HB ) in Res.      1 (NBU)
+Atoms      7 ( HT ) in Res.      1 (NBU) and     12 ( HT ) in Res.      1 (NBU)
+Atoms      5 ( HT ) in Res.      1 (NBU) and     11 ( HB ) in Res.      1 (NBU)
+Atoms      3 ( CB ) in Res.      1 (NBU) and      8 ( HB ) in Res.      1 (NBU)
+Atoms     10 ( HB ) in Res.      1 (NBU) and     14 ( HT ) in Res.      1 (NBU)
+Atoms      6 ( HT ) in Res.      1 (NBU) and      8 ( HB ) in Res.      1 (NBU)
+Atoms      7 ( HT ) in Res.      1 (NBU) and     11 ( HB ) in Res.      1 (NBU)
+Atoms      2 ( CB ) in Res.      1 (NBU) and     10 ( HB ) in Res.      1 (NBU)
+Atoms      6 ( HT ) in Res.      1 (NBU) and     14 ( HT ) in Res.      1 (NBU)
+Atoms      3 ( CB ) in Res.      1 (NBU) and     12 ( HT ) in Res.      1 (NBU)
+Atoms     11 ( HB ) in Res.      1 (NBU) and     14 ( HT ) in Res.      1 (NBU)
+Atoms      3 ( CB ) in Res.      1 (NBU) and      5 ( HT ) in Res.      1 (NBU)
+Atoms     11 ( HB ) in Res.      1 (NBU) and     13 ( HT ) in Res.      1 (NBU)
+Atoms      2 ( CB ) in Res.      1 (NBU) and      7 ( HT ) in Res.      1 (NBU)
+Atoms      8 ( HB ) in Res.      1 (NBU) and      9 ( HB ) in Res.      1 (NBU)
+Atoms     12 ( HT ) in Res.      1 (NBU) and     13 ( HT ) in Res.      1 (NBU)
+Atoms      1 ( CT ) in Res.      1 (NBU) and      7 ( HT ) in Res.      1 (NBU)
+Atoms      3 ( CB ) in Res.      1 (NBU) and     11 ( HB ) in Res.      1 (NBU)
+Atoms      1 ( CT ) in Res.      1 (NBU) and     13 ( HT ) in Res.      1 (NBU)
+Atoms      1 ( CT ) in Res.      1 (NBU) and     14 ( HT ) in Res.      1 (NBU)
+Atoms      1 ( CT ) in Res.      1 (NBU) and      6 ( HT ) in Res.      1 (NBU)
+Atoms      9 ( HB ) in Res.      1 (NBU) and     10 ( HB ) in Res.      1 (NBU)
+Atoms      7 ( HT ) in Res.      1 (NBU) and      8 ( HB ) in Res.      1 (NBU)
+Atoms      5 ( HT ) in Res.      1 (NBU) and      9 ( HB ) in Res.      1 (NBU)
+Atoms      1 ( CT ) in Res.      1 (NBU) and      8 ( HB ) in Res.      1 (NBU)
+Atoms      6 ( HT ) in Res.      1 (NBU) and     10 ( HB ) in Res.      1 (NBU)
+Atoms      6 ( HT ) in Res.      1 (NBU) and     12 ( HT ) in Res.      1 (NBU)
+Atoms      9 ( HB ) in Res.      1 (NBU) and     12 ( HT ) in Res.      1 (NBU)
+Atoms      2 ( CB ) in Res.      1 (NBU) and     14 ( HT ) in Res.      1 (NBU)
+Atoms      1 ( CT ) in Res.      1 (NBU) and     12 ( HT ) in Res.      1 (NBU)
+Atoms      4 ( CT ) in Res.      1 (NBU) and      9 ( HB ) in Res.      1 (NBU)
+Atoms      2 ( CB ) in Res.      1 (NBU) and      4 ( CT ) in Res.      1 (NBU)
+Atoms     13 ( HT ) in Res.      1 (NBU) and     14 ( HT ) in Res.      1 (NBU)
+Atoms      2 ( CB ) in Res.      1 (NBU) and     12 ( HT ) in Res.      1 (NBU)
+Atoms      7 ( HT ) in Res.      1 (NBU) and     13 ( HT ) in Res.      1 (NBU)
+
+ WARNING: No molecule type with peptide-like torsional degrees of freedom. Turning off all dependent analysis.
+ Warning. No solute molecules present. Disabling all contact and solution structure cluster analyses (FMCSC_CONTACTCALC and FMCSC_CLUSTERCALC).
+ Warning. No eligible pairs for distance (pair correlation) analysis present. Disabling analaysis (FMCSC_PCCALC).
+
+ WARNING: Got empty string in strlims(...).
+ WARNING: Cannot open spec.d input file (/usr/local/campari/examples/yourcalc.tbr) for FMCSC_TRAJBREAKSFILE. All transitions will be kept (this may include replica-exchange swaps, transitions caused by trajectory concatenation, etc).
+ WARNING: Cannot open spec.d input file (/usr/local/campari/examples/yourcalc.alk) for FMCSC_TRAJLINKSFILE. No transitions will be added.
+ WARNING: Got empty string in strlims(...).
+
+ --- SUMMARY OF CALCULATION ---
+
+ **IMPORTANT FILES (IF EXISTENT):
+ Parameter file used   :  /software/campariv3/params/abs3.2_opls.prm
+ Sequence file used    :  nbu.in
+ Analy. grp. file used :  /usr/local/campari/examples/test_angrps.in
+ Basename for output   :  xtc_based_analysis
+ Output string for PDB :  a6,i5,1x,a4,a1,a3,1x,a1,i4,a1,3x,3f8.3
+
+ **GENERAL PARAMETERS:
+ This is an analysis run for an input trajectory.
+ Not all warnings and settings reported above and below may be relevant.
+ Base file           :  NBU.xtc
+ Precision multiplier:         1000.0
+ Assuming that molecules in input files are always intact.
+
+ Min. traj. length   :        10000
+ Equilibration steps :            0
+ 3D periodic boundary conditions (PBC) are used.
+ The simulation system is a rectangular cuboid box.
+ Box lengths (A)      :   40.0000  40.0000  40.0000
+ Box origin (A)       :  -20.0000 -20.0000 -20.0000
+ Analysis assumes isochoric conditions (NVT/E).
+
+ **ENERGY TERMS:
+ Scale for inverse power potential :      0.000
+ Scale for attractive Lennard-Jones:      0.000
+ Scale for WCA potential           :      0.000
+ Scale for struct. correction terms:      0.000
+ Scale for bond length potentials  :      0.000
+ Scale for bond angle potentials   :      0.000
+ Scale for improper dihedral terms :      0.000
+ Scale for torsional potentials    :      0.000
+ Scale for CMAP potentials         :      0.000
+ Scale for implicit solvent poten. :      0.000
+ Scale for polar interaction term  :      0.000
+ Scale for torsional terms (bias)  :      0.000
+ Scale for polymeric terms (bias)  :      0.000
+ Scale for global 2-structure term :      0.000
+ Scale for DSSP restraint term     :      0.000
+ Scale for tabulated pot. term     :      0.000
+ Scale for distance restraint term :      0.000
+ Scale for EM restraint term       :      0.000
+ Using unperturbed energy landscape (sculpting is off -> FMCSC_SCULPT).
+
+ **OUTPUT AND ANALYSIS PARAMETERS:
+ Restart file output interval       :        10001
+ Trajectory output interval         :        10000
+ Structures only written in pdb-format.
+ PDB file write-out format conv.    :            1
+ Molecules are always left intact when crossing periodic boundaries.
+ The image whose centroid is in the box will be written for every molecule.
+ Alignment interval                 :        10001
+ Energy output interval             :     20000000
+ Acceptance output interval         :        10001
+ Torsions output interval           :        10000
+ Sys. polymer stat. output interval :     20000000
+ Angular distribution calc. interval:        10001
+ Intern. coord. stat. calc. interval:     20000000
+ BB-segment distrib. calc. interval :        10001
+ DSSP calculation interval          :        10001
+ Polymer stat. calculation interval :     20000000
+ Hydrodynamic radius calc. interval :     20000000
+ Pair correlation calc. interval    :        10001
+ Contact analysis calc. interval    :        10001
+ Dipole analysis calc. interval     :   2147483647
+ Covariance analysis calc. interval :     20000000
+ Solvent-acc. volume calc. interval :     20000000
+ Scattering calculation interval    :        10000
+ Hole analysis calculation interval :   2147483647
+ Diffraction calculation interval   :   2147483647
+ Spatial density map calc. interval :   2147483647
+ Struct. clust. collection interval :            1
+ Distance criterion index  :            7
+ No signal preprocessing requested for structural clustering.
+ Using cut-based one-shot clustering algorithm with approximate progress sequence (does not require neighbor list).
+ Leader directional flag   :            1
+ Thres. radius (var. units):          2.0000
+ Coarsest radius crit.     :          1.0000
+ Input file (if existing)  : /usr/local/campari/examples/clustering.idx
+ Number of distances in set:           42
+ Ties in cluster size will not be reprocessed for sorting.
+ Ref. snapshot for profile :           29
+ Number of levels in tree  :           10
+ Multi-resolution depth    :            0
+ Maximum search attempts   :        10000
+ Auxiliary search depth    :           10
+ Batch size (random bran.) :            1
+ Max. local partition width:         1000
+ No. of MST edge folds     :            0
+ No computation of principal components requested.
+ Snapshots in memory are assumed to be connected in sequence by default.
+ No cluster-based links (edges) are added to network (graph).
+ Complete graph is analyzed independently of connectedness. This may cause errors.
+ No computation of cut-based pseudo free energy profiles performed.
+ Generation of random walks (synthetic trajectories) is not requested.
+
+ **PARALLELISM SETTINGS:
+ This is a single-CPU calculation (no parallelism of any kind).
+
+ **MONTE CARLO CUTOFF SETTINGS:
+ No cutoffs used.
+
+
+ Polymers are built with all hydrogen atoms (All-Atom Model).
+
+ 14-Interactions included in energy calculation.
+
+ Modified NB model used (all atoms separated by rigid or quasi-rigid bonds only are excluded from NB energy evaluations).
+ Fudge factors for 14-interactions are assigned whenever exactly three bonds (the middle one rotatable) separate two atoms.
+
+
+ Polymer chains (if any) are linear and non-cyclic.
+
+
+
+ SUMMARY OF ATOM-ATOM INTERACTIONS IN SYSTEM:
+ Intra-residue                   :         54
+ Neighboring residues            :          0
+ Remaining residue pairs         :          0
+ Total number                    :         54
+ Energy reset interval           :      10000
+
+ --- END OF SUMMARY ---
+
+--- Current step progression rate:   0.9968E+10 steps per day ---
+--- Expected time to completion  :   0 days :  0 hrs :  0 min ---
+Performance test on distance evaluations yielded a rate of    4.895     millions/sec.
+This suggests a low estimate for the post-processing time of    184.1     s (  0.5113E-01 h,   0.2130E-02 d)
+ WARNING: PDB-trajectory file already exists (xtc_based_analysis_traj.pdb). Appending to previous simulation?!
+ WARNING: VMD-visualization file already exists (xtc_based_analysis_VIS.vmd). Overwriting (might not work properly when simulation appended).
+
+ Now performing tree-based clustering ...
+                89991  after clustering1
+               179991  after clustering2
+               189990  after clustering3
+Level    # Clusters     Threshold     Total Snaps    Total Children
+       11         1     MAXIMAL              10000               1
+       10         1      4.000               10000               1
+        9         1      3.778               10000               1
+        8         1      3.556               10000               1
+        7         1      3.333               10000               1
+        6         1      3.111               10000               1
+        5         1      2.889               10000               1
+        4         1      2.667               10000               1
+        3         1      2.444               10000               1
+        2         1      2.222               10000               1
+        1         1      2.000               10000               0
+ ---------------------------------------------------------------------
+
+ ... done after a total of                189990  distance evaluations.
+
+------------- CLUSTER SUMMARY (THRESHOLD OF   2.0000    )
+  #       No.     "Center"  Diameter     Radius      
+      1   10000     4233  0.59595      0.42138    
+ ----------------------------------------------------
+
+Quality of clustering at threshold of   2.0000    :
+Tightness:  0.78931    
+Singles  :   1.0000    
+Entropy  :   0.0000    
+Total    :  0.59644    
+
+
+ Now constructing graph from clustering ...
+ Time elapsed for graph construction:   0.549E-02 [s]
+
+ Time elapsed for clustering and graph-based analyses:   0.11780939600000000       [s]
+
+ Now generating approximate MST based on tree-based clustering ...
+... time for Boruvka stage    1:    16.8    s ...
+... time for Boruvka stage    2:    19.2    s ...
+... time for Boruvka stage    3:    20.5    s ...
+... time for Boruvka stage    4:    22.0    s ...
+... time for Boruvka stage    5:    20.7    s ...
+... time for Boruvka stage    6:    19.4    s ...
+
+ Weight of Short Spanning Tree:    327.42     Angstrom
+
+ ... done after             600000000  additional distance evaluations.
+
+ Time elapsed for MST building:    118.70150254900000       [s]
+
+ Now deriving progress index and computing MFPT-related quantities ...
+ ... done.
+
+ Time elapsed for generating progress index data:    4.0038117999999998E-002  [s]
+
+
+  ------------------ Final Processing ------------------
+
+ Total CPU time elapsed [s]     :    119.18156592800000     
+ Fraction for energy functions  :    6.2685197512116382E-004 %
+ Fraction for analysis routines :    99.906751733680750      %
+ Fraction for initial setup     :    5.1605712276977557E-002 %
+ Fraction of remainder          :    4.1015702067163061E-002 %
+
+ Execution ended at 16:13 on 07/25/2017.

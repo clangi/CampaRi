@@ -152,6 +152,8 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
         simulation_mode <- TRUE
         warning('SIMULATION RUN: using PDBANALYZE == 0 no check on the FILES will be done.\n')
       }
+    }else{
+      simulation_mode <-  TRUE # TO CHECK
     }
     if(!simulation_mode && any(c('FMCSC_XTCFILE', 'FMCSC_DCDFILE', 'FMCSC_PDBFILE', 'FMCSC_NETCDFFILE', 'FMCSC_NCDM_ASFILE', 'FMCSC_NCDM_NCFILE') %in% args_names)){
       if(any(c('FMCSC_XTCFILE', 'FMCSC_DCDFILE', 'FMCSC_PDBFILE', 'FMCSC_NETCDFFILE') %in% args_names)){
@@ -358,6 +360,7 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
     }
   } else {
     camp_bin_path <- dirname(campari_exe)
+    camp_bin_alias <- basename(campari_exe)
   }
   # adding the paths to the std PATH variable
   Sys.setenv(PATH=paste(Sys.getenv("PATH"), camp_bin_path, camp_bin_alias, sep=":"))
@@ -497,12 +500,12 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
       stop('======== detected CAMPARI CRASHED in log. Please check it for details ========')
   }else if(run_in_background){
     if(!silent) cat('Direct console printing disabled (it will run in background). Please check', log_f, ' file for real time logging.\n')
-    if(!silent) suppressWarnings(system(paste0(campari_main_exe, " -k ", key_f, " > ", log_f, "&")))
+    suppressWarnings(system(paste0(campari_main_exe, " -k ", key_f, " > ", log_f, "&")))
     if(any(grepl(x = suppressWarnings(system(paste0("tail -n8 ", log_f), intern = TRUE)), pattern = "CAMPARI CRASHED")))
       stop('======== detected CAMPARI CRASHED in log. Please check it for details ========')
   }else{
     if(!silent) cat('Direct console printing disabled. Please check', log_f, ' file for real time logging (at the end it will be tailed).\n')
-    if(!silent) suppressWarnings(system(paste0(campari_main_exe, " -k ", key_f, " > ", log_f)))
+    suppressWarnings(system(paste0(campari_main_exe, " -k ", key_f, " > ", log_f)))
     if(!silent) cat('\n')
     if(!silent) suppressWarnings(system(paste0("tail -n7 ", log_f)))
     if(any(grepl(x = suppressWarnings(system(paste0("tail -n8 ", log_f), intern = TRUE)), pattern = "CAMPARI CRASHED")))

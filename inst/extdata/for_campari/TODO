@@ -1,0 +1,44 @@
+IMMEDIATE:
+
+remove yline2 fline2 constructs
+
+homogenize use of ISO_FORTRAN_ENV to solve typing issues
+
+extend OpenMP support for missing move types in MC
+
+
+
+MID- TO LONG-TERM:
+
+support more options for density restraints, including a user-defined property
+
+adjust movesets such that they explicitly respect chemical crosslinks (CRLK_MODE 2), find a SHAKE-like solution for TMD
+
+make the dipole calculation more meaningful: provide a dipole-dipole coupling map, upper left "as is", lower right
+multiplied by contact Heaviside filter. use automatically determined dipole groups.
+
+provide latest OPLS, GROMOS, AMBER-ILDN (and variants thereof) parameter sets
+
+streamline memory use: avoid allocating unneeded arrays wherever possible, interact with OS more
+
+extend support for more ensembles at least for certain cases: NPT should be fairly straightforward, but more thinking needed.
+
+extend dynamics implementation: Nose-Hoover thermostat, manostats (see above), more integrators (e.g., LD to BD).
+
+support stochastic minimizer (annealing) for MPIAVG (hybrid MPI/OpenMP)
+
+implement flux decomposition analysis based on committor probabilities
+
+generalize current Wang-Landau to full metadynamics/WL hybrid with hybrid MPI/OpenMP
+
+support a proper asynchronous NB force calculation employing dynamically sized teams for reciprocal and real space parts in PME (and possibly other elements)
+
+translate OpenMP to OpenACC where feasible to allow GPU support
+
+implement an automatic tool for reconstructing missing loops with EV bias (addition to randomizer)
+
+
+add both explicit and Marrink-style lipids both in terms of geometry (building) and in terms of parameters
+
+allow domain split into a hydrophobic and an aqueous phase (a la implicit membrane). use transfer free energies into cyclohexane (or construct from water-to-cyclohexane partitioning).
+

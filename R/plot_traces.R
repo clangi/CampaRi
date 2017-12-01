@@ -53,6 +53,15 @@ plot_traces <- function(voltage_traces_mat, return_plot = F, sub_sampling_factor
   if(!is.numeric(size_line) || length(size_line) != 1)
     stop('size_line must be a single numeric.')  
   # ---------------------
+  # checking the main input (the traces)
+  if(!is.matrix(voltage_traces_mat)){
+    if(!is.data.frame(voltage_traces_mat)) stop('voltage_traces_mat input must be a matrix or a data.frame')
+    voltage_traces_mat <- as.matrix(voltage_traces_mat)
+  }
+  if(!is.numeric(voltage_traces_mat)) stop('voltage_traces_mat must be numeric.')
+  n_traces <- nrow(voltage_traces_mat)
+  n_snaps <- ncol(voltage_traces_mat)
+  # ---------------------
   # checking single numbers 
   if(!is.null(sub_sampling_factor) && (!is.numeric(sub_sampling_factor) || length(sub_sampling_factor) != 1 || (n_snaps%%sub_sampling_factor != 0))){
     warning('Wrong sub_sampling_factor insertion. It should be a number divisible by the number of snapshots. Otherwise, it will be used anyway with a truncated ending.')
@@ -67,15 +76,6 @@ plot_traces <- function(voltage_traces_mat, return_plot = F, sub_sampling_factor
     do_subsan_ann <- FALSE
     sub_sampling_factor <- 1
   }
-  # ---------------------
-  # checking the main input (the traces)
-  if(!is.matrix(voltage_traces_mat)){
-    if(!is.data.frame(voltage_traces_mat)) stop('voltage_traces_mat input must be a matrix or a data.frame')
-    voltage_traces_mat <- as.matrix(voltage_traces_mat)
-  }
-  if(!is.numeric(voltage_traces_mat)) stop('voltage_traces_mat must be numeric.')
-  n_traces <- nrow(voltage_traces_mat)
-  n_snaps <- ncol(voltage_traces_mat)
   xx <- seq(from=1, by=1, to=n_snaps)[seq(1, n_snaps, sub_sampling_factor)]
   # ---------------------
   # nrows_to_plot 

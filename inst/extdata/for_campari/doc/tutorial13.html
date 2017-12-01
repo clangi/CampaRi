@@ -1,0 +1,782 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!--
+############################################################################
+# LICENSE INFO:                                                            #
+############################################################################
+#    This file is part of CAMPARI.                                         #
+#                                                                          #
+#    Version 3.0                                                           #
+#                                                                          #
+#    Copyright (C) 2017, The CAMPARI development team (current and former  #
+#                        contributors)                                     #
+#                        Andreas Vitalis, Adam Steffen, Rohit Pappu, Hoang #
+#                        Tran, Albert Mao, Xiaoling Wang, Jose Pulido,     #
+#                        Nicholas Lyle, Nicolas Bloechliger, Marco Bacci,  #
+#                        Davide Garolini, Jiri Vymetal                     #
+#                                                                          #
+#    Website: http://sourceforge.net/projects/campari/                     #
+#                                                                          #
+#    CAMPARI is free software: you can redistribute it and/or modify       #
+#    it under the terms of the GNU General Public License as published by  #
+#    the Free Software Foundation, either version 3 of the License, or     #
+#    (at your option) any later version.                                   #
+#                                                                          #
+#    CAMPARI is distributed in the hope that it will be useful,            #
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of        #
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         #
+#    GNU General Public License for more details.                          #
+#                                                                          #
+#    You should have received a copy of the GNU General Public License     #
+#    along with CAMPARI.  If not, see <http://www.gnu.org/licenses/>.      #
+############################################################################
+# AUTHORSHIP INFO:                                                         #
+############################################################################
+#                                                                          #
+# MAIN AUTHOR:   Andreas Vitalis                                           #
+#                                                                          #
+############################################################################
+-->
+<html xml:lang="en" dir="ltr" xmlns="http://www.w3.org/1999/xhtml" lang="en-US">
+<head>
+<!--
+    Designed by CAMPARI Development Group
+    Base template (without user's data) checked by http://validator.w3.org : "This page is valid XHTML 1.0 Transitional"
+    -->
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></meta>
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge"></meta>
+  <title>CAMPARI Tutorial 13</title>
+  <link rel="stylesheet" href="style_red.css" type="text/css" media="screen"></link>
+</head>
+<body>
+<div id="art-page-background-simple-gradient"></div>
+<div id="art-main"><!-- Header -->
+<div class="art-Sheet2"><!-- Banner Art -->
+<div class="art-Header">
+<div class="art-Header-png"></div>
+</div>
+<!-- Top Navigation Bar -->
+<div class="art-nav">
+<div class="l"></div>
+<div class="r"></div>
+<ul class="art-menu">
+  <li><a href="index.html"><span class="l"></span><span class="r"></span><span
+ class="t">Home</span></a></li>
+  <li><a href="documentation.html" class=" active"><span class="l"></span><span
+ class="r"></span><span class="t">Documentation</span></a></li>
+  <li><a href="references.html"><span class="l"></span><span class="r"></span><span
+ class="t">References</span></a></li>
+  <li><a href="contact.html"><span class="l"></span><span class="r"></span><span
+ class="t">Support</span></a></li>
+  <li><a href="download.html"><span class="l"></span><span class="r"></span><span
+ class="t">Download</span></a></li>
+</ul>
+</div>
+<!-- Top Sub Navigation Bar -->
+<div class="nav-menu">
+<ul class="navlist">
+  <li><a href="documentation.html">Overview</a></li>
+  <li><a href="install.html">Install</a></li>
+  <li><a href="tutorials.html" class=" active">Tutorials</a></li>
+  <li><a href="inputfiles.html">Inputfiles</a></li>
+  <li><a href="keywords.html">Keywords</a></li>
+  <li><a href="outputfiles.html">Outputfiles</a></li>
+  <li><a href="parameters.html">Parameters</a></li>
+  <li><a href="development.html">Development</a></li>
+  <li><br/>
+  </li>
+</ul>
+</div>
+</div>
+<!-- Main Page Contents -->
+<div class="art-Sheet">
+<div class="art-Sheet-bl"></div>
+<div class="art-Sheet-br"></div>
+<div class="art-Sheet-bc"></div>
+<div class="art-Sheet-cl"></div>
+<div class="art-Sheet-cr"></div>
+<div class="art-Sheet-cc"></div>
+<div class="art-Sheet-body">
+<div class="art-contentLayout"><!-- Page Contents -->
+<div class="art-content">
+<div class="art-Post">
+<div class="art-Post-body">
+<div class="art-PostContent">
+<br/>
+<h2>Tutorial 13: The Creation of Toy Models, Energy Landscape Sculpting, and Progress Index-Guided Sampling</h2>
+<h3>Preface:</h3>
+In this tutorial, we present a hands-on approach to the use of two advanced sampling techniques. The first is called
+energy landscape sculpting (ELS) within CAMPARI, and the second is "Progress Index-Guided Sampling"
+(or PIGS in short). For this, we construct a simple toy model, similar
+to the one used in the <a href="refereces.html#ref5_17">PIGS reference publication</a>, which has the additional
+benefit of demonstrating the use of some of CAMPARI's less obvious customization options, 
+predominantly <a href="keywords.html#FRZFILE">custom constraints</a> and
+<a href="keywords.html#SC_TABUL">tabulated potentials</a> (Step 1). We first demonstrate sampling limitations
+when using short trajectories obtained with conventional sampling that all start from the same well-defined
+reference state (Step 2).<br/>
+Energy landscape sculpting, which is a straightforward generalization of the 
+<a href="references.html#ref2_21">accelerated molecular dynamics method</a> of Hamelberg <i>et al.</i>,
+achieves a sampling benefit by modifying the potential energy landscape, <i>viz.</i>, by decreasing
+the absolute depths of minima and maxima of one or more individual terms. It is well-suited
+to scenarios where an individual energy term with well-defined bounds provides barriers that
+are hindering conformational transitions of interest, <i>e.g.</i>, <i>cis-trans</i> isomerization
+of proline residues by means of <a href="keywords.html#SC_BONDED_T">torsional potentials</a>. Conversely,
+the PIGS method is based on the idea that multiple identical copies of a system evolving in parallel can be 
+directed toward as diverse areas of accessible phase space as possible if data from all copies
+are analyzed jointly. The analysis method of choice is the progress index introduced in 
+ <a href="tutorial11.html">Tutorial 11</a>. This method has the ability to identify sampling basins
+of a system without overlap given a distance metric as input. Consequently, the most critical inputs
+for any PIGS simulation are keywords <a href="keywords.html#CDISTANCE">FMCSC_CDISTANCE</a> and
+<a href="keywords.html#CFILE">FMCSC_CFILE</a>. The PIGS algorithm is memoryless across multiple stretches,
+which means that it does not penalize recurrence to the same places in general. Instead it primarily avoids
+multiple copies of the system occupying a given region of phase space. The PIGS method uses no energetic bias
+(unlike <a href="keywords.html#SCULPT">energy landscape sculpting</a> or
+umbrella sampling on specific reaction coordinates, <i>e.g.</i>, those measuring
+<a href="keywords.html#SC_ZSEC">secondary structure content</a> as in <a href="tutorial9.html">Tutorial 9</a>). 
+In PIGS, unlike in the <a href="keywords.html#REMC">replica exchange</a> method, all copies propagate
+under identical conditions. This property means that PIGS simulations are particularly well-suited for
+the exploration of systems with many states separated by relatively small energetic barriers.<br/>
+To keep the tutorial fast and tractable, we use a one-dimensional toy model to demonstrate the virtues
+of these two methods.<br/>
+<br/>
+<br/>
+<h3>Step-by-Step:</h3>
+<h5>Step 1 - Definition of a one-dimensional toy model</h5>
+First create an empty directory that we will use as the lone working directory for this tutorial.
+In order to create a one-dimensional system, we could consider a single particle in an external field. The only
+external fields CAMPARI currently supports are the <a href="keywords.html#BOUNDARY">soft-wall boundary conditions</a>
+and the <a href="keywords.html#SC_EMICRO">spatial density restraints</a>. Only the latter are externally customizable but
+this is not very convenient as the entire technology rests on <a href="keywords.html#EMMAPFILE">3D spatial grids</a>.
+Instead we are resorting here to <a href="keywords.html#SC_TABUL">tabulated potentials</a> applied to interatomic distances.
+To emulate the one-dimensional case, we will use two particles with one completely frozen and the other restricted
+to move in a single dimension. With an arbitrary choice of monoatomic molecule, a sequence file is:<br/>
+<br/>
+<tt>
+NA+<br/>
+NA+<br/>
+END<br/>
+</tt>
+<br/>
+Write this file as "toy1D.in". Now let us create a basic key file named "tutorial13.key":<br/>
+<br/>
+<tt>
+<a href="keywords.html#PARAMETERS">PARAMETERS</a> &lt;full path to folder&gt;/campari/params/<a href="keywords.html#OPLSAAL">oplsaal.prm</a><br/>
+<a href="keywords.html#SEQFILE">FMCSC_SEQFILE</a> toy1D.in<br/>
+<a href="keywords.html#SC_IPP">FMCSC_SC_IPP</a> 0.0<br/>
+<a href="keywords.html#SIZE">FMCSC_SIZE</a> 60.<br/>
+<a href="keywords.html#ORIGIN">FMCSC_ORIGIN</a> 0. 0. 0.<br/>
+<a href="keywords.html#SHAPE">FMCSC_SHAPE</a> 2<br/>
+<a href="keywords.html#BOUNDARY">FMCSC_BOUNDARY</a> 4<br/>
+<a href="keywords.html#ENSOUT">FMCSC_ENSOUT</a> 100000000<br/>
+<a href="keywords.html#RSTOUT">FMCSC_RSTOUT</a> 100000000<br/>
+<a href="keywords.html#ENOUT">FMCSC_ENOUT</a> 100000000<br/>
+<a href="keywords.html#ACCOUT">FMCSC_ACCOUT</a> 100000000<br/>
+<a href="keywords.html#POLOUT">FMCSC_POLOUT</a> 100000000<br/>
+<a href="keywords.html#SAVCALC">FMCSC_SAVCALC</a> 100000000<br/>
+</tt>
+<br/>
+This creates a droplet system with radius 60&#8491; and turns off any nonbonded interactions. The last 6 lines
+are to suppress unwanted output below.
+In the first step, we obtain a PDB file we will edit by hand. Execute the serial version of CAMPARI as follows
+(here and below, as in all other tutorials, you may have to add paths for your executables):<br/>
+<br/>
+<tt>
+campari -k tutorial13.key &gt; t13_generate.log<br/>
+mv yourcalc_END.pdb toy1D.pdb<br/>
+</tt>
+<br/>
+Now edit the coordinate section of the two HETATM records in the PDB file "toy1D.pdb" such that the first atom
+is placed on the y-axis at a positive y-value of 3.0 and the second atom exactly at the origin.
+The resulting lines should look like this:<br/>
+<tt>
+HETATM    1  NA  NA+     1       0.000   3.000   0.000  1.00  0.00<br/>
+HETATM    2  NA  NA+     2       0.000   0.000   0.000  1.00  0.00<br/>
+</tt>
+<br/>
+Note that the PDB file format is completely fixed, <i>i.e.</i>, any column shift renders the file incorrect.
+We here select the y-dimension as the one to use. We thus need to constrain the motion of the first particle 
+in the other two dimensions and freeze the second particle entirely. This is possible by a specific
+input mode for custom constraints, which addresses constraints individually but does not work for Monte Carlo simulations (yet).
+The format, interpretations, and limitations are explained in detail <a href="inputfiles.html#FMCSC_FRZFILE">elsewhere</a>.
+To implement our example toy model, the file should look like this:<br/>
+<br/>
+<tt>
+A<br/>
+1 XZ<br/>
+2 XYZ<br/>
+</tt>
+<br/>
+Paste this into a file called "toy1D.frz". This concludes the definition of the system.<br/>
+
+<h5>Step 2 - Conventional sampling of the model</h5>
+We are now in the position to set up the sampler for our system.
+While it is perfectly possible to run PIGS in conjunction with a Monte Carlo engine, we cannot, as mentioned before,
+achieve the restriction to a single dimension with custom constraints. Note that for the tutorial to be interesting,
+we would also have to restrict the Monte Carlo move set to local steps, which should become clear below.
+We thus choose a <a href="inputfiles.html#DYNAMICS">stochastic dynamics</a> sampler, <i>i.e.</i>, a Langevin integrator.
+Add the following to the key-file:<br/>
+<br/>
+<tt>
+<a href="keywords.html#DYNAMICS">FMCSC_DYNAMICS</a> 3<br/>
+<a href="keywords.html#CARTINT">FMCSC_CARTINT</a> 2<br/>
+<a href="keywords.html#TIMESTEP">FMCSC_TIMESTEP</a> 0.015<br/>
+<a href="keywords.html#NRSTEPS">FMCSC_NRSTEPS</a> 10000<br/>
+<a href="keywords.html#FRICTION">FMCSC_FRICTION</a> 3.<br/>
+<a href="keywords.html#FRZFILE">FMCSC_FRZFILE</a> toy1D.frz<br/>
+<a href="keywords.html#FRZREPORT">FMCSC_FRZREPORT</a> 1<br/>
+<a href="keywords.html#PDBFILE">FMCSC_PDBFILE</a> toy1D.pdb<br/>
+</tt>
+<br/>
+This turns on stochastic dynamics in Cartesian space with an intermediate friction value of 3/ps at a time step of 15fs run for
+10000 steps (150ps).
+It also enables the desired constraints (including a report) and starts the simulation from a structure
+consistent with the dimensionality we want to achieve. Execute:<br/>
+<br/>
+<tt>
+campari -k tutorial13.key &gt; t13_test.log<br/>
+</tt>
+<br/>
+Reading through the errors printed in the beginning to "t13_test.log" (before the summary portion), you should only
+find warnings about unsupported analysis features, which are enabled by default (and which we could adjust explicitly
+to avoid these warnings). More importantly, a short report should tell you that the
+<a href="inputfiles.html#FRZFILE">constraint input file</a> has most likely been interpreted correctly.<br/>
+Our system has only a single degree of freedom, <i>viz.</i>, the y-position of the 2<sup>nd</sup> atom, and
+we would like to bias its distribution using a custom potential. We use <a href="keywords.html#SC_TABUL">tabulated potentials</a>
+based on interatomic distances for this. CAMPARI will interpolate the potential using cubic Hermite splines.
+The potential(s) must be read from file (see <a href="inputfiles.html#FMCSC_TABPOTFILE">here for details</a>) as does
+the file used to map potentials to specific interatomic distances (see <a href="inputfiles.html#FMCSC_TABCODEFILE">here for details</a>). The first derivatives can be read from file (see <a href="inputfiles.html#FMCSC_TABTANGFILE">here for details</a>)
+or inferred from the potential(s). In this tutorial, we use a potential with 8 states of almost equivalent likelihood,
+which is an extremely simple model of a system with a rugged free energy landscape without a main attractor basin.
+Copy the file <a href="../examples/tutorial13/tutorial13.tpot">tutorial13.tpot</a> into the current working directory and
+plot it to have a better picture of the implied landscape.
+Importantly, at the <a href="keywords.html#TEMP">default temperature</a>, the large barriers
+at 0.0 and 50.0&#8491; are practically impenetrable. This simplifies our analysis later because it will restrict
+the 1<sup>st</sup> particle to positive y-values (given the starting conformation we constructed). The 8 attractors
+are more or less evenly spaced (6.25&#8491;) and the 1<sup>st</sup> particle is initially found in the leftmost
+one.<br/>
+The input file for the potential has only a distance column (in &#8491;) and a single column with the potential
+(in kcal/mol). This means that we have to write the following <a href="inputfiles.html#FMCSC_TABCODEFILE">map file</a>
+to apply it to the interatomic distance:<br/>
+<br/>
+<tt>
+1 1<br/>
+1 2 1<br/>
+</tt>
+<br/>
+Paste this to a file called "toy1D.map". The first line chooses input mode 1 and tells CAMPARI to expect exactly 1 
+request. The second line gives the atom indices in question (1 and 2) and the potential to use (by index, 1). If you
+have not already done so, copy
+the file with the potential, <a href="../examples/tutorial13/tutorial13.tpot">tutorial13.tpot</a> to the current
+working directory and then append the key-file as follows:<br/>
+<br/>
+<tt>
+<a href="keywords.html#SC_TABUL">FMCSC_SC_TABUL</a> 1.0<br/>
+<a href="keywords.html#TABCODEFILE">FMCSC_TABCODEFILE</a> toy1D.map<br/>
+<a href="keywords.html#TABPOTFILE">FMCSC_TABPOTFILE</a> tutorial13.tpot<br/>
+<a href="keywords.html#TABREPORT">FMCSC_TABREPORT</a> 1<br/>
+<a href="keywords.html#PCCALC">FMCSC_PCCALC</a> 1<br/>
+<a href="keywords.html#INSTGPC">FMCSC_INSTGPC</a> 10<br/>
+<a href="keywords.html#PCCODEFILE">FMCSC_PCCODEFILE</a> toy1D.map<br/>
+<a href="keywords.html#EQUIL">FMCSC_EQUIL</a> 0<br/>
+</tt>
+<br/>
+We right away also begin to monitor our only degree of freedom (with no steps being discarded at the beginning).
+This could be done be either post-processing 
+<a href="outputfiles.html#Trajectory_output">trajectory output</a> or by monitoring the distance between the 
+2 atoms. We choose the latter here. CAMPARI has a versatile utility for <a href="keywords.html#PCCALC">distance analysis</a>
+that uses actually the same input functionality as the <a href="inputfiles.html#TABCODEFILE">map file</a> for the tabulated
+potentials (keyword <a href="keywords.html#PCCODEFILE">FMCSC_PCCODEFILE</a>). The above keywords request
+CAMPARI to collect values of the distance between the two particles every step (<a href="keywords.html#PCCALC">FMCSC_PCCALC</a>)
+and to report the instantaneous values every 10 steps in an output file called
+<a href="outputfiles.html#GENERAL_DIS.dat">GENERAL_DIS.dat</a> (the spacing of 10 steps is actually obtained
+as the value of <a href="keywords.html#PCCALC">FMCSC_PCCALC</a>&#183;<a href="keywords.html#INSTGPC">FMCSC_INSTGPC</a>).
+In order to get a histogram that we can compared directly with the exponential of the potential, we require
+a further modifications, <i>viz.</i>, we need to work around the fact the CAMPARI will normalize
+distance distributions by the 3D volume element (see <a href="outputfiles.html#RBC_PC.dat">details elsewhere</a>),
+which we need to multiply back in due to the actual dimensionality being 1.
+To achieve this workaround, we need the volume element that is printed to 
+<a href="outputfiles.html#RBC_PC.dat">output file RBC_PC.dat</a>, which in turn requires an additional input file:<br/>
+<br/>
+<tt>
+T<br/>
+1<br/>
+</tt>
+<br/>
+Paste this to a file called "toy1D.agp". It defines that our only molecule type should be of type "solute", which is
+required for some analyses (including the one producing <a href="outputfiles.html#RBC_PC.dat">RBC_PC.dat</a>)
+to become available. Of course, in the simple case here, the histograms from our custom distance analysis 
+and those in <a href="outputfiles.html#RBC_PC.dat">RBC_PC.dat</a> are the same because we use monoatomic particles.
+We can now append the key-file again:<br/>
+<br/>
+<tt>
+<a href="keywords.html#ANGRPFILE">FMCSC_ANGRPFILE</a> toy1D.agp<br/>
+<a href="keywords.html#CONTACTCALC">FMCSC_CONTACTCALC</a> 100000000<br/>
+</tt>
+<br/>
+This means that we will obtain the pair correlation function as the third column in output file
+<a href="outputfiles.html#RBC_PC.dat">RBC_PC.dat</a> (bin centers in the first column).
+To recover the raw histogram, we need to multiply the volume element (second column) back in,
+<i>e.g.</i>, using the tool "awk" (assuming you are on a Linux system).<br/>
+<br/>
+<tt>
+campari -k tutorial13.key &gt; t13_serial.log<br/>
+awk '{if ((NR &gt; 1) &amp;&amp; ($3 &gt; 0)) print $1,-310.*(8.3145/4184.)*(log($2*$3)-log(0.2))-2.723}' RBC_PC.dat &gt; toy1D.hist <br/>
+</tt>
+<br/>
+Note that the factor of 2.723 is precalculated from the absolute scale of the potential in
+ <a href="../examples/tutorial13/tutorial13.tpot">tutorial13.tpot</a> and the bin spacing. The factor of log(0.2) is due to
+the bin spacing of <a href="outputfiles.html#RBC_PC.dat">RBC_PC.dat</a>, which is controllable with keyword
+<a href="keywords.html#PCBINSIZE">FMCSC_PCBINSIZE</a>. A visual comparison of columns 2 in both "toy1D.hist" and
+<a href="../examples/tutorial13/tutorial13.tpot">tutorial13.tpot</a> should reveal a noisy inferred potential 
+that is quite unlikely to extend all the way to the largest distances (when the population histogram is zero,
+the potential diverges of course). This is a sampling problem, and initial state bias is retained. 
+It is left as an exercise to change the simulation to be longer and reanalyze the data to demonstrate eventual
+convergence to the expected solution. You should also plot the output in
+<a href="outputfiles.html#GENERAL_DIS.dat">GENERAL_DIS.dat</a> once, which highlights the stepwise dynamics
+of the particle in jumping between adjacent states.<br/>
+
+<h5>Step 3 - Improved sampling of the model</h5>
+If this were not a toy system, the approach to create a single simulation that is long with respect to 
+all relevant time scales is very likely unachievable. It is common instead to run multiple copies of the same system
+in parallel. It is also common that there is a reference state (<i>e.g.</i>, the crystal structure in simulations
+of folded proteins) that all these copies start from, which we mimic here with the leftmost basin.
+We resort to the <a href="keywords.html#MPIAVG">MPI averaging mode of CAMPARI</a> to test this, which requires
+MPI enabled code (executable campari_mpi, see <a href="install.html">installation instructions</a>).
+Add the following to the key-file (and make sure that <a href="keywords.html#NRSTEPS">FMCSC_NRSTEPS</a> is 10000):<br/>
+<br/>
+<tt>
+<a href="keywords.html#NRSTEPS">FMCSC_NRSTEPS</a> 10000<br/>
+<a href="keywords.html#MPIAVG">FMCSC_MPIAVG</a> 1<br/>
+<a href="keywords.html#REMC">FMCSC_REMC</a> 0<br/>
+</tt>
+<br/>
+Now run (note that you should be able to do this on a Linux desktop even if the system has fewer than 32 cores):<br/>
+<br/>
+<tt>
+mpirun -np 32 campari_mpi -k tutorial13.key &gt; t13_parallel.log<br/>
+awk '{if ((NR &gt; 1) &amp;&amp; ($3 &gt; 0)) print $1,-310.*(8.3145/4184.)*(log($2*$3)-log(0.2))-2.723}' RBC_PC.dat &gt; toy1D_MPIx32.hist <br/>
+</tt>
+<br/>
+After completion, first spend some time to inspect the output in N_000.log, especially the part on parallelism. 
+In <a href="keywords.html#MPIAVG">MPI averaging mode</a>, CAMPARI will automatically collect data from all replicas,
+the number of which is taken directly from the MPI environment ("-np 32") above. We thus have analyzed 32 times as much
+data as before. Comparing to the result from the serial run, the new data should show a smoother curve that, however,
+does not necessarily manage to extend the range further. This is clear if one considers that the answer is equivalent to an average
+across 32 separate executions of the serial case. This is an important result or caveat that often gets lost in simulations
+of more complex systems, <i>i.e.</i>, naive parallelism can increase the number of states discovered (phase space coverage)
+only in those regions that are kinetically accessible from the starting state. It is left as another exercise to verify that
+an average across a large number of runs (whichever way produced) will eventually converge to a well-defined answer that
+yields a robust illustration of the remaining initial state bias given the choice for
+<a href="keywords.html#NRSTEPS">FMCSC_NRSTEPS</a>. It <i>is</i> true that increasing the number of replicas (linearly) increases
+the chance of unlikely events occurring. This is a strategy of limited scope, however, as the "unlikely chance" can
+be arbitrarily small depending on system and settings. This is particularly troubling if (unlike here) the set of states
+with significant equilibrium populations is not known <i>a priori</i>.<br/>
+There are many successful strategies to overcome sampling difficulties, and CAMPARI supports several of them. Here, it
+would be possible to use pretty much any of them, <i>e.g.</i>, umbrella sampling via <a href="keywords.html#SC_DREST">FMCSC_SC_DREST</a>
+or <a href="keywords.html#REMC">replica exchange</a> (see also <a href="tutorial3.html">Tutorial 3</a> and
+<a href="tutorial9.html">Tutorial 9</a>). In this tutorial, we will employ two different strategies, one representative
+each of two broad classes of simulations. The first class are simulations that extract their sampling benefit from the 
+adaptability/selection of the starting conformation such as PIGS (see above and below).
+The second class are simulations modifying the potential energy landscape,
+and the method termed originally <a href="references.html#ref2_21">"accelerated molecular dynamics"</a> belongs to it.
+In CAMPARI, this is implemented in a generalized form. The basic idea is that by knowledge of the potential
+energy (or individual terms contributing to it), one can at all times define an analytical transformation that
+reduces the depths of minima (attractors) and maxima (barriers). A more detailed overview of the theory is provided
+<a href="keywords.html#SCULPT">elsewhere</a>. Add the following to the key-file:<br/>
+<br/>
+<tt>
+<a href="keywords.html#SCULPT">FMCSC_SCULPT</a> 15<br/>
+<a href="keywords.html#ELS_FILLS">FMCSC_ELS_FILLS</a> 0.9<br/>
+<a href="keywords.html#ELS_ALPHA_F">FMCSC_ELS_ALPHA_F</a> 0.5<br/>
+<a href="keywords.html#ELS_PRINT_WEIGHTS">FMCSC_ELS_PRINT_WEIGHTS</a> 5<br/>
+</tt>
+<br/>
+These keywords enable the method for a specific energy term, <i>i.e.</i>, joint nonbonded energies.
+The code for this is 15. We request this term (which here is practically equivalent to the total energy,
+which means we could also use code 1) to be sculpted such that any values below 0.9kcal/mol are raised
+by a &Delta; that is a buffered difference between the actual and the threshold values (buffer parameter of 0.5kcal/mol). 
+Clearly, prior knowledge of the range of energies is required. The last keyword
+instructs to CAMPARI to write a file with sampling weights for every 5<sup>th</sup> snapshot.
+These weights are theoretically (and here also practically) able to restore Boltzmann
+sampling with respect to the original (unsculpted) energy function from the biased distribution generated by the method.
+To simplify analysis, also add the following:<br/>
+<br/>
+<tt>
+<a href="keywords.html#XYZPDB">FMCSC_XYZPDB</a> 2<br/>
+<a href="keywords.html#XYZOUT">FMCSC_XYZOUT</a> 5<br/>
+<a href="keywords.html#MPIAVG_XYZ">FMCSC_MPIAVG_XYZ</a> 1 # for clarity (default)<br/>
+</tt>
+<br/>
+Now run as before:<br/>
+<br/>
+<tt>
+rm N_*.*; mpirun -np 32 campari_mpi -k tutorial13.key &gt; t13_ELS_sim.log<br/>
+awk '{if ((NR &gt; 1) &amp;&amp; ($3 &gt; 0)) print $1,-310.*(8.3145/4184.)*(log($2*$3)-log(0.2))-2.723}' RBC_PC.dat &gt; toy1D_ELSx32_biased.hist <br/>
+</tt>
+<br/>
+Plotting the results thus far in the same graph should clearly highlight the flattened landscape 
+created by the ELS method. The absence of significant barriers implies that it is now much more 
+likely that one or more of these short runs reach the tall barrier at the "right", which is unaffected
+by our chosen sculpting. It is illustrative in this regard to plot the output in one or more
+of the files named <a href="outputfiles.html#GENERAL_DIS.dat">N_???_GENERAL_DIS.dat</a>.
+It is precisely this behavior that gave rise to the moniker "accelerated" in the 
+method's title. While the raw distribution is obviously wrong, the weights in
+output files <a href="outputfiles.html#ELS_WFRAMES.dat">"N_000_ELS_WFRAMES.dat" and so on</a> are suitable
+for correcting it. This reanalysis can not currently be done in parallel, so we concatenate the
+output from the previous run:<br/>
+<br/>
+<tt>
+cat N_???_*traj.pdb &gt; toy1D_ELS.pdb<br/>
+cat N_???_ELS_WFRAMES.dat | awk '{print NR,$2;}' &gt; toy1D_ELS.fwts<br/>
+</tt>
+<br/>
+For analysis, we need a simple key-file as follows:<br/>
+<br/>
+<tt>
+<a href="keywords.html#PARAMETERS">PARAMETERS</a> &lt;full path to folder&gt;/campari/params/<a href="keywords.html#OPLSAAL">oplsaal.prm</a><br/>
+<a href="keywords.html#SEQFILE">FMCSC_SEQFILE</a> toy1D.in<br/>
+<a href="keywords.html#SC_IPP">FMCSC_SC_IPP</a> 0.0<br/>
+<a href="keywords.html#SIZE">FMCSC_SIZE</a> 60.<br/>
+<a href="keywords.html#ORIGIN">FMCSC_ORIGIN</a> 0. 0. 0.<br/>
+<a href="keywords.html#SHAPE">FMCSC_SHAPE</a> 2<br/>
+<a href="keywords.html#BOUNDARY">FMCSC_BOUNDARY</a> 4<br/>
+<a href="keywords.html#PDBANALYZE">FMCSC_PDBANALYZE</a> 1<br/>
+<a href="keywords.html#PDBFILE">FMCSC_PDBFILE</a> toy1D_ELS.pdb<br/>
+<a href="keywords.html#FRAMESFILE">FMCSC_FRAMESFILE</a> toy1D_ELS.fwts<br/>
+
+<a href="keywords.html#NRSTEPS">FMCSC_NRSTEPS</a> 64000 # needs to be adjusted if the number of replicas differed<br/>
+<a href="keywords.html#PCCALC">FMCSC_PCCALC</a> 1<br/>
+<a href="keywords.html#PCCODEFILE">FMCSC_PCCODEFILE</a> toy1D.map<br/>
+<a href="keywords.html#EQUIL">FMCSC_EQUIL</a> 0<br/>
+<a href="keywords.html#ENSOUT">FMCSC_ENSOUT</a> 100000000<br/>
+<a href="keywords.html#RSTOUT">FMCSC_RSTOUT</a> 100000000<br/>
+<a href="keywords.html#ENOUT">FMCSC_ENOUT</a> 100000000<br/>
+<a href="keywords.html#ACCOUT">FMCSC_ACCOUT</a> 100000000<br/>
+<a href="keywords.html#POLOUT">FMCSC_POLOUT</a> 100000000<br/>
+<a href="keywords.html#SAVCALC">FMCSC_SAVCALC</a> 100000000<br/>
+<a href="keywords.html#ANGRPFILE">FMCSC_ANGRPFILE</a> toy1D.agp<br/>
+<a href="keywords.html#CONTACTCALC">FMCSC_CONTACTCALC</a> 100000000<br/>
+</tt>
+<br/>
+The key element here is supplying a <a href="keywords.html#FRAMESFILE">file selecting frames for analysis and associating them
+with floating point weights</a> for CAMPARI's built-in analysis routines. Note that the file here 
+contains all frames in the concatenated pdb trajectory so that the frame selection aspect is
+not used. Paste the above into a file called "tutorial13_analysis.key", make the necessary adjustments, and run:<br/>
+<br/>
+<tt>
+campari -k tutorial13_analysis.key &gt; t13_ELS_analysis.log<br/>
+awk '{if ((NR &gt; 1) &amp;&amp; ($3 &gt; 0)) print $1,-310.*(8.3145/4184.)*(log($2*$3)-log(0.2))-2.723}' RBC_PC.dat &gt; toy1D_ELSx32_reweighted.hist<br/>
+</tt>
+<br/>
+If you now plot the reweighted data as well, it should be obvious that the sculpting method
+has indeed provided a sampling benefit compared to the naive parallel run with the same
+resource investment, <i>i.e.</i>, the solution is quite close to the correct one,
+the "right end" is almost certainly reached, and the flatness is gone. Some initial state bias 
+is retained (tilt toward the left). One attractive feature of the sculpting method is that
+it is relatively cheap and can be implemented at a high level. Unfortunately, in high-dimensional
+energy landscapes, it is often impossible to sculpt complete energy terms without creating 
+extremely heterogeneous sampling weights. These imply that the statistical "size" of the 
+reweighted solution will be, unlike in the present example, often negligible.<br/>
+
+<h5>Step 4 - Application of PIGS to the model</h5>
+In the last stage of this tutorial, we will apply the PIGS advanced sampling method
+to our 1D toy model. As mentioned above, PIGS is part of a class of advanced sampling methods
+that create the sampling benefit purely by how initial conditions for (generally short) 
+trajectories are selected. The absence of modifications to the energy landscape means
+that the only bias present in the final data is initial state bias.
+In PIGS, a set of copies evolving in parallel is periodically analyzed by the progress
+index algorithm (see <a href="keywords.html#CMODE">FMCSC_CMODE, option 4</a> and 
+<a href="tutorial11.html">Tutorial 11</a>) for details.
+This analysis yields a decision to terminate one ore more copies in favor of more interesting ones
+with the overall goal of eliminating sampling redundancy.<br/>Setting up a PIGS simulation
+requires, as the major parameter, a choice of representation, which is trivial here as there is
+only one degree of freedom. Much of the setup is shared with that of structural
+clustering. First, modify the key-file to disable energy landscape sculpting:<br/>
+<br/>
+<tt>
+<a href="keywords.html#SCULPT"># FMCSC_SCULPT</a> 15 # when this keyword is not present, the method is disabled<br/>
+</tt>
+<br/>
+Next, append the key-file as follows:<br/>
+<br/>
+<tt>
+<a href="keywords.html#CDISTANCE">FMCSC_CDISTANCE</a> 7 # interatomic distance(s)<br/>
+<a href="keywords.html#CRADIUS">FMCSC_CRADIUS</a> 0.15<br/>
+<a href="keywords.html#CMAXRAD">FMCSC_CMAXRAD</a> 20.0<br/>
+<a href="keywords.html#CPROGINDRMAX">FMCSC_CPROGINDRMAX</a> 50<br/>
+<a href="keywords.html#CPROGRDEPTH">FMCSC_CPROGRDEPTH</a> 3<br/>
+<a href="keywords.html#MPI_PIGS">FMCSC_MPI_PIGS</a> 1 # enables the method<br/>
+<a href="keywords.html#REFREQ">FMCSC_REFREQ</a> 500<br/>
+<a href="keywords.html#CCOLLECT">FMCSC_CCOLLECT</a> 10<br/>
+<a href="keywords.html#MPI_GOODPIGS">FMCSC_MPI_GOODPIGS</a> 16 # needs to be adjusted if replica number differs<br/>
+</tt>
+<br/>
+The first keyword defines the measure of conformational distance (normally, for a meaningful selection,
+an extra <a href="keywords.html#CFILE">input file</a> would be required). The next 2 + 2 keywords
+set parameters for the purely auxiliary clustering (not discussed further) and control the 
+random search methodology for the approximate progress index, respectively.
+Finally, the last 4 keywords enable and control the actual PIGS method, which requires
+a choice of interval for attempting reseedings (<a href="keywords.html#REFREQ">FMCSC_REFREQ</a>),
+a choice of number of copies to declare as "good" or protected in each reseeding attempt 
+(<a href="keywords.html#MPI_GOODPIGS">FMCSC_MPI_GODDPIGS</a>), which is often taken
+as half of the total number of copies, and a choice for how frequently to collect data from
+each copy (<a href="keywords.html#CCOLLECT">FMCSC_CCOLLECT</a>).
+With these modifications, run:<br/>
+<br/>
+<tt>
+rm N_*.*; mpirun -np 32 campari_mpi -k tutorial13.key &gt; t13_PIGS_sim.log<br/>
+awk '{if ((NR &gt; 1) &amp;&amp; ($3 &gt; 0)) print $1,-310.*(8.3145/4184.)*(log($2*$3)-log(0.2))-2.723}' RBC_PC.dat &gt; toy1D_PIGSx32_biased.hist <br/>
+cat N_???_*traj.pdb &gt; toy1D_PIGS.pdb<br/>
+mv N_000_PIGSTRACE.dat toy1D_PIGS.trace<br/>
+</tt>
+<br/>
+By comparing the PIGS-generated distribution to the reference solution in
+<a href="../examples/tutorial13/tutorial13.tpot">tutorial13.tpot</a>, it should become
+clear that PIGS by itself approximates the correct distribution quite well. Repeated executions
+of the above commands should also demonstrate that it is very reliable in finding the rightmost states.
+In comparison to energy landscape sculpting, it emerges that PIGS creates no discernible
+overpopulation of barrier regions, which is despite the fact that there are only 8 well-defined
+states but 32 copies (meaning some overlap in the sampling domains of individual copies is
+inevitable). Because PIGS strives to minimize sampling redundancy, the system with 8 states
+of equivalent weights is of course a favorable scenario in terms of bias. In general, the initial
+state bias incurred by PIGS will be more significant. The PIGS results depend on the chosen
+parameters of course. While the metric of distance is fixed here, you should try to change the 
+settings for <a href="keywords.html#REFREQ">the reseeding interval</a>, the 
+<a href="keywords.html#MPI_GOODPIGS">number of protected replicas</a>, and 
+<a href="keywords.html#CCOLLECT">the data collection frequency</a>. For example, a PIGS run can 
+approximate or emulate the naive parallelism from above by appropriate changes in
+all 3 parameters.<br/>
+As we saw above and expected by definition, initial state bias cannot be removed by energetic (Boltzmann) reweighting.
+These types of biases are notoriously difficult to address, and one of the few potentially 
+general strategies rests in Markov state (network) models. Without going into any details
+(see <a href="references.html#ref23_19">literature examples for details</a>), we will apply this
+framework to the PIGS data set generated above. To create the model, calculate its equilibrium
+population (steady states), and print out snapshot weights, add the following to the 
+file "tutorial13_analysis.key":<br/>
+<br/>
+<tt>
+<a href="keywords.html#CMODE">FMCSC_CMODE</a> 5 # use tree-based clustering algorithm<br/>
+<a href="keywords.html#CCOLLECT">FMCSC_CCOLLECT</a> 1 # collect data from every snapshot<br/>
+<a href="keywords.html#CDISTANCE">FMCSC_CDISTANCE</a> 7 # interatomic distance(s)<br/>
+<a href="keywords.html#CRADIUS">FMCSC_CRADIUS</a> 2.5<br/>
+<a href="keywords.html#CMAXRAD">FMCSC_CMAXRAD</a> 20.0<br/>
+<a href="keywords.html#TRACEFILE">FMCSC_TRACEFILE</a> toy1D_PIGS.trace # the PIGS trace (read back in to supply correct connectivity for network)<br/>
+<a href="keywords.html#REPLICAS">FMCSC_REPLICAS</a> 32 # number of replicas used in production<br/>
+<a href="keywords.html#RE_TRAJTOTAL">FMCSC_RE_TRAJTOTAL</a> 2000 # the total number snapshots per copy (for trace reading)<br/>
+<a href="keywords.html#RE_TRAJSKIP">FMCSC_RE_TRAJSKIP</a> 0 # number of snapshots skipped initially per copy (for trace reading)<br/>
+<a href="keywords.html#RE_TRAJOUT">FMCSC_RE_TRAJOUT</a> 5 # output interval for snapshots in steps (for trace reading)<br/>
+<a href="keywords.html#CLAGT_MSM">FMCSC_CLAGT_MSM</a> 10 # Markov model lag time in trajectory steps<br/>
+<a href="keywords.html#CREWEIGHT">FMCSC_CREWEIGHT</a> 1 # compute equilibrium distribution (steady state) using iterative algorithm<br/>
+</tt>
+<br/>
+In addition, edit two lines to the following:<br/>
+<br/>
+<tt>
+<a href="keywords.html#PDBFILE">FMCSC_PDBFILE</a> toy1D_PIGS.pdb # (use the PIGS data)<br/>
+<a href="keywords.html#FRAMESFILE"># FMCSC_FRAMESFILE</a> # (disabled)<br/>
+</tt>
+<br/>
+The first 4 added keywords provide the metric and clustering settings as before (for the actual PIGS production).
+We choose a relatively coarse radius
+here (2.5&#8491;), which is due to the requirement of obtaining a reasonably converged transition matrix. It means that
+the reweighting, which is at the resolution of network nodes (clusters), will have limited resolution as well. A PIGS
+simulation heuristically terminates some copies at well-defined points and reseeds them with configurations from other
+copies. This leads to a rerouting of snapshot connectivity in the trajectory files that needs to be corrected for when
+constructing a conformational space network (transition matrix) from the data. This is done by the next 4 keywords.
+Keyword <a href="keywords.html#CLAGT_MSM">CLAGT_MSM</a>
+sets the assumed lag time (implies a sliding window interpretation of the data) for the transition
+network inference. It is important that the lag time is not too short (in which case the Markov assumption likely breaks
+down) nor too long (in which case sampling quality on the transition matrix deteriorates as most observed transitions are
+discarded). Lastly, keyword <a href="keywords.html#CREWEIGHT">FMCSC_CREWEIGHT</a> instructs CAMPARI to 
+use an iterative algorithm to compute the Markov state model's steady state given the requested settings.
+This could also be done with <a href="keywords.html#EIGVAL_MD">linear algebra routines</a>
+assuming CAMPARI was linked to the <a href="install.html">HSL library</a>. For diagnosing the "validity" of the model,
+the literature is rich with suggestions, heuristic tests, and error analyses none of which are explored here.
+Run:<br/>
+<br/>
+<tt>
+campari -k tutorial13_analysis.key &gt; t13_MSM.log<br/>
+mv yourcalc_FWD.fwts toy1D_PIGS.fwts<br/>
+</tt>
+<br/>
+It is recommended to take some time to inspect the output in "t13_MSM.log", which documents the clustering results
+and the subsequent analysis. In particular, you should take note of the number of clusters (should be around 20), 
+and the reported "network imbalance measure", which gives an indication of how far away from meeting the
+detailed balance condition the inferred network is. Detailed balance is a good indicator of sampling quality
+as it mandates that each and every pairwise transition that was observed in at least one direction is sampled
+such that <i>t<sub>ij</sub>&pi;<sub>i</sub></i> is equal to <i>t<sub>ji</sub>&pi;<sub>j</sub></i> where <i>t</i> are transition matrix elements
+(conditional transition probabilities) and <i>&pi;</i> steady state (equilibrium) probabilities.
+CAMPARI automatically writes a <a href="outputfiles.html#basename_yyy.fwts">file with snapshot probabilities</a>
+(which are the ratios of steady state
+populations and raw sampling of the clusters the respective snapshots belong to). It is identical
+in format to the <a href="outputfiles.html#ELS_WFRAMES.dat">ELS output file</a> we used before.<br/>
+To conclude the tutorial, we need to redo the distance analysis with the calculated weights per snapshot.
+Edit two lines in the analysis key-file as follows:<br/>
+<br/>
+<tt>
+<a href="keywords.html#FRAMESFILE">FMCSC_FRAMESFILE</a> toy1D_PIGS.fwts<br/>
+<a href="keywords.html#CCOLLECT">FMCSC_CCOLLECT</a> 10000000 # disable this analysis<br/>
+</tt>
+<br/>
+And finally run:<br/>
+<br/>
+<tt>
+campari -k tutorial13_analysis.key &gt; t13_PIGS_analysis.log<br/>
+awk '{if ((NR &gt; 1) &amp;&amp; ($3 &gt; 0)) print $1,-310.*(8.3145/4184.)*(log($2*$3)-log(0.2))-2.723}' RBC_PC.dat &gt; toy1D_PIGSx32_reweighted.hist<br/>
+</tt>
+<br/>
+A comparison of the reweighted and biased PIGS distributions should highlight that the Markov model steady state
+reweighting is able to recognize that the rightmost state(s) is/are undersampled in the original (biased) data set
+because of a bias of initial conditions originating from the choice of reference state. The correction may not be 
+quantitatively accurate, however. It is important to realize
+that this procedure is very fragile. Here, we use the <a href="keywords.html#TMAT_MD">forward time</a> matrix
+with a specific <a href="keywords.html#CLAGT_MSM">lag time</a> and
+<a href="keywords.html#CRADIUS">clustering resolution</a>. It is left as an exercise to demonstrate
+that a very large number of alternative settings will not produce a meaningful correction. There are a number
+of (coupled) reasons for this, but most of them ultimately reduced to a sampling problem at the
+level of the transition matrix.<br/>
+A final comparison of all the (at least) 6 answers obtained in this tutorial, <i>viz.</i> from a single replica, from a naive of use of 32 copies,
+from ELS with 32 copies (biased and Boltzmann-reweighted), and lastly from PIGS (biased and Markov model-reweighted),
+to the correct solution in should illustrate that both advanced sampling methods provide a benefit for this system given an investment
+of essentially identical resources, and that energetic biases are more easily removed than initial state biases.
+While the one-dimensional potential is a terrible model in many respects, it does highlight that the initial
+state matters, and that the ability to find new states depends on barrier heights, on random chance, and on
+"distance" from this initial state. Many simulations feature a reference state as an inevitable prerequisite, <i>e.g.</i>,
+simulations of folded proteins. In such a scenario, it is thus extremely difficult to assert that states relevant
+at the simulations conditions have been sampled exhaustively and that their relative weights have converged.<br/>
+<br/><br/>
+</div>
+</div>
+</div>
+</div>
+<!-- Side Navigation Bar --><!--<div class="art-sidebar1">--><!-- Contributors Block --><!--<div class="art-Block">
+                    <div class="art-Block-tl"></div>
+                    <div class="art-Block-tr"></div>
+                    <div class="art-Block-bl"></div>
+                    <div class="art-Block-br"></div>
+                    <div class="art-Block-tc"></div>
+                    <div class="art-Block-bc"></div>
+                    <div class="art-Block-cl"></div>
+                    <div class="art-Block-cr"></div>
+                    <div class="art-Block-cc"></div>
+                    <div class="art-Block-body">
+                        <div class="art-BlockHeader">
+                            <div class="l"></div>
+                            <div class="r"></div>
+                            <div class="art-header-tag-icon">
+                                <div class="t">Contributors - Links</div>
+                            </div>
+                        </div><div class="art-BlockContent">
+                            <div class="art-BlockContent-body">
+                                <div>
+                                <b>Pappu Lab</b><br />
+                                Washington University in St. Louis, MO<br />
+                                Website: <a href="lima.wustl.edu">lima.wustl.edu</a><br />
+                                Phone: (999) 999-9999 <br/>
+                                <br/>
+                                <b>Andreas Vitalis</b><br />
+                                Unistat de Zurich<br />
+                                Website: <a href="papajohns.com">vitalis.net</a><br />
+                                Phone: (111) 999-9999 <br/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>--><!-- Search Block --><!--
+                <div class="art-Block">
+                    <div class="art-Block-tl"></div>
+                    <div class="art-Block-tr"></div>
+                    <div class="art-Block-bl"></div>
+                    <div class="art-Block-br"></div>
+                    <div class="art-Block-tc"></div>
+                    <div class="art-Block-bc"></div>
+                    <div class="art-Block-cl"></div>
+                    <div class="art-Block-cr"></div>
+                    <div class="art-Block-cc"></div>
+                    <div class="art-Block-body">
+                        <div class="art-BlockHeader">
+                            <div class="l"></div>
+                            <div class="r"></div>
+                            <div class="art-header-tag-icon">
+                                <div class="t">Find Text</div>
+                            </div>
+                        </div><div class="art-BlockContent">
+                            <div class="art-BlockContent-body">
+                                <div><form method="get" id="newsletterform" action="javascript:void(0)">
+                                <input type="text" value="" name="email" id="s" style="width: 95%;" />
+                                <span class="art-button-wrapper">
+                                    <span class="l"> </span>
+                                    <span class="r"> </span>
+                                    <input class="art-button" type="submit" name="search" value="Search"/>
+                                </span>
+                                </form></div>
+                            </div>
+                        </div>
+                    </div>
+                </div> 
+                --><!-- News/Updates Block --><!--
+                <div class="art-Block">
+                    <div class="art-Block-tl"></div>
+                    <div class="art-Block-tr"></div>
+                    <div class="art-Block-bl"></div>
+                    <div class="art-Block-br"></div>
+                    <div class="art-Block-tc"></div>
+                    <div class="art-Block-bc"></div>
+                    <div class="art-Block-cl"></div>
+                    <div class="art-Block-cr"></div>
+                    <div class="art-Block-cc"></div>
+                    <div class="art-Block-body">
+                        <div class="art-BlockHeader">
+                            <div class="l"></div>
+                            <div class="r"></div>
+                            <div class="art-header-tag-icon">
+                                <div class="t">Recent News</div>
+                            </div>
+                        </div><div class="art-BlockContent">
+                            <div class="art-BlockContent-body">
+                                <div>
+                                    <p><b>Jun 14, 2008</b><br/>
+                                    Aliquam sit amet felis. Mauris semper, 
+                                    velit semper laoreet dictum, quam 
+                                    diam dictum urna, nec placerat elit 
+                                    nisl in quam. Etiam augue pede, 
+                                    molestie eget, rhoncus at, convallis 
+                                    ut, eros. Aliquam pharetra.<br/>
+                                    <a href="javascript:void(0)">Read more...</a></p>
+                                                          
+                                    <p><b>Aug 24, 2008</b><br/>
+                                    Aliquam sit amet felis. Mauris semper, 
+                                    velit semper laoreet dictum, quam 
+                                    diam dictum urna, nec placerat elit 
+                                    nisl in quam. Etiam augue pede, 
+                                    molestie eget, rhoncus at, convallis 
+                                    ut, eros. Aliquam pharetra.<br/>
+                                    <a href="javascript:void(0)">Read more...</a></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> --><!-- End Sidebar --> </div>
+</div>
+</div>
+<!-- End main page contents --><!-- Footer -->
+<div class="art-Footer">
+<div class="art-Footer-background">
+<div class="art-Footer-inner"> <a href="#" class="art-rss-tag-icon"
+ title="RSS"></a>
+<div class="art-Footer-text">
+<p><a href="#">Contact Us</a> | <a href="#">Terms of Use</a> | <a
+ href="#">License Information</a><br/>
+Copyright © 2010 . All Rights Reserved.</p>
+</div>
+</div>
+</div>
+</div>
+<p class="art-page-footer">XHTML and CSS valid. Powered by <a
+ href="http://www.flashmint.com/">FlashMint</a> - flash templates
+provider.</p>
+<div style="text-align: center; font-size: 0.75em;">Design downloaded
+from <a href="http://www.freewebtemplates.com/">free website templates</a>.</div>
+</div>
+</body>
+</html>
