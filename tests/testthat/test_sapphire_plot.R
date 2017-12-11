@@ -18,6 +18,8 @@ test_that('Various plotting options', {
   # Classic plots 
   # ------------------------------
   expect_error(sapphire_plot('REPIX_000000000021.dat'), NA) # baseline and local cut
+  expect_error(sapphire_plot('REPIX_000000000021.dat', ann_trace = T), NA) # baseline and local cut
+  expect_error(sapphire_plot('REPIX_000000000021.dat', ann_trace = 7), NA) # baseline and local cut
   expect_error(sapphire_plot('REPIX_000000000021.dat', timeline = TRUE), NA) # with the timeline at the bottom # the dot size can be reduced internally
   expect_error(sapphire_plot('REPIX_000000000021.dat', local_cut = FALSE), NA) # without the local cut
   expect_error(sapphire_plot('REPIX_000000000021.dat', sub_sampling_factor = 10), NA) # w/subsampling

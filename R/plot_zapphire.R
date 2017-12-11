@@ -423,7 +423,8 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
     warning('As you inserted a specific palette the character trace inserted will not be considered.')
   if(character_trace && rescaling_ann_col)
     warning('As you inserted a character trace the color rescaling (grayscale) will not be considered.')
-  
+  if(!is.null(specific_palette_timeline) && is.null(specific_palette_annotation))
+    specific_palette_annotation <- specific_palette_timeline
   # ---------------------
   # checking the reordering of the annotation (functionality that is working only with one-line whatever) TODO extend it
   if(reorder_annotation){
@@ -848,15 +849,20 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   # -------------------------------------------------------------------------------------
   # SETING: NO MORE THAN ONE ANN LINE AVAILABLE - annotation preparation for timeline and annotation of snap distance
   # todo - manual insertion of a color coded stuff!
+  browser()
   if(timeline || annotate_snap_dist){ # 'black' is the standard along with uniform_color_timeline = T if put 'annotation' it uses the trace
     if(!.isSingleElement(which_uniform_color_timeline))
       stop('which_uniform_color_timeline must be a single element.')
-    if(which_uniform_color_timeline == 'annotation' && !uniform_color_timeline){ 
+    if(which_uniform_color_timeline != 'annotation' && !uniform_color_timeline){ 
       warning('Detected insertion of which_uniform_color_timeline without the uniform_color_timeline mode active. It has been automatically activated.')
       uniform_color_timeline <- T
     }
+    if(which_uniform_color_timeline == 'annotation' && uniform_color_timeline){
+      uniform_color_timeline <- F
+      warning('If you use annotation for the timeline coloring please turn off the uniform color timeline. Done for you')
+    }
     if(which_uniform_color_timeline == 'annotation' && !uniform_color_timeline){
-      if(!no_trace) stop('To select which_uniform_color_timeline using the annotation reference and colors please keep the annotation active.')
+      if(no_trace) stop('To select which_uniform_color_timeline using the annotation reference and colors please keep the annotation active.')
       if(one_line_trace){
         single_line_general_ann <- ann_tr
       }else if(multi_line_trace){
@@ -866,8 +872,8 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
     }else{
       single_line_general_ann <- array(which_uniform_color_timeline, dim = Nsnap)
     }
-    #color_timeline <- single_line_general_ann # clangi
-    color_timeline <- specific_palette_annotation[ann_tr]
+    color_timeline <- single_line_general_ann # clangi
+    # color_timeline <- specific_palette_annotation[ann_tr]
   }
   # -------------------------------------------------------------------------------------
   # plotting the distance between snapshots (on top of everything)
@@ -949,10 +955,10 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
         else if(!rescaling_ann_col && annotation_type == 'continuous') color_timeline <- as.numeric(color_timeline) 
         else stop('rescaling the colors force to put strings in the annotation. No continuous annotation_type can work with this option on.')
         gg <- gg + geom_point(aes(x=xx,
-                                  y = ((pin[,3]*1.0*ymax*tp)/Nsnap)[seq(1, Nsnap, sub_sampling_factor)],
-                                  col=color_timeline[seq(1, Nsnap, sub_sampling_factor)]), # col INSIDE
+                                  y = ((pin[,3]*1.0*ymax*tp)/Nsnap)[seq(1, Nsnap, sub_sampling_factor)]), # col INSIDE
+                              col = timeline_palette[color_timeline[seq(1, Nsnap, sub_sampling_factor)]],
                               size=size_points_on_timeline*general_size_annPoints)
-        gg <- gg + scale_color_gradientn(colours = specific_palette_timeline, guide = FALSE) #  guide_legend(title = "Days")
+        #gg <- gg + scale_color_gradientn(colours = specific_palette_timeline, guide = FALSE) #  guide_legend(title = "Days")
       }
       # standard add
       gg <- gg +
