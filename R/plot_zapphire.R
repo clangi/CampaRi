@@ -458,8 +458,8 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
     warning('As you inserted a specific palette the character trace inserted will not be considered.')
   if(character_trace && rescaling_ann_col)
     warning('As you inserted a character trace the color rescaling (grayscale) will not be considered.')
-  if(!is.null(specific_palette_timeline) && is.null(specific_palette_annotation))
-    specific_palette_annotation <- specific_palette_timeline
+  # if(!is.null(specific_palette_timeline) && is.null(specific_palette_annotation))
+    # specific_palette_annotation <- specific_palette_timeline
   # ---------------------
   # checking the reordering of the annotation (functionality that is working only with one-line whatever) TODO extend it
   if(reorder_annotation){
@@ -522,7 +522,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
         # rescaling colors (grey based)
         if(rescaling_ann_col){
           max_value_ann_trace <- max(ann_trace)
-          ann_tr <- sapply(ann_trace, FUN = function(x){ paste0("gray",floor(70/max_value_ann_trace*x)) })
+          ann_tr <- sapply(ann_trace, FUN = function(x){ paste0("gray",floor(70/max_value_ann_trace*x))})
         }else{
           ann_tr <- ann_trace
         }
@@ -909,12 +909,14 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
       }
       if (timeline_annotation_type == "continuous"){
         # case continuous timeline trace
-        warning('Continuous timeline_annotation_type. It will be colored according to the first row of annotation trace.')
+        warning('Continuous timeline_annotation_type. It will be colored according to the first row of annotation trace and value of timeline_trace will be ignored.')
         if(one_line_trace){
           single_line_general_ann <- ann_tr
         }else if(multi_line_trace){
           single_line_general_ann <- ann_tr[1,]
           warning('Timeline color kept as first line in annotation trace inserted (it is multiple lines).\n')
+        } else {
+          stop('Annotation trace incompatible with timeline.')
         }
       } else {
         # case discrete timeline_trace
@@ -972,16 +974,21 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
     
     # ---------------------------------------- only timeline
     if(only_timeline){
-      
       ymax <- Nsnap
       tp <- 1.0
-      
       # without palette
       if(is.null(specific_palette_timeline)){
-        gg <- ggplot() + geom_point(aes(x=xx,
-                                  y = (pin[,3][seq(1, Nsnap, sub_sampling_factor)])),
-                                  col=color_timeline[seq(1, Nsnap, sub_sampling_factor)],
-                              size=size_points_on_timeline*general_size_annPoints) 
+        if(timeline_annotation_type == "discrete"){ # case discrete:
+          gg <- ggplot() + geom_point(aes(x=xx,
+                                          y = (pin[,3][seq(1, Nsnap, sub_sampling_factor)])), # col outside
+                                      col=color_timeline[seq(1, Nsnap, sub_sampling_factor)],
+                                      size=size_points_on_timeline*general_size_annPoints)
+        }else if(!rescaling_ann_col && timeline_annotation_type == 'continuous') { # case continuous
+          gg <- ggplot() + geom_point(aes(x=xx,
+                                          y = (pin[,3][seq(1, Nsnap, sub_sampling_factor)]), # col inside
+                                      col=color_timeline[seq(1, Nsnap, sub_sampling_factor)]),
+                                      size=size_points_on_timeline*general_size_annPoints, show.legend = F)
+        } else stop('rescaling the colors force to put strings in the annotation. No continuous annotation_type can work with this option on.')
         
       # with palette
       } else {
@@ -1018,10 +1025,17 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
     } else {
       # without palette
       if(is.null(specific_palette_timeline)){
-        gg <- gg + geom_point(aes(x=xx,
-                                  y = ((pin[,3]*1.0*ymax*tp)/Nsnap)[seq(1, Nsnap, sub_sampling_factor)]),
-                              col=color_timeline[seq(1, Nsnap, sub_sampling_factor)],
-                              size=size_points_on_timeline*general_size_annPoints)
+        if(timeline_annotation_type == "discrete"){ # case discrete
+          gg <- gg + geom_point(aes(x=xx,
+                                    y = ((pin[,3]*1.0*ymax*tp)/Nsnap)[seq(1, Nsnap, sub_sampling_factor)]), # col outside
+                                col=color_timeline[seq(1, Nsnap, sub_sampling_factor)],
+                                size=size_points_on_timeline*general_size_annPoints)
+        } else { # case continuous
+          gg <- gg + geom_point(aes(x=xx,
+                                    y = ((pin[,3]*1.0*ymax*tp)/Nsnap)[seq(1, Nsnap, sub_sampling_factor)], # col inside
+                                col=color_timeline[seq(1, Nsnap, sub_sampling_factor)]),
+                                size=size_points_on_timeline*general_size_annPoints)
+        }
       # with palette
       } else {
         # The following will work once the difference between specific_palette_timeline and *_annotation will be adressed
