@@ -6,6 +6,8 @@
 NEWS\.md
 CONTRIBUTING\.md
 ISSUE_TEMPLATE\.md
+CODE_OF_CONDUCT\.md
+LICENCE
 ^vignettes/rsconnect/*$
 ^vignettes/rsconnect/$
 ^vignettes/to_d$
