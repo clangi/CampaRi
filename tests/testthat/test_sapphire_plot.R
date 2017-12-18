@@ -6,14 +6,13 @@ test_that('Various plotting options', {
   ret <- gen_progindex(adjl, snap_start = 21)
   ret2 <- gen_annotation(ret, snap_start = 21)
   
-  
   plottt <- sapphire_plot(sap_file = 'REPIX_000000000021.dat', timeline = T, title = "CAMPARI WRAPPER - MST", 
-                          return_plot = T, ann_trace = c(rep(2,50), rep(1,50)), timeline_proportion = 1.1, 
+                          return_plot = T, ann_trace = c(rep(2,50), rep(1,50)), specific_palette_annotation = c("#b47b00", "#D9E000"), timeline_proportion = 1.1, 
                           rescaling_ann_col=TRUE, annotate_snap_dist= TRUE, horiz_lines_on_timeline= c(10,20,30), 
                           reorder_annotation=TRUE,reorder_horizline_on_timeline=TRUE, points_on_timeline=c(2,10))
+  
   expect_true(!is.null(plottt))
   expect_error(sapphire_plot('REPIsadsasdadsasda12312382733569'))  
-  
   
   # Classic plots 
   # ------------------------------
@@ -39,6 +38,12 @@ test_that('Various plotting options', {
   # lets plot it!!!
   expect_error(sapphire_plot('REPIX_000000000021.dat', local_cut = FALSE, ann_trace = ann, reorder_annotation = T), NA) # with ANNOTATION!!
   expect_error(sapphire_plot('REPIX_000000000021.dat', local_cut = FALSE, ann_trace = ann, reorder_annotation = F), NA) # with ANNOTATION!!
+  palette(terrain.colors(6))
+  sapphire_plot('REPIX_000000000021.dat', local_cut = FALSE, ann_trace = ann, reorder_annotation = T,
+                specific_palette_annotation = c("#b47b00", "#D9E000", "#D9E000"), return_plot = T) + 
+    geom_segment(data=df1, aes(x=v, xend=v, y=p, yend=pend), color=sample(x = 1:3,size = 1000/50, replace = T)) + 
+    geom_segment(data=df1, aes(x=v+2000, xend=v+2000, y=p-1, yend=pend-1), color=sample(x = 4:6,size = 1000/50, replace = T))
+  
   
   # the advanced option -> adding layers to the gg object
   # ------------------------------
