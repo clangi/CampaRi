@@ -39,10 +39,10 @@ test_that('Various plotting options', {
   expect_error(sapphire_plot('REPIX_000000000021.dat', local_cut = FALSE, ann_trace = ann, reorder_annotation = T), NA) # with ANNOTATION!!
   expect_error(sapphire_plot('REPIX_000000000021.dat', local_cut = FALSE, ann_trace = ann, reorder_annotation = F), NA) # with ANNOTATION!!
   palette(terrain.colors(6))
-  sapphire_plot('REPIX_000000000021.dat', local_cut = FALSE, ann_trace = ann, reorder_annotation = T,
-                specific_palette_annotation = c("#b47b00", "#D9E000", "#D9E000"), return_plot = T) + 
-    geom_segment(data=df1, aes(x=v, xend=v, y=p, yend=pend), color=sample(x = 1:3,size = 1000/50, replace = T)) + 
-    geom_segment(data=df1, aes(x=v+2000, xend=v+2000, y=p-1, yend=pend-1), color=sample(x = 4:6,size = 1000/50, replace = T))
+  # sapphire_plot('REPIX_000000000021.dat', local_cut = FALSE, ann_trace = ann, reorder_annotation = T,
+  #               specific_palette_annotation = c("#b47b00", "#D9E000", "#D9E000"), return_plot = T) + 
+  #   geom_segment(data=df1, aes(x=v, xend=v, y=p, yend=pend), color=sample(x = 1:3,size = 1000/50, replace = T)) + 
+  #   geom_segment(data=df1, aes(x=v+2000, xend=v+2000, y=p-1, yend=pend-1), color=sample(x = 4:6,size = 1000/50, replace = T))
   
   
   # the advanced option -> adding layers to the gg object
