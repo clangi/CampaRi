@@ -336,6 +336,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
       leg_lab <- NULL
     }
   }
+  browser()
   # ---------------------
   # checking timeline_trace input
   # ---------------------
@@ -909,12 +910,14 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
       }
       if (timeline_annotation_type == "continuous"){
         # case continuous timeline trace
-        warning('Continuous timeline_annotation_type. It will be colored according to the first row of annotation trace.')
+        warning('Continuous timeline_annotation_type. It will be colored according to the first row of annotation trace and value of timeline_trace will be ignored.')
         if(one_line_trace){
           single_line_general_ann <- ann_tr
         }else if(multi_line_trace){
           single_line_general_ann <- ann_tr[1,]
           warning('Timeline color kept as first line in annotation trace inserted (it is multiple lines).\n')
+        } else {
+          stop('Annotation trace incompatible with timeline.')
         }
       } else {
         # case discrete timeline_trace
@@ -978,10 +981,17 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
       
       # without palette
       if(is.null(specific_palette_timeline)){
-        gg <- ggplot() + geom_point(aes(x=xx,
-                                  y = (pin[,3][seq(1, Nsnap, sub_sampling_factor)])),
-                                  col=color_timeline[seq(1, Nsnap, sub_sampling_factor)],
-                              size=size_points_on_timeline*general_size_annPoints) 
+        if(timeline_annotation_type == "discrete"){ # case discrete:
+          gg <- ggplot() + geom_point(aes(x=xx,
+                                          y = (pin[,3][seq(1, Nsnap, sub_sampling_factor)])), # col outside
+                                      col=color_timeline[seq(1, Nsnap, sub_sampling_factor)],
+                                      size=size_points_on_timeline*general_size_annPoints) 
+        }else{ # case continuous
+          gg <- ggplot() + geom_point(aes(x=xx,
+                                          y = (pin[,3][seq(1, Nsnap, sub_sampling_factor)]), # col inside
+                                      col=color_timeline[seq(1, Nsnap, sub_sampling_factor)]),
+                                      size=size_points_on_timeline*general_size_annPoints)
+        }
         
       # with palette
       } else {
@@ -1018,10 +1028,17 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
     } else {
       # without palette
       if(is.null(specific_palette_timeline)){
-        gg <- gg + geom_point(aes(x=xx,
-                                  y = ((pin[,3]*1.0*ymax*tp)/Nsnap)[seq(1, Nsnap, sub_sampling_factor)]),
-                              col=color_timeline[seq(1, Nsnap, sub_sampling_factor)],
-                              size=size_points_on_timeline*general_size_annPoints)
+        if(timeline_annotation_type == "discrete"){ # case discrete
+          gg <- gg + geom_point(aes(x=xx,
+                                    y = ((pin[,3]*1.0*ymax*tp)/Nsnap)[seq(1, Nsnap, sub_sampling_factor)]), # col outside
+                                col=color_timeline[seq(1, Nsnap, sub_sampling_factor)],
+                                size=size_points_on_timeline*general_size_annPoints)
+        } else { # case continuous
+          gg <- gg + geom_point(aes(x=xx,
+                                    y = ((pin[,3]*1.0*ymax*tp)/Nsnap)[seq(1, Nsnap, sub_sampling_factor)], # col inside
+                                col=color_timeline[seq(1, Nsnap, sub_sampling_factor)]),
+                                size=size_points_on_timeline*general_size_annPoints)
+        }
       # with palette
       } else {
         # The following will work once the difference between specific_palette_timeline and *_annotation will be adressed
