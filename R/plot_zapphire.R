@@ -379,6 +379,10 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   character_trace <- FALSE
   n_partitions_trace <- FALSE
   
+  # simple check
+  if(anyNA(ann_trace))
+    stop('No NAs are allowed in the annotation trace.')
+  
   # Main switcher
   if(is.logical(ann_trace) && ann_trace){
     automatic_trace_half <- TRUE 
