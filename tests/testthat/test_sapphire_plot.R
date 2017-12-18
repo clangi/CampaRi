@@ -82,7 +82,7 @@ test_that('Various plotting options', {
   expect_error(sapphire_plot('REPIX_000000000021.dat', only_timeline = T, timeline_trace = ann_timeline), NA)
   expect_error(sapphire_plot('REPIX_000000000021.dat', only_timeline = T, timeline_trace = ann_timeline, which_uniform_color_timeline = "annotation"), NA)
   expect_error(sapphire_plot('REPIX_000000000021.dat', only_timeline = T, timeline_trace = ann_timeline, 
-                             specific_palette_timeline = c("#d7191c", "#ffffbf", "#2c7bb6"), which_uniform_color_timeline = "annotation"), NA)
+                             specific_palette_timeline = c("#d7191c", "#3cafb8", "#2c7bb6"), which_uniform_color_timeline = "annotation"), NA)
   
   expect_error(sapphire_plot('REPIX_000000000021.dat', only_timeline = T, timeline_trace = ann_timeline, ann_trace = ann,
                              which_uniform_color_timeline = "annotation"), NA)
@@ -93,7 +93,7 @@ test_that('Various plotting options', {
                              which_uniform_color_timeline = "annotation", timeline_annotation_type = "continuous", rescaling_ann_col = F), NA)
   expect_error(sapphire_plot('REPIX_000000000021.dat', only_timeline = T, timeline_trace = ann_timeline, ann_trace = ann,
                              which_uniform_color_timeline = "annotation", timeline_annotation_type = "continuous", rescaling_ann_col = F,
-                             specific_palette_timeline = rev(c("#d7191c", "#ffffbf", "#2c7bb6"))), NA)
+                             specific_palette_timeline = rev(c("#d7191c", "#3cafb8", "#2c7bb6"))), NA)
   
   expect_error(sapphire_plot('REPIX_000000000021.dat', only_timeline = T, timeline_trace = ann_timeline, timeline_annotation_type = "discrete",
                              size_points_on_timeline = 1.5), NA)
@@ -101,7 +101,7 @@ test_that('Various plotting options', {
                              timeline_trace = ann_timeline, timeline_annotation_type = "continuous", rescaling_ann_col = F), NA)
   expect_error(sapphire_plot('REPIX_000000000021.dat', only_timeline = T, which_uniform_color_timeline = "annotation", ann_trace = ann,
                             timeline_trace = ann_timeline, timeline_annotation_type = "continuous", rescaling_ann_col = F, 
-                            specific_palette_annotation=c("#d7191c", "#ffffbf", "#2c7bb6"), size_points_on_timeline = 1.5), NA)
+                            specific_palette_timeline=c("#000000", "#3cafb8", "#2c7bb6"), size_points_on_timeline = 1.5), NA)
   
   # legend stuff
   expect_error(sapphire_plot('REPIX_000000000021.dat', return_plot = F, local_cut = T, ann_trace = ann, timeline = T,
