@@ -974,7 +974,6 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
     
     # ---------------------------------------- only timeline
     if(only_timeline){
-      browser()
       ymax <- Nsnap
       tp <- 1.0
       # without palette
