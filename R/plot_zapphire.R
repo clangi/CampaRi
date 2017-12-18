@@ -397,7 +397,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
           # if(rescaling_ann_col) ann_trace <- as.integer(ann_trace) # not needed: it can generate imprecisions before the division and floor done afterwards
           if(any(ann_trace < 0)){
             warning('Inserted negative values in the annotation trace. ', sum(ann_trace < 0), ' values have been coerced to pos.')
-            ann_trace <- abs(ann_trace)
+            ann_trace <- ann_trace + min(ann_trace)
           }
           # if(any(ann_trace == 0)){
           #   warning('Inserted 0 values (', sum(ann_trace==0), ') in the annotation trace. 1 is added to all values.')
