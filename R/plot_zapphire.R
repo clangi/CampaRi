@@ -336,7 +336,6 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
       leg_lab <- NULL
     }
   }
-  browser()
   # ---------------------
   # checking timeline_trace input
   # ---------------------
@@ -459,8 +458,8 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
     warning('As you inserted a specific palette the character trace inserted will not be considered.')
   if(character_trace && rescaling_ann_col)
     warning('As you inserted a character trace the color rescaling (grayscale) will not be considered.')
-  if(!is.null(specific_palette_timeline) && is.null(specific_palette_annotation))
-    specific_palette_annotation <- specific_palette_timeline
+  # if(!is.null(specific_palette_timeline) && is.null(specific_palette_annotation))
+    # specific_palette_annotation <- specific_palette_timeline
   # ---------------------
   # checking the reordering of the annotation (functionality that is working only with one-line whatever) TODO extend it
   if(reorder_annotation){
@@ -523,7 +522,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
         # rescaling colors (grey based)
         if(rescaling_ann_col){
           max_value_ann_trace <- max(ann_trace)
-          ann_tr <- sapply(ann_trace, FUN = function(x){ paste0("gray",floor(70/max_value_ann_trace*x)) })
+          ann_tr <- sapply(ann_trace, FUN = function(x){ paste0("gray",floor(70/max_value_ann_trace*x))})
         }else{
           ann_tr <- ann_trace
         }
@@ -975,23 +974,22 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
     
     # ---------------------------------------- only timeline
     if(only_timeline){
-      
+      browser()
       ymax <- Nsnap
       tp <- 1.0
-      
       # without palette
       if(is.null(specific_palette_timeline)){
         if(timeline_annotation_type == "discrete"){ # case discrete:
           gg <- ggplot() + geom_point(aes(x=xx,
                                           y = (pin[,3][seq(1, Nsnap, sub_sampling_factor)])), # col outside
                                       col=color_timeline[seq(1, Nsnap, sub_sampling_factor)],
-                                      size=size_points_on_timeline*general_size_annPoints) 
-        }else{ # case continuous
+                                      size=size_points_on_timeline*general_size_annPoints)
+        }else if(!rescaling_ann_col && timeline_annotation_type == 'continuous') { # case continuous
           gg <- ggplot() + geom_point(aes(x=xx,
                                           y = (pin[,3][seq(1, Nsnap, sub_sampling_factor)]), # col inside
                                       col=color_timeline[seq(1, Nsnap, sub_sampling_factor)]),
-                                      size=size_points_on_timeline*general_size_annPoints)
-        }
+                                      size=size_points_on_timeline*general_size_annPoints, show.legend = F)
+        } else stop('rescaling the colors force to put strings in the annotation. No continuous annotation_type can work with this option on.')
         
       # with palette
       } else {

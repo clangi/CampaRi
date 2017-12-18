@@ -17,7 +17,7 @@ mst_from_trj(trj, dump_to_netcdf = FALSE, mode = "fortran",
 
 \item{mode}{It takes a string in input and can be either "fortran" (highly advised and default) or "R".}
 
-\item{distance_method}{Distance metric between snapshots. This value can be set 1 (dihedral angles) or 5 (root mean square deviation) or 11 (balistic distance) 
+\item{distance_method}{Distance metric between snapshots. This value can be set 1 (dihedral angles) or 5 (root mean square deviation) or 11 (balistic distance)
 or 12 (mahalanobis distance - matrix to be inserted).}
 
 \item{clu_radius}{This numeric argument is used in the clustering step in order to make clusters of the same radius at the base level.}
