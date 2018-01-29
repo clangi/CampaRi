@@ -53,6 +53,7 @@
 #'        \item "\code{localcutbasin_prop_height}" std:1/4*y_max set the heigth space of the localcut
 #'        \item "\code{basin_prop_height}" std:1/4*y_max set the heigth space of the stdcut
 #'        \item "\code{parabolic_subtraction}" you can avoid the randomness of the parabolic curve (on annotation) by using parabolic subtraction.
+#'        \item "\code{temporal_progress_size}" size of the text 0%-100%
 #'      }
 #' @details For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
 #'
@@ -114,7 +115,8 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
                              'parabolic_subtraction',
                              
                              'general_size_annPoints',
-                             'size_points_on_timeline')
+                             'size_points_on_timeline',
+                             'temporal_progress_size')
                              
 
   if(any(!(names(input_args) %in% avail_extra_argoments))) 
@@ -152,6 +154,7 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
   
   if(!('general_size_annPoints' %in% names(input_args))) general_size_annPoints <- 1. else general_size_annPoints <- input_args[['general_size_annPoints']]
   if(!('size_points_on_timeline' %in% names(input_args))) size_points_on_timeline <- 0.005 else size_points_on_timeline <- input_args[['size_points_on_timeline']]
+  if(!('temporal_progress_size' %in% names(input_args))) temporal_progress_size <- 1 else temporal_progress_size <- input_args[['temporal_progress_size']]
 
   # ============================
   #          CHECKS
@@ -1063,8 +1066,8 @@ sapphire_plot <- function(sap_file = NULL, sap_table = NULL, write = F, folderPl
       }
       # standard add
       gg <- gg +
-        annotate("text", label = "0%", x = -Nsnap/90, y = 0, size = 3, angle = 90) +
-        annotate("text", label = "100%", x = -Nsnap/90, y = 1.0*ymax*tp, size = 3, angle = 90)
+        annotate("text", label = "0%", x = -Nsnap/90, y = 0, size = 3*temporal_progress_size, angle = 90) +
+        annotate("text", label = "100%", x = -Nsnap/90, y = 1.0*ymax*tp, size = 3*temporal_progress_size, angle = 90)
     }
     
     # -------------------------------------------------------------------------------------
