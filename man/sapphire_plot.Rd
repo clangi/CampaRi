@@ -68,6 +68,7 @@ produce a gray scale horizontal annotation.}
   \item "\code{localcutbasin_prop_height}" std:1/4*y_max set the heigth space of the localcut
   \item "\code{basin_prop_height}" std:1/4*y_max set the heigth space of the stdcut
   \item "\code{parabolic_subtraction}" you can avoid the randomness of the parabolic curve (on annotation) by using parabolic subtraction.
+  \item "\code{temporal_progress_size}" size of the text 0%-100%
 }}
 }
 \value{
