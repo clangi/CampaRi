@@ -114,6 +114,7 @@ r-packages:
   - ggfortify
   - Rtsne
   - TSA
+  - ClusterR
 #  - PairViz
 #  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; WGCNA ; fi 
 

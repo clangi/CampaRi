@@ -17,7 +17,7 @@ Imports:
   bio3d, ggplot2, WGCNA, parallel, data.table, Rcpp,
   gplots, grDevices, graphics, outliers, pcaPP,
   prospectr, splus2R, stats, expm, Hmisc, utils, 
-  plotly, ggfortify, PairViz, Rtsne, TSA
+  plotly, ggfortify, PairViz, Rtsne, TSA, ClusterR
 Suggests: knitr, rmarkdown, testthat
 VignetteBuilder: knitr
 LinkingTo: Rcpp, RcppArmadillo

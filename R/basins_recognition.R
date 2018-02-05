@@ -22,7 +22,7 @@
 #' @param plot A logical value indicating whether to display the SAPPHIRE plot with the resulting partitions or not. Black partitions are the matched ones, blue ones derive only from the dynamic analysis and orange ones only from the kinetic analysis. The green curve is the kinetic annotation (black curve) where the parabolic shape has been subtracted, i.e. the actual curve used for the peaks identification. Default value is \code{FALSE}.
 #' @param new.dev A logical value indicating whether a new window/device has to plotted or not when \code{plot=TRUE}.
 #' @param out.file A logical value indicating whether to write an output file with the state sequence ordered with respect to the PI. Default value is \code{TRUE}.
-#' @param silent A logical value indicating whether the function has to remain silent or not. Default value is \code{FALSE}
+#' @param silent A logical value indicating whether the function has to remain silent or not. Default value is \code{FALSE}.
 #' @param ...
 #'      \itemize{
 #'        \item "\code{time.series}" File name. If specified, it substitutes the time series of the PROGIDX_<..> file with the one provided by the file.
@@ -64,7 +64,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
     call <- match.call()
     
     if(!is.character(data) && !is.data.frame(data)) stop("data must be a string or a data frame")
-    if(is.character(data) && !all(grepl("PROGIDX", data))) stop("Please provide a data name starting with 'PROGIDX'" )
+    if(is.character(the_sap) && (!all(grepl("PROGIDX", the_sap)) && !all(grepl("REPIX", the_sap)))) stop("Please provide a data name starting with 'PROGIDX' or 'REPIX'" )
     if((nx %% 1) != 0) stop("nx must be an integer")
     if((ny %% 1) != 0) stop("ny must be an integer")
     if(!is.logical(local.cut)) stop("local.cut must be a logical value")
@@ -168,8 +168,14 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
     ## INPUT FILE 
     if(!silent) cat("Reading PROGIDX file...\n")
     if(is.data.frame(data)){
-        progind <- data
-        colnames(progind) <- c("PI", "Time", "Cut")
+        if(!local.cut) {
+          progind <- data.frame(data[, c(1, 3, 4)])
+          colnames(progind) <- c("PI", "Time", "Cut")
+        } else {
+          foo <- data.frame(data[, c(1, 3, 10, 12)])
+          progind <- data.frame(PI=foo[[1]], Time=foo[[2]], Cut=(foo[[3]]+foo[[4]])/2)
+          rm(foo)
+        }
     } else {
         if(!local.cut) {
             progind <- data.frame(fread(data, showProgress=FALSE)[, c(1, 3, 4)])

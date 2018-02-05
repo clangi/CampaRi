@@ -35,7 +35,7 @@ basins_recognition(data, nx, ny = nx, ny.aut = FALSE, local.cut = FALSE,
 
 \item{out.file}{A logical value indicating whether to write an output file with the state sequence ordered with respect to the PI. Default value is \code{TRUE}.}
 
-\item{silent}{A logical value indicating whether the function has to remain silent or not. Default value is \code{FALSE}}
+\item{silent}{A logical value indicating whether the function has to remain silent or not. Default value is \code{FALSE}.}
 
 \item{...}{\itemize{
   \item "\code{time.series}" File name. If specified, it substitutes the time series of the PROGIDX_<..> file with the one provided by the file.
