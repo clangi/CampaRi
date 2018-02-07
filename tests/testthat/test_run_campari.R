@@ -38,7 +38,7 @@ test_that('Test run_campari from installation', {
   trj <- data.table::fread("FYC.dat", header = F, skip = 1, data.table = FALSE)[,-1]
   trj <- sapply(trj, as.numeric) # always be sure that it is numeric!
   trj <- matrix(trj, nrow = 1000, ncol =3) # always be sure that it is numeric!
-  run_campari(trj = trj, base_name = "ascii_based_analysis", campari_exe = ca_exe,
+  expect_error(run_campari(trj = trj, base_name = "ascii_based_analysis", campari_exe = ca_exe,
               FMCSC_CPROGINDMODE=1, #mst
               FMCSC_CCOLLECT=1, print_status = T,
               FMCSC_CMODE=4,
@@ -49,7 +49,22 @@ test_that('Test run_campari from installation', {
               FMCSC_CMAXRAD=10880, #clustering
               FMCSC_CRADIUS=10880,
               FMCSC_CCUTOFF=10880,
-              FMCSC_CPROGINDWIDTH=1000) #local cut is automatically adjusted to 1/10 if it is too big (as here)
+              FMCSC_CPROGINDWIDTH=1000), NA) #local cut is automatically adjusted to 1/10 if it is too big (as here)
+  debugonce(run_campari)
+  run_campari(data_file = 'ascii_based_analysis.tsv', base_name = "ascii_based_analysis", campari_exe = ca_exe,
+              FMCSC_CPROGINDMODE=1, #mst
+              FMCSC_CCOLLECT=1, print_status = T,
+              FMCSC_CMODE=4,
+              FMCSC_CDISTANCE=7, #rmsd without alignment 7 - dihedral distances need a complete analysis (pdb_format dcd pdb etc...) 
+              FMCSC_CPROGINDSTART=21, #starting snapshot 
+              # FMCSC_CPROGINDRMAX=1000, #search att
+              # FMCSC_BIRCHHEIGHT=2, #birch height
+              FMCSC_CMAXRAD=10880, #clustering
+              FMCSC_CRADIUS=10880,
+              FMCSC_CCUTOFF=10880,
+              FMCSC_CPROGINDWIDTH=1000) 
+  
+  
   
   if(file.exists('FYC.dat')) file.remove('FYC.dat')
   if(file.exists('NBU.key')) file.remove('NBU.key')

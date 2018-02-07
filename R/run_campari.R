@@ -220,10 +220,14 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   if(!is.null(data_file)){
     if(!file.exists(data_file))
       stop('Inserted file for the analysis is not present in the directory.')
-    if(is.null(nsnaps) && file_ext(data_file) %in% c('tsv', 'dat')) 
-      nsnaps <- as.numeric(strsplit(x = suppressWarnings(system(paste0('wc -l ', base_name), intern = TRUE)), split = " ")[[1]][1])
-    if(is.null(nvars) && file_ext(data_file) %in% c('tsv', 'dat')) 
-      nvars <- as.numeric(strsplit(x = suppressWarnings(system(paste0('wc -n1 ', base_name, '| wc -l '), intern = TRUE)), split =  " ")[[1]][1])
+    if(is.null(nsnaps) && file_ext(data_file) %in% c('tsv', 'dat')) {
+      nsnaps <- as.numeric(strsplit(x = suppressWarnings(system(paste0('wc -l ', data_file), intern = TRUE)), split = " ")[[1]][1])
+      if(nsnaps < 5) stop('The data_file inserted has less than 5 lines. It should be the number of snapshots, and therefore much longer.')
+    }
+    if(is.null(nvars) && file_ext(data_file) %in% c('tsv', 'dat')) {
+      nvars <- as.numeric(strsplit(x = suppressWarnings(system(paste0('head -n2 ', data_file, ' | tail -n1 | wc -w '), intern = TRUE)), split =  " ")[[1]][1])
+      if(nvars < 1) stop('number of variables (number of columns in the file) is less than 1. This is not possible. ')  
+    }
     if(is.null(nsnaps) && "FMCSC_NCDM_NRFRMS" %in% args_names) nsnaps <- args_list[["FMCSC_NCDM_NRFRMS"]]
     if(is.null(nsnaps) && "FMCSC_NRSTEPS" %in% args_names) nsnaps <- args_list[["FMCSC_NRSTEPS"]]
     if(is.null(nsnaps))
