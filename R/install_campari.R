@@ -65,7 +65,7 @@ install_campari <- function(installation_location = NULL, install_ncminer = FALS
   if(!is.null(installation_location)){
     cat('Copying source files in installation directory...')
     suppressWarnings(system(paste0('cp -r ', campari_source, ' ', installation_location), ignore.stdout = silent_built))
-    installing_place <- installation_location
+    installing_place <- paste0(installation_location, '/for_campari/')
     cat('done\n')
   }else{
     installing_place <- campari_source
