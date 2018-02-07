@@ -19,6 +19,15 @@
 #' The green curve is the kinetic annotation (black curve) where the parabolic shape has been subtracted, i.e. the actual curve used for 
 #' the peaks identification. Default value is \code{FALSE}.
 #' @param nbinsxy Number of bins on the y and x axis of the 2-D histogram. Default to sqrt(nrow(the_sap)).
+#' @param merge_cluster Logical that allow clusters to be merged automatically if consecutives
+#' @param basin_optimization Method name for the selection of precise basin. This is a costly procedure which is based on an heuristical obj function w
+#' with the following subgroups.
+#' \itemize{
+#'    \item "\code{uniformity}" not available
+#'    \item "\code{number_of_clusters}" optimize on the basis of the number of clusters
+#'    \item "\code{minimal_entropy}" not available yet
+#' }
+#' @param number_of_clusters if basin_optimization is active accordingly this must be set to integer.
 #' 
 #'      
 #' @return The resulting score (0-1)
@@ -38,19 +47,31 @@
 #' @importFrom data.table fread
 #' @export score_sapphire
 
-score_sapphire <- function(the_sap, ann, scoring_method = 'nmi', silent = FALSE, plot_basin_identification = FALSE, nbinsxy = NULL){
+score_sapphire <- function(the_sap, ann, scoring_method = 'nmi', silent = FALSE,
+                           plot_basin_identification = FALSE, nbinsxy = NULL, merge_clusters = FALSE,
+                           basin_optimization = NULL, number_of_clusters = NULL){
   
   # general input checking
   if(!is.character(the_sap) && !is.data.frame(the_sap)) stop("the_sap must be a string or a data frame")
   if(is.character(the_sap) && (!all(grepl("PROGIDX", the_sap)) && !all(grepl("REPIX", the_sap)))) stop("Please provide a data name starting with 'PROGIDX' or 'REPIX'" )
+  if(!is.null(basin_optimization) && !is.character(basin_optimization)) stop('basin_optimization must be a character')
   if(!is.numeric(ann) && (!is.null(dim(ann)))) stop('Please provide an integer vector for ann')
   if(!is.null(nbinsxy) && !.isSingleInteger(nbinsxy)) stop('nbinsxy must be a single integer')
+  if(!is.null(number_of_clusters) && !.isSingleInteger(number_of_clusters)) stop('number_of_clusters must be a single integer')
   if(!is.logical(silent)) stop('silent must be a logical')
   if(!is.logical(plot_basin_identification)) stop('plot_basin_identification must be a logical')
+  if(!is.logical(merge_clusters)) stop('merge_clusters must be a logical')
   
   # methods input check
   scoring_method.opt <- c("adjusted_rand_index", "jaccard_index", "purity", "nmi")
+  basin_optimization.opt <- c("uniformity", "number_of_clusters", "minimal_entropy")
   if(!(scoring_method[1] %in% scoring_method.opt)) stop("Scoring method option not valid")
+  if(!(basin_optimization[1] %in% basin_optimization.opt)) stop("basin_optimization method option not valid")
+  if(basin_optimization[1] == 'uniformity') stop('uniformity basin_optimization option not yet ready.')
+  if(basin_optimization[1] == 'minimal_entropy') stop('minimal_entropy basin_optimization option not yet ready.')
+  if(basin_optimization[1] == 'number_of_clusters') {
+    if(is.null(number_of_clusters)) stop('To use basin_optimization with number_of_clusters the correspective variable must be set to a single integer.')
+  }
   
   # sapphire table loading
   if(!is.data.frame(the_sap))
@@ -61,7 +82,9 @@ score_sapphire <- function(the_sap, ann, scoring_method = 'nmi', silent = FALSE,
   # hist(st[,5], breaks = 1000) # hist of the distances
   if(is.null(nbinsxy)) nbins_x <- nbins_y <- round(sqrt(nrow(st)*10))
   else nbins_x <- nbins_y <- nbinsxy
+
   if(!silent) cat('Number of (automatically) selected bins for the basin recognition step is', nbins_x, '\n')
+  if(!is.null(basin_optimization))
   bas <- CampaRi::basins_recognition(st, nx = nbins_x, ny = nbins_y, dyn.check = 1, plot = plot_basin_identification, out.file = F, silent = silent)
   
   # plot(ann[c(st[,3])], pch='.')

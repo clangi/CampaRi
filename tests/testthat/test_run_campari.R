@@ -1,17 +1,18 @@
 context('run_campari')
 
 test_that('Test run_campari from installation', {
+  silent <- T
   expect_error(install_campari(install_ncminer = T), NA) # to do it usually
   bin_dir <- system.file('extdata/for_campari/bin/', package = "CampaRi")
   ca_exe <- paste0(bin_dir, dir(bin_dir)[1], '/', list.files(paste0(bin_dir, dir(bin_dir)[1]))[2])
   expect_true(is.character(ca_exe))
   expect_true(ca_exe != "")
   # system('printf "NBU\nEND" &> nbu.in')
-  data.table::fwrite(list('NBU'), file = 'nbu.in', row.names = F, col.names = F)
-  data.table::fwrite(list('END'), file = 'nbu.in', append = T, row.names = F, col.names = F)
+  data.table::fwrite(list('NBU'), file = 'nbu.in', row.names = F, col.names = F, verbose = !silent)
+  data.table::fwrite(list('END'), file = 'nbu.in', append = T, row.names = F, col.names = F, verbose = !silent)
   expect_error(run_campari(FMCSC_SEQFILE="nbu.in", campari_exe = ca_exe, # you must have it defined according to CAMPARI's rules
                           # FMCSC_BASENAME="NBU", # lets try the base_name option
-                          base_name = "NBU", print_status = T, # it will take 55 s in background ~
+                          base_name = "NBU", print_status = !silent, # it will take 55 s in background ~
                           PARAMETERS="oplsaal.prm", # if this variable it is not supplied will be automatically assigned to <full path to folder>/campari/params/abs3.2_opls.prm
                           FMCSC_SC_IPP=0.0,
                           FMCSC_SC_BONDED_T=1.0,
@@ -32,15 +33,15 @@ test_that('Test run_campari from installation', {
                           FMCSC_POLOUT=20000000,
                           FMCSC_ENSOUT=20000000,
                           FMCSC_ENOUT=20000000,
-                          FMCSC_RSTOUT=20000000
+                          FMCSC_RSTOUT=20000000, silent = silent
   ), NA)
   
-  trj <- data.table::fread("FYC.dat", header = F, skip = 1, data.table = FALSE)[,-1]
+  trj <- data.table::fread("FYC.dat", header = F, skip = 1, data.table = FALSE, verbose = !silent)[,-1]
   trj <- sapply(trj, as.numeric) # always be sure that it is numeric!
   trj <- matrix(trj, nrow = 1000, ncol =3) # always be sure that it is numeric!
   expect_error(run_campari(trj = trj, base_name = "ascii_based_analysis", campari_exe = ca_exe,
                            FMCSC_CPROGINDMODE=1, #mst
-                           FMCSC_CCOLLECT=1, print_status = T,
+                           FMCSC_CCOLLECT=1, print_status = !silent,
                            FMCSC_CMODE=4,
                            FMCSC_CDISTANCE=7, #rmsd without alignment 7 - dihedral distances need a complete analysis (pdb_format dcd pdb etc...) 
                            FMCSC_CPROGINDSTART=21, #starting snapshot 
@@ -48,9 +49,9 @@ test_that('Test run_campari from installation', {
                            # FMCSC_BIRCHHEIGHT=2, #birch height
                            FMCSC_CMAXRAD=10880, #clustering
                            FMCSC_CRADIUS=10880,
-                           FMCSC_CCUTOFF=10880,
-                           FMCSC_CPROGINDWIDTH=1000), NA) #local cut is automatically adjusted to 1/10 if it is too big (as here)
-  debugonce(run_campari)
+                           FMCSC_CCUTOFF=10880, 
+                           FMCSC_CPROGINDWIDTH=1000, silent = silent
+                           ), NA) #local cut is automatically adjusted to 1/10 if it is too big (as here)
   expect_error(run_campari(data_file = 'ascii_based_analysis.tsv', base_name = "ascii_based_analysis", campari_exe = ca_exe,
                            FMCSC_CPROGINDMODE=1, #mst
                            FMCSC_CCOLLECT=1, print_status = T,
@@ -62,7 +63,7 @@ test_that('Test run_campari from installation', {
                            FMCSC_CMAXRAD=10880, #clustering
                            FMCSC_CRADIUS=10880,
                            FMCSC_CCUTOFF=10880,
-                           FMCSC_CPROGINDWIDTH=1000), NA)
+                           FMCSC_CPROGINDWIDTH=1000, silent = silent), NA)
   
   
   

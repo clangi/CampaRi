@@ -39,7 +39,7 @@ sudo apt install libgmp-dev # for ClusterR
 # in the case of installation of original campari software: install_campari()
 sudo apt install libfftw3-dev # for install_campari()
 
-# some peculiarity for trusty as it had a different installation 
+# some peculiarity for trusty as it had a different netcdf version and installation procedure
 sudo apt-get install libnetcdff5 # trusty
 sudo apt-get install libnetcdf-dev # trusty
 sudo apt-get install libarpack2-dev # trusty
