@@ -1,7 +1,6 @@
 context('install_campari')
 
 test_that('Test campari original installation from inst directory', {
-  expect_error(install_campari(), NA)
   silent <- T
   # expect_error(install_campari(install_ncminer = T), NA)
   # expect_error(install_campari(install_threads = T, silent_built = F), NA)
