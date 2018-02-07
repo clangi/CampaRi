@@ -23,42 +23,53 @@ They consists in a kinetic annotation of the trajectory based on the minimum spa
 
 ### Installation ###
 
-This code is available on this GitHub repository and therefore it can be downloaded directly and locally installed or, using the handy "devtools", it can be installed from R in the following simple way:
+This code is available on this GitHub repository and therefore it can be downloaded directly and locally installed or, using the handy "devtools".
+As we recently tested the folowing code on a fresh Ubuntu 16.04 we advise the following installations. 
 
-```R
-library(devtools) # external libssl-dev is needed
-install_github("Melkiades/CampaRi")
-
-# Please note that you must install some libraries from Bioconductor (these are not automatically installed from dependencies)
-# To do so: 
-source("http://bioconductor.org/biocLite.R") 
-biocLite(c("AnnotationDbi", "impute", "GO.db", "preprocessCore")) 
-install.packages("WGCNA") # this is the dependence that needs bioconductor
-
-library(CampaRi)
-```
-Please note that to unlock some fundamental analysis functions you need to install netcdf 4.1 or later library for backend fast data-handling.
-This library must be installed --with-fortran bindings (it is possible to check this using the nc-config or nf-config commands (with --all option)).
-Netcdf4 can be installed as following (this is the simple way):
-
-The arpack library is needed at this moment. It will be made optional in the future.
-
+Firstly from terminal we install the most modern versions of the following packages using apt:
 ```sh
-# osx
-brew update
-brew install netcdf --with-fortran
-brew install arpack
-
-# linux
+# ubuntu 16.04 (remember to have R installed -> sudo apt install r-base*)
 sudo apt update 
-sudo apt install libnetcdff-dev # xenial
-sudo apt install libarpack2-dev # xenial
+sudo apt install libnetcdff-dev # xenial: needed for light data handling
+sudo apt install libarpack2-dev # xenial: needed for alternative to lapack spectral decomposition of matrices
+sudo apt install libssl-dev # for devtools
+sudo apt install libcurl4-gnutls-dev # for devtools
+sudo apt install libtiff5-dev # for ClusterR
+sudo apt install libgmp-dev # for ClusterR
+# in the case of installation of original campari software: install_campari()
+sudo apt install libfftw3-dev # for install_campari()
 
-sudo apt-get update 
+# some peculiarity for trusty as it had a different installation 
 sudo apt-get install libnetcdff5 # trusty
 sudo apt-get install libnetcdf-dev # trusty
 sudo apt-get install libarpack2-dev # trusty
+
+# osx # to-update 
+brew update
+brew install netcdf --with-fortran
+brew install arpack
 ```
+
+Secondly install extra-cran-packages using biocLite():
+```R
+source("http://bioconductor.org/biocLite.R") 
+biocLite(c("AnnotationDbi", "impute", "GO.db", "preprocessCore", "PairViz")) 
+```
+Note: the installation of biocgenerics is ultimately failing on ubuntu 17.10 and only R > 3.4.3 can patch it up. We advise to stick with the LTS version 16.04 of ubuntu.
+
+Finally install CampaRi package from github using devtools (note ggfortify just moved away from cran and must be installed from github):
+```R
+library(devtools)
+install_github("sinhrks/ggfortify")
+
+# Final step:
+install_github("Melkiades/CampaRi")
+```
+
+Please note that to unlock some fundamental analysis functions you need to install netcdf 4.1 or later library for backend fast data-handling.
+This library must be installed --with-fortran bindings (it is possible to check this using the nc-config or nf-config commands (with --all option)).
+
+The arpack library is needed at this moment. It will be made optional in the future.
 
 ------------------------------------------------------------------------
 ### Usage - tests ###
@@ -79,10 +90,6 @@ browseVignettes("CampaRi")
 ### Extensive Manual ###
 
 For more details, please refer to the main documentation of the original [CAMPARI documentation](http://campari.sourceforge.net/documentation.html).
-
-
-
-
 
 
 ------------------------------------------------------------------------

@@ -92,6 +92,7 @@ r_github_packages:
   - cran/WGCNA
   - cran/PairViz # it can not be seen by mac?
   - rstudio/rmarkdown
+  - sinhrks/ggfortify
 
 r-packages:
   - bio3d
@@ -111,7 +112,6 @@ r-packages:
   - Hmisc
   - sfsmisc
   - plotly
-  - ggfortify
   - Rtsne
   - TSA
   - ClusterR
