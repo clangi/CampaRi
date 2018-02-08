@@ -2,7 +2,7 @@ context('run_campari')
 
 test_that('Test run_campari from installation', {
   silent <- T
-  expect_error(install_campari(install_ncminer = T), NA) # to do it usually
+  expect_error(install_campari(install_ncminer = T, silent_built = silent), NA) # to do it usually
   bin_dir <- system.file('extdata/for_campari/bin/', package = "CampaRi")
   ca_exe <- paste0(bin_dir, dir(bin_dir)[1], '/', list.files(paste0(bin_dir, dir(bin_dir)[1]))[2])
   expect_true(is.character(ca_exe))
