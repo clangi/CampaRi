@@ -34,7 +34,7 @@ notifications:
   email: false
 
 before_install:
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew tap homebrew/science; fi
+ # - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew tap homebrew/science; fi
   - if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then sudo chown -R $(whoami) /usr/local; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update ; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then rm '/usr/local/bin/gfortran' ; fi

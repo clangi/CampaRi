@@ -5,7 +5,9 @@
 \title{Scoring the SAPPHIRE-plot basin division}
 \usage{
 score_sapphire(the_sap, ann, scoring_method = "nmi", silent = FALSE,
-  plot_basin_identification = FALSE, nbinsxy = NULL)
+  plot_basin_identification = FALSE, nbinsxy = NULL,
+  merge_clusters = FALSE, basin_optimization = NULL,
+  number_of_clusters = NULL, force_matching = TRUE)
 }
 \arguments{
 \item{the_sap}{Name of the PROGIDX_<...>.dat or REPIX_<...>.dat file or Data frame with three columns containing, in order, the (sorted) progress index,
@@ -29,6 +31,20 @@ The green curve is the kinetic annotation (black curve) where the parabolic shap
 the peaks identification. Default value is \code{FALSE}.}
 
 \item{nbinsxy}{Number of bins on the y and x axis of the 2-D histogram. Default to sqrt(nrow(the_sap)).}
+
+\item{basin_optimization}{Method name for the selection of precise basin. This is a costly procedure which is based on an heuristical obj function w
+with the following subgroups.
+\itemize{
+   \item "\code{uniformity}" not available
+   \item "\code{number_of_clusters}" optimize on the basis of the number of clusters
+   \item "\code{minimal_entropy}" not available yet
+}}
+
+\item{number_of_clusters}{if basin_optimization is active accordingly this must be set to integer.}
+
+\item{force_matching}{Please refer to \code{\link{basin_recognition}} for further details about the match option.}
+
+\item{merge_cluster}{Logical that allow clusters to be merged automatically if consecutives}
 }
 \value{
 The resulting score (0-1)
