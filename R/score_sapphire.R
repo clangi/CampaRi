@@ -136,6 +136,8 @@ score_sapphire <- function(the_sap, ann, scoring_method = 'nmi', merge_clusters 
       clnms[is.na(clnms)] <- setdiff(c(1:n_labels), c(colnames(label_freq_list[[jk]])))
       colnames(label_freq_list[[jk]]) <- clnms
     }
+    label_freq_list[[jk]] <- rbind('lab' = as.integer(colnames(label_freq_list[[jk]])), 'clu' = rep(jk, n_labels), label_freq_list[[jk]])
+    
   }
   # label_freq_list
   
@@ -143,7 +145,7 @@ score_sapphire <- function(the_sap, ann, scoring_method = 'nmi', merge_clusters 
   for(jk in 1:length(label_freq_list)){
     it <- c()
     for(kj in 1:ncol(label_freq_list[[jk]])) {
-      ulm <- label_freq_list[[jk]][1, kj]
+      ulm <- label_freq_list[[jk]][3, kj]
       if(ulm != 0) kholn <- - ulm * log(ulm) else kholn <- 0
       it <- c(it,  kholn)
     }
@@ -155,9 +157,26 @@ score_sapphire <- function(the_sap, ann, scoring_method = 'nmi', merge_clusters 
   lab <- list()
   size <- list()
   sh_en <- list()
-  selection_policy <- 'unique'
-  if(selection_policy == 'unique'){
+  
+  # selection_policy <- 'unique' # this is like saying do not merge clusters
+  if(!merge_clusters){
+    # now I construct the grouping for afterwards selection
+    # group_lab_b_cl <- rep(list(NULL), n_fin_cl)
+    # for(jk in 1:n_fin_cl){
+    #   for(ul in 1:n_fin_cl){
+    #     whc <- (label_freq_list[[jk]][1,]*1.0 == ul*1.0)
+    #     group_lab_b_cl[[ul]] <- cbind(group_lab_b_cl[[ul]], label_freq_list[[jk]][, whc])
+    #   }
+    # }
+    # group_lab_b_cl <- lapply(X = group_lab_b_cl, FUN = function(x) rbind('cl' = 1:n_fin_cl, x, 'weight' = (1-x[2,])*x[4,]))
+    # group_lab_b_cl
     
+    df_lab_freq <- data.frame(label_freq_list)
+    # df_lab_freq[2,] <- 1 - df_lab_freq[2,]
+    # sort policy: density of elements and entropy
+    df_lab_freq[,order(df_lab_freq[4,], decreasing = T)]
+    df_lab_freq # to do
+    slct <- array(1, dim = .lt(label_freq_list))
   } else {
     slct <- array(1, dim = .lt(label_freq_list))
   } 
@@ -165,9 +184,8 @@ score_sapphire <- function(the_sap, ann, scoring_method = 'nmi', merge_clusters 
   # main constructor loop for the selected (slct) labels
   for(jk in 1:.lt(label_freq_list)){
     lab[[jk]] <- as.integer(colnames(label_freq_list[[jk]])[slct[jk]])
-    size[[jk]] <- as.integer(label_freq_list[[jk]][2, slct[jk]])
+    size[[jk]] <- as.integer(label_freq_list[[jk]][4, slct[jk]])
     sh_en[[jk]] <- label_freq_list[[jk]][slct[jk], ncol(label_freq_list[[jk]])]
-    
   }  
   
   max_freq_table <- data.frame(cbind(label = unlist(lab), size = unlist(size), sh_en = unlist(sh_en)))
@@ -180,46 +198,44 @@ score_sapphire <- function(the_sap, ann, scoring_method = 'nmi', merge_clusters 
   
   # merging policy - inputs: (label, size, sh_en) from major_freq_table
   if(merge_clusters && !silent) cat('Merging policy applied. For the moment only consecutive identically labeled clusters are merged. \n')
+  
+  # init
+  res_bound <- list()
+  res_label <- list()
+  diff_vec <- diff(unlist(max_freq_table$label)) # barriers
+  lt_sec <- bas$tab.st[,4] # length of the cl
+  ul <- 1 # hlp loop
+  lt_cl <- lt_sec[1]
+  res_label[1] <- max_freq_table$label[1]
+  
+  # loop on the barriers
+  for(ini in 1:length(diff_vec)){
     
-    # init
-    res_bound <- list()
-    res_label <- list()
-    diff_vec <- diff(unlist(max_freq_table$label)) # barriers
-    lt_sec <- bas$tab.st[,4] # length of the cl
-    ul <- 1 # hlp loop
-    lt_cl <- lt_sec[1]
-    res_label[1] <- max_freq_table$label[1]
-    
-    # loop on the barriers
-    for(ini in 1:length(diff_vec)){
-      
-      # clusters have same lebels merging then
-      if(diff_vec[ini] == 0 && merge_clusters) {
-        lt_cl <- lt_cl + lt_sec[ini + 1]
-      }
-      
-      # standard run
-      if(diff_vec[ini] != 0){
-        res_label[ul] <- lab[ini]
-        res_bound[ul] <- lt_cl
-        lt_cl <- lt_sec[ini + 1]
-        ul <- ul + 1
-      }
-      
-      # final split
-      if(ini == length(diff_vec)){
-        res_label[ul] <- lab[ini]
-        res_bound[ul] <- lt_cl
-      }
+    # clusters have same lebels merging then
+    if(diff_vec[ini] == 0 && merge_clusters) {
+      lt_cl <- lt_cl + lt_sec[ini + 1]
     }
-    res_bound <- unlist(res_bound)
-    # res_bound
-    # sum(res_bound)
-    # lt_sec
-    res_label <- unlist(res_label)
-    # res_label
+    
+    # standard run
+    if(diff_vec[ini] != 0){
+      res_label[ul] <- lab[ini]
+      res_bound[ul] <- lt_cl
+      lt_cl <- lt_sec[ini + 1]
+      ul <- ul + 1
+    }
+    
+    # final split
+    if(ini == length(diff_vec)){
+      res_label[ul] <- lab[ini]
+      res_bound[ul] <- lt_cl
+    }
   }
-  max_freq_table; label_freq_list; 
+  res_bound <- unlist(res_bound)
+  # res_bound
+  # sum(res_bound)
+  # lt_sec
+  res_label <- unlist(res_label)
+  res_label
   
   # creating the predicted vector
   predicted_div <- list()
@@ -230,36 +246,36 @@ score_sapphire <- function(the_sap, ann, scoring_method = 'nmi', merge_clusters 
   plot(predicted_div)
   
   # calculating the entropy of the new selection
-  label_freq_list <- list()
-  res_b <- 0
-  for(jk in 1:length(res_label)){
-    label_freq_list[[jk]] <- sort(table(ann[c(st[,3])][(res_b+1):(res_b + res_bound[i])]), decreasing=TRUE)[1:4] * 1.0 / res_bound[i] 
-    # (res_bound[i]-res_b)
-    label_freq_list[[jk]] <- rbind(label_freq_list[[jk]], sort(table(ann[c(st[,3])][(res_b+1):(res_b + res_bound[i])]), decreasing=TRUE)[1:4])
-    label_freq_list[[jk]][is.na(label_freq_list[[jk]])] <- 0 
-    res_b <- res_b + res_bound[i]
-  }
-  
-  # label_freq_list
-  for(jk in 1:length(label_freq_list)){
-    it <- c()
-    for(kj in 1:ncol(label_freq_list[[jk]])) {
-      ulm <- label_freq_list[[jk]][1, kj]
-      if(!is.na(names(ulm))) kholn <- - ulm * log(ulm) else kholn <- 0
-      it <- c(it,  kholn)
-    }
-    label_freq_list[[jk]] <- cbind(label_freq_list[[jk]], sh_en = sum(it))
-  }
-  lab <- list()
-  size <- list()
-  sh_en <- list()
-  for(jk in 1:length(label_freq_list)){
-    lab[[jk]] <- as.integer(colnames(label_freq_list[[jk]])[1])
-    size[[jk]] <- as.integer(label_freq_list[[jk]][2, 1])
-    sh_en[[jk]] <- label_freq_list[[jk]][1,ncol(label_freq_list[[jk]])]
-  }  
-  
-  max_freq_table <- data.frame(cbind(label = unlist(lab), size = unlist(size), sh_en = unlist(sh_en)))
+  # label_freq_list <- list()
+  # res_b <- 0
+  # for(jk in 1:length(res_label)){
+  #   label_freq_list[[jk]] <- sort(table(ann[c(st[,3])][(res_b+1):(res_b + res_bound[i])]), decreasing=TRUE)[1:4] * 1.0 / res_bound[i] 
+  #   # (res_bound[i]-res_b)
+  #   label_freq_list[[jk]] <- rbind(label_freq_list[[jk]], sort(table(ann[c(st[,3])][(res_b+1):(res_b + res_bound[i])]), decreasing=TRUE)[1:4])
+  #   label_freq_list[[jk]][is.na(label_freq_list[[jk]])] <- 0 
+  #   res_b <- res_b + res_bound[i]
+  # }
+  # 
+  # # label_freq_list
+  # for(jk in 1:length(label_freq_list)){
+  #   it <- c()
+  #   for(kj in 1:ncol(label_freq_list[[jk]])) {
+  #     ulm <- label_freq_list[[jk]][2, kj]
+  #     if(!is.na(names(ulm))) kholn <- - ulm * log(ulm) else kholn <- 0
+  #     it <- c(it,  kholn)
+  #   }
+  #   label_freq_list[[jk]] <- cbind(label_freq_list[[jk]], sh_en = sum(it))
+  # }
+  # lab <- list()
+  # size <- list()
+  # sh_en <- list()
+  # for(jk in 1:length(label_freq_list)){ # check label_freq
+  #   lab[[jk]] <- as.integer(colnames(label_freq_list[[jk]])[1])
+  #   size[[jk]] <- as.integer(label_freq_list[[jk]][2, 1])
+  #   sh_en[[jk]] <- label_freq_list[[jk]][1,ncol(label_freq_list[[jk]])]
+  # }
+  # 
+  # max_freq_table <- data.frame(cbind(label = unlist(lab), size = unlist(size), sh_en = unlist(sh_en)))
   # max_freq_table
   # max_freq_table[order(max_freq_table$sh_en), ]
   
@@ -267,7 +283,7 @@ score_sapphire <- function(the_sap, ann, scoring_method = 'nmi', merge_clusters 
   # external_validation(true_labels = ann[st[,3]], clusters = predicted_div, method = "adjusted_rand_index", summary_stats = FALSE)
   # external_validation(true_labels = ann[st[,3]], clusters = predicted_div, method = "jaccard_index", summary_stats = FALSE)
   # external_validation(true_labels = ann[st[,3]], clusters = predicted_div, method = "purity", summary_stats = FALSE)
-  return(external_validation(true_labels = ann[st[,3]], clusters = predicted_div, method = "nmi", summary_stats = FALSE))
+  return(ClusterR::external_validation(true_labels = ann[st[,3]], clusters = predicted_div, method = "nmi", summary_stats = FALSE))
 }
 
 
