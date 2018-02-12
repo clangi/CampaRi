@@ -19,24 +19,14 @@ test_that('optimize sapphire plot clusters using SBR', {
   nbin <- 20
   if(plt_stff) basins_recognition(the_sap, nx = nbin, match = F, plot = T, out.file = F, new.dev = F)
   # if(plt_stff) basins_recognition(the_sap, nx = nbin, match = T, plot = T, out.file = F, new.dev = F)
-  CampaRi::basin_optimization()
-  
-  
-  abba <- unique(round(seq(2, nbinsxy, length.out = 100)))
-  .BiSBR(st = st, ncl_found = 1, ncl_teo = 3, start.idx = 1, end.idx = length(abba), lin_scale =  abba, force_matching = F, silent = F)
-  .BiSBR(st = st, ncl_found = 1, ncl_teo = 3, start.idx = 1, end.idx = length(abba), lin_scale =  abba, force_matching = T, silent = F)
-  # testing for minimum number of bins without crashing
-  CampaRi::basins_recognition(st[1:1000,], nx = 4, new.dev = F, out.file = F, plot = T)
-  CampaRi::basins_recognition(st, nx = 12, new.dev = F, out.file = F, plot = T)
-  CampaRi::basins_recognition(st, nx = 88, new.dev = F, out.file = F, plot = T, match = T)
-  CampaRi::basins_recognition(st, nx = 97, new.dev = F, out.file = F, plot = T, match = T)
-  CampaRi::basins_recognition(st, nx = 343, new.dev = F, out.file = F, plot = T, match = T)
-  alu <- CampaRi::basins_recognition(st, nx = 905, new.dev = F, out.file = F, plot = T, match = T)
+  expect_error(optimal_bas <- CampaRi::basin_optimization(the_sap,  how_fine_search = 100, number_of_clusters = 3, force_matching = T, silent = silent), NA)
+  expect_error(optimal_bas <- CampaRi::basin_optimization(the_sap,  how_fine_search = 100, force_matching = T, silent = silent))
+  # optimal_bas$Optimal_nbins
+  # optimal_bas$bas
   
   if(file.exists('MST_DUMPLING.nc')) file.remove('MST_DUMPLING.nc')
   if(file.exists('REPIX_000000000021.dat')) file.remove('REPIX_000000000021.dat')
 })
-
 
 # require(microbenchmark); require(ggplot2); v <- 1:10e7
 # a <- microbenchmark("bs" = .BiSearch(v, 432), "classic" = (432 %in% v), times = 10)

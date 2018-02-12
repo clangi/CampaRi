@@ -13,26 +13,21 @@
 #'            \item "\code{jaccard_index}" 
 #'            \item "\code{purity}" 
 #'       }
-#' @param silent A logical value indicating whether the function has to remain silent or not. Default value is \code{FALSE}.
+#' @param basin_optimization If \code{TRUE} it will use \code{\link{basin_optimization}} to optimize the clusters. Please consider adding its relevant variables.
 #' @param plot_basin_identification A logical value indicating whether to display the SAPPHIRE plot with the resulting partitions or not. 
 #' Black partitions are the matched ones, blue ones derive only from the dynamic analysis and orange ones only from the kinetic analysis. 
 #' The green curve is the kinetic annotation (black curve) where the parabolic shape has been subtracted, i.e. the actual curve used for 
 #' the peaks identification. Default value is \code{FALSE}.
-#' @param nbinsxy Number of bins on the y and x axis of the 2-D histogram. Default to sqrt(nrow(the_sap)).
+#' @param nbins_x Number of bins on  x-axis of the 2-D histogram. Default to sqrt(nrow(the_sap)).
+#' @param nbins_y Number of bins on the y-axis of the 2-D histogram. Default to sqrt(nrow(the_sap)).
 #' @param merge_cluster Logical that allow clusters to be merged automatically if consecutives
-#' @param basin_optimization Method name for the selection of precise basin. This is a costly procedure which is based on an heuristical obj function w
-#' with the following subgroups.
-#' \itemize{
-#'    \item "\code{uniformity}" not available
-#'    \item "\code{number_of_clusters}" optimize on the basis of the number of clusters
-#'    \item "\code{minimal_entropy}" not available yet
-#' }
-#' @param number_of_clusters if basin_optimization is active accordingly this must be set to integer.
 #' @param force_matching Please refer to \code{\link{basin_recognition}} for further details about the match option.
-#'      
-#' @return The resulting score (0-1)
-#' @examples
+#' @param silent A logical value indicating whether the function has to remain silent or not. Default value is \code{FALSE}.
+#' @param ... This variables will be sent to \code{\link{basin_optimization}} without any checking
 #' 
+#' @return The resulting score (0-1)
+#' 
+#' @examples
 #' adjl <- mst_from_trj(trj = matrix(rnorm(1000), nrow = 100, ncol = 10))
 #' ret<-gen_progindex(adjl = adjl)
 #' gen_annotation(ret_data = ret, local_cut_width = 10)
@@ -47,19 +42,20 @@
 #' @importFrom data.table fread
 #' @export score_sapphire
 
-score_sapphire <- function(the_sap, ann, scoring_method = 'nmi', silent = FALSE,
-                           plot_basin_identification = FALSE, merge_clusters = FALSE,
-                           basin_optimization = TRUE, ...){
+score_sapphire <- function(the_sap, ann, scoring_method = 'nmi', merge_clusters = FALSE, 
+                           basin_optimization = FALSE, plot_basin_identification = FALSE,
+                           nbins_x = NULL, nbins_y = nbins_x, force_matching = FALSE, silent = FALSE, ...){
   
   # general input checking
   if(!is.character(the_sap) && !is.data.frame(the_sap)) stop("the_sap must be a string or a data frame")
   if(is.character(the_sap) && (!all(grepl("PROGIDX", the_sap)) && !all(grepl("REPIX", the_sap)))) stop("Please provide a data name starting with 'PROGIDX' or 'REPIX'" )
   if(!is.numeric(ann) && (!is.null(dim(ann)))) stop('Please provide an integer vector for ann')
-  # if(!is.null(nbinsxy) && !.isSingleInteger(nbinsxy)) stop('nbinsxy must be a single integer')
-  # if(!is.null(number_of_clusters) && !.isSingleInteger(number_of_clusters)) stop('number_of_clusters must be a single integer')
+  if(!is.null(nbins_x) && !.isSingleInteger(nbins_x)) stop('nbins_x must be a single integer')
+  if(!is.null(nbins_y) && !.isSingleInteger(nbins_x)) stop('nbins_y must be a single integer')
+  if(!is.null(number_of_clusters) && !.isSingleInteger(number_of_clusters)) stop('number_of_clusters must be a single integer')
   if(!is.logical(silent)) stop('silent must be a logical')
-  if(!is.logical(plot_basin_identification)) stop('plot_basin_identification must be a logical')
   if(!is.logical(basin_optimization)) stop('basin_optimization must be a logical')
+  if(!is.logical(plot_basin_identification)) stop('plot_basin_identification must be a logical')
   if(!is.logical(merge_clusters)) stop('merge_clusters must be a logical')
   
   # methods input check
@@ -72,101 +68,22 @@ score_sapphire <- function(the_sap, ann, scoring_method = 'nmi', silent = FALSE,
   else
     st <- the_sap
   
+  # checking the number of bins inserted
+  if(is.null(nbins_x)) nbins_x <- round(sqrt(nrow(st)*10))
+  if(is.null(nbins_y)) nbins_y <- round(sqrt(nrow(st)*10))
+  if(nbins_x != nbins_y) {
+    if(!silent) cat('For simplicity we do not allow yet to use different number of nx and ny (bins for x and y).')
+    nbins_x <- nbins_y <- max(nbins_x, nbins_y)
+  }
+  
   if(!silent) cat('Number of (automatically) selected bins for the basin recognition step is', nbins_x, '\n')
   if(basin_optimization){
-    CampaRi::basin_optimization(...)
-    
-    # ------------------------------------------------------- basin_opt - number of clusters
-    # This method consist only into finding the right number of clusters 
-    # without splitting the possible subdivision (of the same number of clustering)
-    # and score them per their relevance (e.g. uniformity or minimal entropy).
-    #
-    
-    # if(basin_optimization[1] == 'number_of_clusters') { 
-      
-      #####################################
-    #   
-    #   # checks
-    #   if(!silent) cat('Automatic optimization of basins based on number of cluster selected... \n')
-    #   if(is.null(number_of_clusters)) stop('To use basin_optimization with number_of_clusters the correspective variable must be set to a single integer.')
-    #   if(number_of_clusters < 2 && number_of_clusters >= nrow(st)) stop('Number of cluster too high or too low.')
-    #   if(number_of_clusters > nbinsxy) stop('Please set the number of clusters lower than the number of initial nbins (nbinsxy).')
-    #   
-    #   # init
-    #   how_fine <- 10
-    #   lin_scale <- unique(round(seq(2, nbinsxy, length.out = how_fine)))
-    #   if(!silent) cat('Selected a convergence step of', how_fine, 'subdivisions, ranging from', nbinsxy, 'to 2. \n')
-    #   n_cl <- nbins_x
-    #   whch <- how_fine
-    #   
-    #   # loop over the first coarse search of best partitioning
-    #   while(n_cl != number_of_clusters){
-    #     
-    #     nbins_x <- lin_scale[whch] # linear scale from 2 to nbinsxy
-    #     if(!silent) cat('Looking for right divisions using', nbins_x, ' nbins...\n')
-    #     bas <- CampaRi::basins_recognition(st, nx = nbins_x, plot = F, match = force_matching, out.file = F, new.dev = F, silent = T)
-    #     n_cl <- nrow(bas$tab.st) # take the number of clusters found
-    #     
-    #     # normal finer search - descent
-    #     if(n_cl > number_of_clusters){
-    #       old_whch <- whch
-    #       whch <- round(whch/2)
-    #       if(old_whch == whch) whch <- old_whch - 1
-    #       if(whch < 1){
-    #         n_fin_cl <- n_cl
-    #         n_cl <- number_of_clusters
-    #       } 
-    #     # if fine partitioning went wrong, we want to try a finer search
-    #     }else if(n_cl < number_of_clusters){
-    #       how_fine2 <- 10
-    #       if(whch+1 > how_fine) stop('Initial guess of bins brought you directly to have less barriers found than needed. Please consider an increment of nbinsxy parameter.')
-    #       # case in which it is simply to select the upper part!
-    #       
-    #       if(!silent) cat('Found that our split was too coarse. Trying to split it again in', how_fine2,
-    #                       'parts in the found ', nbins_x, '-', lin_scale[whch+1] , 'range.\n')
-    #       lin_scale <- unique(round(seq(nbins_x, lin_scale[whch+1], length.out = how_fine2)))
-    #       if(.lt(lin_scale) == 1){
-    #         if(!silent) cat('Perfect number of divisions not found. In particular, we finally found', n_cl, 'partitions. Probably a finer search could work.', 
-    #                         'Otherwise, it is necessary to suppose another number of clusters. In particular, we stopped before starting internal loop because',
-    #                         'the span between the last two splits was not sufficiently large.\n')
-    #         n_fin_cl <- n_cl
-    #         n_cl <- number_of_clusters
-    #       }
-    #       whch <- how_fine2
-    #       while(n_cl != number_of_clusters){
-    #         nbins_x <- lin_scale[whch]
-    #         bas <- CampaRi::basins_recognition(st, nx = nbins_x, plot = F, match = force_matching, out.file = F, new.dev = F, silent = T)
-    #         n_cl <- max(bas$tab.st[,1]) 
-    #         
-    #         if(n_cl > number_of_clusters){
-    #           whch <- whch - 1
-    #         } else if(n_cl < number_of_clusters){
-    #           if(!silent) cat('Perfect number of divisions not found. In particular, we finally found', n_cl, 'partitions. Probably a finer search could work.', 
-    #                           'Otherwise, it is necessary to suppose another number of clusters. \n')
-    #           n_fin_cl <- n_cl
-    #           n_cl <- number_of_clusters
-    #         }else{
-    #           if(!silent) cat('We found a perfect binning using', nbins_x, 'number of bins.\n')
-    #           n_fin_cl <- n_cl
-    #         }
-    #       }
-    #     }else{ # end of the finer part, i.e. n_cl == number of clusters without having to go inside the inner loop
-    #       if(!silent) cat('We found a perfect binning using', nbins_x, 'number of bins.\n')
-    #       n_fin_cl <- n_cl
-    #     }
-    #   }
-    # }
-    # # final call if you want to plot!
-    # bas <- CampaRi::basins_recognition(st, nx = nbins_x, dyn.check = 1, 
-    #                                    plot = plot_basin_identification, match = force_matching, out.file = F, new.dev = F, silent = silent)
-    # 
-    # 
-    # 
-    cat('bog')
-      
-    ##########################################
+    optim_bas <- CampaRi::basin_optimization(the_sap = the_sap, plot_basin_identification = plot_basin_identification, 
+                                             nbins_x = nbins_x, nbins_y = nbins_x, force_matching = force_matching, silent = silent, ...)
+    bas <- optim_bas$bas
+    n_fin_cl <- nrow(bas$tab.st)
   }else{
-    bas <- CampaRi::basins_recognition(st, nx = nbins_x, dyn.check = 1, 
+    bas <- CampaRi::basins_recognition(st, nx = nbins_x, ny = nbins_x, dyn.check = 1, 
                                        plot = plot_basin_identification, match = force_matching, out.file = F, new.dev = F, silent = silent)
     n_fin_cl <- nrow(bas$tab.st) # here we suppose that our split is the one we wanted and we define the number of resulting clusters
   }
@@ -176,6 +93,7 @@ score_sapphire <- function(the_sap, ann, scoring_method = 'nmi', silent = FALSE,
   pin <- ann[c(st[,3])]
   uni_ann <- unique(pin)
   if(anyNA(pin)) stop('We can not handle NAs in the annotation. Check it!')
+  
   # min of ann correction
   if(min(uni_ann) < 1){
     if(!silent) cat('Found negative or 0 values in the annotation. Correcting by sum of the abs of the min +1 per each annotation value. \n')
@@ -322,4 +240,92 @@ score_sapphire <- function(the_sap, ann, scoring_method = 'nmi', silent = FALSE,
   # external_validation(true_labels = ann[st[,3]], clusters = predicted_div, method = "purity", summary_stats = FALSE)
   return(external_validation(true_labels = ann[st[,3]], clusters = predicted_div, method = "nmi", summary_stats = FALSE))
 }
+
+
+
+#####################################
+# ------------------------------------------------------- basin_opt - number of clusters
+# This method consist only into finding the right number of clusters 
+# without splitting the possible subdivision (of the same number of clustering)
+# and score them per their relevance (e.g. uniformity or minimal entropy).
+#
+
+# if(basin_optimization[1] == 'number_of_clusters') { 
+#   
+#   # checks
+#   if(!silent) cat('Automatic optimization of basins based on number of cluster selected... \n')
+#   if(is.null(number_of_clusters)) stop('To use basin_optimization with number_of_clusters the correspective variable must be set to a single integer.')
+#   if(number_of_clusters < 2 && number_of_clusters >= nrow(st)) stop('Number of cluster too high or too low.')
+#   if(number_of_clusters > nbinsxy) stop('Please set the number of clusters lower than the number of initial nbins (nbinsxy).')
+#   
+#   # init
+#   how_fine <- 10
+#   lin_scale <- unique(round(seq(2, nbinsxy, length.out = how_fine)))
+#   if(!silent) cat('Selected a convergence step of', how_fine, 'subdivisions, ranging from', nbinsxy, 'to 2. \n')
+#   n_cl <- nbins_x
+#   whch <- how_fine
+#   
+#   # loop over the first coarse search of best partitioning
+#   while(n_cl != number_of_clusters){
+#     
+#     nbins_x <- lin_scale[whch] # linear scale from 2 to nbinsxy
+#     if(!silent) cat('Looking for right divisions using', nbins_x, ' nbins...\n')
+#     bas <- CampaRi::basins_recognition(st, nx = nbins_x, plot = F, match = force_matching, out.file = F, new.dev = F, silent = T)
+#     n_cl <- nrow(bas$tab.st) # take the number of clusters found
+#     
+#     # normal finer search - descent
+#     if(n_cl > number_of_clusters){
+#       old_whch <- whch
+#       whch <- round(whch/2)
+#       if(old_whch == whch) whch <- old_whch - 1
+#       if(whch < 1){
+#         n_fin_cl <- n_cl
+#         n_cl <- number_of_clusters
+#       } 
+#     # if fine partitioning went wrong, we want to try a finer search
+#     }else if(n_cl < number_of_clusters){
+#       how_fine2 <- 10
+#       if(whch+1 > how_fine) stop('Initial guess of bins brought you directly to have less barriers found than needed. Please consider an increment of nbinsxy parameter.')
+#       # case in which it is simply to select the upper part!
+#       
+#       if(!silent) cat('Found that our split was too coarse. Trying to split it again in', how_fine2,
+#                       'parts in the found ', nbins_x, '-', lin_scale[whch+1] , 'range.\n')
+#       lin_scale <- unique(round(seq(nbins_x, lin_scale[whch+1], length.out = how_fine2)))
+#       if(.lt(lin_scale) == 1){
+#         if(!silent) cat('Perfect number of divisions not found. In particular, we finally found', n_cl, 'partitions. Probably a finer search could work.', 
+#                         'Otherwise, it is necessary to suppose another number of clusters. In particular, we stopped before starting internal loop because',
+#                         'the span between the last two splits was not sufficiently large.\n')
+#         n_fin_cl <- n_cl
+#         n_cl <- number_of_clusters
+#       }
+#       whch <- how_fine2
+#       while(n_cl != number_of_clusters){
+#         nbins_x <- lin_scale[whch]
+#         bas <- CampaRi::basins_recognition(st, nx = nbins_x, plot = F, match = force_matching, out.file = F, new.dev = F, silent = T)
+#         n_cl <- max(bas$tab.st[,1]) 
+#         
+#         if(n_cl > number_of_clusters){
+#           whch <- whch - 1
+#         } else if(n_cl < number_of_clusters){
+#           if(!silent) cat('Perfect number of divisions not found. In particular, we finally found', n_cl, 'partitions. Probably a finer search could work.', 
+#                           'Otherwise, it is necessary to suppose another number of clusters. \n')
+#           n_fin_cl <- n_cl
+#           n_cl <- number_of_clusters
+#         }else{
+#           if(!silent) cat('We found a perfect binning using', nbins_x, 'number of bins.\n')
+#           n_fin_cl <- n_cl
+#         }
+#       }
+#     }else{ # end of the finer part, i.e. n_cl == number of clusters without having to go inside the inner loop
+#       if(!silent) cat('We found a perfect binning using', nbins_x, 'number of bins.\n')
+#       n_fin_cl <- n_cl
+#     }
+#   }
+# }
+# # final call if you want to plot!
+# bas <- CampaRi::basins_recognition(st, nx = nbins_x, dyn.check = 1, 
+#                                    plot = plot_basin_identification, match = force_matching, out.file = F, new.dev = F, silent = silent)
+# 
+##########################################
+
 
