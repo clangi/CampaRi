@@ -151,14 +151,22 @@ score_sapphire <- function(the_sap, ann, scoring_method = 'nmi', merge_clusters 
   }
   # label_freq_list
   
-  # collecting the various elected labels
+  # collecting the various elected labels - selection policy: unique labels!
   lab <- list()
   size <- list()
   sh_en <- list()
-  for(jk in 1:length(label_freq_list)){
-    lab[[jk]] <- as.integer(colnames(label_freq_list[[jk]])[1])
-    size[[jk]] <- as.integer(label_freq_list[[jk]][2, 1])
-    sh_en[[jk]] <- label_freq_list[[jk]][1,ncol(label_freq_list[[jk]])]
+  selection_policy <- 'unique'
+  if(selection_policy == 'unique'){
+    
+  } else {
+    slct <- array(1, dim = .lt(label_freq_list))
+  } 
+  
+  # main constructor loop for the selected (slct) labels
+  for(jk in 1:.lt(label_freq_list)){
+    lab[[jk]] <- as.integer(colnames(label_freq_list[[jk]])[slct[jk]])
+    size[[jk]] <- as.integer(label_freq_list[[jk]][2, slct[jk]])
+    sh_en[[jk]] <- label_freq_list[[jk]][slct[jk], ncol(label_freq_list[[jk]])]
     
   }  
   
@@ -171,28 +179,37 @@ score_sapphire <- function(the_sap, ann, scoring_method = 'nmi', merge_clusters 
   # max_freq_table[order(max_freq_table$sh_en),] # ordering based on internal entropy
   
   # merging policy - inputs: (label, size, sh_en) from major_freq_table
-  if(merge_clusters){
-    if(!silent) cat('Merging policy applied. For the moment only consecutive identically labeled clusters are merged. \n')
+  if(merge_clusters && !silent) cat('Merging policy applied. For the moment only consecutive identically labeled clusters are merged. \n')
+    
+    # init
     res_bound <- list()
     res_label <- list()
-    diff_vec <- diff(unlist(max_freq_table$label))
-    lt_sec <- bas$tab.st[,4]
-    ul <- 1 
-    a <- lt_sec[1]
-    res_label[1] <- lab[1]
+    diff_vec <- diff(unlist(max_freq_table$label)) # barriers
+    lt_sec <- bas$tab.st[,4] # length of the cl
+    ul <- 1 # hlp loop
+    lt_cl <- lt_sec[1]
+    res_label[1] <- max_freq_table$label[1]
+    
+    # loop on the barriers
     for(ini in 1:length(diff_vec)){
-      if(diff_vec[ini] == 0) {
-        a <- a + lt_sec[ini + 1]
+      
+      # clusters have same lebels merging then
+      if(diff_vec[ini] == 0 && merge_clusters) {
+        lt_cl <- lt_cl + lt_sec[ini + 1]
       }
+      
+      # standard run
       if(diff_vec[ini] != 0){
         res_label[ul] <- lab[ini]
-        res_bound[ul] <- a
-        a <- lt_sec[ini + 1]
+        res_bound[ul] <- lt_cl
+        lt_cl <- lt_sec[ini + 1]
         ul <- ul + 1
       }
+      
+      # final split
       if(ini == length(diff_vec)){
         res_label[ul] <- lab[ini]
-        res_bound[ul] <- a
+        res_bound[ul] <- lt_cl
       }
     }
     res_bound <- unlist(res_bound)
