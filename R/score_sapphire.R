@@ -165,6 +165,8 @@ score_sapphire <- function(the_sap, ann, scoring_method = 'nmi', merge_clusters 
   max_freq_table <- data.frame(cbind(label = unlist(lab), size = unlist(size), sh_en = unlist(sh_en)))
   if(!silent) cat('We found the following splits, accounting for', sum(unlist(size)),'of the elemnts. This means there are roughly', 
                   round((lpin - sum(unlist(size))) * 100 / lpin, digits = 1), '% missassignment.\n\n')
+  # now attaching it to the bas output
+  max_freq_table <- cbind(max_freq_table, bas$tab.st)
   if(!silent) print(max_freq_table); cat('\n')
   # max_freq_table[order(max_freq_table$sh_en),] # ordering based on internal entropy
   
@@ -200,6 +202,7 @@ score_sapphire <- function(the_sap, ann, scoring_method = 'nmi', merge_clusters 
     res_label <- unlist(res_label)
     # res_label
   }
+  max_freq_table; label_freq_list; 
   
   # creating the predicted vector
   predicted_div <- list()

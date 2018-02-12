@@ -778,9 +778,9 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
     }    
 
     if(is.null(breaks)){
-        tab.st <- data.frame(n=1, start=1, end=cstored, .lt=cstored, type=1)
+        tab.st <- data.frame(n_cl=1, start=1, end=cstored, .lt=cstored, type=1)
     } else {
-        tab.st <- data.frame(n=c(1:(.lt(breaks)+1)), start=c(1,vec+1), end=c(vec, cstored), .lt=diff(c(0,vec, cstored)), type=c(rep(NaN,.lt(breaks)),1))
+        tab.st <- data.frame(n_cl=c(1:(.lt(breaks)+1)), start=c(1,vec+1), end=c(vec, cstored), .lt=diff(c(0,vec, cstored)), type=c(rep(NaN,.lt(breaks)),1))
         if(only.kin) tab.st$type <- c(rep(3, .lt(breaks)), 1)
         else if(match) tab.st$type <- 1
         else {
