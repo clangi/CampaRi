@@ -60,141 +60,144 @@
 #' @importFrom data.table fread fwrite
 #' @export basins_recognition
 
-basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, match=FALSE, dyn.check=1, avg.opt=c("movav", "SG"), plot=FALSE, new.dev=TRUE, out.file=TRUE, silent=FALSE, ...) {
-    call <- match.call()
-    
-    if(!is.character(data) && !is.data.frame(data)) stop("data must be a string or a data frame")
-    if(is.character(the_sap) && (!all(grepl("PROGIDX", the_sap)) && !all(grepl("REPIX", the_sap)))) stop("Please provide a data name starting with 'PROGIDX' or 'REPIX'" )
-    if((nx %% 1) != 0) stop("nx must be an integer")
-    if((ny %% 1) != 0) stop("ny must be an integer")
-    if(!is.logical(local.cut)) stop("local.cut must be a logical value")
-    if(!is.logical(match)) stop("match must be a logical value")
-    if(!(dyn.check %in% c(1:10))) stop("dyn.check value not valid")
-    if(!is.logical(plot)) stop("plot must be a logical value")
-    if(!is.logical(new.dev)) stop("new.dev must be a logical value")
-    if(!is.logical(out.file)) stop("out.file must be a logical value")
-    avg.opt.arg <- c("movav", "SG")
-    if(!(avg.opt[1] %in% avg.opt.arg)) stop("Average option not valid")
-
-    input.args <- list(...)
-    avail.extra.arg <- c("pol.degree","only.kin","time.series")
-    if(!is.null(names(input.args)) && any(!(names(input.args) %in% avail.extra.arg))) 
-        warning('There is a probable mispelling in one of the inserted variables. Please check the available extra input arguments.')
-    if("only.kin" %in% names(input.args)) {
-        only.kin <- input.args$only.kin
-        if(only.kin) match <- TRUE
-    } else only.kin <- FALSE
-    if(avg.opt[1]=="SG") {
-        if(!("pol.degree" %in% names(input.args))) {
-            if(!silent) cat("SG but pol.degree not specified, set to default value 2\n")
-            pol.degree <- 2
-        } else if(!(input.args$pol.degree %in% c(2:6))) {
-            warning("Degree of the polynomial not valid, set to default value 2")
-            pol.degree <- 2 
-        } else pol.degree <- input.args$pol.degree
+basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, match=FALSE, dyn.check=1, 
+                               avg.opt=c("movav", "SG"), plot=FALSE, new.dev=TRUE, out.file=TRUE, silent=FALSE, ...) {
+  call <- match.call()
+  
+  if(!is.character(data) && !is.data.frame(data)) stop("data must be a string or a data frame")
+  if(is.character(the_sap) && (!all(grepl("PROGIDX", the_sap)) && !all(grepl("REPIX", the_sap)))) stop("Please provide a data name starting with 'PROGIDX' or 'REPIX'" )
+  if((nx %% 1) != 0) stop("nx must be an integer")
+  if((ny %% 1) != 0) stop("ny must be an integer")
+  if((nx < 7 || ny < 7)) stop('nx and ny must be > 5')
+  if(!is.logical(local.cut)) stop("local.cut must be a logical value")
+  if(!is.logical(match)) stop("match must be a logical value")
+  if(!(dyn.check %in% c(1:10))) stop("dyn.check value not valid")
+  if(!is.logical(plot)) stop("plot must be a logical value")
+  if(!is.logical(new.dev)) stop("new.dev must be a logical value")
+  if(!is.logical(out.file)) stop("out.file must be a logical value")
+  avg.opt.arg <- c("movav", "SG")
+  if(!(avg.opt[1] %in% avg.opt.arg)) stop("Average option not valid")
+  
+  input.args <- list(...)
+  avail.extra.arg <- c("pol.degree","only.kin","time.series")
+  if(!is.null(names(input.args)) && any(!(names(input.args) %in% avail.extra.arg))) 
+    warning('There is a probable mispelling in one of the inserted variables. Please check the available extra input arguments.')
+  if("only.kin" %in% names(input.args)) {
+    only.kin <- input.args$only.kin
+    if(only.kin) match <- TRUE
+  } else only.kin <- FALSE
+  if(avg.opt[1]=="SG") {
+    if(!("pol.degree" %in% names(input.args))) {
+      if(!silent) cat("SG but pol.degree not specified, set to default value 2\n")
+      pol.degree <- 2
+    } else if(!(input.args$pol.degree %in% c(2:6))) {
+      warning("Degree of the polynomial not valid, set to default value 2")
+      pol.degree <- 2 
+    } else pol.degree <- input.args$pol.degree
+  }
+  
+  as.real <- function(x) {
+    return(as.double(x))
+  }
+  scale <- function(x) {
+    scl <- (max(progind$Time)-1)/(max(x)-min(x))
+    return(1+(x-min(x))*scl)
+  }
+  refine <- function(vec) {
+    ## Attach to the peak in the cut function
+    for (jj in 1:length(vec)) {
+      vec <- round(vec)
+      tmp <- which.max(kin[(vec[jj]-round(sd.kin/2)):(vec[jj]+round(sd.kin/2))]) 
+      vec[jj] <- tmp+vec[jj]-round(sd.kin/2)-1
     }
-
-    as.real <- function(x) {
-        return(as.double(x))
-    }
-    scale <- function(x) {
-        scl <- (max(progind$Time)-1)/(max(x)-min(x))
-        return(1+(x-min(x))*scl)
-    }
-    refine <- function(vec) {
-        ## Attach to the peak in the cut function
-        for (jj in 1:length(vec)) {
-            vec <- round(vec)
-            tmp <- which.max(kin[(vec[jj]-round(sd.kin/2)):(vec[jj]+round(sd.kin/2))]) 
-            vec[jj] <- tmp+vec[jj]-round(sd.kin/2)-1
+    vec <- unique(c(1,vec,cstored))
+    if(length(which(vec<=sd.kin))>1) vec <- vec[-c(2:max(which(vec<sd.kin)))]
+    if(length(which((cstored-vec)<=sd.kin)>1)) vec <- c(vec[-which((cstored-vec)<sd.kin)],cstored)
+    while (any(diff(vec)<sd.kin)) {
+      vec.tmp <- vec
+      dst <- 0
+      start <- NULL
+      for(ii in 2:(length(vec)-1)){
+        dst <- dst+vec[ii+1]-vec[ii]
+        if(dst<sd.kin) {
+          start <- c(start,ii)
+          next
+        } else if (length(start)==1) {
+          start <- c(start,ii)
+          ll <- start[which.min(kin[vec[start]])]
+          vec.tmp <- vec.tmp[-match(vec[ll],vec.tmp)]
+        } else if (length(start)>1) {
+          start <- c(start,ii)
+          ll <- which.max(kin[vec[start]])
+          lst <- start[-ll]
+          vec.tmp <- vec.tmp[-match(vec[lst], vec.tmp)]
         }
-        vec <- unique(c(1,vec,cstored))
-        if(length(which(vec<=sd.kin))>1) vec <- vec[-c(2:max(which(vec<sd.kin)))]
-        if(length(which((cstored-vec)<=sd.kin)>1)) vec <- c(vec[-which((cstored-vec)<sd.kin)],cstored)
-        while (any(diff(vec)<sd.kin)) {
-            vec.tmp <- vec
-            dst <- 0
-            start <- NULL
-            for(ii in 2:(length(vec)-1)){
-                dst <- dst+vec[ii+1]-vec[ii]
-                if(dst<sd.kin) {
-                    start <- c(start,ii)
-                    next
-                } else if (length(start)==1) {
-                    start <- c(start,ii)
-                    ll <- start[which.min(kin[vec[start]])]
-                    vec.tmp <- vec.tmp[-match(vec[ll],vec.tmp)]
-                } else if (length(start)>1) {
-                    start <- c(start,ii)
-                    ll <- which.max(kin[vec[start]])
-                    lst <- start[-ll]
-                    vec.tmp <- vec.tmp[-match(vec[lst], vec.tmp)]
-                }
-                start <- NULL
-                dst <- 0
-            }
-            vec <- vec.tmp
-        }
-        vec <- vec[which(vec != 1)]
-        vec <- vec[which(vec != cstored)]
-        if(length(vec)<3) warning("Vector completely erased in refine function")
-        return(vec)
+        start <- NULL
+        dst <- 0
+      }
+      vec <- vec.tmp
     }
-    true.peaks <- function(idxx, values, up=TRUE) {
-        ## To select the effective peaks or minima, it return a selection of idxx 
-        rl <- rle(diff(idxx))
-        if(any(rl$values==1)) {
-            disc <- NULL
-            st <- c(0, cumsum(rl$lengths))[which(rl$values==1)] + 1
-            end <- cumsum(rl$lengths)[which(rl$values==1)]
-            for(ii in seq_along(st)) {
-                ## max() means that in case two consecutive index have the same values, I pick the one on the right (.. don't know if it's the best choice honestly)
-                if(up) idx.max <- max(which(values[idxx[st[ii]:(end[ii]+1)]]==max(values[idxx[st[ii]:(end[ii]+1)]])))
-                else idx.max <- max(which(values[idxx[st[ii]:(end[ii]+1)]]==min(values[idxx[st[ii]:(end[ii]+1)]])))
-                disc <- c(disc, idxx[st[ii]:(end[ii]+1)][-idx.max])
-            }
-            return(idxx[-match(disc, idxx)])
-        } else return(idxx)
-    }
-    myHell <- function(x, y){
-        return(sqrt(1-sum(sqrt(x*y))))
-    }
-    myKL <- function(x, y){
-        xn <- x[-which(x==0 | y==0)]
-        yn <- y[-which(x==0 | y==0)]
-        return(sum(xn*log(xn/yn)))
-    }
-    
-    ## INPUT FILE 
-    if(!silent) cat("Reading PROGIDX file...\n")
-    if(is.data.frame(data)){
-        if(!local.cut) {
-          progind <- data.frame(data[, c(1, 3, 4)])
-          colnames(progind) <- c("PI", "Time", "Cut")
-        } else {
-          foo <- data.frame(data[, c(1, 3, 10, 12)])
-          progind <- data.frame(PI=foo[[1]], Time=foo[[2]], Cut=(foo[[3]]+foo[[4]])/2)
-          rm(foo)
-        }
+    vec <- vec[which(vec != 1)]
+    vec <- vec[which(vec != cstored)]
+    if(length(vec)<3) warning("Vector completely erased in refine function")
+    return(vec)
+  }
+  true.peaks <- function(idxx, values, up=TRUE) {
+    ## To select the effective peaks or minima, it return a selection of idxx 
+    rl <- rle(diff(idxx))
+    if(any(rl$values==1)) {
+      disc <- NULL
+      st <- c(0, cumsum(rl$lengths))[which(rl$values==1)] + 1
+      end <- cumsum(rl$lengths)[which(rl$values==1)]
+      for(ii in seq_along(st)) {
+        ## max() means that in case two consecutive index have the same values, I pick the one on the right (.. don't know if it's the best choice honestly)
+        if(up) idx.max <- max(which(values[idxx[st[ii]:(end[ii]+1)]]==max(values[idxx[st[ii]:(end[ii]+1)]])))
+        else idx.max <- max(which(values[idxx[st[ii]:(end[ii]+1)]]==min(values[idxx[st[ii]:(end[ii]+1)]])))
+        disc <- c(disc, idxx[st[ii]:(end[ii]+1)][-idx.max])
+      }
+      return(idxx[-match(disc, idxx)])
+    } else return(idxx)
+  }
+  myHell <- function(x, y){
+    return(sqrt(1-sum(sqrt(x*y))))
+  }
+  myKL <- function(x, y){
+    xn <- x[-which(x==0 | y==0)]
+    yn <- y[-which(x==0 | y==0)]
+    return(sum(xn*log(xn/yn)))
+  }
+  
+  ## INPUT FILE 
+  if(!silent) cat("Reading PROGIDX file...\n")
+  if(is.data.frame(data)){
+    if(!local.cut) {
+      progind <- data.frame(data[, c(1, 3, 4)])
+      colnames(progind) <- c("PI", "Time", "Cut")
     } else {
-        if(!local.cut) {
-            progind <- data.frame(fread(data, showProgress=FALSE)[, c(1, 3, 4)])
-            colnames(progind) <- c("PI", "Time", "Cut")
-        } else {
-            foo <- data.frame(fread(data, showProgress=FALSE)[, c(1, 3, 10, 12)])
-            progind <- data.frame(PI=foo[[1]], Time=foo[[2]], Cut=(foo[[3]]+foo[[4]])/2)
-            rm(foo)
-        }
-        if("time.series" %in% names(input.args)){
-            time.series <- input.args$time.series
-            progind$Time <- as.vector(unlist(fread(time.series, showProgress=FALSE)[,1]))
-            if(!silent) cat("Time series given by", time.series, "\n")
-        }
+      foo <- data.frame(data[, c(1, 3, 10, 12)])
+      progind <- data.frame(PI=foo[[1]], Time=foo[[2]], Cut=(foo[[3]]+foo[[4]])/2)
+      rm(foo)
     }
-    cstored <- dim(progind)[1]
-
-    ## Dynamic parameters
-    perc <- 0.90 ## Percentage to find optimal nbiny
+  } else {
+    if(!local.cut) {
+      progind <- data.frame(fread(data, showProgress=FALSE)[, c(1, 3, 4)])
+      colnames(progind) <- c("PI", "Time", "Cut")
+    } else {
+      foo <- data.frame(fread(data, showProgress=FALSE)[, c(1, 3, 10, 12)])
+      progind <- data.frame(PI=foo[[1]], Time=foo[[2]], Cut=(foo[[3]]+foo[[4]])/2)
+      rm(foo)
+    }
+    if("time.series" %in% names(input.args)){
+      time.series <- input.args$time.series
+      progind$Time <- as.vector(unlist(fread(time.series, showProgress=FALSE)[,1]))
+      if(!silent) cat("Time series given by", time.series, "\n")
+    }
+  }
+  if(nrow(progind) < 80) stop('It is impossible to recognize basins with less than 80 snapshots in the sapphire table.')
+  cstored <- dim(progind)[1]
+  
+  ## Dynamic parameters
+  perc <- 0.90 ## Percentage to find optimal nbiny
     xidx <- 0.5 ## Joining consecutive cells on a single raw
     K <- 2 ## Parameter of the Haat wavelet
     dpeaks.dyn <- 3 ## Parameter of the maximum search algorithm (window size)

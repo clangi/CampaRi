@@ -83,8 +83,17 @@ score_sapphire <- function(the_sap, ann, scoring_method = 'nmi', silent = FALSE,
     if(basin_optimization[1] == 'uniformity') stop('uniformity basin_optimization option not yet ready.')
     if(basin_optimization[1] == 'minimal_entropy') stop('minimal_entropy basin_optimization option not yet ready.')
     
- # basin_opt - number of clusters
-    if(basin_optimization[1] == 'number_of_clusters') {
+    # ------------------------------------------------------- basin_opt - number of clusters
+    # This method consist only into finding the right number of clusters 
+    # without splitting the possible subdivision (of the same number of clustering)
+    # and score them per their relevance (e.g. uniformity or minimal entropy).
+    #
+    
+    if(basin_optimization[1] == 'number_of_clusters') { 
+      
+      
+      
+      
       
       # checks
       if(!silent) cat('Automatic optimization of basins based on number of cluster selected... \n')
@@ -102,10 +111,10 @@ score_sapphire <- function(the_sap, ann, scoring_method = 'nmi', silent = FALSE,
       # loop over the first coarse search of best partitioning
       while(n_cl != number_of_clusters){
         
-        nbins_x <- lin_scale[whch]
+        nbins_x <- lin_scale[whch] # linear scale from 2 to nbinsxy
         if(!silent) cat('Looking for right divisions using', nbins_x, ' nbins...\n')
         bas <- CampaRi::basins_recognition(st, nx = nbins_x, plot = F, match = force_matching, out.file = F, new.dev = F, silent = T)
-        n_cl <- max(bas$tab.st[,1]) 
+        n_cl <- nrow(bas$tab.st) # take the number of clusters found
         
         # normal finer search - descent
         if(n_cl > number_of_clusters){
@@ -113,14 +122,14 @@ score_sapphire <- function(the_sap, ann, scoring_method = 'nmi', silent = FALSE,
           whch <- round(whch/2)
           if(old_whch == whch) whch <- old_whch - 1
           if(whch < 1){
-            #!!
+            n_fin_cl <- n_cl
+            n_cl <- number_of_clusters
           } 
         # if fine partitioning went wrong, we want to try a finer search
         }else if(n_cl < number_of_clusters){
           how_fine2 <- 10
           if(whch+1 > how_fine) stop('Initial guess of bins brought you directly to have less barriers found than needed. Please consider an increment of nbinsxy parameter.')
           # case in which it is simply to select the upper part!
-          
           
           if(!silent) cat('Found that our split was too coarse. Trying to split it again in', how_fine2,
                           'parts in the found ', nbins_x, '-', lin_scale[whch+1] , 'range.\n')
@@ -159,6 +168,10 @@ score_sapphire <- function(the_sap, ann, scoring_method = 'nmi', silent = FALSE,
     # final call if you want to plot!
     bas <- CampaRi::basins_recognition(st, nx = nbins_x, dyn.check = 1, 
                                        plot = plot_basin_identification, match = force_matching, out.file = F, new.dev = F, silent = silent)
+    
+    
+    
+    
   }else{
     bas <- CampaRi::basins_recognition(st, nx = nbins_x, dyn.check = 1, 
                                        plot = plot_basin_identification, match = force_matching, out.file = F, new.dev = F, silent = silent)

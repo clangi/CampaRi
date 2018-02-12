@@ -41,14 +41,17 @@
 #   invisible() #no output from this function
 # }
 
+# short hand for length
 .lt <- function(x) return(length(x))
 
+# check for single integer value
 .isSingleInteger <- function(x) {
   if(!is.numeric(x) || x%%1 != 0 || (is.null(dim(x)) && length(x) != 1) || (!is.null(dim(x))))
     return(FALSE)
   else 
     return(TRUE)
 }
+# check for single element (e.g. character)
 .isSingleElement <- function(x) {
   if((is.null(dim(x)) && length(x) != 1) || (!is.null(dim(x))))
     return(FALSE)
@@ -56,6 +59,7 @@
     return(TRUE)
 }
 
+# This routine is able to print a loading bar within a loop to know the work done
 .print_consecutio <- function(itering, total_to_iter, tot_to_print = 10, other_to_print = "", timeit = T, time_first = NULL){
   state_to_print <- floor(((itering*1.0)/total_to_iter)*tot_to_print)
   white_not_to_print <- tot_to_print - state_to_print
@@ -90,7 +94,7 @@
   } 
 }
 
-
+# check for install_campari()
 .get_os <- function(){
   sysinf <- Sys.info()
   if (!is.null(sysinf)){
@@ -105,4 +109,20 @@
       os <- "linux"
   }
   tolower(os)
+}
+
+# binary search for true-false. It is 100 times faster than %in%
+.BiSearch <- function(table, key, start.idx = 1, end.idx = length(table),
+                      tol = .Machine$double.eps ^ 0.5,
+                      check = TRUE) {
+  # Takes sorted (in ascending order) vectors
+  if (check) stopifnot(is.vector(table), is.numeric(table))
+  m <- as.integer(ceiling((end.idx + start.idx) / 2)) # Midpoint
+  if (table[m] > key + tol) {
+    if (start.idx == end.idx) return(FALSE)
+    Recall(table, key, start.idx = start.idx, end.idx = m - 1L, tol = tol, check = FALSE)
+  } else if (table[m] < key - tol) {
+    if (start.idx == end.idx) return(FALSE)
+    Recall(table, key, start.idx = m + 1L, end.idx = end.idx, tol = tol, check = FALSE)
+  } else return(TRUE)
 }
