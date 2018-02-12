@@ -91,6 +91,7 @@ score_sapphire <- function(the_sap, ann, scoring_method = 'nmi', merge_clusters 
   
   # ann is reordered following progrex index and it is checked for the absence of 0s
   pin <- ann[c(st[,3])]
+  lpin <- .lt(pin)
   uni_ann <- unique(pin)
   if(anyNA(pin)) stop('We can not handle NAs in the annotation. Check it!')
   
@@ -121,78 +122,86 @@ score_sapphire <- function(the_sap, ann, scoring_method = 'nmi', merge_clusters 
   # sort(table(pin), decreasing=TRUE) # sorted
   
   # we choose the representative label
-  major_freq <- list()
+  label_freq_list <- list() # each element of this list is a cluster
   for(jk in 1:n_fin_cl){
     maj_selected <- sort(table(pin[bas$tab.st[jk,2]:bas$tab.st[jk,3]]), decreasing=TRUE) # count and sort for each cluster found.
     maj_sel_filtered <- maj_selected[1:n_labels]  # select only first 3!
-    major_freq[[jk]] <- (maj_sel_filtered*1.0)/bas$tab.st[jk,4] # calculating the density of major label
-    major_freq[[jk]] <- rbind('d' = major_freq[[jk]], 'n' = maj_sel_filtered)
-    major_freq[[jk]][is.na(major_freq[[jk]])] <- 0 
+    label_freq_list[[jk]] <- (maj_sel_filtered*1.0)/bas$tab.st[jk,4] # calculating the density of major label
+    label_freq_list[[jk]] <- rbind('d' = label_freq_list[[jk]], 'n' = as.integer(maj_sel_filtered))
+    label_freq_list[[jk]][is.na(label_freq_list[[jk]])] <- 0 
     # if a group does not contain some of the labels a <NA> will appear
-    if(anyNA(colnames(major_freq[[1]]))){
+    if(anyNA(colnames(label_freq_list[[jk]]))){
       # no scream will be done. This part should be merged with the other one. Lets say that there is a better entropy or something else
-      
+      clnms <- colnames(label_freq_list[[jk]])
+      clnms[is.na(clnms)] <- setdiff(c(1:n_labels), c(colnames(label_freq_list[[jk]])))
+      colnames(label_freq_list[[jk]]) <- clnms
     }
   }
-  major_freq
+  # label_freq_list
   
-  for(jk in 1:length(major_freq)){
+  # calculating the entropy
+  for(jk in 1:length(label_freq_list)){
     it <- c()
-    for(kj in 1:ncol(major_freq[[jk]])) {
-      ulm <- major_freq[[jk]][1, kj]
-      if(!is.na(names(ulm))) kholn <- - ulm * log(ulm) else kholn <- 0
+    for(kj in 1:ncol(label_freq_list[[jk]])) {
+      ulm <- label_freq_list[[jk]][1, kj]
+      if(ulm != 0) kholn <- - ulm * log(ulm) else kholn <- 0
       it <- c(it,  kholn)
     }
-    major_freq[[jk]] <- cbind(major_freq[[jk]], sh_en = sum(it))
+    label_freq_list[[jk]] <- rbind(label_freq_list[[jk]], 'sh_en' = it)
   }
+  # label_freq_list
   
+  # collecting the various elected labels
   lab <- list()
   size <- list()
   sh_en <- list()
-  for(jk in 1:length(major_freq)){
-    lab[[jk]] <- as.integer(colnames(major_freq[[jk]])[1])
-    size[[jk]] <- as.integer(major_freq[[jk]][2, 1])
-    sh_en[[jk]] <- major_freq[[jk]][1,ncol(major_freq[[jk]])]
+  for(jk in 1:length(label_freq_list)){
+    lab[[jk]] <- as.integer(colnames(label_freq_list[[jk]])[1])
+    size[[jk]] <- as.integer(label_freq_list[[jk]][2, 1])
+    sh_en[[jk]] <- label_freq_list[[jk]][1,ncol(label_freq_list[[jk]])]
     
   }  
   
-  fs <- data.frame(cbind(label = unlist(lab), size = unlist(size), sh_en = unlist(sh_en)))
-  # fs
-  # sum(fs[,2])
-  # sum(unlist(size))
-  # fs[order(fs$sh_en),]
+  max_freq_table <- data.frame(cbind(label = unlist(lab), size = unlist(size), sh_en = unlist(sh_en)))
+  if(!silent) cat('We found the following splits, accounting for', sum(unlist(size)),'of the elemnts. This means there are roughly', 
+                  round((lpin - sum(unlist(size))) * 100 / lpin, digits = 1), '% missassignment.\n\n')
+  if(!silent) print(max_freq_table); cat('\n')
+  # max_freq_table[order(max_freq_table$sh_en),] # ordering based on internal entropy
   
-  # principle: uniformity
-  res_bound <- list()
-  res_label <- list()
-  diff_vec <- diff(unlist(lab))
-  lt_sec <- bas$tab.st[,4]
-  ul <- 1 
-  a <- lt_sec[1]
-  res_label[1] <- lab[1]
-  for(ini in 1:length(diff_vec)){
-    if(diff_vec[ini] == 0) {
-      a <- a + lt_sec[ini + 1]
+  # merging policy - inputs: (label, size, sh_en) from major_freq_table
+  if(merge_clusters){
+    if(!silent) cat('Merging policy applied. For the moment only consecutive identically labeled clusters are merged. \n')
+    res_bound <- list()
+    res_label <- list()
+    diff_vec <- diff(unlist(max_freq_table$label))
+    lt_sec <- bas$tab.st[,4]
+    ul <- 1 
+    a <- lt_sec[1]
+    res_label[1] <- lab[1]
+    for(ini in 1:length(diff_vec)){
+      if(diff_vec[ini] == 0) {
+        a <- a + lt_sec[ini + 1]
+      }
+      if(diff_vec[ini] != 0){
+        res_label[ul] <- lab[ini]
+        res_bound[ul] <- a
+        a <- lt_sec[ini + 1]
+        ul <- ul + 1
+      }
+      if(ini == length(diff_vec)){
+        res_label[ul] <- lab[ini]
+        res_bound[ul] <- a
+      }
     }
-    if(diff_vec[ini] != 0){
-      res_label[ul] <- lab[ini]
-      res_bound[ul] <- a
-      a <- lt_sec[ini + 1]
-      ul <- ul + 1
-    }
-    if(ini == length(diff_vec)){
-      res_label[ul] <- lab[ini]
-      res_bound[ul] <- a
-    }
+    res_bound <- unlist(res_bound)
+    # res_bound
+    # sum(res_bound)
+    # lt_sec
+    res_label <- unlist(res_label)
+    # res_label
   }
-  res_bound <- unlist(res_bound)
-  # res_bound
-  # sum(res_bound)
-  # lt_sec
-  res_label <- unlist(res_label)
-  # res_label
   
-  # now creating the output vector
+  # creating the predicted vector
   predicted_div <- list()
   for(i in 1:length(res_label)){
     predicted_div[[i]] <- rep(res_label[i], res_bound[i])
@@ -201,38 +210,38 @@ score_sapphire <- function(the_sap, ann, scoring_method = 'nmi', merge_clusters 
   plot(predicted_div)
   
   # calculating the entropy of the new selection
-  major_freq <- list()
+  label_freq_list <- list()
   res_b <- 0
   for(jk in 1:length(res_label)){
-    major_freq[[jk]] <- sort(table(ann[c(st[,3])][(res_b+1):(res_b + res_bound[i])]), decreasing=TRUE)[1:4] * 1.0 / res_bound[i] 
+    label_freq_list[[jk]] <- sort(table(ann[c(st[,3])][(res_b+1):(res_b + res_bound[i])]), decreasing=TRUE)[1:4] * 1.0 / res_bound[i] 
     # (res_bound[i]-res_b)
-    major_freq[[jk]] <- rbind(major_freq[[jk]], sort(table(ann[c(st[,3])][(res_b+1):(res_b + res_bound[i])]), decreasing=TRUE)[1:4])
-    major_freq[[jk]][is.na(major_freq[[jk]])] <- 0 
+    label_freq_list[[jk]] <- rbind(label_freq_list[[jk]], sort(table(ann[c(st[,3])][(res_b+1):(res_b + res_bound[i])]), decreasing=TRUE)[1:4])
+    label_freq_list[[jk]][is.na(label_freq_list[[jk]])] <- 0 
     res_b <- res_b + res_bound[i]
   }
   
-  # major_freq
-  for(jk in 1:length(major_freq)){
+  # label_freq_list
+  for(jk in 1:length(label_freq_list)){
     it <- c()
-    for(kj in 1:ncol(major_freq[[jk]])) {
-      ulm <- major_freq[[jk]][1, kj]
+    for(kj in 1:ncol(label_freq_list[[jk]])) {
+      ulm <- label_freq_list[[jk]][1, kj]
       if(!is.na(names(ulm))) kholn <- - ulm * log(ulm) else kholn <- 0
       it <- c(it,  kholn)
     }
-    major_freq[[jk]] <- cbind(major_freq[[jk]], sh_en = sum(it))
+    label_freq_list[[jk]] <- cbind(label_freq_list[[jk]], sh_en = sum(it))
   }
   lab <- list()
   size <- list()
   sh_en <- list()
-  for(jk in 1:length(major_freq)){
-    lab[[jk]] <- as.integer(colnames(major_freq[[jk]])[1])
-    size[[jk]] <- as.integer(major_freq[[jk]][2, 1])
-    sh_en[[jk]] <- major_freq[[jk]][1,ncol(major_freq[[jk]])]
+  for(jk in 1:length(label_freq_list)){
+    lab[[jk]] <- as.integer(colnames(label_freq_list[[jk]])[1])
+    size[[jk]] <- as.integer(label_freq_list[[jk]][2, 1])
+    sh_en[[jk]] <- label_freq_list[[jk]][1,ncol(label_freq_list[[jk]])]
   }  
   
-  fs <- data.frame(cbind(label = unlist(lab), size = unlist(size), sh_en = unlist(sh_en)))
-  # fs
-  # fs[order(fs$sh_en), ]
+  max_freq_table <- data.frame(cbind(label = unlist(lab), size = unlist(size), sh_en = unlist(sh_en)))
+  # max_freq_table
+  # max_freq_table[order(max_freq_table$sh_en), ]
   
   # scoring it with accuracy?
   # external_validation(true_labels = ann[st[,3]], clusters = predicted_div, method = "adjusted_rand_index", summary_stats = FALSE)
