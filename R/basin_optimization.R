@@ -24,7 +24,13 @@
 #' @param force_matching Please refer to \code{\link{basin_recognition}} for further details about the match option.
 #' @param silent A logical value indicating whether the function has to remain silent or not. Default value is \code{FALSE}.
 #'      
-#' @return The resulting score (0-1)
+#' @return A list containing
+#'       \itemize{
+#'         \item "\code{Optimal_nbins}" The found number of bins.
+#'         \item "\code{bas}" Output of the final basin recognition run.
+#'         \item "\code{ncl}" Number of clusters finally found.
+#'         \item "\code{idx}" Index in the bin array.
+#'       }   
 #' @examples
 #' 
 #' adjl <- mst_from_trj(trj = matrix(rnorm(1000), nrow = 100, ncol = 10))

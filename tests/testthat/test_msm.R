@@ -1,6 +1,6 @@
-context('basins_recognition')
+context('msm')
 
-test_that('Test for basin recognition with ext files', {
+test_that('Test for markov state models with ext files', {
 
     cat("TESTING MSM function\n")
     

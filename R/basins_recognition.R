@@ -198,590 +198,590 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
   
   ## Dynamic parameters
   perc <- 0.90 ## Percentage to find optimal nbiny
-    xidx <- 0.5 ## Joining consecutive cells on a single raw
-    K <- 2 ## Parameter of the Haat wavelet
-    dpeaks.dyn <- 3 ## Parameter of the maximum search algorithm (window size)
-    nsample <- 50 ## Number of samples in the distribution of reshuffled Hellinger distances 
-    cutjoin <- 50 ## Number of null joining attempts required to quit the procedure 
-    conf.lev <- 0.005 ## Cut on pvalues of the Grubb Test
-    ## Kinetic parameters
-    wsize <- round(2*cstored/nx) + ((round(2*cstored/nx)+1) %% 2)  ## To make it odd
-    dpeaks.kin <- ceiling(wsize/2)+ceiling(wsize/2)%%2+1 
-    thr.ratio <- 0.05 ## Parameter of second data cleaning  
-    ## Matching parameters
-    lx <- round(cstored/nx)
-    sd.kin <- 1*lx
-    sd.dyn <- 1*lx
-
-
-#########&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&###############
-############################&&&&&& DYNAMICS &&&&&&&###############################
-#########&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&###############
-
-    if(!only.kin) {
-        if(!silent) cat("Analysis of the dynamic trace...\n")
-
-##################################################################################
-        ## NBIN Y IDENTIFICATION
-##################################################################################
-
-        if(ny.aut) {
-            idx <- 0
-            nbin <- 0
-            lthbin <- NULL
-            seqbin <- seq(from=10, to=min(2000,cstored/10), by=10)
-            for (nbin in seqbin) {
-                lth <- NULL
-                br <- seq(from=1, to=cstored, length.out=(nbin+1))
-                for (i in 1:nbin) {
-                    smp <- progind[,2][round(br[i]):round(br[i+1])]
-                    lth[i] <- max(smp)-min(smp)
-                }
-                idx <- idx+1
-                lthbin[idx] <- sd(lth)
-            }
-            a.0 <- max(lthbin)
-            idx.fin <- which(lthbin==a.0)
-            expmodel.0 <- lm(log(a.0-lthbin)[-idx.fin] ~ seqbin[-idx.fin])
-            expmodel <- try(nls(lthbin ~ a-b*exp(seqbin*c), start=list(a=a.0, b=exp(coef(expmodel.0)[1]), c=coef(expmodel.0)[2] ) ), silent=TRUE)
-            fracmodel <- try(nls(lthbin ~ a*(seqbin/(l+seqbin)), start=list(a=max(lthbin), l=(max(lthbin)-min(lthbin)/2))), silent=TRUE)
-
-            if(is.list(expmodel)) {
-                theor.exp <- coef(expmodel)["a"]-coef(expmodel)["b"] * exp(coef(expmodel)["c"] * seqbin)
-                X2.exp.rid <- sum((theor.exp-lthbin)^2/theor.exp)
-            }
-            if(is.list(fracmodel)) {
-                theor.frac <- coef(fracmodel)[1]*(seqbin/(coef(fracmodel)[2]+seqbin))
-                X2.frac.rid <- sum((theor.frac-lthbin)^2/theor.frac)
-            }
-            if(is.list(fracmodel) && is.list(expmodel)) {
-                if (X2.exp.rid < X2.frac.rid) {
-                    if(!silent) cat("Exponential model chosen\n")
-                    can <- (1/coef(expmodel)["c"])*log((coef(expmodel)["a"]/coef(expmodel)["b"]) *(1-perc))
-                } else {
-                    if(!silent) cat("Hyperbola model chosen\n")
-                    can <- coef(fracmodel)[2]*perc/(1-perc) 
-                }
-                ny <- as.numeric(round(can))
-            } else if (sum(c(is.list(expmodel), is.list(fracmodel)))==1) {
-                if (is.list(expmodel)) {
-                    if(!silent) cat("Exponential model chosen, hyperbola not available\n")
-                    can <- (1/coef(expmodel)["c"])*log((coef(expmodel)["a"]/coef(expmodel)["b"]) *(1-perc))
-                } else {
-                    if(!silent) cat("Hyperbola model chosen, exponential not available\n")
-                    can <- coef(fracmodel)[2]*perc/(1-perc) 
-                }
-                ny <- as.numeric(round(can))
-            } else {
-                if(!silent) cat("Non linear fit doesn't work... ny set to nx default value.\n")
-                ny <- 500
-            }
-        }
-
-##################################################################################
-        ## 2-D HISTOGRAM
-##################################################################################
-
-        if(!silent) cat("Nbins on y is", ny, "\n")
-        hist <- hist2d(matrix(c(progind[,1],progind[,2]), ncol=2, nrow=cstored), nbins=c(nx,ny), show=FALSE)
-
-##################################################################################
-        ## STRETCHES CREATION
-##################################################################################
-        ## Joining cells through density criterion: the larger values of xids the larger tolerance 
-        joinx <- hist$counts
-        joinx[,] <- 0
-        for (j in 1:ny) {
-            for(i in 1:(nx-1)) {
-                if(hist$counts[i,j] < 1) next #mettere un minimo?
-                if((hist$counts[i,j] >= (hist$counts[i+1,j]*(1-xidx))) & (hist$counts[i,j] <= hist$counts[i+1,j]))  joinx[i,j] <- 1
-                if((hist$counts[i+1,j] >= (hist$counts[i,j]*(1-xidx))) & (hist$counts[i+1,j] < hist$counts[i,j]))  joinx[i,j] <- 1
-                ## Joining if separated by an empty bin as well
-                if (i==(nx-1)) next
-                if((hist$counts[i,j] >= (hist$counts[i+2,j]*(1-xidx))) & (hist$counts[i,j] <= hist$counts[i+2,j]))  joinx[c(i,i+1),j] <- 1
-                if((hist$counts[i+2,j] >= (hist$counts[i,j]*(1-xidx))) & (hist$counts[i+2,j] < hist$counts[i,j]))  joinx[c(i,i+1),j] <- 1
-            }
-        }
-
-####################################################################################
-        ## BIGG PARTITION
-###############################################################################
-        ## ovlap is the measure of overlaps of the ministretchs along the x-axis
-        ovlap <- as.vector(rowSums(joinx))
-        ovlap.der <- c(diff(ovlap),0) + c(0, diff(ovlap))
-        interval <- c(mean(ovlap.der)-2*sd(ovlap.der), mean(ovlap.der)+2*sd(ovlap.der))
-        idxx.up <- which(ovlap.der>interval[2])
-        idxx.down <- which(ovlap.der<interval[1])
-        if(.lt(idxx.up)>1) idxx.up.cl <- true.peaks(idxx.up, ovlap.der, up=TRUE)
-        else idxx.up.cl <- NULL
-        if(.lt(idxx.down)>1) idxx.down.cl <- true.peaks(idxx.down, ovlap.der, up=FALSE)
-        else idxx.down.cl <- NULL
-        if(is.null(idxx.up.cl) & is.null(idxx.down.cl)) bigg.idx <- NULL
-        else bigg.idx <- sort(c(idxx.up.cl, idxx.down.cl))
-        bigg.brk <- hist$x[bigg.idx]
-        
-        ## source("./Rfunctions/SBR_images_functions.R")
-        ## stretches.crosses(progind$Time, rawset, hist, joinx, ovlap, ovlap.der, bigg.idx)
-
-        
-####################################################################################
-        ## FILL RAWSET
-###############################################################################
-        rawset <- data.frame(min=rep(0,ny), max=rep(0,ny), center=rep(0,ny), wth1=rep(0,ny), wth2=rep(0,ny))
-        for (j in 1:ny) {
-            temp <- which(joinx[,j]==1)
-            if (length(temp)==0) next      
-            minr <- temp[1]
-            maxr <- temp[length(temp)]+1
-            if((maxr-minr)<= 3) rawset[j,c(1:3)] <- 0
-            else  rawset[j,c(1:3)] <- c(hist$x[minr], hist$x[maxr], weighted.mean(hist$x[minr:maxr], hist$counts[c(minr:maxr),j]))
-        }
-        dum <- cbind(rawset$max-rawset$center, rawset$center-rawset$min)
-        rawset$wth1 <- (apply(dum, 1, min)/apply(dum, 1, max))*(1-((rawset$max-rawset$min)/cstored))
-        rawset$wth2 <- (apply(dum, 1, min)/apply(dum ,1, max)) / (rawset$max-rawset$min)
-        rawset$wth1[which(is.na(rawset$wth1))] <- 0
-        rawset$wth2[which(is.na(rawset$wth2))] <- 0
-        if(any(!is.finite(unlist(rawset)))) stop("Error in rawset")
-
-        rm("joinx")
-        
-#################################################################################
-        ## WEIGHTED SUMS FUNCTIONS
-##############################################################################
-        ## Forward
-        sumwr <- function(rawset, first, meanopt, wthopt) {
-            rawsetsort <- rawset[order(rawset$center),]
-            if (first=="min") rawfirst <- rawsetsort$min
-            if (first=="max") rawfirst <- rawsetsort$max
-            if (first=="center") rawfirst <- rawsetsort$center
-            if (meanopt=="min") rawmean <- rawsetsort$min
-            if (meanopt=="max") rawmean <- rawsetsort$max
-            if (meanopt=="center") rawmean <- rawsetsort$center
-            if (wthopt==1) rawwth <- rawsetsort$wth1
-            if (wthopt==2) rawwth <- rawsetsort$wth2
-            idrs <- match(FALSE, rawsetsort$center==0)
-            if (is.na(idrs)) idrs <- 1
-            sm <- NULL
-            for (i in seq(nx)) {
-                idxlist <- which(rawfirst[idrs:ny] < hist$x.breaks[i+1]) + idrs - 1 
-                if(length(idxlist)==0) sm[i] <- 0
-                else sm[i] <- sum(rawwth[idxlist])
-            }
-            return(sm)
-        }
-
-#################################################################################
-        ## Backward
-        backsumwr <- function(rawset, first, meanopt, wthopt) {
-            rawsetsort <- rawset[order(rawset$center),]
-            if (first=="min") rawfirst <- rawsetsort$min
-            if (first=="max") rawfirst <- rawsetsort$max
-            if (first=="center") rawfirst <- rawsetsort$center
-            if (meanopt=="min") rawmean <- rawsetsort$min
-            if (meanopt=="max") rawmean <- rawsetsort$max
-            if (meanopt=="center") rawmean <- rawsetsort$center
-            if (wthopt==1) rawwth <- rawsetsort$wth1
-            if (wthopt==2) rawwth <- rawsetsort$wth2
-            idrs <- match(FALSE,rawsetsort$center==0)
-            if (is.na(idrs)) idrs <- 1
-            sm <- NULL
-            for (i in nx:1) {
-                idxlist <- which(rawfirst[idrs:ny] > hist$x.breaks[i]) + idrs - 1
-                if(length(idxlist)==0) sm[i] <- 0
-                else sm[i] <- sum(rawwth[idxlist])
-            }
-            return(sm)
-        }
-
-#########################################################################################
-        ##FILTER SECTION
-########################################################################################
-        Haarfilt <- c(rep(1,K),1,rep(-1,K))
-
-#################################################################################
-        ## Forward Filter with Haar wavelet
-        MaxHaar <- function(rawset, first, meanopt, wthopt) {
-            filt <- filter(as.ts(sumwr(rawset, first, meanopt, wthopt)), Haarfilt, method="convolution", sides=2)
-            filt <- c(rep(0,K),filt[c((K+1):(length(filt)-K))],rep(0,K))  #Filt with 0 instead of NA
-            xbr <- hist$x[which(peaks(filt,dpeaks.dyn))]
-            return(c(1,xbr,cstored))
-        }
-#################################################################################
-        ## Backward Filter with Haar wavelet
-        BackMaxHaar <- function(rawset, first, meanopt,wthopt) {
-            filt <- filter(as.ts(rev(backsumwr(rawset, first, meanopt, wthopt))), Haarfilt, method="convolution", sides=2)
-            filt <- c(rep(0,K),filt[c((K+1):(length(filt)-K))],rep(0,K))  #Filt with 0 instead of NA
-            xbr <- hist$x[which(rev(peaks(filt, dpeaks.dyn)))]
-            return(c(1,xbr,cstored))
-        }
-
-#################################################################################
-        ##CHOICE OF THE BREAKS
-#################################################################################
-        breaks.max <- MaxHaar(rawset, "max","min",1) 
-        breaks.min <- BackMaxHaar(rawset, "min","max",1)
-
-        rm("rawset")
-        
-###############################################################################
-        ##HARD BREAKS: Joining selected breaks.min and breaks.max with res
-###############################################################################
-        if(.lt(breaks.max)==2 && .lt(breaks.min)>2) {
-            breaks.tot <- breaks.min
-        } else if (.lt(breaks.max)>2 && .lt(breaks.min)==2) {
-            breaks.tot <- breaks.max
-        } else if (.lt(breaks.max)==2 && .lt(breaks.min)==2) {
-            breaks.tot <- NULL
-        } else {
-            sep <- NULL
-            idx <- 0
-            selbreaks.max <- breaks.max[-c(1,.lt(breaks.max))]
-            selbreaks.min <- breaks.min[-c(1,.lt(breaks.min))]
-            softbreaks.max <- selbreaks.max
-            softbreaks.min <- selbreaks.min
-            for (i in 1:.lt(selbreaks.max)) {
-                selcell.max <- which(hist$x==selbreaks.max[i])
-                if (i==.lt(selbreaks.max)) selcell2.max <- .lt(hist$x)
-                else selcell2.max <- which(hist$x==selbreaks.max[i+1])
-                for (j in seq_along(selbreaks.min)) {
-                    selcell.min <- which(hist$x==selbreaks.min[j])
-                    if (selcell.max==selcell.min) {
-                        idx <- idx+1
-                        sep[idx] <- hist$x[selcell.max]
-                        softbreaks.max <- softbreaks.max[-which(softbreaks.max==selbreaks.max[i])]
-                        softbreaks.min <- softbreaks.min[-which(softbreaks.min==selbreaks.min[j])]
-                        next
-                    }
-                    if ((selcell.max+1) == selcell.min) {
-                        if (!is.na(match(hist$x[selcell.max], sep))) {
-                            ## If already in sep it's just removed
-                            softbreaks.min <- softbreaks.min[-which(softbreaks.min==selbreaks.min[j])]
-                            next
-                        }
-                        idx <- idx+1
-                        sep[idx] <- hist$x[selcell.max] #Sep border included in the trailing partition -> =blue
-                        softbreaks.max <- softbreaks.max[-which(softbreaks.max==selbreaks.max[i])]
-                        softbreaks.min <- softbreaks.min[-which(softbreaks.min==selbreaks.min[j])]
-                        next
-                    }
-                    if ((selcell.max+2) == selcell.min & (selcell2.max-selcell.max) >= 3) {
-                        ## if are distant two cells and the subsequent one is far enough
-                        if (!is.na(match(hist$x[selcell.max],sep))) {
-                            softbreaks.min <- softbreaks.min[-which(softbreaks.min==selbreaks.min[j])]
-                            next
-                        }
-                        idx <- idx+1
-                        sep[idx] <- hist$x[selcell.min-1]
-                        softbreaks.max <- softbreaks.max[-which(softbreaks.max==selbreaks.max[i])]
-                        softbreaks.min <- softbreaks.min[-which(softbreaks.min==selbreaks.min[j])]
-                        next
-                    }
-                    ## if (selcell.max[i]>selcell.min+3) break    
-                }
-            }
-            breaks.tot <- sort(c(1, cstored, sep, softbreaks.max, softbreaks.min))
-        }
-
-#################################################################################
-        ## UNIFYING with BIGG Partition 
-################################################################################
-
-        ## It works in pathological cases (i.e. NULL vecto)
-        ## if(!silent) cat("Number of bigg is", .lt(bigg.brk), "\n")
-        breaks.tot <- unique(sort(c(breaks.tot, bigg.brk)))
-        ## if(!silent) cat("Number of matched is", .lt(bigg.brk), "\n")
-
-        if(any(breaks.tot==hist$x[nx])) breaks.tot <- breaks.tot[-which(breaks.tot==hist$x[nx])]
-        if(any(breaks.tot==hist$x[1])) breaks.tot <- breaks.tot[-which(breaks.tot==hist$x[1])]
-
-#################################################################################
-        ## HISTOGRAM of each PARTITION 
-################################################################################
-        if(.lt(breaks.tot)==2) {
-            brk.dyn <- breaks.tot
-        } else {
-            ## Breaks.Tot
-            for(iii in seq(dyn.check)) {  
-                brkjy <- matrix(rep(0,(.lt(breaks.tot)-1)*ny), nrow=ny, ncol=(.lt(breaks.tot)-1))
-                for (i in 1:(.lt(breaks.tot)-1)) {
-                    if (i==1) {
-                        ncls <- 1
-                        ncle <- which(hist$x==breaks.tot[i+1])
-                    } else if (i == (.lt(breaks.tot)-1) ) {
-                        ncls <- which(hist$x==breaks.tot[i])+1
-                        ncle <- nx
-                    } else {
-                        ncls <- which(hist$x==breaks.tot[i])+1
-                        ncle <- which(hist$x==breaks.tot[i+1])
-                    }
-                    ## ColSums doesn't work if ncls==ncle
-                    for (j in 1:ny) brkjy[j,i] <- sum(hist$counts[c(ncls:ncle),j])
-                }
-                dens <- apply(brkjy, 2, function(x) x/sum(x))
-                if(nrow(dens)!=ny) dens <- t(dens)
-
-
-      ########################################################################
-                ##JOINING PARTITIONS METHODS
-      ########################################################################
-                ## Computation of Distances Hell between consecutive partitions
-
-                distHell <- sapply(seq(.lt(breaks.tot)-2), function(j) myHell(dens[,j], dens[,j+1]))
-                discbreaks <- NULL
-                ncounts <- NULL
-                flagbreak <- 0
-                ll <- 0
-                lstHell <- order(distHell)
-                sampleHell <- rep(-1, nsample)
-                for (i in lstHell) { 
-                    l1 <- which(hist$x==breaks.tot[i])+1 
-                    if (i==1) l1 <- 1
-                    l2 <- which(hist$x==breaks.tot[i+1])
-                    l3 <- which(hist$x==breaks.tot[i+2])
-                    if (i==.lt(lstHell)) l3 <- nx
-                    pr <- (l2-l1+1)/(l3-l1+1)
-                    if(!silent) {
-                        cat.str <- paste("Would-be basins", paste(round(breaks.tot[i:(i+2)]), collapse=" "))
-                        cat(cat.str)
-                        nlett <- nchar(cat.str)
-                    }
-                    ncounts <- colSums(hist$counts[c(l1:l3),])
-                    for (idx in seq(nsample)) {
-                        unif1 <- rep(0,ny)
-                        unif2 <- rep(0,ny)
-                        for (j in 1:ny) {
-                            if(ncounts[j]==0) next
-                            dum <- sample(c(0:1), ncounts[j], replace=TRUE, prob=c(pr,1-pr))
-                            unif1[j] <- ncounts[j]-sum(dum)
-                            unif2[j] <- sum(dum)
-                        }
-                        if(sum(unif1)==0 || sum(unif2)==0) sampleHell[idx] <- 1
-                        else sampleHell[idx] <- myHell(unif1/sum(unif1), unif2/sum(unif2))
-                    }
-                    grubbsHell <- grubbs.test(c(sampleHell, distHell[i]), type=10)
-                    if (distHell[i] < max(sampleHell) | grubbsHell$p.value>conf.lev) {
-                        if(!silent) cat(rep(" ",15+4+3*nchar(as.character(cstored))-nlett), "--> Joining partitions\n", sep="")
-                        flagbreak <- 0
-                        ll <- ll+1
-                        discbreaks[ll] <- breaks.tot[i+1]
-                    } else {
-                        if(!silent) cat("\n")
-                        flagbreak <- flagbreak+1
-                    }
-                    if (flagbreak==cutjoin) break
-                }
-
-                if(!is.null(discbreaks)) {
-                    brk.dyn <- sort(breaks.tot[-match(discbreaks, breaks.tot)])
-                } else brk.dyn <- sort(breaks.tot)
-
-                if(!silent) cat("Discarded", .lt(discbreaks), ":: Final number", .lt(brk.dyn), "\n")
-                ## source("./Rfunctions/SBR_images_functions.R")
-                ## if(iii==1) probdist.comparison(progind$Time, rawset, hist, joinx, breaks.tot, distHell, brk.dyn, new=TRUE)
-                ## else probdist.comparison(progind$Time, rawset, hist, joinx, breaks.tot, distHell, brk.dyn, new=FALSE)
-                breaks.tot <- brk.dyn
-                if(.lt(brk.dyn) == 2) break
-            }
-        }
-        if(!silent) cat("End of the dynamic analysis\n")
-    } 
-
-    ## From here onwards the unique resu.lt of this analysis is just brk.dyn
-
+  xidx <- 0.5 ## Joining consecutive cells on a single raw
+  K <- 2 ## Parameter of the Haat wavelet
+  dpeaks.dyn <- 3 ## Parameter of the maximum search algorithm (window size)
+  nsample <- 50 ## Number of samples in the distribution of reshuffled Hellinger distances 
+  cutjoin <- 50 ## Number of null joining attempts required to quit the procedure 
+  conf.lev <- 0.005 ## Cut on pvalues of the Grubb Test
+  ## Kinetic parameters
+  wsize <- round(2*cstored/nx) + ((round(2*cstored/nx)+1) %% 2)  ## To make it odd
+  dpeaks.kin <- ceiling(wsize/2)+ceiling(wsize/2)%%2+1 
+  thr.ratio <- 0.05 ## Parameter of second data cleaning  
+  ## Matching parameters
+  lx <- round(cstored/nx)
+  sd.kin <- 1*lx
+  sd.dyn <- 1*lx
+  
+  
+  #########&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&###############
+  ############################&&&&&& DYNAMICS &&&&&&&###############################
+  #########&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&###############
+  
+  if(!only.kin) {
+    if(!silent) cat("Analysis of the dynamic trace...\n")
     
-#########&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&###############
-############################&&&&&& KINETIC &&&&&&&###############################
-#########&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&###############
-
-    if(!silent) cat("Analysis of the kinetic annotation...\n")
-    parabol <- 2*progind$PI*(cstored-progind$PI)/cstored
-    parabol <- replace(parabol, which(parabol==0), min(parabol[-which(parabol==0)]))
-    parabol.log <- -log(parabol/cstored)
-    cutf <- replace(progind$Cut, which(progind$Cut==0), min(progind$Cut[which(progind$Cut>0)]))
-    kin <- -log(cutf / cstored)-parabol.log
-
-### SMOOTHING Section
-    if(avg.opt[1]=="SG") {
-        if(!silent) cat("Savitzky Golay smoothing filter with degree", pol.degree,"\n")
-        kin.mv <- savitzkyGolay(kin, p=pol.degree, w=wsize, m=0)
-    } else {
-        if(!silent) cat("Moving average smoothing filter\n")
-        kin.mv <- movav(kin, w=wsize)
-    }
-    kin.mv <- c(kin[c(1:((wsize-1)/2))], kin.mv, tail(kin,(wsize-1)/2))
-
-### MAXIMA search Section
-    max.mv <- which(peaks(kin.mv, dpeaks.kin, strict=FALSE))
-
-    if(.lt(max.mv)!=0) {
-### First Cleaning on mv:: check separation between consecutive max
-        max.mv.tmp <- max.mv
-        rif <- max.mv[.lt(max.mv)]
-        if(.lt(max.mv)>1){
-            for (i in (.lt(max.mv)-1):1) {
-                if (rif-max.mv[i]<dpeaks.kin/2) {
-                    max.mv.tmp <- max.mv.tmp[-match(max.mv[i],max.mv.tmp)] ##Remove the smallest
-                } else rif <- max.mv[i]
-            }
+    ##################################################################################
+    ## NBIN Y IDENTIFICATION
+    ##################################################################################
+    
+    if(ny.aut) {
+      idx <- 0
+      nbin <- 0
+      lthbin <- NULL
+      seqbin <- seq(from=10, to=min(2000,cstored/10), by=10)
+      for (nbin in seqbin) {
+        lth <- NULL
+        br <- seq(from=1, to=cstored, length.out=(nbin+1))
+        for (i in 1:nbin) {
+          smp <- progind[,2][round(br[i]):round(br[i+1])]
+          lth[i] <- max(smp)-min(smp)
         }
-        max.mv <- max.mv.tmp
-
-### Second Cleaning Attempt on mv
-        adj.mv <- NULL
-        adj.mv[1] <- which.min(kin.mv[1:max.mv[1]])
-        for (i in seq_along(max.mv) ) {
-            if(.lt(max.mv)==1) next
-            if (i==.lt(max.mv)) adj.mv[i+1] <- which.min(kin.mv[round(max.mv[i]):cstored])+round(max.mv[i])-1
-            else adj.mv[i+1] <- which.min(kin.mv[round(max.mv[i]):round(max.mv[i+1])])+round(max.mv[i])-1 
-            amax <- mean( c(kin.mv[max.mv[i]]-kin.mv[adj.mv[i]], kin.mv[max.mv[i]]-kin.mv[adj.mv[i+1]]) ) ## Lts of adjacent (closest) vertical bars
-            if (i==1) amin <- kin.mv[max.mv[i+1]]-kin.mv[adj.mv[i+1]]
-            else if (i==.lt(max.mv)) amin <- kin.mv[max.mv[i-1]]-kin.mv[adj.mv[i]]
-            else amin <- mean(c(kin.mv[max.mv[i-1]]-kin.mv[adj.mv[i]], kin.mv[max.mv[i+1]]-kin.mv[adj.mv[i+1]]) ) 
-            ## print(paste("Evaluating", i, max.mv[i], "with ratio", 100*amax/amin, "%"))
-            if ( amax/amin < thr.ratio) {
-                ## print(paste("Excluding", i, max.mv[i]))
-                max.mv.tmp <- max.mv.tmp[-which(max.mv.tmp==max.mv[i])]
-            }
-        }
-        brk.kin <- round(max.mv.tmp)
-    } else {
-        brk.kin <- NULL
-    }
-        
-#########&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&###############
-############################&&&&&& MATCHING/MERGING &&&&&&&#######################
-#########&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&###############
-    if(!only.kin) {
-
-        if(!silent) {
-            if(match) cat("Matching the results...\n")
-            else  cat("Merging the results...\n")
-        } 
-        breaks <- NULL
-
-        vkin <- brk.kin
-        if(.lt(vkin)!=0) vkin <- refine(vkin)
-        vdyn <- brk.dyn
-        vdyn <- vdyn[which(vdyn != 1)]
-        vdyn <- vdyn[which(vdyn != cstored)]
-        if(.lt(vdyn)!=0) {
-            vdyn <- refine(vdyn)
-        }
-        if(!silent) cat("Number of dynamic and kinetic breaks are respectively",.lt(vdyn), .lt(vkin), "\n")
-##################################################################################
-        ## Matching
-        if(.lt(vdyn) !=0 && .lt(vkin!=0) ) {
-            ll <- 0
-            for (i in seq_along(vkin) ) { 
-                dist <- NULL
-                ## if(!silent) cat("********************************************\n")
-                ## print(paste("Analyzing kin break n", i, " ::: ", vkin[i]))
-                set <- c(tail(vdyn[which(vdyn<vkin[i])],1), head(vdyn[which(vdyn>=vkin[i])],1) )
-                if (.lt(set)==0) break
-                for (j in 1:.lt(set) ) {
-                    ## Naive criteria (binary decision)
-                    dist[j] <- abs(set[j]-vkin[i])
-                    ## if(!silent) cat("Comparing with ", set[j], "Distance is", dist[j],"\n")
-                    dyn.cand <- set[which.min(abs(set-vkin[i]))]
-                }
-                if (min(dist)< (sd.kin+sd.dyn)) {
-                    ## print(paste("Adding", vkin[i]))
-                    ll <- ll+1
-                    breaks[ll] <- vkin[i]
-                    vdyn <- vdyn[-match(dyn.cand,vdyn)]
-                }
-            }
-            if(!silent) {
-                cat("Number of matched partitions is",.lt(breaks), "\n")
-                if(.lt(vdyn)==0) cat("All the dynamic breaks are matched\n")
-                if(.lt(vkin)==.lt(breaks)) cat("All the kinetic breaks are matched\n")
-            }
+        idx <- idx+1
+        lthbin[idx] <- sd(lth)
+      }
+      a.0 <- max(lthbin)
+      idx.fin <- which(lthbin==a.0)
+      expmodel.0 <- lm(log(a.0-lthbin)[-idx.fin] ~ seqbin[-idx.fin])
+      expmodel <- try(nls(lthbin ~ a-b*exp(seqbin*c), start=list(a=a.0, b=exp(coef(expmodel.0)[1]), c=coef(expmodel.0)[2] ) ), silent=TRUE)
+      fracmodel <- try(nls(lthbin ~ a*(seqbin/(l+seqbin)), start=list(a=max(lthbin), l=(max(lthbin)-min(lthbin)/2))), silent=TRUE)
+      
+      if(is.list(expmodel)) {
+        theor.exp <- coef(expmodel)["a"]-coef(expmodel)["b"] * exp(coef(expmodel)["c"] * seqbin)
+        X2.exp.rid <- sum((theor.exp-lthbin)^2/theor.exp)
+      }
+      if(is.list(fracmodel)) {
+        theor.frac <- coef(fracmodel)[1]*(seqbin/(coef(fracmodel)[2]+seqbin))
+        X2.frac.rid <- sum((theor.frac-lthbin)^2/theor.frac)
+      }
+      if(is.list(fracmodel) && is.list(expmodel)) {
+        if (X2.exp.rid < X2.frac.rid) {
+          if(!silent) cat("Exponential model chosen\n")
+          can <- (1/coef(expmodel)["c"])*log((coef(expmodel)["a"]/coef(expmodel)["b"]) *(1-perc))
         } else {
-            if(!match) {
-                breaks <- c(vkin, vdyn)
-                match <- TRUE ## To skip next session
-                if(.lt(vkin)!=0) only.kin <- TRUE
-            } else breaks <- NULL
+          if(!silent) cat("Hyperbola model chosen\n")
+          can <- coef(fracmodel)[2]*perc/(1-perc) 
         }
-#######################################################################
-        ## Merging option: adding the remaining partitions 
-        if(!match) {
-            if(.lt(vdyn)!=0 && .lt(vkin)!=0) {
-                ## Looking for residual vdyn too close to any of the vkin (rare)
-                dist <- NULL
-                ll <- 0
-                for(i in 1:.lt(vdyn)) {
-                    for(j in 1:.lt(vkin)) {
-                        ll <- ll+1
-                        dist[ll] <- abs(vdyn[i]-vkin[j])
-                    }
-                }
-                ## Identifying and removing them from vdyn vector
-                dist.mtx <- matrix(dist<sd.kin, nrow=.lt(vdyn), ncol=.lt(vkin), byrow=TRUE)
-                if(any(dist.mtx)) {
-                    near <- unique(which(dist.mtx==TRUE, arr.ind=TRUE)[,1])
-                    vdyn <- vdyn[-near]
-                }
-                ## Merging residual vdyn with breaks and vkin
-                brk.mtc <- breaks
-                breaks <- sort(unique(c(breaks,vdyn,vkin)))
-            } else {
-                brk.mtc <- breaks
-                breaks <- sort(unique(c(breaks,vkin)))
-            }
+        ny <- as.numeric(round(can))
+      } else if (sum(c(is.list(expmodel), is.list(fracmodel)))==1) {
+        if (is.list(expmodel)) {
+          if(!silent) cat("Exponential model chosen, hyperbola not available\n")
+          can <- (1/coef(expmodel)["c"])*log((coef(expmodel)["a"]/coef(expmodel)["b"]) *(1-perc))
+        } else {
+          if(!silent) cat("Hyperbola model chosen, exponential not available\n")
+          can <- coef(fracmodel)[2]*perc/(1-perc) 
         }
-    } else if(.lt(brk.kin)!=0) breaks <- refine(brk.kin) ## If only.kin==TRUE
-    else breaks <- NULL
-
-
-######################################################################
-    ## OUTPUT section
-#####################################################################
-    if(is.null(breaks)) {
-        if(!silent) cat("NO barriers have been found")
-        seq.st <- rep(1, nrow(progind))
-        if(out.file) {
-            output.match <- data.frame(PI=progind$PI, Time=progind$Time, State=seq.st)
-            if(is.character(data)) {
-                fileout <- gsub("PROGIDX", "BASINS", strsplit(data,"/",fixed=T)[[1]][.lt(strsplit(data,"/",fixed=T)[[1]])])
-                if(!silent) cat("Writing", fileout, "...\n")
-                fwrite(output.match, file=fileout, sep='\t', row.names=FALSE, col.names=FALSE)
-            } else {
-                if(!silent) cat(paste0("Writing BASINS_", as.character(progind$Time[1]), ".dat\n"))
-                fwrite(output.match, file=paste("./BASINS_", as.character(progind$Time[1]), ".dat", sep=""), sep='\t', row.names=FALSE, col.names=FALSE)
-            }
-        }
+        ny <- as.numeric(round(can))
+      } else {
+        if(!silent) cat("Non linear fit doesn't work... ny set to nx default value.\n")
+        ny <- 500
+      }
+    }
+    
+    ##################################################################################
+    ## 2-D HISTOGRAM
+    ##################################################################################
+    
+    if(!silent) cat("Nbins on y is", ny, "\n")
+    hist <- hist2d(matrix(c(progind[,1],progind[,2]), ncol=2, nrow=cstored), nbins=c(nx,ny), show=FALSE)
+    
+    ##################################################################################
+    ## STRETCHES CREATION
+    ##################################################################################
+    ## Joining cells through density criterion: the larger values of xids the larger tolerance 
+    joinx <- hist$counts
+    joinx[,] <- 0
+    for (j in 1:ny) {
+      for(i in 1:(nx-1)) {
+        if(hist$counts[i,j] < 1) next #mettere un minimo?
+        if((hist$counts[i,j] >= (hist$counts[i+1,j]*(1-xidx))) & (hist$counts[i,j] <= hist$counts[i+1,j]))  joinx[i,j] <- 1
+        if((hist$counts[i+1,j] >= (hist$counts[i,j]*(1-xidx))) & (hist$counts[i+1,j] < hist$counts[i,j]))  joinx[i,j] <- 1
+        ## Joining if separated by an empty bin as well
+        if (i==(nx-1)) next
+        if((hist$counts[i,j] >= (hist$counts[i+2,j]*(1-xidx))) & (hist$counts[i,j] <= hist$counts[i+2,j]))  joinx[c(i,i+1),j] <- 1
+        if((hist$counts[i+2,j] >= (hist$counts[i,j]*(1-xidx))) & (hist$counts[i+2,j] < hist$counts[i,j]))  joinx[c(i,i+1),j] <- 1
+      }
+    }
+    
+    ####################################################################################
+    ## BIGG PARTITION
+    ###############################################################################
+    ## ovlap is the measure of overlaps of the ministretchs along the x-axis
+    ovlap <- as.vector(rowSums(joinx))
+    ovlap.der <- c(diff(ovlap),0) + c(0, diff(ovlap))
+    interval <- c(mean(ovlap.der)-2*sd(ovlap.der), mean(ovlap.der)+2*sd(ovlap.der))
+    idxx.up <- which(ovlap.der>interval[2])
+    idxx.down <- which(ovlap.der<interval[1])
+    if(.lt(idxx.up)>1) idxx.up.cl <- true.peaks(idxx.up, ovlap.der, up=TRUE)
+    else idxx.up.cl <- NULL
+    if(.lt(idxx.down)>1) idxx.down.cl <- true.peaks(idxx.down, ovlap.der, up=FALSE)
+    else idxx.down.cl <- NULL
+    if(is.null(idxx.up.cl) & is.null(idxx.down.cl)) bigg.idx <- NULL
+    else bigg.idx <- sort(c(idxx.up.cl, idxx.down.cl))
+    bigg.brk <- hist$x[bigg.idx]
+    
+    ## source("./Rfunctions/SBR_images_functions.R")
+    ## stretches.crosses(progind$Time, rawset, hist, joinx, ovlap, ovlap.der, bigg.idx)
+    
+    
+    ####################################################################################
+    ## FILL RAWSET
+    ###############################################################################
+    rawset <- data.frame(min=rep(0,ny), max=rep(0,ny), center=rep(0,ny), wth1=rep(0,ny), wth2=rep(0,ny))
+    for (j in 1:ny) {
+      temp <- which(joinx[,j]==1)
+      if (length(temp)==0) next      
+      minr <- temp[1]
+      maxr <- temp[length(temp)]+1
+      if((maxr-minr)<= 3) rawset[j,c(1:3)] <- 0
+      else  rawset[j,c(1:3)] <- c(hist$x[minr], hist$x[maxr], weighted.mean(hist$x[minr:maxr], hist$counts[c(minr:maxr),j]))
+    }
+    dum <- cbind(rawset$max-rawset$center, rawset$center-rawset$min)
+    rawset$wth1 <- (apply(dum, 1, min)/apply(dum, 1, max))*(1-((rawset$max-rawset$min)/cstored))
+    rawset$wth2 <- (apply(dum, 1, min)/apply(dum ,1, max)) / (rawset$max-rawset$min)
+    rawset$wth1[which(is.na(rawset$wth1))] <- 0
+    rawset$wth2[which(is.na(rawset$wth2))] <- 0
+    if(any(!is.finite(unlist(rawset)))) stop("Error in rawset")
+    
+    rm("joinx")
+    
+    #################################################################################
+    ## WEIGHTED SUMS FUNCTIONS
+    ##############################################################################
+    ## Forward
+    sumwr <- function(rawset, first, meanopt, wthopt) {
+      rawsetsort <- rawset[order(rawset$center),]
+      if (first=="min") rawfirst <- rawsetsort$min
+      if (first=="max") rawfirst <- rawsetsort$max
+      if (first=="center") rawfirst <- rawsetsort$center
+      if (meanopt=="min") rawmean <- rawsetsort$min
+      if (meanopt=="max") rawmean <- rawsetsort$max
+      if (meanopt=="center") rawmean <- rawsetsort$center
+      if (wthopt==1) rawwth <- rawsetsort$wth1
+      if (wthopt==2) rawwth <- rawsetsort$wth2
+      idrs <- match(FALSE, rawsetsort$center==0)
+      if (is.na(idrs)) idrs <- 1
+      sm <- NULL
+      for (i in seq(nx)) {
+        idxlist <- which(rawfirst[idrs:ny] < hist$x.breaks[i+1]) + idrs - 1 
+        if(length(idxlist)==0) sm[i] <- 0
+        else sm[i] <- sum(rawwth[idxlist])
+      }
+      return(sm)
+    }
+    
+    #################################################################################
+    ## Backward
+    backsumwr <- function(rawset, first, meanopt, wthopt) {
+      rawsetsort <- rawset[order(rawset$center),]
+      if (first=="min") rawfirst <- rawsetsort$min
+      if (first=="max") rawfirst <- rawsetsort$max
+      if (first=="center") rawfirst <- rawsetsort$center
+      if (meanopt=="min") rawmean <- rawsetsort$min
+      if (meanopt=="max") rawmean <- rawsetsort$max
+      if (meanopt=="center") rawmean <- rawsetsort$center
+      if (wthopt==1) rawwth <- rawsetsort$wth1
+      if (wthopt==2) rawwth <- rawsetsort$wth2
+      idrs <- match(FALSE,rawsetsort$center==0)
+      if (is.na(idrs)) idrs <- 1
+      sm <- NULL
+      for (i in nx:1) {
+        idxlist <- which(rawfirst[idrs:ny] > hist$x.breaks[i]) + idrs - 1
+        if(length(idxlist)==0) sm[i] <- 0
+        else sm[i] <- sum(rawwth[idxlist])
+      }
+      return(sm)
+    }
+    
+    #########################################################################################
+    ##FILTER SECTION
+    ########################################################################################
+    Haarfilt <- c(rep(1,K),1,rep(-1,K))
+    
+    #################################################################################
+    ## Forward Filter with Haar wavelet
+    MaxHaar <- function(rawset, first, meanopt, wthopt) {
+      filt <- filter(as.ts(sumwr(rawset, first, meanopt, wthopt)), Haarfilt, method="convolution", sides=2)
+      filt <- c(rep(0,K),filt[c((K+1):(length(filt)-K))],rep(0,K))  #Filt with 0 instead of NA
+      xbr <- hist$x[which(peaks(filt,dpeaks.dyn))]
+      return(c(1,xbr,cstored))
+    }
+    #################################################################################
+    ## Backward Filter with Haar wavelet
+    BackMaxHaar <- function(rawset, first, meanopt,wthopt) {
+      filt <- filter(as.ts(rev(backsumwr(rawset, first, meanopt, wthopt))), Haarfilt, method="convolution", sides=2)
+      filt <- c(rep(0,K),filt[c((K+1):(length(filt)-K))],rep(0,K))  #Filt with 0 instead of NA
+      xbr <- hist$x[which(rev(peaks(filt, dpeaks.dyn)))]
+      return(c(1,xbr,cstored))
+    }
+    
+    #################################################################################
+    ##CHOICE OF THE BREAKS
+    #################################################################################
+    breaks.max <- MaxHaar(rawset, "max","min",1) 
+    breaks.min <- BackMaxHaar(rawset, "min","max",1)
+    
+    rm("rawset")
+    
+    ###############################################################################
+    ##HARD BREAKS: Joining selected breaks.min and breaks.max with res
+    ###############################################################################
+    if(.lt(breaks.max)==2 && .lt(breaks.min)>2) {
+      breaks.tot <- breaks.min
+    } else if (.lt(breaks.max)>2 && .lt(breaks.min)==2) {
+      breaks.tot <- breaks.max
+    } else if (.lt(breaks.max)==2 && .lt(breaks.min)==2) {
+      breaks.tot <- NULL
     } else {
-        if(!silent) cat("Number of states is", .lt(breaks)+1, "\n")
-        if(!silent) cat(breaks, "\n")
-        vec <- sort(breaks)
-        seq.st <- NULL
-        for (i in 1:(.lt(vec)+1)) {
-            if (i==1) ib <- 0
-            else ib <- vec[i-1]
-            if (i==.lt(vec)+1) fb <- cstored
-            else fb <- vec[i]
-            ## if(!silent) cat(i,ib,fb,fb-ib,"\n")
-            seq.st <- c(seq.st,rep(i,fb-ib))
-        }
-        if(out.file) {
-            output.match <- data.frame(PI=progind$PI, Time=progind$Time, State=seq.st)
-            if(is.character(data)) {
-                fileout <- gsub("PROGIDX", "BASINS", strsplit(data,"/",fixed=T)[[1]][.lt(strsplit(data,"/",fixed=T)[[1]])])
-                if(!silent) cat("Writing", fileout, "...\n")
-                fwrite(output.match, file=fileout, sep='\t', row.names=FALSE, col.names=FALSE)
-            } else {
-                if(!silent) cat(paste0("Writing BASINS_", as.character(progind$Time[1]), ".dat\n"))
-                fwrite(output.match, file=paste("./BASINS_", as.character(progind$Time[1]), ".dat", sep=""), sep='\t', row.names=FALSE, col.names=FALSE)
+      sep <- NULL
+      idx <- 0
+      selbreaks.max <- breaks.max[-c(1,.lt(breaks.max))]
+      selbreaks.min <- breaks.min[-c(1,.lt(breaks.min))]
+      softbreaks.max <- selbreaks.max
+      softbreaks.min <- selbreaks.min
+      for (i in 1:.lt(selbreaks.max)) {
+        selcell.max <- which(hist$x==selbreaks.max[i])
+        if (i==.lt(selbreaks.max)) selcell2.max <- .lt(hist$x)
+        else selcell2.max <- which(hist$x==selbreaks.max[i+1])
+        for (j in seq_along(selbreaks.min)) {
+          selcell.min <- which(hist$x==selbreaks.min[j])
+          if (selcell.max==selcell.min) {
+            idx <- idx+1
+            sep[idx] <- hist$x[selcell.max]
+            softbreaks.max <- softbreaks.max[-which(softbreaks.max==selbreaks.max[i])]
+            softbreaks.min <- softbreaks.min[-which(softbreaks.min==selbreaks.min[j])]
+            next
+          }
+          if ((selcell.max+1) == selcell.min) {
+            if (!is.na(match(hist$x[selcell.max], sep))) {
+              ## If already in sep it's just removed
+              softbreaks.min <- softbreaks.min[-which(softbreaks.min==selbreaks.min[j])]
+              next
             }
+            idx <- idx+1
+            sep[idx] <- hist$x[selcell.max] #Sep border included in the trailing partition -> =blue
+            softbreaks.max <- softbreaks.max[-which(softbreaks.max==selbreaks.max[i])]
+            softbreaks.min <- softbreaks.min[-which(softbreaks.min==selbreaks.min[j])]
+            next
+          }
+          if ((selcell.max+2) == selcell.min & (selcell2.max-selcell.max) >= 3) {
+            ## if are distant two cells and the subsequent one is far enough
+            if (!is.na(match(hist$x[selcell.max],sep))) {
+              softbreaks.min <- softbreaks.min[-which(softbreaks.min==selbreaks.min[j])]
+              next
+            }
+            idx <- idx+1
+            sep[idx] <- hist$x[selcell.min-1]
+            softbreaks.max <- softbreaks.max[-which(softbreaks.max==selbreaks.max[i])]
+            softbreaks.min <- softbreaks.min[-which(softbreaks.min==selbreaks.min[j])]
+            next
+          }
+          ## if (selcell.max[i]>selcell.min+3) break    
         }
-    }    
-
-    if(is.null(breaks)){
-        tab.st <- data.frame(n_cl=1, start=1, end=cstored, .lt=cstored, type=1)
+      }
+      breaks.tot <- sort(c(1, cstored, sep, softbreaks.max, softbreaks.min))
+    }
+    
+    #################################################################################
+    ## UNIFYING with BIGG Partition 
+    ################################################################################
+    
+    ## It works in pathological cases (i.e. NULL vecto)
+    ## if(!silent) cat("Number of bigg is", .lt(bigg.brk), "\n")
+    breaks.tot <- unique(sort(c(breaks.tot, bigg.brk)))
+    ## if(!silent) cat("Number of matched is", .lt(bigg.brk), "\n")
+    
+    if(any(breaks.tot==hist$x[nx])) breaks.tot <- breaks.tot[-which(breaks.tot==hist$x[nx])]
+    if(any(breaks.tot==hist$x[1])) breaks.tot <- breaks.tot[-which(breaks.tot==hist$x[1])]
+    
+    #################################################################################
+    ## HISTOGRAM of each PARTITION 
+    ################################################################################
+    if(.lt(breaks.tot)==2) {
+      brk.dyn <- breaks.tot
     } else {
-        tab.st <- data.frame(n_cl=c(1:(.lt(breaks)+1)), start=c(1,vec+1), end=c(vec, cstored), .lt=diff(c(0,vec, cstored)), type=c(rep(NaN,.lt(breaks)),1))
-        if(only.kin) tab.st$type <- c(rep(3, .lt(breaks)), 1)
+      ## Breaks.Tot
+      for(iii in seq(dyn.check)) {  
+        brkjy <- matrix(rep(0,(.lt(breaks.tot)-1)*ny), nrow=ny, ncol=(.lt(breaks.tot)-1))
+        for (i in 1:(.lt(breaks.tot)-1)) {
+          if (i==1) {
+            ncls <- 1
+            ncle <- which(hist$x==breaks.tot[i+1])
+          } else if (i == (.lt(breaks.tot)-1) ) {
+            ncls <- which(hist$x==breaks.tot[i])+1
+            ncle <- nx
+          } else {
+            ncls <- which(hist$x==breaks.tot[i])+1
+            ncle <- which(hist$x==breaks.tot[i+1])
+          }
+          ## ColSums doesn't work if ncls==ncle
+          for (j in 1:ny) brkjy[j,i] <- sum(hist$counts[c(ncls:ncle),j])
+        }
+        dens <- apply(brkjy, 2, function(x) x/sum(x))
+        if(nrow(dens)!=ny) dens <- t(dens)
+        
+        
+        ########################################################################
+        ##JOINING PARTITIONS METHODS
+        ########################################################################
+        ## Computation of Distances Hell between consecutive partitions
+        
+        distHell <- sapply(seq(.lt(breaks.tot)-2), function(j) myHell(dens[,j], dens[,j+1]))
+        discbreaks <- NULL
+        ncounts <- NULL
+        flagbreak <- 0
+        ll <- 0
+        lstHell <- order(distHell)
+        sampleHell <- rep(-1, nsample)
+        for (i in lstHell) { 
+          l1 <- which(hist$x==breaks.tot[i])+1 
+          if (i==1) l1 <- 1
+          l2 <- which(hist$x==breaks.tot[i+1])
+          l3 <- which(hist$x==breaks.tot[i+2])
+          if (i==.lt(lstHell)) l3 <- nx
+          pr <- (l2-l1+1)/(l3-l1+1)
+          if(!silent) {
+            cat.str <- paste("Would-be basins", paste(round(breaks.tot[i:(i+2)]), collapse=" "))
+            cat(cat.str)
+            nlett <- nchar(cat.str)
+          }
+          ncounts <- colSums(hist$counts[c(l1:l3),])
+          for (idx in seq(nsample)) {
+            unif1 <- rep(0,ny)
+            unif2 <- rep(0,ny)
+            for (j in 1:ny) {
+              if(ncounts[j]==0) next
+              dum <- sample(c(0:1), ncounts[j], replace=TRUE, prob=c(pr,1-pr))
+              unif1[j] <- ncounts[j]-sum(dum)
+              unif2[j] <- sum(dum)
+            }
+            if(sum(unif1)==0 || sum(unif2)==0) sampleHell[idx] <- 1
+            else sampleHell[idx] <- myHell(unif1/sum(unif1), unif2/sum(unif2))
+          }
+          grubbsHell <- grubbs.test(c(sampleHell, distHell[i]), type=10)
+          if (distHell[i] < max(sampleHell) | grubbsHell$p.value>conf.lev) {
+            if(!silent) cat(rep(" ",15+4+3*nchar(as.character(cstored))-nlett), "--> Joining partitions\n", sep="")
+            flagbreak <- 0
+            ll <- ll+1
+            discbreaks[ll] <- breaks.tot[i+1]
+          } else {
+            if(!silent) cat("\n")
+            flagbreak <- flagbreak+1
+          }
+          if (flagbreak==cutjoin) break
+        }
+        
+        if(!is.null(discbreaks)) {
+          brk.dyn <- sort(breaks.tot[-match(discbreaks, breaks.tot)])
+        } else brk.dyn <- sort(breaks.tot)
+        
+        if(!silent) cat("Discarded", .lt(discbreaks), ":: Final number", .lt(brk.dyn), "\n")
+        ## source("./Rfunctions/SBR_images_functions.R")
+        ## if(iii==1) probdist.comparison(progind$Time, rawset, hist, joinx, breaks.tot, distHell, brk.dyn, new=TRUE)
+        ## else probdist.comparison(progind$Time, rawset, hist, joinx, breaks.tot, distHell, brk.dyn, new=FALSE)
+        breaks.tot <- brk.dyn
+        if(.lt(brk.dyn) == 2) break
+      }
+    }
+    if(!silent) cat("End of the dynamic analysis\n")
+  } 
+  
+  ## From here onwards the unique resu.lt of this analysis is just brk.dyn
+  
+  
+  #########&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&###############
+  ############################&&&&&& KINETIC &&&&&&&###############################
+  #########&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&###############
+  
+  if(!silent) cat("Analysis of the kinetic annotation...\n")
+  parabol <- 2*progind$PI*(cstored-progind$PI)/cstored
+  parabol <- replace(parabol, which(parabol==0), min(parabol[-which(parabol==0)]))
+  parabol.log <- -log(parabol/cstored)
+  cutf <- replace(progind$Cut, which(progind$Cut==0), min(progind$Cut[which(progind$Cut>0)]))
+  kin <- -log(cutf / cstored)-parabol.log
+  
+  ### SMOOTHING Section
+  if(avg.opt[1]=="SG") {
+    if(!silent) cat("Savitzky Golay smoothing filter with degree", pol.degree,"\n")
+    kin.mv <- savitzkyGolay(kin, p=pol.degree, w=wsize, m=0)
+  } else {
+    if(!silent) cat("Moving average smoothing filter\n")
+    kin.mv <- movav(kin, w=wsize)
+  }
+  kin.mv <- c(kin[c(1:((wsize-1)/2))], kin.mv, tail(kin,(wsize-1)/2))
+  
+  ### MAXIMA search Section
+  max.mv <- which(peaks(kin.mv, dpeaks.kin, strict=FALSE))
+  
+  if(.lt(max.mv)!=0) {
+    ### First Cleaning on mv:: check separation between consecutive max
+    max.mv.tmp <- max.mv
+    rif <- max.mv[.lt(max.mv)]
+    if(.lt(max.mv)>1){
+      for (i in (.lt(max.mv)-1):1) {
+        if (rif-max.mv[i]<dpeaks.kin/2) {
+          max.mv.tmp <- max.mv.tmp[-match(max.mv[i],max.mv.tmp)] ##Remove the smallest
+        } else rif <- max.mv[i]
+      }
+    }
+    max.mv <- max.mv.tmp
+    
+    ### Second Cleaning Attempt on mv
+    adj.mv <- NULL
+    adj.mv[1] <- which.min(kin.mv[1:max.mv[1]])
+    for (i in seq_along(max.mv) ) {
+      if(.lt(max.mv)==1) next
+      if (i==.lt(max.mv)) adj.mv[i+1] <- which.min(kin.mv[round(max.mv[i]):cstored])+round(max.mv[i])-1
+      else adj.mv[i+1] <- which.min(kin.mv[round(max.mv[i]):round(max.mv[i+1])])+round(max.mv[i])-1 
+      amax <- mean( c(kin.mv[max.mv[i]]-kin.mv[adj.mv[i]], kin.mv[max.mv[i]]-kin.mv[adj.mv[i+1]]) ) ## Lts of adjacent (closest) vertical bars
+      if (i==1) amin <- kin.mv[max.mv[i+1]]-kin.mv[adj.mv[i+1]]
+      else if (i==.lt(max.mv)) amin <- kin.mv[max.mv[i-1]]-kin.mv[adj.mv[i]]
+      else amin <- mean(c(kin.mv[max.mv[i-1]]-kin.mv[adj.mv[i]], kin.mv[max.mv[i+1]]-kin.mv[adj.mv[i+1]]) ) 
+      ## print(paste("Evaluating", i, max.mv[i], "with ratio", 100*amax/amin, "%"))
+      if ( amax/amin < thr.ratio) {
+        ## print(paste("Excluding", i, max.mv[i]))
+        max.mv.tmp <- max.mv.tmp[-which(max.mv.tmp==max.mv[i])]
+      }
+    }
+    brk.kin <- round(max.mv.tmp)
+  } else {
+    brk.kin <- NULL
+  }
+  
+  #########&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&###############
+  ############################&&&&&& MATCHING/MERGING &&&&&&&#######################
+  #########&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&###############
+  if(!only.kin) {
+    
+    if(!silent) {
+      if(match) cat("Matching the results...\n")
+      else  cat("Merging the results...\n")
+    } 
+    breaks <- NULL
+    
+    vkin <- brk.kin
+    if(.lt(vkin)!=0) vkin <- refine(vkin)
+    vdyn <- brk.dyn
+    vdyn <- vdyn[which(vdyn != 1)]
+    vdyn <- vdyn[which(vdyn != cstored)]
+    if(.lt(vdyn)!=0) {
+      vdyn <- refine(vdyn)
+    }
+    if(!silent) cat("Number of dynamic and kinetic breaks are respectively",.lt(vdyn), .lt(vkin), "\n")
+    ##################################################################################
+    ## Matching
+    if(.lt(vdyn) !=0 && .lt(vkin!=0) ) {
+      ll <- 0
+      for (i in seq_along(vkin) ) { 
+        dist <- NULL
+        ## if(!silent) cat("********************************************\n")
+        ## print(paste("Analyzing kin break n", i, " ::: ", vkin[i]))
+        set <- c(tail(vdyn[which(vdyn<vkin[i])],1), head(vdyn[which(vdyn>=vkin[i])],1) )
+        if (.lt(set)==0) break
+        for (j in 1:.lt(set) ) {
+          ## Naive criteria (binary decision)
+          dist[j] <- abs(set[j]-vkin[i])
+          ## if(!silent) cat("Comparing with ", set[j], "Distance is", dist[j],"\n")
+          dyn.cand <- set[which.min(abs(set-vkin[i]))]
+        }
+        if (min(dist)< (sd.kin+sd.dyn)) {
+          ## print(paste("Adding", vkin[i]))
+          ll <- ll+1
+          breaks[ll] <- vkin[i]
+          vdyn <- vdyn[-match(dyn.cand,vdyn)]
+        }
+      }
+      if(!silent) {
+        cat("Number of matched partitions is",.lt(breaks), "\n")
+        if(.lt(vdyn)==0) cat("All the dynamic breaks are matched\n")
+        if(.lt(vkin)==.lt(breaks)) cat("All the kinetic breaks are matched\n")
+      }
+    } else {
+      if(!match) {
+        breaks <- c(vkin, vdyn)
+        match <- TRUE ## To skip next session
+        if(.lt(vkin)!=0) only.kin <- TRUE
+      } else breaks <- NULL
+    }
+    #######################################################################
+    ## Merging option: adding the remaining partitions 
+    if(!match) {
+      if(.lt(vdyn)!=0 && .lt(vkin)!=0) {
+        ## Looking for residual vdyn too close to any of the vkin (rare)
+        dist <- NULL
+        ll <- 0
+        for(i in 1:.lt(vdyn)) {
+          for(j in 1:.lt(vkin)) {
+            ll <- ll+1
+            dist[ll] <- abs(vdyn[i]-vkin[j])
+          }
+        }
+        ## Identifying and removing them from vdyn vector
+        dist.mtx <- matrix(dist<sd.kin, nrow=.lt(vdyn), ncol=.lt(vkin), byrow=TRUE)
+        if(any(dist.mtx)) {
+          near <- unique(which(dist.mtx==TRUE, arr.ind=TRUE)[,1])
+          vdyn <- vdyn[-near]
+        }
+        ## Merging residual vdyn with breaks and vkin
+        brk.mtc <- breaks
+        breaks <- sort(unique(c(breaks,vdyn,vkin)))
+      } else {
+        brk.mtc <- breaks
+        breaks <- sort(unique(c(breaks,vkin)))
+      }
+    }
+  } else if(.lt(brk.kin)!=0) breaks <- refine(brk.kin) ## If only.kin==TRUE
+  else breaks <- NULL
+  
+  
+  ######################################################################
+  ## OUTPUT section
+  #####################################################################
+  if(is.null(breaks)) {
+    if(!silent) cat("NO barriers have been found")
+    seq.st <- rep(1, nrow(progind))
+    if(out.file) {
+      output.match <- data.frame(PI=progind$PI, Time=progind$Time, State=seq.st)
+      if(is.character(data)) {
+        fileout <- gsub("PROGIDX", "BASINS", strsplit(data,"/",fixed=T)[[1]][.lt(strsplit(data,"/",fixed=T)[[1]])])
+        if(!silent) cat("Writing", fileout, "...\n")
+        fwrite(output.match, file=fileout, sep='\t', row.names=FALSE, col.names=FALSE)
+      } else {
+        if(!silent) cat(paste0("Writing BASINS_", as.character(progind$Time[1]), ".dat\n"))
+        fwrite(output.match, file=paste("./BASINS_", as.character(progind$Time[1]), ".dat", sep=""), sep='\t', row.names=FALSE, col.names=FALSE)
+      }
+    }
+  } else {
+    if(!silent) cat("Number of states is", .lt(breaks)+1, "\n")
+    if(!silent) cat(breaks, "\n")
+    vec <- sort(breaks)
+    seq.st <- NULL
+    for (i in 1:(.lt(vec)+1)) {
+      if (i==1) ib <- 0
+      else ib <- vec[i-1]
+      if (i==.lt(vec)+1) fb <- cstored
+      else fb <- vec[i]
+      ## if(!silent) cat(i,ib,fb,fb-ib,"\n")
+      seq.st <- c(seq.st,rep(i,fb-ib))
+    }
+    if(out.file) {
+      output.match <- data.frame(PI=progind$PI, Time=progind$Time, State=seq.st)
+      if(is.character(data)) {
+        fileout <- gsub("PROGIDX", "BASINS", strsplit(data,"/",fixed=T)[[1]][.lt(strsplit(data,"/",fixed=T)[[1]])])
+        if(!silent) cat("Writing", fileout, "...\n")
+        fwrite(output.match, file=fileout, sep='\t', row.names=FALSE, col.names=FALSE)
+      } else {
+        if(!silent) cat(paste0("Writing BASINS_", as.character(progind$Time[1]), ".dat\n"))
+        fwrite(output.match, file=paste("./BASINS_", as.character(progind$Time[1]), ".dat", sep=""), sep='\t', row.names=FALSE, col.names=FALSE)
+      }
+    }
+  }    
+  
+  if(is.null(breaks)){
+    tab.st <- data.frame(n_cl=1, start=1, end=cstored, .lt=cstored, type=1)
+  } else {
+    tab.st <- data.frame(n_cl=c(1:(.lt(breaks)+1)), start=c(1,vec+1), end=c(vec, cstored), .lt=diff(c(0,vec, cstored)), type=c(rep(NaN,.lt(breaks)),1))
+    if(only.kin) tab.st$type <- c(rep(3, .lt(breaks)), 1)
         else if(match) tab.st$type <- 1
         else {
             if(.lt(brk.mtc)>0) tab.st$type[match(brk.mtc,tab.st$end)] <- 1

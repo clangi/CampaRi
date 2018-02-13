@@ -41,7 +41,13 @@ the peaks identification. Default value is \code{FALSE}.}
 \item{merge_cluster}{Logical that allow clusters to be merged automatically if consecutives}
 }
 \value{
-The resulting score (0-1)
+A list containing
+      \itemize{
+        \item "\code{Optimal_nbins}" The found number of bins.
+        \item "\code{bas}" Output of the final basin recognition run.
+        \item "\code{ncl}" Number of clusters finally found.
+        \item "\code{idx}" Index in the bin array.
+      }
 }
 \description{
 \code{basin_optimization} uses the information provided by the SAPPHIRE basin recognition in order to define the optimal partition of the data (uses in 

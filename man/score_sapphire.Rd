@@ -6,8 +6,8 @@
 \usage{
 score_sapphire(the_sap, ann, scoring_method = "nmi", merge_clusters = FALSE,
   basin_optimization = FALSE, plot_basin_identification = FALSE,
-  nbins_x = NULL, nbins_y = nbins_x, force_matching = FALSE,
-  silent = FALSE, ...)
+  plot_pred_true_resume = FALSE, nbins_x = NULL, nbins_y = nbins_x,
+  force_matching = FALSE, silent = FALSE, ...)
 }
 \arguments{
 \item{the_sap}{Name of the PROGIDX_<...>.dat or REPIX_<...>.dat file or Data frame with three columns containing, in order, the (sorted) progress index,
@@ -30,6 +30,8 @@ Black partitions are the matched ones, blue ones derive only from the dynamic an
 The green curve is the kinetic annotation (black curve) where the parabolic shape has been subtracted, i.e. the actual curve used for 
 the peaks identification. Default value is \code{FALSE}.}
 
+\item{plot_pred_true_resume}{Defaults tp \code{FALSE}. If set to true it plots the predicted and true labels one along the other.}
+
 \item{nbins_x}{Number of bins on  x-axis of the 2-D histogram. Default to sqrt(nrow(the_sap)).}
 
 \item{nbins_y}{Number of bins on the y-axis of the 2-D histogram. Default to sqrt(nrow(the_sap)).}
@@ -43,7 +45,12 @@ the peaks identification. Default value is \code{FALSE}.}
 \item{merge_cluster}{Logical that allow clusters to be merged automatically if consecutives}
 }
 \value{
-The resulting score (0-1)
+A list containing
+      \itemize{
+        \item "\code{score.out}" Resulting score between 0 and 1 (good).
+        \item "\code{max_freq_table}" Matrix with a description of the labels selected and their cluster characteristics
+        \item "\code{label_freq_list}" Total representation of the clusters
+      }
 }
 \description{
 \code{score_sapphire} uses the information provided by the SAPPHIRE basin recognition in order to score the identified free energy basins
