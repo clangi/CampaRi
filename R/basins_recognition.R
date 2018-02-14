@@ -835,9 +835,127 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
         } else abline(v=breaks, lwd=0.7, col="black")
     }
 
+  
+  #######################################################################
+  #### final calculations for scores
+  #######################################################################
+    browser()
+    whatever <- FALSE
+    if(whatever){
+      
+      # functions
+      # ----------------------------------------------------
+      myTE <- function(x, y, emb, sym = T, sd = 0.001){
+        nx <- x + rnorm(n = .lt(x), mean = 0, sd = sd)
+        ny <- y + rnorm(n = .lt(x), mean = 0, sd = sd)
+        xy <- TransferEntropy::computeTE(nx, ny, embedding = emb, k = 2, safetyCheck = T)
+        yx <- TransferEntropy::computeTE(ny, nx, embedding = emb, k = 2, safetyCheck = T)
+        if(sym) return((unlist(xy) + unlist(yx))/2)
+        else return(unlist(xy))
+      }
+      myShEn <- function(x){
+        x2 <- replace(x = x, list = which(x == 0), values = 1)
+        return(-sum(x2*log(x2)))
+      }
+      
+      myKL <- function(x, y, sym = T){
+        xn <- x[-which(x==0 | y==0)]
+        yn <- y[-which(x==0 | y==0)]
+        if(sym) return((sum(xn*log(xn/yn)) + sum(yn*log(yn/xn)))/2)
+        else return(sum(xn*log(xn/yn)))
+      }
+      myNormalize <- function(x) return((x-min(x))/(max(x)-min(x)))
+      # ----------------------------------------------------
+      
+      # color exploration
+      library(RColorBrewer)
+      RColorBrewer::display.brewer.all()
+      ncolor = 7; pie(x = rep(1, ncolor), labels = 1:ncolor, col = RColorBrewer::brewer.pal(n = ncolor, name = 'Set1'))
+      ncolor = 7; pie(x = rep(1, ncolor), labels = 1:ncolor, col = RColorBrewer::brewer.pal(n = ncolor, name = 'Dark2'))
+      
+      lpi <- .lt(progind$PI)
+      n_bins <- ny
+      brkjy <- matrix(0, nrow=n_bins, ncol=(.lt(breaks) + 1))
+      for (i in 1:ncol(brkjy)) {
+        if (i==1) {
+          ncls <- 1
+          ncle <- which.min(abs(hist$x - breaks[i]))
+        } else if (i == (.lt(breaks) + 1) ) {
+          ncls <- which.min(abs(hist$x - breaks[i-1])) 
+          ncle <- nx
+        } else {
+          ncls <- which.min(abs(hist$x - breaks[i-1]))
+          ncle <- which.min(abs(hist$x - breaks[i]))
+        }
+        ## ColSums doesn't work if ncls==ncle
+        for (j in 1:n_bins) brkjy[j, i] <- sum(hist$counts[c(ncls:ncle), j])
+      }
+      dens <- apply(brkjy, 2, function(x) x/sum(x)) # this can break if you change the number of bins
+      # dens <- apply(brkjy, 2, function(x) {
+      #   if(sum(x) != 0) return(x/sum(x))
+      #   else return(rep(0, .lt(x)))
+      #   })
+      if(nrow(dens)!=n_bins) dens <- t(dens)
+      
+      require(infotheo); require(TransferEntropy)
+      
+      distHell <- sapply(seq(.lt(breaks)), function(j) myHell(dens[, j], dens[, j+1]))
+      distSymKL <- sapply(seq(.lt(breaks)), function(j) myKL(dens[, j], dens[, j+1], T)); distSymKL <- myNormalize(distSymKL)
+      distKL <- sapply(seq(.lt(breaks)), function(j) myKL(dens[, j], dens[, j+1], F)); distKL <- myNormalize(distKL)
+      distMI <- sapply(seq(.lt(breaks)), function(j) infotheo::mutinformation(brkjy[, j], brkjy[, j+1])); distMI <- myNormalize(distMI)
+      distSymTE <- sapply(seq(.lt(breaks)), function(j) myTE(dens[, j], dens[, j+1], emb = 3, sym = T)); distSymTE <- myNormalize(distSymTE)
+      distTE <- sapply(seq(.lt(breaks)), function(j) myTE(dens[, j], dens[, j+1], emb = 3, sym = F)); distTE <- myNormalize(distTE)
+      ent <- myNormalize(apply(dens, 2, myShEn)) # this is a value PER cluster
+      
+      center_cl <- diff(c(1, breaks, lpi))/2 + c(1, breaks)
+      ini_points <- c(1, breaks)
+      end_points <- c(1, breaks) + diff(c(1, breaks, lpi))
+      
+      gg <- ggplot() + theme_classic() + xlab('Progress Index') + ylab('Barrier score') +
+            geom_line(aes(breaks, distHell, col = as.factor(1)), size = 1) +
+            geom_line(aes(breaks, distKL, col = as.factor(2)), size = 1) +
+            geom_line(aes(breaks, distSymKL, col = as.factor(3)), size = 1) +
+            geom_segment(aes(x = ini_points, xend = end_points, y = ent, yend = ent, col = as.factor(4)), size = 3) +
+            geom_line(aes(breaks, distMI, col = as.factor(5)), size = 1) +
+            geom_line(aes(breaks, distTE, col = as.factor(6)), size = 1) +
+            geom_point(aes(progind$PI, progind$Time/lpi), size = 0.1) +  geom_vline(aes(xintercept=c(1, breaks, lpi)), size = 0.2) +
+            scale_color_manual(name = "Method", 
+                               labels = c("Hellinger-d", "KL-div", "SymKL-div", "Entropy", "MI", 'disTE'), 
+                               values = RColorBrewer::brewer.pal(n = 6, name = 'Dark2')) +
+            guides(color = guide_legend(override.aes = list(size=5)))
+      print(gg)
+      
+      
+      # ent <- myNormalize(apply(dens, 2, myShEn)/apply(dens, 2, function(x) mean(x)))
+      ent <- myNormalize(apply(dens, 2, myShEn)) # this is a value PER cluster
+      ent1 <- myNormalize(apply(dens, 2, myShEn)/diff(c(1, breaks, lpi)))
+      ent2 <- myNormalize(apply(dens, 2, myShEn)/apply(dens, 2, function(x) max(x)-min(x))) 
+      ent3 <- myNormalize(apply(dens, 2, myShEn)/apply(dens, 2, function(x) sd(x)))
+      ent4 <- myNormalize(apply(brkjy, 2, function(x) sd(x)))
+      ent5 <- myNormalize(apply(dens, 2, function(x) mean(x[which(x!=0)])))
+      
+      
+      gg <- ggplot() + theme_classic() + xlab('Progress Index') + ylab('Barrier score') +
+            geom_segment(aes(x = ini_points, xend = end_points, y = ent, yend = ent, col = as.factor(1)), size = 3) +
+            geom_segment(aes(x = ini_points, xend = end_points, y = ent1, yend = ent1, col = as.factor(2)), size = 3) +
+            geom_segment(aes(x = ini_points, xend = end_points, y = ent2, yend = ent2, col = as.factor(3)), size = 3) +
+            geom_segment(aes(x = ini_points, xend = end_points, y = ent3, yend = ent3, col = as.factor(4)), size = 3) +
+            geom_segment(aes(x = ini_points, xend = end_points, y = ent4, yend = ent4, col = as.factor(5)), size = 3) +
+            geom_segment(aes(x = ini_points, xend = end_points, y = ent5, yend = ent5, col = as.factor(6)), size = 3) +
+            geom_point(aes(progind$PI, progind$Time/lpi), size = 0.1) +  geom_vline(aes(xintercept=c(1, breaks, lpi)), size = 0.2) +
+            scale_color_manual(name = "Entropy", 
+                              labels = c("Classic", "/size_cl", "/max-min", "/max", "sd(brkjy)", "mean(dens!=0)"), 
+                              values = RColorBrewer::brewer.pal(n = 6, name = 'Dark2')) +
+            guides(color = guide_legend(override.aes = list(size=5)))
+  
+      print(gg)    
+      # geom_line(aes(center_cl, ent, col = as.factor(4)), size = 1.5) +
+        
+      
 
-
-    invisible(list(tab.st=tab.st, nbins=c(nx,ny), seq.st=seq.st[order(progind$Time)], call=call))
+    }
     
+    
+    invisible(list(tab.st=tab.st, nbins=c(nx,ny), seq.st=seq.st[order(progind$Time)], call=call))
 }
 

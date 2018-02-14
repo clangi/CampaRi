@@ -46,6 +46,13 @@ test_that('Test for basin recognition with ext files', {
     expect_error(CampaRi::basins_recognition(pi.table[1:50,], nx = 7, new.dev = F, plot = T, silent = T))
     expect_error(CampaRi::basins_recognition(pi.table[1:80,], nx = 6, new.dev = F, plot = T, silent = T))
     
+    # 
+    # x <- rnorm(10000, mean = 0, sd = 10)
+    # require(microbenchmark); require(ggplot2)
+    # a <- microbenchmark(bbmisc = BBmisc::normalize(x, method = 'standardize', range = c(0,1)),
+    #                     classic =  (x-min(x))/(max(x)-min(x)), times = 50)
+    # autoplot(a)
+    
     cat("Test on basins_recognition done\n\n")
     if(file.exists('BASINS_000000000001_sbrtest.dat')) file.remove('BASINS_000000000001_sbrtest.dat')
     if(file.exists('BASINS_1.dat')) file.remove('BASINS_1.dat')
