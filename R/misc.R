@@ -126,3 +126,6 @@
     Recall(table, key, start.idx = m + 1L, end.idx = end.idx, tol = tol, check = FALSE)
   } else return(TRUE)
 }
+
+# normalize
+.normalize <- function(x) return((x-min(x))/(max(x)-min(x)))
