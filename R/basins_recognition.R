@@ -26,15 +26,31 @@
 #' @param ...
 #'      \itemize{
 #'        \item "\code{time.series}" File name. If specified, it substitutes the time series of the PROGIDX_<..> file with the one provided by the file.
-#'        \item "\code{only.kin}" Logical value indicating whether it should be performed only the analysis of the kinetic annotation, thus disregarding completely the dynamic trace.  
+#'        \item "\code{only.kin}" Logical value indicating whether it should be performed only the analysis of the kinetic annotation, thus disregarding completely 
+#'        the dynamic trace.  
 #'        \item "\code{pol.degree}" Degree of the Savitzky-Golay filter in case it was chosen. Default to 2.
+#'        \item "\code{cluster.statistics}" If \code{TRUE} it will activate the cluster analysis with Mutual Information, Hellinger distance and Shannon Entropy
+#'        as defaults.
+#'        \item "\code{cluster.statistics.nBreaks}" Integer. This variable defines the number of splits for the analysis. If set to 0 it will use the breaks found in the SBR
+#'        \item "\code{plot.cluster.statistics}" Logical for plotting the statistics of the SBR basins using various colors for the methods along with 
+#'        the temporal annotation (points in a progress index / time plot). Time has been normalized between 0 and 1 as all the statistics.
+#'        \tiem "\code{cluster.statistics.entropy}" Logical. Calculate Shannon entropy.
+#'        \item "\code{cluster.statistics.stft}" Logical. Calculate short time fourier transform.
+#'        \item "\code{cluster.statistics.TE}" Logical. Calculate symmetric Transfer Entropy.
+#'        \item "\code{cluster.statistics.KL}" Logical. Calculate symmetric and non-symmetric Kullback-Leibler divergence.
+#'        \item "\code{cluster.statistics.wMI}" Logical. Use the number of breaks (\code{cluster.statistics.nBreaks}) to find the Mutual Information for 10 slided divisions.
+#'        This will result in 10*nBreaks values.
 #'      }
 #'      
 #' @return A list containing
 #'       \itemize{
-#'         \item "\code{tab.st}" Data frame containing the boundaries of each state, their lengths and the type of the right boundary. Type=1 means that it is a matched partition, type=2 is only dynamic, type=3 is only kinetic. The type of the last state is always equal to 1.
+#'         \item "\code{tab.st}" Data frame containing the boundaries of each state, their lengths and the type of the right boundary. If the cluster.statistics option
+#'         is active this will have other columns with the barrier statistics (e.g. Hellinger distance).
+#'         Type=1 means that it is a matched partition, type=2 is only dynamic, type=3 is only kinetic. The type of the last state is always equal to 1.
 #'         \item "\code{nbins}" 2-D vector containing number of bins on x-axis and y-axis.
 #'         \item "\code{seq.st}" The time-ordered discretized trajectory.
+#'         \item "\code{statistics}" If \code{cluster.statistics} is \code{TRUE} this element will contain all the cluster statistics (unbound to the found barriers). 
+#'         Otherwise it is \code{NULL}.
 #'         \item "\code{call}" The matched call. 
 #'       }   
 #' @examples
@@ -58,6 +74,12 @@
 #' @importFrom splus2R peaks
 #' @importFrom grDevices dev.new
 #' @importFrom data.table fread fwrite
+#' @importFrom RColorBrewer brewer.pal
+#' @importFrom TransferEntropy computeTE
+#' @importFrom infotheo mutinformation
+#' @importFrom e1071 stft
+# @importFrom RcppRoll roll_mean
+#' 
 #' @export basins_recognition
 
 basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, match=FALSE, dyn.check=1, 
@@ -77,15 +99,6 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
   if(!is.logical(out.file)) stop("out.file must be a logical value")
   avg.opt.arg <- c("movav", "SG")
   if(!(avg.opt[1] %in% avg.opt.arg)) stop("Average option not valid")
-  
-  input.args <- list(...)
-  avail.extra.arg <- c("pol.degree","only.kin","time.series")
-  if(!is.null(names(input.args)) && any(!(names(input.args) %in% avail.extra.arg))) 
-    warning('There is a probable mispelling in one of the inserted variables. Please check the available extra input arguments.')
-  if("only.kin" %in% names(input.args)) {
-    only.kin <- input.args$only.kin
-    if(only.kin) match <- TRUE
-  } else only.kin <- FALSE
   if(avg.opt[1]=="SG") {
     if(!("pol.degree" %in% names(input.args))) {
       if(!silent) cat("SG but pol.degree not specified, set to default value 2\n")
@@ -96,6 +109,72 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
     } else pol.degree <- input.args$pol.degree
   }
   
+  # Extra arguments checks
+  input.args <- list(...)
+  avail.extra.arg <- c("pol.degree", "only.kin", "time.series",
+                       "cluster.statistics", "plot.cluster.statistics", 'cluster.statistics.entropy', 
+                       'cluster.statistics.stft', 'cluster.statistics.TE', 'cluster.statistics.KL', 'cluster.statistics.wMI')
+  
+  if(!is.null(names(input.args)) && any(!(names(input.args) %in% avail.extra.arg))) 
+    warning('There is a probable mispelling in one of the inserted variables. Please check the available extra input arguments.')
+  if("only.kin" %in% names(input.args)) {
+    only.kin <- input.args$only.kin
+    if(only.kin) match <- TRUE
+  } else only.kin <- FALSE
+  
+  # cluster statistics check - dgarol
+  cluster.statistics.wMI <- FALSE
+  cluster.statistics.KL <- FALSE
+  cluster.statistics.TE <- FALSE
+  cluster.statistics.stft <- FALSE
+  if("cluster.statistics" %in% names(input.args)) { # dgarol
+    cluster.statistics <- input.args$cluster.statistics
+    stopifnot(is.logical(cluster.statistics))
+    cluster.statistics.wMI <- FALSE # can be long
+    cluster.statistics.KL <- TRUE
+    cluster.statistics.TE <- TRUE
+    cluster.statistics.stft <- FALSE # it is plotting too much
+  } else cluster.statistics <- FALSE
+  
+  # Specific cluster statistics
+  
+  if("cluster.statistics.wMI" %in% names(input.args)) { # dgarol
+    cluster.statistics.wMI <- input.args$cluster.statistics.wMI
+    stopifnot(is.logical(cluster.statistics.wMI))
+    if(!cluster.statistics && cluster.statistics.wMI) cluster.statistics <- TRUE
+  }
+  if("cluster.statistics.KL" %in% names(input.args)) { # dgarol
+    cluster.statistics.KL <- input.args$cluster.statistics.KL
+    stopifnot(is.logical(cluster.statistics.KL))
+    if(!cluster.statistics && cluster.statistics.KL) cluster.statistics <- TRUE
+  }
+  if("cluster.statistics.TE" %in% names(input.args)) { # dgarol
+    cluster.statistics.TE <- input.args$cluster.statistics.TE
+    stopifnot(is.logical(cluster.statistics.TE))
+    if(!cluster.statistics && cluster.statistics.TE) cluster.statistics <- TRUE
+  }
+  if("cluster.statistics.stft" %in% names(input.args)) { # dgarol
+    cluster.statistics.stft <- input.args$cluster.statistics.stft
+    stopifnot(is.logical(cluster.statistics.stft))
+    if(!cluster.statistics && cluster.statistics.stft) cluster.statistics <- TRUE
+  }
+  
+  # Entropy deeper exploration
+  if("cluster.statistics.entropy" %in% names(input.args)) { # dgarol
+    cluster.statistics.entropy <- input.args$cluster.statistics.entropy
+    stopifnot(is.logical(cluster.statistics.entropy))
+    if(!cluster.statistics && cluster.statistics.entropy) cluster.statistics <- TRUE
+  } else cluster.statistics.entropy <- FALSE
+  
+  # Plotting
+  if("plot.cluster.statistics" %in% names(input.args)) { # dgarol
+    plot.cluster.statistics <- input.args$plot.cluster.statistics
+    stopifnot(is.logical(plot.cluster.statistics))
+    if(!cluster.statistics && plot.cluster.statistics) cluster.statistics <- TRUE
+  } else plot.cluster.statistics <- FALSE
+  
+
+  # --------------------------- functions
   as.real <- function(x) {
     return(as.double(x))
   }
@@ -166,6 +245,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
     yn <- y[-which(x==0 | y==0)]
     return(sum(xn*log(xn/yn)))
   }
+  # ------------------------ end functions
   
   ## INPUT FILE 
   if(!silent) cat("Reading PROGIDX file...\n")
@@ -840,8 +920,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
   #### final calculations for scores
   #######################################################################
     browser()
-    whatever <- FALSE
-    if(whatever){
+    if(cluster.statistics){
       
       # functions
       # ----------------------------------------------------
@@ -892,6 +971,8 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
         
         return(list('density' = dens, 'counts' = cnts))
       }
+      
+      # once defined a split (e.g. 50 parts) it uses a certain number of slides (e.g. 10) to calculate the MI
       sliding_MI <- function(progind, n_breaks = 50, n_slides = 10, nx, ny = nx){
         lpi <- .lt(progind$PI)
         brks <- floor(seq(1, lpi, length.out = n_breaks))
@@ -906,116 +987,144 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
       # ----------------------------------------------------
       
       # color exploration
-      require(RColorBrewer)
-      RColorBrewer::display.brewer.all()
-      ncolor = 7; pie(x = rep(1, ncolor), labels = 1:ncolor, col = RColorBrewer::brewer.pal(n = ncolor, name = 'Set1'))
-      ncolor = 7; pie(x = rep(1, ncolor), labels = 1:ncolor, col = RColorBrewer::brewer.pal(n = ncolor, name = 'Dark2'))
+      # require(RColorBrewer)
+      # RColorBrewer::display.brewer.all()
+      # ncolor = 7; pie(x = rep(1, ncolor), labels = 1:ncolor, col = RColorBrewer::brewer.pal(n = ncolor, name = 'Set1'))
+      # ncolor = 7; pie(x = rep(1, ncolor), labels = 1:ncolor, col = RColorBrewer::brewer.pal(n = ncolor, name = 'Dark2'))
       
       # using the division to calculate the densities and the counts
       lpi <- .lt(progind$PI)
       # tobrk <- breaks
-      tobrk <- floor(seq(1, lpi, length.out = 50))
+      tobrk <- floor(seq(1, lpi, length.out = cluster.statistics.nBreaks))
       dhc <- dens_histCounts(progind, breaks = tobrk, nx = nx, ny = ny) # breaks are the barriers points on x
       dens <- dhc$density
       cnts <- dhc$counts
       
       # sliding window MI
-      sl_MI <- sliding_MI(progind = progind, n_breaks = 50, n_slides = 10, nx = nx, ny = ny)
+      if(cluster.statistics.wMI) sl_MI <- sliding_MI(progind = progind, n_breaks = 50, n_slides = 10, nx = nx, ny = ny)
       
       # Analysis of it - rolling means/max/min
-      require(RcppRoll)
-      plot(sl_MI, type = 'l')
-      lines(x = c(1, .lt(sl_MI)), y = rep(mean(sl_MI), 2))
-      lines(RcppRoll::roll_mean(sl_MI, n = 18), col = 'red')
+      # require(RcppRoll)
+      # plot(sl_MI, type = 'l')
+      # lines(x = c(1, .lt(sl_MI)), y = rep(mean(sl_MI), 2))
+      # lines(RcppRoll::roll_mean(sl_MI, n = 18), col = 'red')
       # lines(RcppRoll::roll_sd(sl_MI, n = 30), col = 'blue')
-      lines(RcppRoll::roll_min(sl_MI, n = 20), col = 'blue')
-      lines(RcppRoll::roll_max(sl_MI, n = 20), col = 'blue')
+      # lines(RcppRoll::roll_min(sl_MI, n = 20), col = 'blue')
+      # lines(RcppRoll::roll_max(sl_MI, n = 20), col = 'blue')
       # lines(abs(RcppRoll::roll_mean(sl_MI, n = 10) - RcppRoll::roll_mean(sl_MI, n = 60)), col = 'blue')
       
       # short time Fourier Transform
-      require(e1071)
-      short_time_FT <- e1071::stft(sl_MI, win = 30, inc = 1)
-      histOfStft <- apply(short_time_FT$values, 1, sum)
-      histOfStft <- .normalize(histOfStft)
-      
-      plot(short_time_FT)
-      plot(apply(short_time_FT$values, 2, sum), type = 'l', xlab = 'Freq')
-      plot(histOfStft, type = 'l')
-      plot(abs(diff(abs(diff(histOfStft))))^2, type = 'l')
-      plot(abs(diff(histOfStft))^2, type = 'l')
-      
-      # peaks finding
-      peakss <- roll_mean(abs(diff(histOfStft))^2, 10)
-      plot(peakss, type = 'l')
-      TFpeakss <- peaks(peakss, span = 80)
-      plot(TFpeakss, type = 'l')
-      
-      # now we try to project it back to the original points (.lt -> 441)
-      # .lt(TFpeakss)
-      xpeaks <- seq(1, lpi, length.out = .lt(TFpeakss))[TFpeakss]
+      if(cluster.statistics.stft){
+        short_time_FT <- e1071::stft(sl_MI, win = 30, inc = 1)
+        histOfStft <- apply(short_time_FT$values, 1, sum)
+        histOfStft <- .normalize(histOfStft)
+        if(plot.cluster.statistics){
+          plot(short_time_FT)
+          # plot(apply(short_time_FT$values, 2, sum), type = 'l', xlab = 'Freq')
+          plot(histOfStft, type = 'l')
+          lines(abs(diff(abs(diff(histOfStft))))^2, type = 'l')
+          lines(abs(diff(histOfStft))^2, type = 'l')
+        }
+        
+        # peaks finding
+        # peakss <- RcppRoll::roll_mean(abs(diff(histOfStft))^2, 10)
+        peakss <- abs(diff(histOfStft))^2
+        TFpeakss <- splus2R::peaks(peakss, span = 80)
+        if(plot.cluster.statistics){
+          plot(peakss, type = 'l')
+          lines(TFpeakss, type = 'l')
+        }
+        
+        # now we try to project it back to the original points (.lt -> 441)
+        # .lt(TFpeakss)
+        xpeaks <- seq(1, lpi, length.out = .lt(TFpeakss))[TFpeakss]
+      }
       
       # good_areas_for_thresholds # deprecated
       # gaft <- 1 - RcppRoll::roll_min(sl_MI, n = 20)
       # plot(x= seq(1, lpi - (.lt(sl_MI) - .lt(gaft))*lpi/.lt(sl_MI), length.out = .lt(gaft)), y=gaft, type = 'l')
       # segments(x0=breaks_save, y0 = 0, y1 = 1)
       
-      # final plotting
-      require(infotheo); require(TransferEntropy)
-      
+      ent <- .normalize(apply(dens, 2, myShEn)) # this is a value PER cluster
       distHell <- sapply(seq(.lt(tobrk)), function(j) myHell(dens[, j], dens[, j+1]))
-      distSymKL <- sapply(seq(.lt(tobrk)), function(j) myKL(dens[, j], dens[, j+1], T)); distSymKL <- .normalize(distSymKL)
-      distKL <- sapply(seq(.lt(tobrk)), function(j) myKL(dens[, j], dens[, j+1], F)); distKL <- .normalize(distKL)
       distMI <- sapply(seq(.lt(tobrk)), function(j) infotheo::mutinformation(cnts[, j], cnts[, j+1])); distMI <- .normalize(distMI)
-      distSymTE <- sapply(seq(.lt(tobrk)), function(j) myTE(dens[, j], dens[, j+1], emb = 3, sym = T)); distSymTE <- .normalize(distSymTE)
-      distTE <- sapply(seq(.lt(tobrk)), function(j) myTE(dens[, j], dens[, j+1], emb = 3, sym = F)); distTE <- .normalize(distTE)
-      ent <- .normalize(apply(dens, 2, myShEn)) # this is a value PER cluster
+      if(cluster.statistics.KL) distSymKL <- sapply(seq(.lt(tobrk)), function(j) myKL(dens[, j], dens[, j+1], T)); distSymKL <- .normalize(distSymKL)
+      if(cluster.statistics.KL) distKL <- sapply(seq(.lt(tobrk)), function(j) myKL(dens[, j], dens[, j+1], F)); distKL <- .normalize(distKL)
+      if(cluster.statistics.TE) distSymTE <- sapply(seq(.lt(tobrk)), function(j) myTE(dens[, j], dens[, j+1], emb = 3, sym = T)); distSymTE <- .normalize(distSymTE)
+      
+      # defining the centers/ini/end of the splits
       center_cl <- diff(c(1, tobrk, lpi))/2 + c(1, tobrk)
-      ini_points <- c(1, tobrk)
-      end_points <- c(1, tobrk) + diff(c(1, tobrk, lpi))
+      ini_points <- c(1, tobrk); end_points <- c(1, tobrk) + diff(c(1, tobrk, lpi))
       
-      gg <- ggplot() + theme_classic() + xlab('Progress Index') + ylab('Barrier score') +
-            geom_line(aes(tobrk, distHell, col = as.factor(1)), size = 0.5) +
-            geom_line(aes(tobrk, distKL, col = as.factor(2)), size = 0.5) +
-            geom_line(aes(tobrk, distSymKL, col = as.factor(3)), size = 0.5) +
-            geom_segment(aes(x = ini_points, xend = end_points, y = ent, yend = ent, col = as.factor(4)), size = 4) +
-            geom_line(aes(tobrk, distMI, col = as.factor(5)), size = 2) +
-            geom_line(aes(tobrk, distTE, col = as.factor(6)), size = 0.5) +
-            # geom_line(aes(seq(1, lpi, length.out = .lt(sl_MI)), sl_MI, col = as.factor(7)), size = 2) +
-            geom_hline(aes(yintercept = mean(sl_MI))) +
-            geom_point(aes(progind$PI, progind$Time/lpi), size = 0.1) + 
-            geom_vline(aes(xintercept=c(1, tobrk, lpi)), size = 0.2) +
-            # geom_vline(aes(xintercept=c(xpeaks, lpi)), size = 0.2) + # no need of new splits... better to score the bsr split (cohesion - MI) 
-            scale_color_manual(name = "Method", 
-                               labels = c("Hellinger-d", "KL-div", "SymKL-div", "Entropy", "MI", 'disTE', 'Spanning MI'), 
-                               values = RColorBrewer::brewer.pal(n = 7, name = 'Dark2')) +
-            guides(color = guide_legend(override.aes = list(size=5)))
-      print(gg)
+      # Plotting the barriers, breaks and statistics on the breaks 
+      if(plot.cluster.statistics){
+        gg <- ggplot() + theme_classic() + xlab('Progress Index') + ylab('Barrier score') +
+              geom_line(aes(tobrk, distHell, col = as.factor(1)), size = 0.5) +
+              geom_segment(aes(x = ini_points, xend = end_points, y = ent, yend = ent, col = as.factor(2)), size = 4) +
+              geom_line(aes(tobrk, distMI, col = as.factor(3)), size = 2) +
+              geom_point(aes(progind$PI, progind$Time/lpi), size = 0.1) + 
+              geom_vline(aes(xintercept=c(1, tobrk, lpi)), size = 0.1) + # MI and entropy calculations 
+              geom_vline(aes(xintercept=c(1, breaks, lpi)), size = 0.5)  # Found barriers from SBR
+        lbls <- c('Hellinger', 'Entropy', 'MI')
+        if(cluster.statistics.KL){
+          gg <- gg + geom_line(aes(tobrk, distKL, col = as.factor(4)), size = 0.5) +
+                geom_line(aes(tobrk, distSymKL, col = as.factor(5)), size = 0.5)
+          lbls <- c(lbls, 'KL', 'symKL')
+        }
+        if(cluster.statistics.TE){
+          gg <- gg + geom_line(aes(tobrk, distSymTE, col = as.factor(6)), size = 0.5)
+          lbls <- c(lbls, 'symTE')
+        }
+        if(cluster.statistics.wMI){
+          gg <- gg + geom_line(aes(seq(1, lpi, length.out = .lt(sl_MI)), sl_MI, col = as.factor(7)), size = 1) + 
+                     geom_hline(aes(yintercept = mean(sl_MI)))
+          lbls <- c(lbls, 'WinMI')
+        }
+        if(cluster.statistics.stft){
+          gg <- gg + geom_vline(aes(xintercept=c(xpeaks, lpi), col = as.gactor(8)), size = 0.2) # no need of new splits... better to score the bsr split (cohesion - MI) 
+          lbls <- c(lbls, 'stFT barriers')
+        }
+        gg <- gg + scale_color_manual(name = "Method", labels = lbls, values = RColorBrewer::brewer.pal(n = 8, name = 'Dark2')) +
+                   guides(color = guide_legend(override.aes = list(size=5)))
+        print(gg)
+      }
       
-      # ent <- .normalize(apply(dens, 2, myShEn)/apply(dens, 2, function(x) mean(x)))
-      ent <- .normalize(apply(dens, 2, myShEn)) # this is a value PER cluster
-      # ent1 <- .normalize(apply(dens, 2, myShEn)/diff(c(1, tobrk, lpi))) # the size is not really relevant
-      ent1 <- .normalize(apply(dens, 2, myShEn) * apply(cnts, 2, function(x) sum(x)/sum(x != 0)))
-      ent2 <- .normalize(apply(dens, 2, myShEn)/apply(dens, 2, function(x) max(x)-min(x))) 
-      ent3 <- .normalize(apply(dens, 2, myShEn)/apply(dens, 2, function(x) sd(x)))
-      ent4 <- .normalize(apply(cnts, 2, function(x) sd(x)))
-      ent5 <- .normalize(apply(dens, 2, function(x) mean(x[which(x!=0)])))
-      anyNA(ent);anyNA(ent1);anyNA(ent2);anyNA(ent3);anyNA(ent4);anyNA(ent5);
-      # ent1[is.na(ent1)] <- 1
-      gg <- ggplot() + theme_classic() + xlab('Progress Index') + ylab('Barrier score') +
-            geom_segment(aes(x = ini_points, xend = end_points, y = ent, yend = ent, col = as.factor(1)), size = 3, alpha = 0.5) +
-            geom_segment(aes(x = ini_points, xend = end_points, y = ent1, yend = ent1, col = as.factor(2)), size = 3, alpha = 0.5) +
-            geom_segment(aes(x = ini_points, xend = end_points, y = ent2, yend = ent2, col = as.factor(3)), size = 3, alpha = 0.5) +
-            geom_segment(aes(x = ini_points, xend = end_points, y = ent3, yend = ent3, col = as.factor(4)), size = 3, alpha = 0.5) +
-            geom_segment(aes(x = ini_points, xend = end_points, y = ent4, yend = ent4, col = as.factor(5)), size = 3, alpha = 0.5) +
-            geom_segment(aes(x = ini_points, xend = end_points, y = ent5, yend = ent5, col = as.factor(6)), size = 3, alpha = 0.5) +
-            geom_point(aes(progind$PI, progind$Time/lpi), size = 0.1) +  geom_vline(aes(xintercept=c(1, tobrk, lpi)), size = 0.2) +
-            scale_color_manual(name = "Entropy", 
-                              labels = c("Classic", "/size_cl", "/max-min", "/max", "sd(cnts)", "mean(dens!=0)"), 
-                              values = RColorBrewer::brewer.pal(n = 6, name = 'Dark2')) +
-            guides(color = guide_legend(override.aes = list(size=5)))
-  
-      print(gg)    
-    }
-    invisible(list(tab.st=tab.st, nbins=c(nx,ny), seq.st=seq.st[order(progind$Time)], call=call))
+      # Entropy calculations
+      if(cluster.statistics.entropy){
+        # ent <- .normalize(apply(dens, 2, myShEn)/apply(dens, 2, function(x) mean(x)))
+        ent <- .normalize(apply(dens, 2, myShEn)) # this is a value PER cluster
+        # ent1 <- .normalize(apply(dens, 2, myShEn)/diff(c(1, tobrk, lpi))) # the size is not really relevant
+        ent1 <- .normalize(apply(dens, 2, myShEn) * apply(cnts, 2, function(x) sum(x)/sum(x != 0)))
+        ent2 <- .normalize(apply(dens, 2, myShEn)/apply(dens, 2, function(x) max(x)-min(x))) 
+        ent3 <- .normalize(apply(dens, 2, myShEn)/apply(dens, 2, function(x) sd(x)))
+        ent4 <- .normalize(apply(cnts, 2, function(x) sd(x)))
+        ent5 <- .normalize(apply(dens, 2, function(x) mean(x[which(x!=0)])))
+        
+        # Check for NAs
+        if(anyNA(ent) || anyNA(ent1) || anyNA(ent2) || anyNA(ent3) || anyNA(ent4) || anyNA(ent5))
+          stop('We found NAs in the entropy calculations. you should reduce or re consider statistical binning.')
+        
+        # Plotting entropy calculations
+        if(plot.cluster.statistics){
+          gg <- ggplot() + theme_classic() + xlab('Progress Index') + ylab('Barrier score') +
+                geom_segment(aes(x = ini_points, xend = end_points, y = ent, yend = ent, col = as.factor(1)), size = 3, alpha = 0.5) +
+                geom_segment(aes(x = ini_points, xend = end_points, y = ent1, yend = ent1, col = as.factor(2)), size = 3, alpha = 0.5) +
+                geom_segment(aes(x = ini_points, xend = end_points, y = ent2, yend = ent2, col = as.factor(3)), size = 3, alpha = 0.5) +
+                geom_segment(aes(x = ini_points, xend = end_points, y = ent3, yend = ent3, col = as.factor(4)), size = 3, alpha = 0.5) +
+                geom_segment(aes(x = ini_points, xend = end_points, y = ent4, yend = ent4, col = as.factor(5)), size = 3, alpha = 0.5) +
+                geom_segment(aes(x = ini_points, xend = end_points, y = ent5, yend = ent5, col = as.factor(6)), size = 3, alpha = 0.5) +
+                geom_point(aes(progind$PI, progind$Time/lpi), size = 0.1) +  
+                geom_vline(aes(xintercept=c(1, tobrk, lpi)), size = 0.1) + # MI and entropy calculations 
+                geom_vline(aes(xintercept=c(1, breaks, lpi)), size = 0.5) + # Found barriers from SBR
+                scale_color_manual(name = "Entropy", 
+                                  labels = c("Classic", "/size_cl", "/max-min", "/max", "sd(cnts)", "mean(dens!=0)"), 
+                                  values = RColorBrewer::brewer.pal(n = 6, name = 'Dark2')) +
+                guides(color = guide_legend(override.aes = list(size=5)))
+      
+          print(gg)    
+        }
+      }
+    } else statistics <- NULL
+    invisible(list(tab.st=tab.st, nbins=c(nx,ny), seq.st=seq.st[order(progind$Time)], statistics = statistics, call=call))
 }
 
