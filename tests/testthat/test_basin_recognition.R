@@ -2,7 +2,7 @@ context('basins_recognition')
 
 test_that('Test for basin recognition with ext files', {
     
-  silent <- F
+  silent <- T
   plt_stff <- !silent
   if(!silent) require(testthat)
   ## dir.cur <- getwd()
@@ -51,28 +51,14 @@ test_that('Test for basin recognition with ext files', {
   expect_error(CampaRi::basins_recognition(pi.table[1:50,], nx = 7, new.dev = F, plot = T, silent = T))
   expect_error(CampaRi::basins_recognition(pi.table[1:80,], nx = 6, new.dev = F, plot = T, silent = T))
   
-  # testing various analysis of the clusters - creating a new dataset
-  stdd <- 3; n_dim <- 10; n_snap <- 3000; n_tot <- n_dim*n_snap/3; if(!silent) print(n_tot)
-  thedata <- rbind(matrix(rnorm(n_tot/2, mean = 0, sd = stdd), nrow = n_snap/6, ncol = n_dim),
-                   matrix(rnorm(n_tot, mean = 5, sd = stdd), nrow = n_snap/3, ncol = n_dim),
-                   matrix(rnorm(n_tot/2, mean = 0, sd = stdd), nrow = n_snap/6, ncol = n_dim),
-                   matrix(rnorm(n_tot/2, mean = 10, sd = stdd), nrow = n_snap/3, ncol = n_dim))
-  ann <- c(rep(1, n_snap/6), rep(2, n_snap/3), rep(1, n_snap/6), rep(3, n_snap/3))
-  if(plt_stff) plot(apply(thedata, 1, mean))
-  if(plt_stff) plot(apply(thedata, 2, mean)) # this must be similar! It is similar for each dimension
+  # testing various analysis of the clusters
+  file.pi <- system.file("extdata", "REPIX_000000000021.dat", package = "CampaRi")
   
-  # Calculating the sapphire plot
-  adjl <- mst_from_trj(trj = thedata, normalize_d = T, dump_to_netcdf = FALSE, mute_fortran = silent)
-  ret <- gen_progindex(adjl, snap_start = 21, mute = silent)
-  ret2 <- gen_annotation(ret, snap_start = 21, mute = silent)
-  
-  # testing various analysis of the clusters - creating a new dataset
-  the_sap <- 'REPIX_000000000021.dat'
   nbin <- round(sqrt(nrow(thedata)*10)); if(!silent) print(round(sqrt(nrow(thedata)*10)))
-  bas <- basins_recognition(data = the_sap, nx = nbin, match = F, plot = plt_stff, out.file = F, new.dev = F, 
+  bas <- basins_recognition(data = file.pi, nx = nbin, match = F, plot = plt_stff, out.file = F, new.dev = F, 
                             cluster.statistics = T,
-                            # cluster.statistics.KL = T,
-                            # cluster.statistics.TE = T, 
+                            cluster.statistics.KL = T,
+                            cluster.statistics.TE = T,
                             cluster.statistics.wMI = T,
                             plot.cluster.statistics = T)
   str(bas)

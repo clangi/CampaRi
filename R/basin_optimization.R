@@ -91,7 +91,8 @@ basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fi
     # checks
     if(!silent) cat('Automatic optimization of basins based on number of cluster inserted... \n')
     if(number_of_clusters < 2 && number_of_clusters >= nrow(st)) stop('Number of cluster too high or too low.')
-    if(number_of_clusters > nbinsxy) stop('Please set the number of clusters lower than the number of initial nbins (nbinsxy).')
+    if(number_of_clusters > nbins_x) stop('Please set the number of clusters lower than the number of initial nbins (nbins_x).')
+    if(number_of_clusters > nbins_y) stop('Please set the number of clusters lower than the number of initial nbins (nbins_y).')
     
     # init
     lin_scale <- unique(round(seq(7, nbins_x, length.out = how_fine_search)))

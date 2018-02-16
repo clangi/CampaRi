@@ -32,9 +32,9 @@
 #'        \item "\code{cluster.statistics}" If \code{TRUE} it will activate the cluster analysis with Mutual Information, Hellinger distance and Shannon Entropy
 #'        as defaults.
 #'        \item "\code{cluster.statistics.weight.barriers}" If \code{TRUE} (standard once cluster.statistics is active) it will calculate two different Mutual Information: 
-#'        one based on the clusters founds and one based on uniform subsampling (done using \code{cluster.statistics.nBreaks} or the number of cluster founds using SBR). 
-#'        The second one will be inverted to find the discontinuities and the barriers will be weighted simply multiplying the two values found on the specific progress
-#'        index data point.  
+#'        one based on the clusters founds and one based on uniform subsampling (done using \code{cluster.statistics.nBreaks} or the number of cluster founds using 
+#'        SBR multiplied for 10). The second one will be inverted to find the discontinuities and the barriers will be weighted simply multiplying the two values 
+#'        found on the specific progress index data point.  
 #'        \item "\code{cluster.statistics.nBreaks}" Integer. This variable defines the number of splits for the analysis. If set to 0 it will use the breaks found in the SBR.
 #'        \item "\code{plot.cluster.statistics}" Logical for plotting the statistics of the SBR basins using various colors for the methods along with 
 #'        the temporal annotation (points in a progress index / time plot). Time has been normalized between 0 and 1 as all the statistics.
@@ -91,7 +91,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
   call <- match.call()
   
   if(!is.character(data) && !is.data.frame(data)) stop("data must be a string or a data frame")
-  if(is.character(the_sap) && (!all(grepl("PROGIDX", the_sap)) && !all(grepl("REPIX", the_sap)))) stop("Please provide a data name starting with 'PROGIDX' or 'REPIX'" )
+  if(is.character(data) && (!all(grepl("PROGIDX", data)) && !all(grepl("REPIX", data)))) stop("Please provide a data name starting with 'PROGIDX' or 'REPIX'" )
   if((nx %% 1) != 0) stop("nx must be an integer")
   if((ny %% 1) != 0) stop("ny must be an integer")
   if((nx < 7 || ny < 7)) stop('nx and ny must be > 5')
@@ -145,6 +145,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
     if(!cluster.statistics && cluster.statistics.nBreaks) cluster.statistics <- TRUE
   } else cluster.statistics.nBreaks <- 0
   
+  # Checking the weight of the barriers
   if("cluster.statistics.weight.barriers" %in% names(input.args)) { # dgarol
     cluster.statistics.weight.barriers <- input.args$cluster.statistics.weight.barriers
     stopifnot(.isSingleInteger(cluster.statistics.weight.barriers))
@@ -933,7 +934,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
   #######################################################################
   #### final calculations for scores - dgarol
   #######################################################################
-    browser()
+    # browser()
     if(cluster.statistics){
       
       # functions
@@ -1010,12 +1011,28 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
       lpi <- .lt(progind$PI)
       stopifnot(cluster.statistics.nBreaks >= 0, cluster.statistics.nBreaks <= floor(lpi/2))
       
+      # calculating the weights for the barriers 
+      if(cluster.statistics.weight.barriers) {
+        if(cluster.statistics.nBreaks == 0) n_unif <- .lt(breaks)*5
+        else n_unif <- cluster.statistics.nBreaks
+        brks_uni <- floor(seq(1, lpi, length.out = n_unif))
+        dhc_sbr <- dens_histCounts(progind, breaks = breaks, nx = nx, ny = ny) # breaks are the barriers points on x
+        dhc_uni <- dens_histCounts(progind, breaks = brks_uni, nx = nx, ny = ny) # breaks are the barriers points on x
+        sbr_cnts <- dhc_sbr$counts    
+        uni_cnts <- dhc_uni$counts    
+        MI_sbr <- sapply(seq(.lt(breaks)), function(j) infotheo::mutinformation(sbr_cnts[, j], sbr_cnts[, j+1])); MI_sbr <- .normalize(MI_sbr)
+        MI_uni <- sapply(seq(n_unif), function(j) infotheo::mutinformation(uni_cnts[, j], uni_cnts[, j+1])); MI_uni <- .normalize(MI_uni)
+        expand_MI_uni <- approx(seq(n_unif), 1 - MI_uni, n = lpi)$y
+        plot(expand_MI_uni)
+        points(breaks, MI_sbr, pch ='o', col = 'green', cex = 5)
+        points(breaks, MI_sbr*expand_MI_uni[breaks], pch ='+', col = 'red', cex = 5)
+      }
+        
       if(cluster.statistics.nBreaks == 0) tobrk <- breaks
       else tobrk <- floor(seq(1, lpi, length.out = cluster.statistics.nBreaks))
       dhc <- dens_histCounts(progind, breaks = tobrk, nx = nx, ny = ny) # breaks are the barriers points on x
       dens <- dhc$density
       cnts <- dhc$counts
-      if(cluster.statistics.weight.barriers) 
       
       # sliding window MI
       if(cluster.statistics.nBreaks == 0) nbr <- .lt(breaks)
@@ -1104,6 +1121,9 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
           gg <- gg + geom_vline(aes(xintercept=c(xpeaks, lpi), col = as.factor(8)), size = 0.2) # no need of new splits... better to score the bsr split (cohesion - MI) 
           lbls <- c(lbls, 'stFT barriers')
         }
+        # if(cluster.statistics.weight.barriers){
+        #   gg <- gg + geom_point(aes(x = breaks, y = MI_sbr*expand_MI_uni[breaks]), col = 'red', size = 3)
+        # }
         gg <- gg + scale_color_manual(name = "Method", labels = lbls, values = RColorBrewer::brewer.pal(n = 8, name = 'Dark2')) +
                    guides(color = guide_legend(override.aes = list(size=5)))
         print(gg)
@@ -1161,6 +1181,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
       }
       if(cluster.statistics.wMI) { statistics[[ele]] <- sl_MI; names(ele)[ele] <- 'winMI'; ele <- ele + 1 }
       if(cluster.statistics.stft) { statistics[[ele]] <- xpeaks; names(ele)[ele] <- 'stFT'; ele <- ele + 1 }
+      if(cluster.statistics.weight.barriers) tab.st <- cbind(tab.st, 'barWeight' = c(-1, MI_sbr*expand_MI_uni[breaks]))
     } else statistics <- NULL
     invisible(list(tab.st=tab.st, nbins=c(nx,ny), seq.st=seq.st[order(progind$Time)], statistics = statistics, call=call))
 }
