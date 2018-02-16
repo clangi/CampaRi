@@ -31,10 +31,10 @@
 #'        \item "\code{pol.degree}" Degree of the Savitzky-Golay filter in case it was chosen. Default to 2.
 #'        \item "\code{cluster.statistics}" If \code{TRUE} it will activate the cluster analysis with Mutual Information, Hellinger distance and Shannon Entropy
 #'        as defaults.
-#'        \item "\code{cluster.statistics.nBreaks}" Integer. This variable defines the number of splits for the analysis. If set to 0 it will use the breaks found in the SBR
+#'        \item "\code{cluster.statistics.nBreaks}" Integer. This variable defines the number of splits for the analysis. If set to 0 it will use the breaks found in the SBR.
 #'        \item "\code{plot.cluster.statistics}" Logical for plotting the statistics of the SBR basins using various colors for the methods along with 
 #'        the temporal annotation (points in a progress index / time plot). Time has been normalized between 0 and 1 as all the statistics.
-#'        \tiem "\code{cluster.statistics.entropy}" Logical. Calculate Shannon entropy.
+#'        \item "\code{cluster.statistics.entropy}" Logical. Calculate Shannon entropy.
 #'        \item "\code{cluster.statistics.stft}" Logical. Calculate short time fourier transform.
 #'        \item "\code{cluster.statistics.TE}" Logical. Calculate symmetric Transfer Entropy.
 #'        \item "\code{cluster.statistics.KL}" Logical. Calculate symmetric and non-symmetric Kullback-Leibler divergence.
@@ -136,8 +136,14 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
     cluster.statistics.stft <- FALSE # it is plotting too much
   } else cluster.statistics <- FALSE
   
-  # Specific cluster statistics
+  # Checking the number of breaks for the statistics (0 is the standard barriers)
+  if("cluster.statistics.nBreaks" %in% names(input.args)) { # dgarol
+    cluster.statistics.nBreaks <- input.args$cluster.statistics.nBreaks
+    stopifnot(.isSingleInteger(cluster.statistics.nBreaks))
+    if(!cluster.statistics && cluster.statistics.nBreaks) cluster.statistics <- TRUE
+  } else cluster.statistics.nBreaks <- 0
   
+  # Specific cluster statistics
   if("cluster.statistics.wMI" %in% names(input.args)) { # dgarol
     cluster.statistics.wMI <- input.args$cluster.statistics.wMI
     stopifnot(is.logical(cluster.statistics.wMI))
@@ -917,7 +923,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
 
   
   #######################################################################
-  #### final calculations for scores
+  #### final calculations for scores - dgarol
   #######################################################################
     browser()
     if(cluster.statistics){
@@ -994,14 +1000,18 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
       
       # using the division to calculate the densities and the counts
       lpi <- .lt(progind$PI)
-      # tobrk <- breaks
-      tobrk <- floor(seq(1, lpi, length.out = cluster.statistics.nBreaks))
+      stopifnot(cluster.statistics.nBreaks >= 0, cluster.statistics.nBreaks <= floor(lpi/2))
+      
+      if(cluster.statistics.nBreaks == 0) tobrk <- breaks
+      else tobrk <- floor(seq(1, lpi, length.out = cluster.statistics.nBreaks))
       dhc <- dens_histCounts(progind, breaks = tobrk, nx = nx, ny = ny) # breaks are the barriers points on x
       dens <- dhc$density
       cnts <- dhc$counts
       
       # sliding window MI
-      if(cluster.statistics.wMI) sl_MI <- sliding_MI(progind = progind, n_breaks = 50, n_slides = 10, nx = nx, ny = ny)
+      if(cluster.statistics.nBreaks == 0) nbr <- .lt(breaks)
+      else nbr <- cluster.statistics.nBreaks
+      if(cluster.statistics.wMI) sl_MI <- sliding_MI(progind = progind, n_breaks = nbr, n_slides = 10, nx = nx, ny = ny)
       
       # Analysis of it - rolling means/max/min
       # require(RcppRoll)
@@ -1045,6 +1055,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
       # plot(x= seq(1, lpi - (.lt(sl_MI) - .lt(gaft))*lpi/.lt(sl_MI), length.out = .lt(gaft)), y=gaft, type = 'l')
       # segments(x0=breaks_save, y0 = 0, y1 = 1)
       
+      # calculating the standards and not
       ent <- .normalize(apply(dens, 2, myShEn)) # this is a value PER cluster
       distHell <- sapply(seq(.lt(tobrk)), function(j) myHell(dens[, j], dens[, j+1]))
       distMI <- sapply(seq(.lt(tobrk)), function(j) infotheo::mutinformation(cnts[, j], cnts[, j+1])); distMI <- .normalize(distMI)
@@ -1081,7 +1092,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
           lbls <- c(lbls, 'WinMI')
         }
         if(cluster.statistics.stft){
-          gg <- gg + geom_vline(aes(xintercept=c(xpeaks, lpi), col = as.gactor(8)), size = 0.2) # no need of new splits... better to score the bsr split (cohesion - MI) 
+          gg <- gg + geom_vline(aes(xintercept=c(xpeaks, lpi), col = as.factor(8)), size = 0.2) # no need of new splits... better to score the bsr split (cohesion - MI) 
           lbls <- c(lbls, 'stFT barriers')
         }
         gg <- gg + scale_color_manual(name = "Method", labels = lbls, values = RColorBrewer::brewer.pal(n = 8, name = 'Dark2')) +
@@ -1124,6 +1135,23 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
           print(gg)    
         }
       }
+      
+      # Final assignment for output
+      statistics <- NULL
+      ele <- 1
+      if(cluster.statistics.nBreaks == 0){ # case in which the statistic comes from SBR splits
+        tab.st <- cbind(tab.st, 'Hellinger' =  distHell, 'Entropy' = ent, 'MI' = distMI)
+        if(cluster.statistics.KL) tab.st <- cbind(tab.st, 'symKL' = distSymKL) 
+        if(cluster.statistics.KL) tab.st <- cbind(tab.st, 'KL' = distKL)
+        if(cluster.statistics.TE) tab.st <- cbind(tab.st, 'symTE' = distSymTE)
+      }else{ # otherwise
+        statistics <- list('Hellinger' =  distHell, 'Entropy' = ent, 'MI' = distMI); ele <- ele + 3
+        if(cluster.statistics.KL) { statistics[[ele]] <- distSymKL; names(ele)[ele] <- 'symKL'; ele <- ele + 1 }
+        if(cluster.statistics.KL) { statistics[[ele]] <- distSymKL; names(ele)[ele] <- 'KL'; ele <- ele + 1 }
+        if(cluster.statistics.TE) { statistics[[ele]] <- distSymTE; names(ele)[ele] <- 'symTE'; ele <- ele + 1 }
+      }
+      if(cluster.statistics.wMI) { statistics[[ele]] <- sl_MI; names(ele)[ele] <- 'winMI'; ele <- ele + 1 }
+      if(cluster.statistics.stft) { statistics[[ele]] <- xpeaks; names(ele)[ele] <- 'stFT'; ele <- ele + 1 }
     } else statistics <- NULL
     invisible(list(tab.st=tab.st, nbins=c(nx,ny), seq.st=seq.st[order(progind$Time)], statistics = statistics, call=call))
 }

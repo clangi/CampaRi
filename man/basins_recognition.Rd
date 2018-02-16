@@ -39,16 +39,32 @@ basins_recognition(data, nx, ny = nx, ny.aut = FALSE, local.cut = FALSE,
 
 \item{...}{\itemize{
   \item "\code{time.series}" File name. If specified, it substitutes the time series of the PROGIDX_<..> file with the one provided by the file.
-  \item "\code{only.kin}" Logical value indicating whether it should be performed only the analysis of the kinetic annotation, thus disregarding completely the dynamic trace.  
+  \item "\code{only.kin}" Logical value indicating whether it should be performed only the analysis of the kinetic annotation, thus disregarding completely 
+  the dynamic trace.  
   \item "\code{pol.degree}" Degree of the Savitzky-Golay filter in case it was chosen. Default to 2.
+  \item "\code{cluster.statistics}" If \code{TRUE} it will activate the cluster analysis with Mutual Information, Hellinger distance and Shannon Entropy
+  as defaults.
+  \item "\code{cluster.statistics.nBreaks}" Integer. This variable defines the number of splits for the analysis. If set to 0 it will use the breaks found in the SBR.
+  \item "\code{plot.cluster.statistics}" Logical for plotting the statistics of the SBR basins using various colors for the methods along with 
+  the temporal annotation (points in a progress index / time plot). Time has been normalized between 0 and 1 as all the statistics.
+  \item "\code{cluster.statistics.entropy}" Logical. Calculate Shannon entropy.
+  \item "\code{cluster.statistics.stft}" Logical. Calculate short time fourier transform.
+  \item "\code{cluster.statistics.TE}" Logical. Calculate symmetric Transfer Entropy.
+  \item "\code{cluster.statistics.KL}" Logical. Calculate symmetric and non-symmetric Kullback-Leibler divergence.
+  \item "\code{cluster.statistics.wMI}" Logical. Use the number of breaks (\code{cluster.statistics.nBreaks}) to find the Mutual Information for 10 slided divisions.
+  This will result in 10*nBreaks values.
 }}
 }
 \value{
 A list containing
       \itemize{
-        \item "\code{tab.st}" Data frame containing the boundaries of each state, their lengths and the type of the right boundary. Type=1 means that it is a matched partition, type=2 is only dynamic, type=3 is only kinetic. The type of the last state is always equal to 1.
+        \item "\code{tab.st}" Data frame containing the boundaries of each state, their lengths and the type of the right boundary. If the cluster.statistics option
+        is active this will have other columns with the barrier statistics (e.g. Hellinger distance).
+        Type=1 means that it is a matched partition, type=2 is only dynamic, type=3 is only kinetic. The type of the last state is always equal to 1.
         \item "\code{nbins}" 2-D vector containing number of bins on x-axis and y-axis.
         \item "\code{seq.st}" The time-ordered discretized trajectory.
+        \item "\code{statistics}" If \code{cluster.statistics} is \code{TRUE} this element will contain all the cluster statistics (unbound to the found barriers). 
+        Otherwise it is \code{NULL}.
         \item "\code{call}" The matched call. 
       }
 }

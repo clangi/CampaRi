@@ -115,6 +115,10 @@ r-packages:
   - Rtsne
   - TSA
   - ClusterR
+  - RColorBrewer
+  - TransferEntropy
+  - infotheo
+  - e1071
 #  - PairViz
 #  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; WGCNA ; fi 
 
