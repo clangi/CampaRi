@@ -101,18 +101,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
   if(!is.logical(plot)) stop("plot must be a logical value")
   if(!is.logical(new.dev)) stop("new.dev must be a logical value")
   if(!is.logical(out.file)) stop("out.file must be a logical value")
-  avg.opt.arg <- c("movav", "SG")
-  if(!(avg.opt[1] %in% avg.opt.arg)) stop("Average option not valid")
-  if(avg.opt[1]=="SG") {
-    if(!("pol.degree" %in% names(input.args))) {
-      if(!silent) cat("SG but pol.degree not specified, set to default value 2\n")
-      pol.degree <- 2
-    } else if(!(input.args$pol.degree %in% c(2:6))) {
-      warning("Degree of the polynomial not valid, set to default value 2")
-      pol.degree <- 2 
-    } else pol.degree <- input.args$pol.degree
-  }
-  
+
   # Extra arguments checks
   input.args <- list(...)
   avail.extra.arg <- c("pol.degree", "only.kin", "time.series",
@@ -188,6 +177,18 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
     if(!cluster.statistics && plot.cluster.statistics) cluster.statistics <- TRUE
   } else plot.cluster.statistics <- FALSE
   
+  # other checks
+  avg.opt.arg <- c("movav", "SG")
+  if(!(avg.opt[1] %in% avg.opt.arg)) stop("Average option not valid")
+  if(avg.opt[1]=="SG") {
+    if(!("pol.degree" %in% names(input.args))) {
+      if(!silent) cat("SG but pol.degree not specified, set to default value 2\n")
+      pol.degree <- 2
+    } else if(!(input.args$pol.degree %in% c(2:6))) {
+      warning("Degree of the polynomial not valid, set to default value 2")
+      pol.degree <- 2 
+    } else pol.degree <- input.args$pol.degree
+  }
 
   # --------------------------- functions
   as.real <- function(x) {
@@ -265,6 +266,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
   ## INPUT FILE 
   if(!silent) cat("Reading PROGIDX file...\n")
   if(is.data.frame(data)){
+    if(ncol(data) != 20) stop('Column number must be 20 as it is the default format.')
     if(!local.cut) {
       progind <- data.frame(data[, c(1, 3, 4)])
       colnames(progind) <- c("PI", "Time", "Cut")
@@ -526,7 +528,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
     } else if (.lt(breaks.max)>2 && .lt(breaks.min)==2) {
       breaks.tot <- breaks.max
     } else if (.lt(breaks.max)==2 && .lt(breaks.min)==2) {
-      breaks.tot <- NULL
+      breaks.tot <- c(1, cstored)
     } else {
       sep <- NULL
       idx <- 0
@@ -885,51 +887,6 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
         }
     }
 
-####################################################################
-    ## PLOT Section
-####################################################################
-
-    if(plot == TRUE){
-        if(new.dev) dev.new(width=15, height=10)
-        par(mgp=c(0, 0.4, 0))
-        par(ps=6)
-        par(mar = c(3.5, 0, 1, 3), oma = c(2, 4, 2, 2))
-        margin <- round(cstored*0.99)
-        cx <- 2.2
-        sc <- 1.8
-        xr1 <- c(margin:(cstored-margin))
-        xr <- c(1,cstored)
-        yr <- range(progind$Time)*sc
-        plot(0, 0, main="", xlim=xr, ylim=yr, xlab="", ylab="", axes=FALSE, frame.plot=FALSE, type="n")
-        kin.pl <- -log(cutf / cstored)[xr1]
-        xx.lab <- c(1,round(breaks),cstored)
-        axis(1, at=xx.lab, tck=.01, cex.axis=1.8)
-        axis(3, labels=rep("", .lt(xx.lab)), at=xx.lab, tck=.01)
-        mtext("Progress Index", side=1, line=1.5, cex=cx )
-        yy.lab1 <- format(c(min(kin.pl), min(kin.pl)+(max(kin.pl)-min(kin.pl))*c(1:3)/3), digits=2)
-        axis(2, labels=yy.lab1, at=scale(as.numeric(yy.lab1)), las=3, tck=.01, cex.axis=cx)
-        mtext(expression("ln(("*italic(tau["SA"]+tau["AS"])*")/2)"), at=max(progind$Time)/2, side=2, line=1.8, cex=cx)
-        yy.lab2 <- round(c(1, c(1:5)/5*max(progind$Time)))
-        axis(4, labels=rep("", .lt(yy.lab2)), at=max(progind$Time)+round(yy.lab2*(sc-1)), las=2, tck=.01, hadj=-0.6, col="red")
-        mtext(yy.lab2, side=4, las=2, line=0.2, at=max(progind$Time)+yy.lab2*(sc-1), col="red", cex=1.8)
-        mtext("Time", at=max(progind$Time)*(sc+1)/2, side=4, line=2.4, cex=cx, col="red")
-
-        if (cstored>10000) { lst <- seq(1, cstored, by=5)
-        } else lst <- c(1:cstored)
-        points(progind$PI[lst], max(progind$Time[lst])+progind$Time[lst]*(sc-1), cex=0.005, col="tomato1")
-        lines(xr1, scale(kin.pl), lwd=1, col="black")
-        lines(xr1, scale(kin[xr1]), lwd=1, col="forestgreen")
-        if(only.kin) abline(v=breaks, lwd=0.7, col="orange4")
-        else if(!match) {
-            ## Not-matched vdyn
-            abline(v=vdyn, lwd=0.4, col="blue")
-            ## Not-matched vkin
-            abline(v=vkin[-match(brk.mtc, vkin)], lwd=0.4, col="orange4")
-            ## Matched breaks
-            abline(v=brk.mtc, lwd=0.7, col="black")
-        } else abline(v=breaks, lwd=0.7, col="black")
-    }
-
   
   #######################################################################
   #### final calculations for scores - dgarol
@@ -1023,9 +980,12 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
         MI_sbr <- sapply(seq(.lt(breaks)), function(j) infotheo::mutinformation(sbr_cnts[, j], sbr_cnts[, j+1])); MI_sbr <- .normalize(MI_sbr)
         MI_uni <- sapply(seq(n_unif), function(j) infotheo::mutinformation(uni_cnts[, j], uni_cnts[, j+1])); MI_uni <- .normalize(MI_uni)
         expand_MI_uni <- approx(seq(n_unif), 1 - MI_uni, n = lpi)$y
-        plot(expand_MI_uni)
-        points(breaks, MI_sbr, pch ='o', col = 'green', cex = 5)
-        points(breaks, MI_sbr*expand_MI_uni[breaks], pch ='+', col = 'red', cex = 5)
+        if(plot.cluster.statistics){
+          plot(expand_MI_uni, type = 'l')
+          points(breaks, MI_sbr, pch ='o', col = 'green', cex = 3)
+          points(breaks, MI_sbr*expand_MI_uni[breaks], pch ='+', col = 'red', cex = 3)
+          points(progind$PI, progind$Time/lpi, pch='.', cex = 2)
+        }
       }
         
       if(cluster.statistics.nBreaks == 0) tobrk <- breaks
@@ -1121,9 +1081,10 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
           gg <- gg + geom_vline(aes(xintercept=c(xpeaks, lpi), col = as.factor(8)), size = 0.2) # no need of new splits... better to score the bsr split (cohesion - MI) 
           lbls <- c(lbls, 'stFT barriers')
         }
-        # if(cluster.statistics.weight.barriers){
-        #   gg <- gg + geom_point(aes(x = breaks, y = MI_sbr*expand_MI_uni[breaks]), col = 'red', size = 3)
-        # }
+        if(cluster.statistics.weight.barriers){
+          gg <- gg + geom_segment(aes(x = breaks - round(lpi/30), xend = breaks + round(lpi/30), 
+                                      y = MI_sbr*expand_MI_uni[breaks], yend = MI_sbr*expand_MI_uni[breaks]), col = 'red', size = 1.5)
+        }
         gg <- gg + scale_color_manual(name = "Method", labels = lbls, values = RColorBrewer::brewer.pal(n = 8, name = 'Dark2')) +
                    guides(color = guide_legend(override.aes = list(size=5)))
         print(gg)
@@ -1183,6 +1144,56 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
       if(cluster.statistics.stft) { statistics[[ele]] <- xpeaks; names(ele)[ele] <- 'stFT'; ele <- ele + 1 }
       if(cluster.statistics.weight.barriers) tab.st <- cbind(tab.st, 'barWeight' = c(-1, MI_sbr*expand_MI_uni[breaks]))
     } else statistics <- NULL
+  
+  
+  ####################################################################
+  ## PLOT Section - at the end if you do cluster.statistics
+  ####################################################################
+  
+  if(plot){
+    if(new.dev) dev.new(width=15, height=10)
+    par(mgp=c(0, 0.4, 0))
+    par(ps=6)
+    par(mar = c(3.5, 0, 1, 3), oma = c(2, 4, 2, 2))
+    margin <- round(cstored*0.99)
+    cx <- 2.2
+    sc <- 1.8
+    xr1 <- c(margin:(cstored-margin))
+    xr <- c(1,cstored)
+    yr <- range(progind$Time)*sc
+    plot(0, 0, main="", xlim=xr, ylim=yr, xlab="", ylab="", axes=FALSE, frame.plot=FALSE, type="n")
+    kin.pl <- -log(cutf / cstored)[xr1]
+    xx.lab <- c(1,round(breaks),cstored)
+    axis(1, at=xx.lab, tck=.01, cex.axis=1.8)
+    axis(3, labels=rep("", .lt(xx.lab)), at=xx.lab, tck=.01)
+    mtext("Progress Index", side=1, line=1.5, cex=cx )
+    yy.lab1 <- format(c(min(kin.pl), min(kin.pl)+(max(kin.pl)-min(kin.pl))*c(1:3)/3), digits=2)
+    axis(2, labels=yy.lab1, at=scale(as.numeric(yy.lab1)), las=3, tck=.01, cex.axis=cx)
+    mtext(expression("ln(("*italic(tau["SA"]+tau["AS"])*")/2)"), at=max(progind$Time)/2, side=2, line=1.8, cex=cx)
+    yy.lab2 <- round(c(1, c(1:5)/5*max(progind$Time)))
+    axis(4, labels=rep("", .lt(yy.lab2)), at=max(progind$Time)+round(yy.lab2*(sc-1)), las=2, tck=.01, hadj=-0.6, col="red")
+    mtext(yy.lab2, side=4, las=2, line=0.2, at=max(progind$Time)+yy.lab2*(sc-1), col="red", cex=1.8)
+    mtext("Time", at=max(progind$Time)*(sc+1)/2, side=4, line=2.4, cex=cx, col="red")
+    
+    if (cstored>10000) { lst <- seq(1, cstored, by=5)
+    } else lst <- c(1:cstored)
+    points(progind$PI[lst], max(progind$Time[lst])+progind$Time[lst]*(sc-1), cex=0.005, col="tomato1")
+    lines(xr1, scale(kin.pl), lwd=1, col="black")
+    lines(xr1, scale(kin[xr1]), lwd=1, col="forestgreen")
+    if(only.kin) abline(v=breaks, lwd=0.7, col="orange4")
+    else if(!match) {
+      ## Not-matched vdyn
+      abline(v=vdyn, lwd=0.4, col="blue")
+      ## Not-matched vkin
+      abline(v=vkin[-match(brk.mtc, vkin)], lwd=0.4, col="orange4")
+      ## Matched breaks
+      abline(v=brk.mtc, lwd=0.7, col="black")
+    } else abline(v=breaks, lwd=0.7, col="black")
+    if(cluster.statistics.weight.barriers){
+      points(breaks, MI_sbr*expand_MI_uni[breaks]*max(yr), pch ='+', col = 'red', cex = 5)
+    }
+  }
+  
     invisible(list(tab.st=tab.st, nbins=c(nx,ny), seq.st=seq.st[order(progind$Time)], statistics = statistics, call=call))
 }
 

@@ -27,10 +27,10 @@ test_that('Test for basin recognition with ext files', {
   cat("Testing", nrow(parspace), "parameter combinations on basins_recognition")
   attach(parspace)
   for(ii in seq(nrow(parspace))) {
-    expect_error(tmp <- basins_recognition(data=data.pi, nx=nxbb[ii], ny=nybb[ii], ny.aut=F, local.cut=lcsb[ii], 
+    expect_error(tmp <- basins_recognition(data=file.pi, nx=nxbb[ii], ny=nybb[ii], ny.aut=F, local.cut=lcsb[ii], 
                                            match=matb[ii], dyn.check=2, avg.opt=as.character(avgb[ii]), plot=F, out.file=(ii==1), silent=T, pol.degree=3), NA)
     if(ii==1) {
-      expect_error(out <- data.table::fread("BASINS_1.dat", data.table=FALSE), NA)
+      expect_error(out <- data.table::fread("BASINS_000000000001_sbrtest.dat", data.table=FALSE), NA)
       expect_true(all(seq(nrow(tmp$tab.st)) == sort(unique(out[,3]))))
     } 
   }
@@ -54,19 +54,18 @@ test_that('Test for basin recognition with ext files', {
   # testing various analysis of the clusters
   file.pi <- system.file("extdata", "REPIX_000000000021.dat", package = "CampaRi")
   
-  nbin <- round(sqrt(nrow(thedata)*10)); if(!silent) print(round(sqrt(nrow(thedata)*10)))
-  bas <- basins_recognition(data = file.pi, nx = nbin, match = F, plot = plt_stff, out.file = F, new.dev = F, 
+  nbin <- round(sqrt(3000*10)); if(!silent) print(nbin) # hard wired
+  expect_error(bas <- basins_recognition(data = file.pi, nx = nbin, match = F, plot = plt_stff, out.file = F, new.dev = F, 
                             cluster.statistics = T,
                             cluster.statistics.KL = T,
                             cluster.statistics.TE = T,
                             cluster.statistics.wMI = T,
-                            plot.cluster.statistics = T)
-  str(bas)
+                            plot.cluster.statistics = T), NA)
   
   # x <- rnorm(10000, mean = 0, sd = 10)
   # require(microbenchmark); require(ggplot2)
   # a <- microbenchmark(bbmisc = BBmisc::normalize(x, method = 'standardize', range = c(0,1)),
-  #                     classic =  (x-min(x))/(max(x)-min(x)), times = 50)
+  #                     classic =  (x-min(x))/(max(x)-min(x)), `` = 50)
   # autoplot(a)
   
   cat("Test on basins_recognition done\n\n")

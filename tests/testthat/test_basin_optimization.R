@@ -3,9 +3,9 @@ context('basin_optimization')
 test_that('optimize sapphire plot clusters using SBR', {
   
   # CREATION OF THE DATASET
-  silent <- T
+  silent <- F
   plt_stff <- !silent
-  if(!silent) require(testthat)
+  if(!silent) {require(testthat); require(CampaRi)} 
   # data generation is now already made and put in the package
   # myNormalize <- function(x) return((x-min(x))/(max(x)-min(x)))
   # stdd <- 0.1; n_dim <- 20; n_snap <- 6000; n_tot <- n_dim*n_snap/4; if(!silent) print(n_tot)
