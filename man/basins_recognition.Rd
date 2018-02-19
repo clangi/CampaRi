@@ -44,6 +44,10 @@ basins_recognition(data, nx, ny = nx, ny.aut = FALSE, local.cut = FALSE,
   \item "\code{pol.degree}" Degree of the Savitzky-Golay filter in case it was chosen. Default to 2.
   \item "\code{cluster.statistics}" If \code{TRUE} it will activate the cluster analysis with Mutual Information, Hellinger distance and Shannon Entropy
   as defaults.
+  \item "\code{cluster.statistics.weight.barriers}" If \code{TRUE} (standard once cluster.statistics is active) it will calculate two different Mutual Information: 
+  one based on the clusters founds and one based on uniform subsampling (done using \code{cluster.statistics.nBreaks} or the number of cluster founds using 
+  SBR multiplied for 10). The second one will be inverted to find the discontinuities and the barriers will be weighted simply multiplying the two values 
+  found on the specific progress index data point.  
   \item "\code{cluster.statistics.nBreaks}" Integer. This variable defines the number of splits for the analysis. If set to 0 it will use the breaks found in the SBR.
   \item "\code{plot.cluster.statistics}" Logical for plotting the statistics of the SBR basins using various colors for the methods along with 
   the temporal annotation (points in a progress index / time plot). Time has been normalized between 0 and 1 as all the statistics.

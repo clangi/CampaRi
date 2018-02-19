@@ -2,7 +2,7 @@ context('basins_recognition')
 
 test_that('Test for basin recognition with ext files', {
     
-  silent <- T
+  silent <- F
   plt_stff <- !silent
   if(!silent) require(testthat)
   ## dir.cur <- getwd()
@@ -53,6 +53,7 @@ test_that('Test for basin recognition with ext files', {
   
   # testing various analysis of the clusters
   file.pi <- system.file("extdata", "REPIX_000000000021.dat", package = "CampaRi")
+  file.pi <- system.file("extdata", "PROGIDX_000000000001_sbrtest.dat", package = "CampaRi")
   
   nbin <- round(sqrt(3000*10)); if(!silent) print(nbin) # hard wired
   expect_error(bas <- basins_recognition(data = file.pi, nx = nbin, match = F, plot = plt_stff, out.file = F, new.dev = F, 
@@ -60,7 +61,10 @@ test_that('Test for basin recognition with ext files', {
                             cluster.statistics.KL = T,
                             cluster.statistics.TE = T,
                             cluster.statistics.wMI = T,
+                            cluster.statistics.entropy = T,
                             plot.cluster.statistics = T), NA)
+  expect_error(bas <- basins_recognition(data = file.pi, nx = 7, match = F, plot = plt_stff, out.file = F, plot.cluster.statistics = plt_stff,
+                                         new.dev = F, cluster.statistics.weight.barriers = T), NA)
   
   # x <- rnorm(10000, mean = 0, sd = 10)
   # require(microbenchmark); require(ggplot2)

@@ -128,4 +128,11 @@
 }
 
 # normalize
-.normalize <- function(x) return((x-min(x))/(max(x)-min(x)))
+.normalize <- function(x, xmax = NULL, xmin = NULL) {
+  # if(.isSingleElement(x)) return(1)
+  if(is.null(xmax)) xmax <- max(x)
+  if(is.null(xmin)) xmin <- min(x)
+  if(xmin == xmax) return(x/xmax)
+  else return((x*1.0 - xmin)/(xmax - xmin))
+  }
+

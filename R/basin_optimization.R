@@ -63,8 +63,9 @@ basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fi
   if(!is.logical(force_matching)) stop('force_matching must be a logical')
   
   # methods input check
-  basin_optimization.opt <- c("uniformity", "minimal_sd_entropy")
-  if(!is.null(basin_optimization_method) && !(basin_optimization_method[1] %in% basin_optimization.opt)) stop("basin_optimization_method method option not valid")
+  basin_optimization.opt <- c("uniformity", "MI_barrier_weighting")
+  if(!is.null(basin_optimization_method) && !(basin_optimization_method[1] %in% basin_optimization.opt)) 
+    stop("basin_optimization_method method option not valid.")
   
   # sapphire table loading
   if(!is.data.frame(the_sap))
@@ -121,8 +122,17 @@ basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fi
     
     ################################ uniformity
     if(basin_optimization_method[1] == 'uniformity') stop('uniformity basin_optimization_method option not yet ready.')
-    ################################ minimal_sd_entropy
-    if(basin_optimization_method[1] == 'minimal_sd_entropy') stop('minimal_entropy basin_optimization_method option not yet ready.')
+    ################################ MI_barrier_weighting
+    if(basin_optimization_method[1] == 'MI_barrier_weighting'){
+      bisbr.out <- .BiSBRstat(st = st, previous_score = 0, start.idx = 1,
+                          end.idx = length(lin_scale), lin_scale =  lin_scale, force_matching = force_matching, silent = silent)
+      
+      if(!bisbr.out$found) stop('We could not find optimal separation for the number of selected clusters. Try to put force_matching = F or more how_fine_search.')
+      
+      # final plot and saving results
+      bas <- CampaRi::basins_recognition(st, nx = bisbr.out$nbins, new.dev = F, out.file = F, match = force_matching, plot = plot_basin_identification, silent = silent)
+      fin_nbins <- bisbr.out$nbins
+    }
   }else{
     if(is.null(number_of_clusters)) stop('One between number_of_clusters and basin_optimization_method must be active to optimize the number of bins.')
   }
@@ -144,7 +154,7 @@ basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fi
 # alu <- CampaRi::basins_recognition(st, nx = 905, new.dev = F, out.file = F, plot = T, match = T)
 
 
-
+############### BISBR         (1)
 # help function for binary search on sapphire basin recognition
 .BiSBR <- function(st, ncl_found, ncl_teo, start.idx = 1, end.idx = NULL, lin_scale = NULL, 
                    force_matching = FALSE, tol = .Machine$double.eps ^ 0.5, check = TRUE, silent = TRUE) {
@@ -167,3 +177,31 @@ basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fi
            force_matching = force_matching, tol = tol, check = FALSE, silent = silent)
   } else return(list('found' = TRUE, 'ncl' = ncl_found, 'idx' = m, 'nbins' = lin_scale[m]))
 }
+
+############### BISBRstat      (2)
+# help function for the score statistic
+.BiSBRstat <- function(st, previous_score, start.idx = 1, end.idx = NULL, lin_scale = NULL, 
+                   force_matching = FALSE, tol = .Machine$double.eps ^ 0.5, check = TRUE, silent = TRUE) {
+  # Takes sorted (in ascending order) vectors
+  # if (check) stopifnot(is.vector(table), is.numeric(table))
+  if(check) stopifnot(!is.null(end.idx))
+  m <- as.integer(ceiling((end.idx + start.idx) / 2)) # Midpoint
+  if(!is.null(lin_scale)) nbins <- lin_scale[m] else nbins <- m
+  if(!silent) cat('Looking for best average score using', nbins, 'nbins...')
+  bas <- CampaRi::basins_recognition(st, nx = nbins, plot = F, match = force_matching, out.file = F, new.dev = F, silent = T, 
+                                     cluster.statistics.weight.barriers = T)
+  bweights <- bas$tab.st$barWeight[-1]
+  if(!silent) cat(' found', .lt(bweights),'barriers with an average MI ratio of ', mean(bweights), '. \n')
+  # NB: this function follow the assumption that the score, being a mean, it is optimizing for the optimal number of bins. 
+  #     There is no guarantee of convergence, neither of optimal score.
+  if (mean(bweights) > previous_score + tol) { # score is higher (it must mean it has less barriers or they are better. -> I reduce still the number)
+    if (start.idx == end.idx) return(list('found' = FALSE, 'ncl' = ncl_found, 'start.idx' = start.idx, 'nbins' = lin_scale[start.idx]))
+    Recall(st, ncl_found, ncl_teo, start.idx = start.idx, end.idx = m - 1L, lin_scale = lin_scale,
+           force_matching = force_matching, tol = tol, check = FALSE, silent = silent)
+  } else if (mean(bweights) < previous_score - tol) {
+    if (start.idx == end.idx) return(list('found' = FALSE, 'ncl' = ncl_found, 'start.idx' = start.idx, 'nbins' = lin_scale[start.idx]))
+    Recall(st, ncl_found, ncl_teo, start.idx = m + 1L, end.idx = end.idx, lin_scale = lin_scale,
+           force_matching = force_matching, tol = tol, check = FALSE, silent = silent)
+  } else return(list('found' = TRUE, 'ncl' = ncl_found, 'idx' = m, 'nbins' = lin_scale[m]))
+}
+

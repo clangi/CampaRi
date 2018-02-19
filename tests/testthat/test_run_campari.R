@@ -2,9 +2,14 @@ context('run_campari')
 
 test_that('Test run_campari from installation', {
   silent <- T
-  expect_error(install_campari(install_ncminer = T, silent_built = silent), NA) # to do it usually
-  bin_dir <- system.file('extdata/for_campari/bin/', package = "CampaRi")
-  ca_exe <- paste0(bin_dir, dir(bin_dir)[1], '/', list.files(paste0(bin_dir, dir(bin_dir)[1]))[2])
+  plt_stff <- !silent
+  if(!silent) {require(testthat); require(CampaRi)} 
+  if(!dir.exists('to_delete_just_in_a_moment')) dir.create('to_delete_just_in_a_moment')
+  expect_error(install_campari(installation_location = 'to_delete_just_in_a_moment', install_ncminer = F, install_threads = F, silent_built = T), NA)
+  # expect_error(install_campari(install_ncminer = T, silent_built = silent), NA) # this way is broken if the wd is not writable
+  # bin_dir <- system.file('extdata/for_campari/bin/', package = "CampaRi")
+  # ca_exe <- paste0(bin_dir, dir(bin_dir)[1], '/', list.files(paste0(bin_dir, dir(bin_dir)[1]))[2])
+  ca_exe <- paste0('to_delete_just_in_a_moment/for_campari/bin/x86_64/campari')
   expect_true(is.character(ca_exe))
   expect_true(ca_exe != "")
   # system('printf "NBU\nEND" &> nbu.in')
@@ -82,4 +87,5 @@ test_that('Test run_campari from installation', {
   if(file.exists('ascii_based_analysis.log')) file.remove('ascii_based_analysis.log')
   if(file.exists('ascii_based_analysis.key')) file.remove('ascii_based_analysis.key')
   if(file.exists('PROGIDX_000000000021.dat')) file.remove('PROGIDX_000000000021.dat')
+  if(dir.exists('to_delete_just_in_a_moment')) unlink('to_delete_just_in_a_moment', recursive = T)
 })

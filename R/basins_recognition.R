@@ -94,7 +94,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
   if(is.character(data) && (!all(grepl("PROGIDX", data)) && !all(grepl("REPIX", data)))) stop("Please provide a data name starting with 'PROGIDX' or 'REPIX'" )
   if((nx %% 1) != 0) stop("nx must be an integer")
   if((ny %% 1) != 0) stop("ny must be an integer")
-  if((nx < 7 || ny < 7)) stop('nx and ny must be > 5')
+  if((nx < 7 || ny < 7)) stop('nx and ny must be > 7')
   if(!is.logical(local.cut)) stop("local.cut must be a logical value")
   if(!is.logical(match)) stop("match must be a logical value")
   if(!(dyn.check %in% c(1:10))) stop("dyn.check value not valid")
@@ -137,7 +137,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
   # Checking the weight of the barriers
   if("cluster.statistics.weight.barriers" %in% names(input.args)) { # dgarol
     cluster.statistics.weight.barriers <- input.args$cluster.statistics.weight.barriers
-    stopifnot(.isSingleInteger(cluster.statistics.weight.barriers))
+    stopifnot(is.logical(cluster.statistics.weight.barriers))
     if(!cluster.statistics && cluster.statistics.weight.barriers) cluster.statistics <- TRUE
   }
   
@@ -970,20 +970,30 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
       
       # calculating the weights for the barriers 
       if(cluster.statistics.weight.barriers) {
-        if(cluster.statistics.nBreaks == 0) n_unif <- .lt(breaks)*5
+        if(cluster.statistics.nBreaks == 0) n_unif <- round(lpi/50)
         else n_unif <- cluster.statistics.nBreaks
+        if(!silent) cat('Calculating the barrier statistics using', n_unif, 'division for the MI ratio. \n')
+        stopifnot(n_unif > 0, n_unif < lpi/ 2)
         brks_uni <- floor(seq(1, lpi, length.out = n_unif))
         dhc_sbr <- dens_histCounts(progind, breaks = breaks, nx = nx, ny = ny) # breaks are the barriers points on x
         dhc_uni <- dens_histCounts(progind, breaks = brks_uni, nx = nx, ny = ny) # breaks are the barriers points on x
         sbr_cnts <- dhc_sbr$counts    
         uni_cnts <- dhc_uni$counts    
-        MI_sbr <- sapply(seq(.lt(breaks)), function(j) infotheo::mutinformation(sbr_cnts[, j], sbr_cnts[, j+1])); MI_sbr <- .normalize(MI_sbr)
-        MI_uni <- sapply(seq(n_unif), function(j) infotheo::mutinformation(uni_cnts[, j], uni_cnts[, j+1])); MI_uni <- .normalize(MI_uni)
+        MI_sbr <- sapply(seq(.lt(breaks)), function(j) infotheo::mutinformation(sbr_cnts[, j], sbr_cnts[, j+1]))
+        MI_uni <- sapply(seq(n_unif), function(j) infotheo::mutinformation(uni_cnts[, j], uni_cnts[, j+1]))
+        MI_sbr <- .normalize(MI_sbr)
+        MI_uni <- .normalize(MI_uni)
+        # MI_sbr <- .normalize(MI_sbr, xmax = max(c(MI_sbr, MI_uni)), xmin = min(c(MI_sbr, MI_uni)))
+        # MI_uni <- .normalize(MI_uni, xmax = max(c(MI_sbr, MI_uni)), xmin = min(c(MI_sbr, MI_uni)))
         expand_MI_uni <- approx(seq(n_unif), 1 - MI_uni, n = lpi)$y
+        MI_comb <- 'mean'
+        if(MI_comb == 'mean') MI_ratio <- (MI_sbr + expand_MI_uni[breaks]) / 2 
+        else if(MI_comb == 'multip') MI_ratio <- MI_sbr * expand_MI_uni[breaks]
         if(plot.cluster.statistics){
           plot(expand_MI_uni, type = 'l')
           points(breaks, MI_sbr, pch ='o', col = 'green', cex = 3)
-          points(breaks, MI_sbr*expand_MI_uni[breaks], pch ='+', col = 'red', cex = 3)
+          points(breaks, expand_MI_uni[breaks], pch = 20, col = 'green', cex = 3)
+          points(breaks, MI_ratio, pch ='+', col = 'red', cex = 3)
           points(progind$PI, progind$Time/lpi, pch='.', cex = 2)
         }
       }
@@ -997,8 +1007,10 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
       # sliding window MI
       if(cluster.statistics.nBreaks == 0) nbr <- .lt(breaks)
       else nbr <- cluster.statistics.nBreaks
-      if(cluster.statistics.wMI) sl_MI <- sliding_MI(progind = progind, n_breaks = nbr, n_slides = 10, nx = nx, ny = ny)
-      
+      if(cluster.statistics.wMI) {
+        if(!silent) cat('Calculating the slided MI using 10 sub-division of the uniform divisions. \n')
+        sl_MI <- sliding_MI(progind = progind, n_breaks = nbr, n_slides = 10, nx = nx, ny = ny)
+      }
       # Analysis of it - rolling means/max/min
       # require(RcppRoll)
       # plot(sl_MI, type = 'l')
@@ -1011,6 +1023,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
       
       # short time Fourier Transform
       if(cluster.statistics.stft){
+        if(!silent) cat('Calculating the short time Fourier Transform using a window of 30 and an increment of 1. \n')
         short_time_FT <- e1071::stft(sl_MI, win = 30, inc = 1)
         histOfStft <- apply(short_time_FT$values, 1, sum)
         histOfStft <- .normalize(histOfStft)
@@ -1024,6 +1037,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
         
         # peaks finding
         # peakss <- RcppRoll::roll_mean(abs(diff(histOfStft))^2, 10)
+        if(!silent) cat('Finding the peaks using a standard span of 80. \n')
         peakss <- abs(diff(histOfStft))^2
         TFpeakss <- splus2R::peaks(peakss, span = 80)
         if(plot.cluster.statistics){
@@ -1092,6 +1106,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
       
       # Entropy calculations
       if(cluster.statistics.entropy){
+        if(!silent) cat('Calculating various entropy scores. This feature remains for visualization only. \n')
         # ent <- .normalize(apply(dens, 2, myShEn)/apply(dens, 2, function(x) mean(x)))
         ent <- .normalize(apply(dens, 2, myShEn)) # this is a value PER cluster
         # ent1 <- .normalize(apply(dens, 2, myShEn)/diff(c(1, tobrk, lpi))) # the size is not really relevant
