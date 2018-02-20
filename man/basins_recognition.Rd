@@ -49,6 +49,8 @@ basins_recognition(data, nx, ny = nx, ny.aut = FALSE, local.cut = FALSE,
   SBR multiplied for 10). The second one will be inverted to find the discontinuities and the barriers will be weighted simply multiplying the two values 
   found on the specific progress index data point.  
   \item "\code{cluster.statistics.nBreaks}" Integer. This variable defines the number of splits for the analysis. If set to 0 it will use the breaks found in the SBR.
+  \item "\code{cluster.statistics.nUni}" Integer. This variable defines the number of splits for the uniform sampling. If not set the algorithm will use nsnaps/50 which 
+  could not be optimal for clogged data. Generally speaking, this value is useful for the MI - ratio weighting of the barriers.
   \item "\code{plot.cluster.statistics}" Logical for plotting the statistics of the SBR basins using various colors for the methods along with 
   the temporal annotation (points in a progress index / time plot). Time has been normalized between 0 and 1 as all the statistics.
   \item "\code{cluster.statistics.entropy}" Logical. Calculate Shannon entropy.
@@ -68,7 +70,7 @@ A list containing
         \item "\code{nbins}" 2-D vector containing number of bins on x-axis and y-axis.
         \item "\code{seq.st}" The time-ordered discretized trajectory.
         \item "\code{statistics}" If \code{cluster.statistics} is \code{TRUE} this element will contain all the cluster statistics (unbound to the found barriers). 
-        Otherwise it is \code{NULL}.
+        Otherwise it is \code{NULL}. If no barrier has been found this value defaults to \code{FALSE}.
         \item "\code{call}" The matched call. 
       }
 }

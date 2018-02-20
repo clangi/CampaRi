@@ -2,7 +2,7 @@ context('basins_recognition')
 
 test_that('Test for basin recognition with ext files', {
     
-  silent <- F
+  silent <- T
   plt_stff <- !silent
   if(!silent) require(testthat)
   ## dir.cur <- getwd()
@@ -53,7 +53,7 @@ test_that('Test for basin recognition with ext files', {
   
   # testing various analysis of the clusters
   file.pi <- system.file("extdata", "REPIX_000000000021.dat", package = "CampaRi")
-  file.pi <- system.file("extdata", "PROGIDX_000000000001_sbrtest.dat", package = "CampaRi")
+  # file.pi <- system.file("extdata", "PROGIDX_000000000001_sbrtest.dat", package = "CampaRi")
   
   nbin <- round(sqrt(3000*10)); if(!silent) print(nbin) # hard wired
   expect_error(bas <- basins_recognition(data = file.pi, nx = nbin, match = F, plot = plt_stff, out.file = F, new.dev = F, 
@@ -73,6 +73,7 @@ test_that('Test for basin recognition with ext files', {
   # autoplot(a)
   
   cat("Test on basins_recognition done\n\n")
+  if(file.exists('Rplots.pdf')) system('rm Rplot*')
   if(file.exists('BASINS_000000000001_sbrtest.dat')) file.remove('BASINS_000000000001_sbrtest.dat')
   if(file.exists('BASINS_1.dat')) file.remove('BASINS_1.dat')
 })

@@ -29,7 +29,6 @@
 #'         \item "\code{Optimal_nbins}" The found number of bins.
 #'         \item "\code{bas}" Output of the final basin recognition run.
 #'         \item "\code{ncl}" Number of clusters finally found.
-#'         \item "\code{idx}" Index in the bin array.
 #'       }   
 #' @examples
 #' 
@@ -45,6 +44,10 @@
 #' Main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
 #' 
 #' @importFrom data.table fread
+#' @importFrom data.table rbindlist
+#' @importFrom parallel parLapply
+#' @importFrom parallel stopCluster
+#' @importFrom parallel makeCluster
 #' @export basin_optimization
 
 basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fine_search = 100,
@@ -99,15 +102,16 @@ basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fi
     lin_scale <- unique(round(seq(7, nbins_x, length.out = how_fine_search)))
     if(!silent) cat('Selected a convergence step of', how_fine_search, 'subdivisions, ranging from', nbins_x, 'to 7. \n')
     bisbr.out <- .BiSBR(st = st, ncl_found = 1, ncl_teo = number_of_clusters, start.idx = 1,
-                        end.idx = length(lin_scale), lin_scale =  lin_scale, force_matching = force_matching, silent = silent)
+                        end.idx = length(lin_scale), lin_scale =  lin_scale, force_matching = force_matching, silent = silent, barriers = F)
     
     # if not found some handling - stop for now
     if(!bisbr.out$found) stop('We could not find optimal separation for the number of selected clusters. Try to put force_matching = F or more how_fine_search.')
     
     # final plot and saving results
-    bas <- CampaRi::basins_recognition(st, nx = bisbr.out$nbins, new.dev = F, out.file = F, match = force_matching, plot = plot_basin_identification, silent = silent)
+    if(!is.null(basin_optimization_method)) pp <- FALSE else pp <- TRUE
+    bas <- CampaRi::basins_recognition(st, nx = bisbr.out$nbins, new.dev = F, out.file = F, match = force_matching, plot = pp, silent = silent,
+                                       cluster.statistics.weight.barriers = T)
     if(!silent) cat('Number of (automatically) selected bins for the basin recognition step is', bisbr.out$nbins, '\n')
-    fin_nbins <- bisbr.out$nbins
   }else{
     # initial linear scale for the basin_optimization_method
     lin_scale <- unique(round(seq(7, nbins_x, length.out = how_fine_search)))
@@ -117,28 +121,78 @@ basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fi
   if(!is.null(basin_optimization_method)){
     if(!is.null(number_of_clusters)){
       if(!silent) cat('Looking for plateu around', fin_nbins, 'nbins. In this way we can optimize even for identical number of clusters.\n')
-      #!!
+      # splitting the binary search untill you have a consecutive difference 
+      # RIGHT split - change the condition!!
+      if(number_of_clusters <= 2) cat('NB: you selected 2 cluster for optimization. This will skip the search of the left plateau.')
+      if(!silent) cat('Now looking at the right split from found partition... \n')
+      basRight <- .BiSBR(st = st, ncl_found = number_of_clusters, ncl_teo = number_of_clusters + 1L, start.idx = bisbr.out$idx + 1L,
+                         end.idx = length(lin_scale), lin_scale =  lin_scale, force_matching = force_matching, silent = silent, barriers = T)
+      # LEFT split
+      if(!(number_of_clusters <= 2)){
+        if(!silent) cat('Now looking at the left split from found partition... \n')
+        basLeft <- .BiSBR(st = st, ncl_found = 1, ncl_teo = number_of_clusters - 1L, start.idx = 1L,
+                          end.idx = bisbr.out$idx - 1L, lin_scale =  lin_scale, force_matching = force_matching, silent = silent, barriers = T) 
+        basFin <- c(basLeft$searched_hist, list(c(bisbr.out, list(bas = bas))), basRight$searched_hist)
+      }else{
+        basFin <- c(list(c(bisbr.out, list(bas = bas))), basRight$searched_hist) 
+      }
+      ncl <- unlist(lapply(basFin, FUN = function(x) return(x$ncl)))
+      which_to_keep <- which(ncl == number_of_clusters)
+      bw <- lapply(basFin, FUN = function(x) return(x$bas$tab.st$barWeight[-1]))[which_to_keep]
+      idx <- sort(unlist(lapply(basFin, FUN = function(x) return(x$idx)))[which_to_keep])
+      nbb <- sort(unlist(lapply(basFin, FUN = function(x) return(x$nbins)))[which_to_keep])
+      if(!silent) cat('We found', .lt(which_to_keep), 'possible values from the following bins (i.e. partitions with the desired # of clu): \n', nbb,'\n')
     }
-    
+    browser()
     ################################ uniformity
     if(basin_optimization_method[1] == 'uniformity') stop('uniformity basin_optimization_method option not yet ready.')
     ################################ MI_barrier_weighting
     if(basin_optimization_method[1] == 'MI_barrier_weighting'){
-      bisbr.out <- .BiSBRstat(st = st, previous_score = 0, start.idx = 1,
-                          end.idx = length(lin_scale), lin_scale =  lin_scale, force_matching = force_matching, silent = silent)
-      
-      if(!bisbr.out$found) stop('We could not find optimal separation for the number of selected clusters. Try to put force_matching = F or more how_fine_search.')
-      
-      # final plot and saving results
-      bas <- CampaRi::basins_recognition(st, nx = bisbr.out$nbins, new.dev = F, out.file = F, match = force_matching, plot = plot_basin_identification, silent = silent)
-      fin_nbins <- bisbr.out$nbins
+      search_method <- 'exaustive'
+      if(is.null(number_of_clusters)) bin_search_space <- lin_scale
+      else bin_search_space <- lin_scale
+      n_cores <- parallel::detectCores()
+      cl <- parallel::makeCluster(n_cores)
+      if(search_method == 'exaustive'){ # I search completely over the possible bins
+      if(!silent) cat('We will use exaustive search of the best barrier using the following bins: \n')
+        mean_bar_weights <- parallel::parLapply(cl = cl, x = as.list(bin_search_space), fun = function(x){
+          cat(x, ' ')
+          bout <- CampaRi::basins_recognition(st, nx = x, plot = F, match = force_matching, out.file = F, new.dev = F, silent = T,
+                                              cluster.statistics.weight.barriers = T)
+          if(!is.null(bout$statistics) && !bout$statistics) {
+            bw <- NA
+            b_n_empty <- NA
+          }else {
+            bw <- mean(bout$tab.st$barWeight[-1])
+            b_n_empty <- sum(bout$tab.st$barWeight[-1] > .Machine$double.eps ^ 0.5)
+          }
+          outing <- list('bins' = x, 'bweights' = bw, 'nbarr' = nrow(bout$tab.st) - 1, 'nbar_not_empty' = b_n_empty)
+          return(outing)
+        })
+        parallel::stopCluster(cl)
+        
+        bw_tot <- data.table::rbindlist(mean_bar_weights) # they say it is slow (better rbindlist)
+        bw_tot <- bw_tot[which(bw_tot[,3] != 0),] # selecting the not empty barriers
+        bw_tot <- bw_tot[order(bw_tot[,4], bw_tot[,2], decreasing = T)] # sorting for the most not empty and the higher MI-ratio
+        
+        if(nrow(bw_tot) < 1) stop('We were not able to find a convenient partitioning.')
+        bas <- CampaRi::basins_recognition(st, nx = bw_tot$bins[1], new.dev = F, out.file = F, match = force_matching, plot = plot_basin_identification, silent = silent,
+                                           cluster.statistics.weight.barriers = T)
+        
+      }else if(search_method == 'binary_search'){ # broken
+        bisbr.out <- .BiSBRstat(st = st, previous_score = 0, start.idx = 1,
+                            end.idx = length(lin_scale), lin_scale =  lin_scale, force_matching = force_matching, silent = silent)
+        if(!bisbr.out$found) stop('We could not find optimal separation for the number of selected clusters. Try to put force_matching = F or more how_fine_search.')
+        # final plot and saving results
+        bas <- CampaRi::basins_recognition(st, nx = bisbr.out$nbins, new.dev = F, out.file = F, match = force_matching, plot = plot_basin_identification, silent = silent)
+      }
     }
   }else{
     if(is.null(number_of_clusters)) stop('One between number_of_clusters and basin_optimization_method must be active to optimize the number of bins.')
   }
   
   # -------------------------------------------------------------------------------------------------------- final return
-  return(list('Optimal_nbins' = bas$nbins, 'bas' = bas, 'ncl' = bisbr.out$ncl, 'idx' = bisbr.out$idx))
+  return(list('Optimal_nbins' = bas$nbins, 'bas' = bas, 'ncl' = nrow(bas$tab.st)))
 }
 
 
@@ -157,25 +211,44 @@ basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fi
 ############### BISBR         (1)
 # help function for binary search on sapphire basin recognition
 .BiSBR <- function(st, ncl_found, ncl_teo, start.idx = 1, end.idx = NULL, lin_scale = NULL, 
-                   force_matching = FALSE, tol = .Machine$double.eps ^ 0.5, check = TRUE, silent = TRUE) {
+                   force_matching = FALSE, tol = .Machine$double.eps ^ 0.5, check = TRUE, silent = TRUE,
+                   searched_hist = NULL, barriers = TRUE) {
   # Takes sorted (in ascending order) vectors
   # if (check) stopifnot(is.vector(table), is.numeric(table))
   if(check) stopifnot(!is.null(end.idx))
   m <- as.integer(ceiling((end.idx + start.idx) / 2)) # Midpoint
   if(!is.null(lin_scale)) nbins <- lin_scale[m] else nbins <- m
+  if(is.na(nbins)) return(list('found' = FALSE, 'ncl' = ncl_found,
+                               'start.idx' = start.idx - 1, 'nbins' = lin_scale[start.idx-1],
+                               'searched_hist' = searched_hist))
   if(!silent) cat('Looking for right divisions using', nbins, 'nbins...')
-  bas <- CampaRi::basins_recognition(st, nx = nbins, plot = F, match = force_matching, out.file = F, new.dev = F, silent = T)
+  bas <- CampaRi::basins_recognition(st, nx = nbins, plot = F, match = force_matching, out.file = F, new.dev = F, silent = T, 
+                                     cluster.statistics.weight.barriers = barriers)
   ncl_found <- nrow(bas$tab.st)
   if(!silent) cat(' found', ncl_found,'clusters. \n')
+  if(barriers){
+    if(is.null(searched_hist)) searched_hist <- list()
+    searched_hist[[.lt(searched_hist) + 1]] <- list('bas' = bas, 'ncl' = ncl_found, 
+                                'idx' = m, 'nbins' = lin_scale[m])
+  }
+  
+  # more clusters than needed
   if (ncl_found > ncl_teo + tol) {
-    if (start.idx == end.idx) return(list('found' = FALSE, 'ncl' = ncl_found, 'start.idx' = start.idx, 'nbins' = lin_scale[start.idx]))
+    if (start.idx == end.idx) return(list('found' = FALSE, 'ncl' = ncl_found,
+                                          'start.idx' = start.idx, 'nbins' = lin_scale[start.idx], 
+                                          'searched_hist' = searched_hist))
     Recall(st, ncl_found, ncl_teo, start.idx = start.idx, end.idx = m - 1L, lin_scale = lin_scale,
-           force_matching = force_matching, tol = tol, check = FALSE, silent = silent)
+           force_matching = force_matching, tol = tol, check = FALSE, silent = silent, searched_hist = searched_hist)
+    
+  # less clusters than needed
   } else if (ncl_found < ncl_teo - tol) {
-    if (start.idx == end.idx) return(list('found' = FALSE, 'ncl' = ncl_found, 'start.idx' = start.idx, 'nbins' = lin_scale[start.idx]))
+    if (start.idx == end.idx) return(list('found' = FALSE, 'ncl' = ncl_found, 
+                                          'start.idx' = start.idx, 'nbins' = lin_scale[start.idx], 
+                                          'searched_hist' = searched_hist))
     Recall(st, ncl_found, ncl_teo, start.idx = m + 1L, end.idx = end.idx, lin_scale = lin_scale,
-           force_matching = force_matching, tol = tol, check = FALSE, silent = silent)
-  } else return(list('found' = TRUE, 'ncl' = ncl_found, 'idx' = m, 'nbins' = lin_scale[m]))
+           force_matching = force_matching, tol = tol, check = FALSE, silent = silent, searched_hist = searched_hist)
+  # exactly what we need
+  } else return(list('found' = TRUE, 'ncl' = ncl_found, 'idx' = m, 'nbins' = lin_scale[m], 'searched_hist' = searched_hist))
 }
 
 ############### BISBRstat      (2)
@@ -196,11 +269,11 @@ basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fi
   #     There is no guarantee of convergence, neither of optimal score.
   if (mean(bweights) > previous_score + tol) { # score is higher (it must mean it has less barriers or they are better. -> I reduce still the number)
     if (start.idx == end.idx) return(list('found' = FALSE, 'ncl' = ncl_found, 'start.idx' = start.idx, 'nbins' = lin_scale[start.idx]))
-    Recall(st, ncl_found, ncl_teo, start.idx = start.idx, end.idx = m - 1L, lin_scale = lin_scale,
+    Recall(st, previous_score = mean(bweights), start.idx = start.idx, end.idx = m - 1L, lin_scale = lin_scale,
            force_matching = force_matching, tol = tol, check = FALSE, silent = silent)
   } else if (mean(bweights) < previous_score - tol) {
     if (start.idx == end.idx) return(list('found' = FALSE, 'ncl' = ncl_found, 'start.idx' = start.idx, 'nbins' = lin_scale[start.idx]))
-    Recall(st, ncl_found, ncl_teo, start.idx = m + 1L, end.idx = end.idx, lin_scale = lin_scale,
+    Recall(st, previous_score = mean(bweights), start.idx = m + 1L, end.idx = end.idx, lin_scale = lin_scale,
            force_matching = force_matching, tol = tol, check = FALSE, silent = silent)
   } else return(list('found' = TRUE, 'ncl' = ncl_found, 'idx' = m, 'nbins' = lin_scale[m]))
 }

@@ -46,7 +46,6 @@ A list containing
         \item "\code{Optimal_nbins}" The found number of bins.
         \item "\code{bas}" Output of the final basin recognition run.
         \item "\code{ncl}" Number of clusters finally found.
-        \item "\code{idx}" Index in the bin array.
       }
 }
 \description{

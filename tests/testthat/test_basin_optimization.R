@@ -3,7 +3,7 @@ context('basin_optimization')
 test_that('optimize sapphire plot clusters using SBR', {
   
   # CREATION OF THE DATASET
-  silent <- T
+  silent <- F
   plt_stff <- !silent
   if(!silent) {require(testthat); require(CampaRi)} 
   # data generation is now already made and put in the package
@@ -46,6 +46,8 @@ test_that('optimize sapphire plot clusters using SBR', {
   # optimal_bas$bas
   
   # now testing for internal optimization
+  expect_error(optimal_bas <- CampaRi::basin_optimization(the_sap = file.pi,  how_fine_search = 100, basin_optimization_method = "MI_barrier_weighting", force_matching = T, 
+                                                          plot_basin_identification = plt_stff, silent = silent), NA)
   expect_error(optimal_bas <- CampaRi::basin_optimization(the_sap = file.pi,  how_fine_search = 100, basin_optimization_method = "MI_barrier_weighting",
                                                           number_of_clusters = 3, force_matching = T, 
                                                           plot_basin_identification = plt_stff, silent = silent), NA)
