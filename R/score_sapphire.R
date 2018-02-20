@@ -60,7 +60,7 @@ score_sapphire <- function(the_sap, ann, scoring_method = 'nmi', merge_clusters 
   if(!is.numeric(ann) && (!is.null(dim(ann)))) stop('Please provide an integer vector for ann')
   if(!is.null(nbins_x) && !.isSingleInteger(nbins_x)) stop('nbins_x must be a single integer')
   if(!is.null(nbins_y) && !.isSingleInteger(nbins_x)) stop('nbins_y must be a single integer')
-  if(!is.null(number_of_clusters) && !.isSingleInteger(number_of_clusters)) stop('number_of_clusters must be a single integer')
+  # if(!is.null(number_of_clusters) && !.isSingleInteger(number_of_clusters)) stop('number_of_clusters must be a single integer')
   if(!is.logical(silent)) stop('silent must be a logical')
   if(!is.logical(basin_optimization)) stop('basin_optimization must be a logical')
   if(!is.logical(plot_basin_identification)) stop('plot_basin_identification must be a logical')
@@ -108,11 +108,13 @@ score_sapphire <- function(the_sap, ann, scoring_method = 'nmi', merge_clusters 
   if(min(uni_ann) < 1){
     if(!silent) cat('Found negative or 0 values in the annotation. Correcting by sum of the abs of the min +1 per each annotation value. \n')
     pin <- pin + abs(min(uni_ann)) + 1
+    uni_ann <- unique(pin)
   }else if(min(uni_ann) > 1){
     if(!silent) cat('Found minimum values > 1 in the annotation. Correcting it automatically. \n')
     pin <- pin - min(uni_ann) + 1
+    uni_ann <- unique(pin)
   }
-  if(any(seq(1:max(uni_ann)) != uni_ann)) stop('Please provide an annotation withouth gaps.')
+  if(any(seq(1:max(uni_ann)) != sort(uni_ann))) stop('Please provide an annotation withouth gaps.')
   
   # init 
   n_labels <- .lt(uni_ann) # At this point I know how many annotation points we found.
@@ -330,7 +332,7 @@ score_sapphire <- function(the_sap, ann, scoring_method = 'nmi', merge_clusters 
   # external_validation(true_labels = ann[st[,3]], clusters = predicted_div, method = "purity", summary_stats = FALSE)
   score.out <- ClusterR::external_validation(true_labels = ann[st[,3]], clusters = predicted_div, method = scoring_method, summary_stats = FALSE)
   if(!silent) cat('Using', scoring_method,'we obtained a final score of', score.out, '\n')
-  return(list('score.out' = score.out, 'max_freq_table' = max_freq_table, 'label_freq_list' = label_freq_list))
+  invisible(list('score.out' = score.out, 'max_freq_table' = max_freq_table, 'label_freq_list' = label_freq_list))
 }
 
 

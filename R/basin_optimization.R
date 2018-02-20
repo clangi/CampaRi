@@ -9,7 +9,7 @@
 #' with the following subgroups.
 #' \itemize{
 #'    \item "\code{uniformity}" not available
-#'    \item "\code{minimal_sd_entropy}" not available yet
+#'    \item "\code{MI_barrier_weighting}" not available yet (the description)
 #' }
 #' @param how_fine_search This variable define the length of the vector of bins in which is splitted the 7-nbins_x interval. As the algorithm undergo binary 
 #' search this is a fundamental variable to define the sensitivity of the search.
@@ -97,7 +97,6 @@ basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fi
     if(number_of_clusters < 2 && number_of_clusters >= nrow(st)) stop('Number of cluster too high or too low.')
     if(number_of_clusters > nbins_x) stop('Please set the number of clusters lower than the number of initial nbins (nbins_x).')
     if(number_of_clusters > nbins_y) stop('Please set the number of clusters lower than the number of initial nbins (nbins_y).')
-    
     # init
     lin_scale <- unique(round(seq(7, nbins_x, length.out = how_fine_search)))
     if(!silent) cat('Selected a convergence step of', how_fine_search, 'subdivisions, ranging from', nbins_x, 'to 7. \n')
@@ -110,7 +109,7 @@ basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fi
     # final plot and saving results
     if(!is.null(basin_optimization_method)) pp <- FALSE else pp <- TRUE
     bas <- CampaRi::basins_recognition(st, nx = bisbr.out$nbins, new.dev = F, out.file = F, match = force_matching, plot = pp, silent = silent,
-                                       cluster.statistics.weight.barriers = T)
+                                       cluster.statistics.weight.barriers = T, plot.cluster.statistics = pp)
     if(!silent) cat('Number of (automatically) selected bins for the basin recognition step is', bisbr.out$nbins, '\n')
   }else{
     # initial linear scale for the basin_optimization_method
@@ -119,8 +118,9 @@ basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fi
   
   # -------------------------------------------------------------------------------------------------------- optimization of basins
   if(!is.null(basin_optimization_method)){
+    # browser()
     if(!is.null(number_of_clusters)){
-      if(!silent) cat('Looking for plateu around', fin_nbins, 'nbins. In this way we can optimize even for identical number of clusters.\n')
+      if(!silent) cat('Looking for plateu around', bisbr.out$nbins, 'nbins. In this way we can optimize even for identical number of clusters.\n')
       # splitting the binary search untill you have a consecutive difference 
       # RIGHT split - change the condition!!
       if(number_of_clusters <= 2) cat('NB: you selected 2 cluster for optimization. This will skip the search of the left plateau.')
@@ -142,22 +142,33 @@ basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fi
       idx <- sort(unlist(lapply(basFin, FUN = function(x) return(x$idx)))[which_to_keep])
       nbb <- sort(unlist(lapply(basFin, FUN = function(x) return(x$nbins)))[which_to_keep])
       if(!silent) cat('We found', .lt(which_to_keep), 'possible values from the following bins (i.e. partitions with the desired # of clu): \n', nbb,'\n')
+      bw_ini <- data.frame('bins' = nbb, 'bweights' = unlist(lapply(bw, mean)), 
+                           'nbarr' = unlist(lapply(bw, .lt)), 
+                           'nbar_not_empty' = unlist(lapply(bw, function(x) sum(x!=0))))
+      bw_ini <- bw_ini[which(bw_ini[,3] != 0),] # selecting the not empty barriers
+      bw_ini <- bw_ini[order(bw_ini[,4], bw_ini[,2], decreasing = T),] # sorting for the most not empty and the higher MI-ratio
+      to_search_finer <- c(min(nbb), max(nbb))
     }
-    browser()
     ################################ uniformity
     if(basin_optimization_method[1] == 'uniformity') stop('uniformity basin_optimization_method option not yet ready.')
     ################################ MI_barrier_weighting
     if(basin_optimization_method[1] == 'MI_barrier_weighting'){
       search_method <- 'exaustive'
-      if(is.null(number_of_clusters)) bin_search_space <- lin_scale
-      else bin_search_space <- lin_scale
-      n_cores <- parallel::detectCores()
-      cl <- parallel::makeCluster(n_cores)
+      if(is.null(number_of_clusters)) {
+        bin_search_space <- lin_scale
+      }else {
+        bin_search_space <- unique(round(seq(to_search_finer[1], to_search_finer[2], length.out = how_fine_search)))
+        bin_search_space <- setdiff(bin_search_space, nbb)
+      }
+      # n_cores <- parallel::detectCores()
+      # cl <- parallel::makeCluster(n_cores, type = 'FORK')
       if(search_method == 'exaustive'){ # I search completely over the possible bins
-      if(!silent) cat('We will use exaustive search of the best barrier using the following bins: \n')
-        mean_bar_weights <- parallel::parLapply(cl = cl, x = as.list(bin_search_space), fun = function(x){
-          cat(x, ' ')
-          bout <- CampaRi::basins_recognition(st, nx = x, plot = F, match = force_matching, out.file = F, new.dev = F, silent = T,
+        if(!silent) cat('We will use exaustive search of the best barrier using the following bins: \n')
+        # mean_bar_weights <- parallel::parLapply(cl = cl, x = as.list(bin_search_space), fun = function(bl){
+        mean_bar_weights <- lapply(as.list(bin_search_space), function(bl){
+          cat(bl, ' ')
+          if(bl == bin_search_space[.lt(bin_search_space)]) cat('\n')
+          bout <- CampaRi::basins_recognition(st, nx = bl, plot = F, match = force_matching, out.file = F, new.dev = F, silent = T,
                                               cluster.statistics.weight.barriers = T)
           if(!is.null(bout$statistics) && !bout$statistics) {
             bw <- NA
@@ -166,18 +177,24 @@ basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fi
             bw <- mean(bout$tab.st$barWeight[-1])
             b_n_empty <- sum(bout$tab.st$barWeight[-1] > .Machine$double.eps ^ 0.5)
           }
-          outing <- list('bins' = x, 'bweights' = bw, 'nbarr' = nrow(bout$tab.st) - 1, 'nbar_not_empty' = b_n_empty)
+          outing <- list('bins' = bl, 'bweights' = bw, 'nbarr' = nrow(bout$tab.st) - 1, 'nbar_not_empty' = b_n_empty)
           return(outing)
         })
-        parallel::stopCluster(cl)
+        # parallel::stopCluster(cl)
         
         bw_tot <- data.table::rbindlist(mean_bar_weights) # they say it is slow (better rbindlist)
+        # FILTERS
+        if(!is.null(number_of_clusters)) bw_tot <- rbind(bw_tot, bw_ini)
+        if(!is.null(number_of_clusters)) bw_tot <- bw_tot[which(bw_tot[,3] == number_of_clusters-1),]
         bw_tot <- bw_tot[which(bw_tot[,3] != 0),] # selecting the not empty barriers
-        bw_tot <- bw_tot[order(bw_tot[,4], bw_tot[,2], decreasing = T)] # sorting for the most not empty and the higher MI-ratio
-        
+        bw_tot <- bw_tot[order(bw_tot[,4], bw_tot[,2], decreasing = T),] # sorting for the most not empty and the higher MI-ratio
+
         if(nrow(bw_tot) < 1) stop('We were not able to find a convenient partitioning.')
+        if(!silent) cat('In the following we will plot the best 5 divisions (if presents): \n')
+        if(nrow(bw_tot) > 5) to_show <- 5 else to_show <- nrow(bw_tot)
+        if(!silent) print(bw_tot[1:to_show,])
         bas <- CampaRi::basins_recognition(st, nx = bw_tot$bins[1], new.dev = F, out.file = F, match = force_matching, plot = plot_basin_identification, silent = silent,
-                                           cluster.statistics.weight.barriers = T)
+                                           cluster.statistics.weight.barriers = T, plot.cluster.statistics = plot_basin_identification)
         
       }else if(search_method == 'binary_search'){ # broken
         bisbr.out <- .BiSBRstat(st = st, previous_score = 0, start.idx = 1,
@@ -192,7 +209,7 @@ basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fi
   }
   
   # -------------------------------------------------------------------------------------------------------- final return
-  return(list('Optimal_nbins' = bas$nbins, 'bas' = bas, 'ncl' = nrow(bas$tab.st)))
+  invisible(list('Optimal_nbins' = bas$nbins, 'bas' = bas, 'ncl' = nrow(bas$tab.st)))
 }
 
 

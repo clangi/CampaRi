@@ -17,7 +17,7 @@ the relative time indices and the cut function.}
 with the following subgroups.
 \itemize{
    \item "\code{uniformity}" not available
-   \item "\code{minimal_sd_entropy}" not available yet
+   \item "\code{MI_barrier_weighting}" not available yet (the description)
 }}
 
 \item{how_fine_search}{This variable define the length of the vector of bins in which is splitted the 7-nbins_x interval. As the algorithm undergo binary 
