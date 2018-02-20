@@ -1,17 +1,19 @@
 context('run_campari')
 
 test_that('Test run_campari from installation', {
-  silent <- T
+  silent <- F
   plt_stff <- !silent
   if(!silent) {require(testthat); require(CampaRi)} 
   if(!dir.exists('to_delete_just_in_a_moment')) dir.create('to_delete_just_in_a_moment')
-  expect_error(install_campari(installation_location = 'to_delete_just_in_a_moment', install_ncminer = F, install_threads = F, silent_built = T), NA)
+  expect_error(install_campari(installation_location = 'to_delete_just_in_a_moment', install_ncminer = T, install_threads = F, silent_built = F), NA)
   # expect_error(install_campari(install_ncminer = T, silent_built = silent), NA) # this way is broken if the wd is not writable
   # bin_dir <- system.file('extdata/for_campari/bin/', package = "CampaRi")
   # ca_exe <- paste0(bin_dir, dir(bin_dir)[1], '/', list.files(paste0(bin_dir, dir(bin_dir)[1]))[2])
-  ca_exe <- paste0('to_delete_just_in_a_moment/for_campari/bin/x86_64/campari')
+  ca_exe <- system('ls to_delete_just_in_a_moment/for_campari/bin/*/campari', intern = T)[1]
+  dir <- system(paste0('pwd ', ca_exe), intern = T)[1]
+  ca_exe <- paste0(dir, '/', ca_exe)
   expect_true(is.character(ca_exe))
-  expect_true(ca_exe != "")
+  expect_true(file.exists(ca_exe))
   # system('printf "NBU\nEND" &> nbu.in')
   data.table::fwrite(list('NBU'), file = 'nbu.in', row.names = F, col.names = F, verbose = !silent)
   data.table::fwrite(list('END'), file = 'nbu.in', append = T, row.names = F, col.names = F, verbose = !silent)

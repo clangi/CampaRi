@@ -3,7 +3,7 @@ context('feature selection')
 
 test_that('feature selection and its plotting', {
   
-  silent <- F
+  silent <- T
   plt_stff <- !silent
   if(!silent) {require(testthat); require(CampaRi)} 
   
