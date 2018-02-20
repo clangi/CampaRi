@@ -187,7 +187,8 @@ basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fi
         if(!is.null(number_of_clusters)) bw_tot <- rbind(bw_tot, bw_ini)
         if(!is.null(number_of_clusters)) bw_tot <- bw_tot[which(bw_tot[,3] == number_of_clusters-1),]
         bw_tot <- bw_tot[which(bw_tot[,3] != 0),] # selecting the not empty barriers
-        bw_tot <- bw_tot[order(bw_tot[,4], bw_tot[,2], decreasing = T),] # sorting for the most not empty and the higher MI-ratio
+        if(!is.null(number_of_clusters)) bw_tot <- bw_tot[order(bw_tot[,4], bw_tot[,2], decreasing = T),] # sorting for the most not empty and the higher MI-ratio
+        else bw_tot <- bw_tot[order(bw_tot[,2], decreasing = T),] # sorting for the most not empty and the higher MI-ratio
 
         if(nrow(bw_tot) < 1) stop('We were not able to find a convenient partitioning.')
         if(!silent) cat('In the following we will plot the best 5 divisions (if presents): \n')
