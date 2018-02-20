@@ -107,8 +107,8 @@ basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fi
     if(!bisbr.out$found) stop('We could not find optimal separation for the number of selected clusters. Try to put force_matching = F or more how_fine_search.')
     
     # final plot and saving results
-    if(!is.null(basin_optimization_method)) pp <- FALSE else pp <- TRUE
-    bas <- CampaRi::basins_recognition(st, nx = bisbr.out$nbins, new.dev = F, out.file = F, match = force_matching, plot = pp, silent = silent,
+    if(!is.null(basin_optimization_method)) {pp <- FALSE; ss <- FALSE} else {pp <- TRUE; ss <- TRUE}
+    bas <- CampaRi::basins_recognition(st, nx = bisbr.out$nbins, new.dev = F, out.file = F, match = force_matching, plot = pp, silent = ss,
                                        cluster.statistics.weight.barriers = T, plot.cluster.statistics = pp)
     if(!silent) cat('Number of (automatically) selected bins for the basin recognition step is', bisbr.out$nbins, '\n')
   }else{

@@ -14,4 +14,5 @@ test_that('Test for markov state models with ext files', {
     out2 <- expect_error(msm(seqq, 1, tm.opt="symm", CK.test=T, setA=c(1,2), silent=T, dev.new.CK=T), NA)
 
     cat("Test on msm_recognition done\n\n")
+    if(file.exists('Rplots.pdf')) system('rm Rplot*')
 })

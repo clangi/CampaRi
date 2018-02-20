@@ -1179,7 +1179,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
   ## PLOT Section - at the end if you do cluster.statistics
   ####################################################################
   
-  if(plot){
+  if(plot && !is.null(breaks)){
     if(new.dev) dev.new(width=15, height=10)
     par(mgp=c(0, 0.4, 0))
     par(ps=6)

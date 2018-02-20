@@ -85,6 +85,7 @@ score_sapphire <- function(the_sap, ann, scoring_method = 'nmi', merge_clusters 
     nbins_x <- nbins_y <- max(nbins_x, nbins_y)
   }
   
+  # browser()
   if(!silent) cat('Number of (automatically) selected bins for the basin recognition step is', nbins_x, '\n')
   if(basin_optimization){
     optim_bas <- CampaRi::basin_optimization(the_sap = the_sap, plot_basin_identification = plot_basin_identification, 
@@ -96,7 +97,6 @@ score_sapphire <- function(the_sap, ann, scoring_method = 'nmi', merge_clusters 
                                        plot = plot_basin_identification, match = force_matching, out.file = F, new.dev = F, silent = silent)
     n_fin_cl <- nrow(bas$tab.st) # here we suppose that our split is the one we wanted and we define the number of resulting clusters
   }
-  
   
   # ann is reordered following progrex index and it is checked for the absence of 0s
   pin <- ann[c(st[,3])]
@@ -148,7 +148,6 @@ score_sapphire <- function(the_sap, ann, scoring_method = 'nmi', merge_clusters 
       colnames(label_freq_list[[jk]]) <- clnms
     }
     label_freq_list[[jk]] <- rbind('lab' = as.integer(colnames(label_freq_list[[jk]])), 'clu' = rep(jk, n_labels), label_freq_list[[jk]])
-    
   }
   # label_freq_list
   
@@ -240,36 +239,42 @@ score_sapphire <- function(the_sap, ann, scoring_method = 'nmi', merge_clusters 
   res_label[1] <- max_freq_table$label[1]
   
   # loop on the barriers
-  for(ini in 1:length(diff_vec)){
-    
-    # clusters have same lebels merging then
-    if(diff_vec[ini] == 0){
-      if(merge_clusters) {
-        lt_cl <- lt_cl + lt_sec[ini + 1]
-      } else{ # standard run diff = 0
+  if(nrow(max_freq_table) > 1){
+    for(ini in 1:length(diff_vec)){
+      
+      # clusters have same lebels merging then
+      if(diff_vec[ini] == 0){
+        if(merge_clusters) {
+          lt_cl <- lt_cl + lt_sec[ini + 1]
+        } else{ # standard run diff = 0
+          res_label[ul] <- max_freq_table$label[ini]
+          res_bound[ul] <- lt_cl
+          lt_cl <- lt_sec[ini + 1]
+          ul <- ul + 1
+        }
+      }
+      
+      # standard run
+      if(diff_vec[ini] != 0){
         res_label[ul] <- max_freq_table$label[ini]
         res_bound[ul] <- lt_cl
         lt_cl <- lt_sec[ini + 1]
         ul <- ul + 1
       }
+      
+      # final split
+      if(ini == length(diff_vec)){
+        res_label[ul] <- max_freq_table$label[ini + 1]
+        res_bound[ul] <- lt_cl
+      }
     }
-    
-    # standard run
-    if(diff_vec[ini] != 0){
-      res_label[ul] <- max_freq_table$label[ini]
-      res_bound[ul] <- lt_cl
-      lt_cl <- lt_sec[ini + 1]
-      ul <- ul + 1
-    }
-    
-    # final split
-    if(ini == length(diff_vec)){
-      res_label[ul] <- max_freq_table$label[ini + 1]
-      res_bound[ul] <- lt_cl
-    }
+    res_bound <- unlist(res_bound)
+    res_label <- unlist(res_label)
+  } else{
+    if(merge_clusters && !silent) cat('Only one cluster found. Nothing to be merged really. \n')
+    res_bound <- lt_cl[1]
+    res_label <- max_freq_table$label[1]
   }
-  res_bound <- unlist(res_bound)
-  res_label <- unlist(res_label)
   # res_bound
   # unlist(res_bound); max_freq_table$.lt; diff_vec; unlist(lab)
   # sum(res_bound)
@@ -288,10 +293,10 @@ score_sapphire <- function(the_sap, ann, scoring_method = 'nmi', merge_clusters 
           geom_point(aes(y = predicted, x = 1:lpin, colour = 'red'), size = 0.3) + 
           geom_point(aes(y = true, x = 1:lpin, colour = 'blue'), size = 0.3) + 
           theme_minimal() + xlab('Progress Index') + ylab('Cluster') + 
-          scale_color_manual(name = "Labels", labels = c("Predicted", "True"), values = c("red", "blue")) +
+          scale_color_manual(name = "Labels", labels = c("True", "Predicted"), values = c("red", "blue")) +
           guides(color = guide_legend(override.aes = list(size=5)))
     print(gg)
-  }
+   }
   # calculating the entropy of the new selection
   # label_freq_list <- list()
   # res_b <- 0
