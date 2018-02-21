@@ -14,8 +14,8 @@
 #' @param ... Extra variables for bio3d function write.pdb.
 #' 
 #' @details For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
-#' @seealso
-#' \code{\link{campari}}
+# @seealso
+# \code{\link{campari}}
 #' 
 #' @importFrom bio3d write.pdb
 #' @export write_pdb

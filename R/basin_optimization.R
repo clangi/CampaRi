@@ -21,7 +21,7 @@
 #' @param nbins_y Number of bins on the y-axis of the 2-D histogram. Default to sqrt(nrow(the_sap)).
 #' @param merge_cluster Logical that allow clusters to be merged automatically if consecutives
 #' @param number_of_clusters if basin_optimization_method is active accordingly this must be set to integer.
-#' @param force_matching Please refer to \code{\link{basin_recognition}} for further details about the match option.
+#' @param force_matching Please refer to \code{\link{basins_recognition}} for further details about the match option.
 #' @param silent A logical value indicating whether the function has to remain silent or not. Default value is \code{FALSE}.
 #'      
 #' @return A list containing

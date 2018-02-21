@@ -17,7 +17,7 @@ test_that('Test run_campari from installation', {
   data.table::fwrite(list('END'), file = 'nbu.in', append = T, row.names = F, col.names = F, verbose = !silent)
   
   # simulation run
-  expect_error(run_campari(FMCSC_SEQFILE="nbu.in",# campari_exe = ca_exe, # you must have it defined according to CAMPARI's rules
+  expect_error(run_campari(FMCSC_SEQFILE="nbu.in", campari_exe = ca_exe, # you must have it defined according to CAMPARI's rules
                           # FMCSC_BASENAME="NBU", # lets try the base_name option
                           base_name = "NBU", print_status = F, # it will take 55 s in background ~
                           PARAMETERS="oplsaal.prm", # if this variable it is not supplied will be automatically assigned to <full path to folder>/campari/params/abs3.2_opls.prm
@@ -46,7 +46,7 @@ test_that('Test run_campari from installation', {
   trj <- data.table::fread("FYC.dat", header = F, skip = 1, data.table = FALSE, verbose = !silent)[,-1]
   trj <- sapply(trj, as.numeric) # always be sure that it is numeric!
   trj <- matrix(trj, nrow = 1000, ncol =3) # always be sure that it is numeric!
-  expect_error(run_campari(trj = trj, base_name = "ascii_based_analysis", #campari_exe = ca_exe,
+  expect_error(run_campari(trj = trj, base_name = "ascii_based_analysis", campari_exe = ca_exe,
                            FMCSC_CPROGINDMODE=1, #mst
                            FMCSC_CCOLLECT=1, print_status = F,
                            FMCSC_CMODE=4,
@@ -59,7 +59,7 @@ test_that('Test run_campari from installation', {
                            FMCSC_CCUTOFF=10880, 
                            FMCSC_CPROGINDWIDTH=1000, silent = F
                            ), NA) #local cut is automatically adjusted to 1/10 if it is too big (as here)
-  expect_error(run_campari(data_file = 'ascii_based_analysis.tsv', base_name = "ascii_based_analysis", #campari_exe = ca_exe,
+  expect_error(run_campari(data_file = 'ascii_based_analysis.tsv', base_name = "ascii_based_analysis", campari_exe = ca_exe,
                            FMCSC_CPROGINDMODE=1, #mst
                            FMCSC_CCOLLECT=1, print_status = F,
                            FMCSC_CMODE=4,

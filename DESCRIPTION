@@ -19,7 +19,7 @@ Imports:
   prospectr, splus2R, stats, expm, Hmisc, utils, 
   plotly, ggfortify, PairViz, Rtsne, TSA, ClusterR,
   RColorBrewer, TransferEntropy, infotheo, e1071
-Suggests: knitr, rmarkdown, testthat
+Suggests: knitr, rmarkdown, testthat, roxygen2
 VignetteBuilder: knitr
 LinkingTo: Rcpp, RcppArmadillo
 LazyData: true
