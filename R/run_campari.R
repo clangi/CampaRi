@@ -362,15 +362,17 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
       }
       if(found_exe) break 
     }
+    bin_dir <- system.file('extdata/for_campari/bin/', package = "CampaRi")
+    camp_bin_internal_path <- paste0(bin_dir, dir(bin_dir)[1], '/', list.files(paste0(bin_dir, dir(bin_dir)[1]))[1])
   } else {
     camp_bin_path <- dirname(campari_exe)
     camp_bin_alias <- basename(campari_exe)
-    camp_bin_internal_path <- system.file('extdata/for_campari/bin/', package = "CampaRi")
-
+    bin_dir <- system.file('extdata/for_campari/bin/', package = "CampaRi")
+    camp_bin_internal_path <- paste0(bin_dir, dir(bin_dir)[1], '/', list.files(paste0(bin_dir, dir(bin_dir)[1]))[1])
   }
   # adding the paths to the std PATH variable
   Sys.setenv(PATH=paste(Sys.getenv("PATH"), camp_bin_path, camp_bin_alias, sep=":"))
-  if(camp_bin_internal_path != "") Sys.setenv(PATH=paste(Sys.getenv("PATH"), camp_bin_internal_path, camp_bin_alias, sep=":"))
+  if(camp_bin_internal_path != "") Sys.setenv(PATH=paste(Sys.getenv("PATH"), camp_bin_internal_path, sep=":"))
   
   
   # standard exe

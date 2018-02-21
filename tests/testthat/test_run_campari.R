@@ -4,7 +4,8 @@ test_that('Test run_campari from installation', {
   silent <- T
   plt_stff <- !silent
   if(!silent) {require(testthat); require(CampaRi)} 
-  
+  cat('\n\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n')
+  cat('Starting tests on run_campari...\n')
   
   # if(!dir.exists('to_delete_just_in_a_moment')) dir.create('to_delete_just_in_a_moment')
   expect_error(install_campari(install_ncminer = T, install_threads = F, silent_built = F), NA)
@@ -18,7 +19,7 @@ test_that('Test run_campari from installation', {
   # simulation run
   expect_error(run_campari(FMCSC_SEQFILE="nbu.in",# campari_exe = ca_exe, # you must have it defined according to CAMPARI's rules
                           # FMCSC_BASENAME="NBU", # lets try the base_name option
-                          base_name = "NBU", print_status = !silent, # it will take 55 s in background ~
+                          base_name = "NBU", print_status = F, # it will take 55 s in background ~
                           PARAMETERS="oplsaal.prm", # if this variable it is not supplied will be automatically assigned to <full path to folder>/campari/params/abs3.2_opls.prm
                           FMCSC_SC_IPP=0.0,
                           FMCSC_SC_BONDED_T=1.0,
@@ -39,7 +40,7 @@ test_that('Test run_campari from installation', {
                           FMCSC_POLOUT=20000000,
                           FMCSC_ENSOUT=20000000,
                           FMCSC_ENOUT=20000000,
-                          FMCSC_RSTOUT=20000000, silent = silent
+                          FMCSC_RSTOUT=20000000, silent = F
   ), NA)
   
   trj <- data.table::fread("FYC.dat", header = F, skip = 1, data.table = FALSE, verbose = !silent)[,-1]
@@ -47,7 +48,7 @@ test_that('Test run_campari from installation', {
   trj <- matrix(trj, nrow = 1000, ncol =3) # always be sure that it is numeric!
   expect_error(run_campari(trj = trj, base_name = "ascii_based_analysis", #campari_exe = ca_exe,
                            FMCSC_CPROGINDMODE=1, #mst
-                           FMCSC_CCOLLECT=1, print_status = !silent,
+                           FMCSC_CCOLLECT=1, print_status = F,
                            FMCSC_CMODE=4,
                            FMCSC_CDISTANCE=7, #rmsd without alignment 7 - dihedral distances need a complete analysis (pdb_format dcd pdb etc...) 
                            FMCSC_CPROGINDSTART=21, #starting snapshot 
@@ -56,11 +57,11 @@ test_that('Test run_campari from installation', {
                            FMCSC_CMAXRAD=10880, #clustering
                            FMCSC_CRADIUS=10880,
                            FMCSC_CCUTOFF=10880, 
-                           FMCSC_CPROGINDWIDTH=1000, silent = silent
+                           FMCSC_CPROGINDWIDTH=1000, silent = F
                            ), NA) #local cut is automatically adjusted to 1/10 if it is too big (as here)
   expect_error(run_campari(data_file = 'ascii_based_analysis.tsv', base_name = "ascii_based_analysis", #campari_exe = ca_exe,
                            FMCSC_CPROGINDMODE=1, #mst
-                           FMCSC_CCOLLECT=1, print_status = T,
+                           FMCSC_CCOLLECT=1, print_status = F,
                            FMCSC_CMODE=4,
                            FMCSC_CDISTANCE=7, #rmsd without alignment 7 - dihedral distances need a complete analysis (pdb_format dcd pdb etc...) 
                            FMCSC_CPROGINDSTART=21, #starting snapshot 
@@ -69,7 +70,7 @@ test_that('Test run_campari from installation', {
                            FMCSC_CMAXRAD=10880, #clustering
                            FMCSC_CRADIUS=10880,
                            FMCSC_CCUTOFF=10880,
-                           FMCSC_CPROGINDWIDTH=1000, silent = silent), NA)
+                           FMCSC_CPROGINDWIDTH=1000, silent = F), NA)
   
   # The specific directory is not working on the test folder for no apparent reason (it is like muted)
   # ca_exe <- system('ls to_delete_just_in_a_moment/for_campari/bin/*/campari', intern = T)[1]
@@ -101,4 +102,6 @@ test_that('Test run_campari from installation', {
   if(file.exists('ascii_based_analysis.key')) file.remove('ascii_based_analysis.key')
   if(file.exists('PROGIDX_000000000021.dat')) file.remove('PROGIDX_000000000021.dat')
   if(dir.exists('to_delete_just_in_a_moment')) unlink('to_delete_just_in_a_moment', recursive = T)
+  cat('run_campari tests finished successfully.\n')
+  cat('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\n')
 })
