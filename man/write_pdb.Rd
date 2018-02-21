@@ -32,6 +32,3 @@ The first one uses an old system with printf. The other one is fragile for large
 \details{
 For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
 }
-\seealso{
-\code{\link{campari}}
-}

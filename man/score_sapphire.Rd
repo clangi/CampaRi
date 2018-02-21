@@ -23,6 +23,8 @@ the relative time indices and the cut function.}
      \item "\code{purity}" 
 }}
 
+\item{merge_clusters}{A logical value for indicating if merging consecutive clusters with same labels.}
+
 \item{basin_optimization}{If \code{TRUE} it will use \code{\link{basin_optimization}} to optimize the clusters. Please consider adding its relevant variables.}
 
 \item{plot_basin_identification}{A logical value indicating whether to display the SAPPHIRE plot with the resulting partitions or not. 
@@ -36,7 +38,7 @@ the peaks identification. Default value is \code{FALSE}.}
 
 \item{nbins_y}{Number of bins on the y-axis of the 2-D histogram. Default to sqrt(nrow(the_sap)).}
 
-\item{force_matching}{Please refer to \code{\link{basin_recognition}} for further details about the match option.}
+\item{force_matching}{Please refer to \code{\link{basins_recognition}} for further details about the match option.}
 
 \item{silent}{A logical value indicating whether the function has to remain silent or not. Default value is \code{FALSE}.}
 

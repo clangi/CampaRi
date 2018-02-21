@@ -34,7 +34,7 @@ the peaks identification. Default value is \code{FALSE}.}
 
 \item{number_of_clusters}{if basin_optimization_method is active accordingly this must be set to integer.}
 
-\item{force_matching}{Please refer to \code{\link{basin_recognition}} for further details about the match option.}
+\item{force_matching}{Please refer to \code{\link{basins_recognition}} for further details about the match option.}
 
 \item{silent}{A logical value indicating whether the function has to remain silent or not. Default value is \code{FALSE}.}
 
