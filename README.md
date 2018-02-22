@@ -7,8 +7,7 @@
 
 [![codecov](https://codecov.io/gh/Melkiades/CampaRi/branch/master/graph/badge.svg)](https://codecov.io/gh/Melkiades/CampaRi)
 -->
-[![Travis-CI Build Status](https://travis-ci.org/Melkiades/CampaRi.svg?branch=master)](https://travis-ci.org/Melkiades/CampaRi)
-[![codecov](https://codecov.io/gh/Melkiades/CampaRi/branch/master/graph/badge.svg)](https://codecov.io/gh/Melkiades/CampaRi)
+[![Codecov](https://img.shields.io/codecov/c/github/codecov/example-python.svg?style=for-the-badge)](https://codecov.io/gl/CaflischLab/CampaRi)
 [![DOI](https://zenodo.org/badge/68593949.svg)](https://zenodo.org/badge/latestdoi/68593949)
 [![Gitter](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/CampaRi_chatroom/)
 

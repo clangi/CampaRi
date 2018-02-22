@@ -1,0 +1,77 @@
+# Specify the docker image to use (only used if using docker runners)
+# See: http://doc.gitlab.com/ee/ci/docker/using_docker_images.html
+image: ubuntu:16.04
+variables:
+  CODECOV_TOKEN: "266db23c-b9d1-405f-9aef-c5889ea5227d"
+
+# Define commands that run before each job's script
+before_script:
+  - apt-get update -q
+  - apt-get install -y libblas-common
+  - apt-get install -y liblapack-dev
+  - apt-get install -y libfftw3-dev
+  - apt-get install -y libfftw3-bin
+  - apt-get install -y libarpack2-dev
+  - apt-get install -y automake
+  - apt-get install -y gfortran
+  - apt-get install -y libnetcdff6
+  - apt-get install -y libnetcdff-dev
+  - apt-get install -y netcdf-bin
+  - apt-get install -y libopenmpi-dev
+  - apt-get install -y openmpi-bin
+  - apt-get install -y libgmp-dev
+  - apt-get install -y libtiff5-dev
+  - apt-get install -y libcurl4-openssl-dev libssh2-1-dev libssl-dev git # for devtools
+  - apt-get install -y qpdf pandoc pandoc-citeproc # for pandoc
+  - export _R_CHECK_CRAN_INCOMING_=FALSE
+  - export _R_CHECK_FORCE_SUGGESTS_=TRUE
+  
+#  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libnetcdff5; fi
+#  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libnetcdf-dev; fi # must be specified
+
+#image: rocker/rstudio  
+#test:  
+#   script:
+#    - R -e 'install.packages(c("needed here"))'
+#    - R CMD build . --no-build-vignettes --no-manual
+#    - PKG_FILE_NAME=$(ls -1t *.tar.gz | head -n 1)
+#    - R CMD check "${PKG_FILE_NAME}" --no-build-vignettes --no-manual
+#    - R -e 'devtools::test()'
+
+r-base:
+  stage: test
+  image: r-base:latest
+  script:
+    - Rscript -e 'install.packages(c("devtools", "roxygen2"))'
+    - Rscript -e 'install.packages(c("bio3d", "ggplot2", "parallel", "data.table", "Rcpp", "gplots", "grDevices", "graphics", "outliers", "pcaPP", "prospectr"))'
+    - Rscript -e 'install.packages(c("splus2R", "stats", "expm", "Hmisc", "Rcpp", "sfsmisc", "plotly", "Rtsne", "TSA", "ClusterR", "RColorBrewer"))'
+    - Rscript -e 'install.packages(c("TransferEntropy", "infotheo", "e1071"))'
+    - Rscript -e 'devtools::install_bioc("AnnotationDbi", "impute", "GO.db", "preprocessCore")'
+    - Rscript -e 'devtools::install_github("jimhester/covr", "cran/WGCNA", "cran/PairViz", "rstudio/rmarkdown", "sinhrks/ggfortify")'
+    - Rscript -e 'devtools::install_dev_deps()'
+    - Rscript -e 'devtools::check()'
+    - Rscript -e 'covr::codecov(type = "all", quiet = FALSE)'
+  tags:
+    - docker
+
+#r-devel:
+#  stage: test
+#  image: rocker/drd:latest
+#  script:
+#    - RDscript -e 'install.packages(c("devtools", "roxygen2"))'
+#    - RDscript -e 'devtools::install_dev_deps()'
+#    - RDscript -e 'devtools::check()'
+#  tags:
+#    - docker
+
+#r-oldrel:
+#  stage: test
+#  image: r-base:3.2.5
+#  script:
+#    - Rscript -e 'install.packages(c("devtools", "roxygen2"))'
+#    - Rscript -e 'devtools::install_dev_deps()'
+#    - Rscript -e 'devtools::check()'
+#  tags:
+#    - docker
+#  allow_failure: true
+    
