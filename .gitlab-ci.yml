@@ -23,6 +23,7 @@ before_script:
   - apt-get install -y libtiff5-dev
   - apt-get install -y libcurl4-openssl-dev libssh2-1-dev libssl-dev git # for devtools
   - apt-get install -y qpdf pandoc pandoc-citeproc # for pandoc
+  - apt-get install -y r-base-dev
   - export _R_CHECK_CRAN_INCOMING_=FALSE
   - export _R_CHECK_FORCE_SUGGESTS_=TRUE
   
@@ -40,7 +41,7 @@ before_script:
 
 r-base:
   stage: test
-  image: r-base:latest
+  #image: r-base:latest
   script:
     - Rscript -e 'install.packages(c("devtools", "roxygen2"))'
     - Rscript -e 'install.packages(c("bio3d", "ggplot2", "parallel", "data.table", "Rcpp", "gplots", "grDevices", "graphics", "outliers", "pcaPP", "prospectr"))'
