@@ -37,8 +37,6 @@ the peaks identification. Default value is \code{FALSE}.}
 \item{force_matching}{Please refer to \code{\link{basins_recognition}} for further details about the match option.}
 
 \item{silent}{A logical value indicating whether the function has to remain silent or not. Default value is \code{FALSE}.}
-
-\item{merge_cluster}{Logical that allow clusters to be merged automatically if consecutives}
 }
 \value{
 A list containing
@@ -63,7 +61,8 @@ ret<-gen_progindex(adjl = adjl)
 gen_annotation(ret_data = ret, local_cut_width = 10)
 \dontrun{
 score_sapphire(the_sap = "PROGIDX_000000000001.dat", ann = rnorm(100))
-CampaRi::basin_optimization(the_sap = "PROGIDX_000000000001.dat",  how_fine_search = 10, number_of_clusters = 2, force_matching = T, silent = F)
+CampaRi::basin_optimization(the_sap = "PROGIDX_000000000001.dat",  
+how_fine_search = 10, number_of_clusters = 2, force_matching = T, silent = F)
 }
 
 }

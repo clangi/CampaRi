@@ -80,6 +80,7 @@ before_install:
 #  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libnetcdff-dev ; fi
 
 bioc_packages:
+  - graph
   - AnnotationDbi
   - impute
   - GO.db

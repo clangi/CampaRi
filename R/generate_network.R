@@ -232,11 +232,11 @@ c('path_euclidean', 'path_minkowski', 'path_manhattan', 'path_maximum', 'path_ca
       
         # covariance
       }else if(method == 'covariance'){
-        built_net <- cov(tmp_trj, method = cov_method)
+        built_net <- stats::cov(tmp_trj, method = cov_method)
       
         # mahalanobis (stat implementation)
       }else if(method == 'covariance'){
-        built_net <- cov(tmp_trj, method = cov_method)
+        built_net <- stats::cov(tmp_trj, method = cov_method)
       
         # MI based
       }else if(grepl(method, pattern = 'MI', fixed = T)){

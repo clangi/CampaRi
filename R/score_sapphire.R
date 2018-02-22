@@ -289,10 +289,10 @@ score_sapphire <- function(the_sap, ann, scoring_method = 'nmi', merge_clusters 
   }
   predicted_div <- unlist(predicted_div)
   if(plot_pred_true_resume){
-    plot_df <- data.frame(predicted = as.factor(predicted_div), true = ann[st[,3]]-0.05)
+    plot_df <- data.frame('predicted' = as.factor(predicted_div), 'true' = ann[st[,3]]-0.05)
     gg <- ggplot(data = plot_df) + 
-          geom_point(aes(y = predicted, x = 1:lpin, colour = 'red'), size = 0.3) + 
-          geom_point(aes(y = true, x = 1:lpin, colour = 'blue'), size = 0.3) + 
+          geom_point(aes(y = 'predicted', x = 1:lpin, colour = 'red'), size = 0.3) + 
+          geom_point(aes(y = 'true', x = 1:lpin, colour = 'blue'), size = 0.3) + 
           theme_minimal() + xlab('Progress Index') + ylab('Cluster') + 
           scale_color_manual(name = "Labels", labels = c("True", "Predicted"), values = c("red", "blue")) +
           guides(color = guide_legend(override.aes = list(size=5)))

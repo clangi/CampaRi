@@ -266,11 +266,11 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
   myHell <- function(x, y){
     return(sqrt(1-sum(sqrt(x*y))))
   }
-  myKL <- function(x, y){
-    xn <- x[-which(x==0 | y==0)]
-    yn <- y[-which(x==0 | y==0)]
-    return(sum(xn*log(xn/yn)))
-  }
+  # myKL <- function(x, y){ # It is defined afterwards with a rough symmetrization - dgarol
+  #   xn <- x[-which(x==0 | y==0)]
+  #   yn <- y[-which(x==0 | y==0)]
+  #   return(sum(xn*log(xn/yn)))
+  # }
   # ------------------------ end functions
   
   ## INPUT FILE 
@@ -907,8 +907,8 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
       # functions
       # ----------------------------------------------------
       myTE <- function(x, y, emb, sym = T, sd = 0.001){
-        nx <- x + rnorm(n = .lt(x), mean = 0, sd = sd)
-        ny <- y + rnorm(n = .lt(x), mean = 0, sd = sd)
+        nx <- x + stats::rnorm(n = .lt(x), mean = 0, sd = sd)
+        ny <- y + stats::rnorm(n = .lt(x), mean = 0, sd = sd)
         xy <- TransferEntropy::computeTE(nx, ny, embedding = emb, k = 2, safetyCheck = T)
         yx <- TransferEntropy::computeTE(ny, nx, embedding = emb, k = 2, safetyCheck = T)
         if(sym) return((unlist(xy) + unlist(yx))/2)
@@ -995,7 +995,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
         MI_uni <- .normalize(MI_uni)
         # MI_sbr <- .normalize(MI_sbr, xmax = max(c(MI_sbr, MI_uni)), xmin = min(c(MI_sbr, MI_uni)))
         # MI_uni <- .normalize(MI_uni, xmax = max(c(MI_sbr, MI_uni)), xmin = min(c(MI_sbr, MI_uni)))
-        expand_MI_uni <- approx(seq(n_unif), 1 - MI_uni, n = lpi)$y
+        expand_MI_uni <- stats::approx(seq(n_unif), 1 - MI_uni, n = lpi)$y
         MI_comb <- 'mean'
         if(MI_comb == 'mean') MI_ratio <- (MI_sbr + expand_MI_uni[breaks]) / 2 
         else if(MI_comb == 'multip') MI_ratio <- MI_sbr * expand_MI_uni[breaks]

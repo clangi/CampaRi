@@ -19,7 +19,6 @@
 #' the peaks identification. Default value is \code{FALSE}.
 #' @param nbins_x Number of bins on  x-axis of the 2-D histogram. Default to sqrt(nrow(the_sap)).
 #' @param nbins_y Number of bins on the y-axis of the 2-D histogram. Default to sqrt(nrow(the_sap)).
-#' @param merge_cluster Logical that allow clusters to be merged automatically if consecutives
 #' @param number_of_clusters if basin_optimization_method is active accordingly this must be set to integer.
 #' @param force_matching Please refer to \code{\link{basins_recognition}} for further details about the match option.
 #' @param silent A logical value indicating whether the function has to remain silent or not. Default value is \code{FALSE}.
@@ -37,7 +36,8 @@
 #' gen_annotation(ret_data = ret, local_cut_width = 10)
 #' \dontrun{
 #' score_sapphire(the_sap = "PROGIDX_000000000001.dat", ann = rnorm(100))
-#' CampaRi::basin_optimization(the_sap = "PROGIDX_000000000001.dat",  how_fine_search = 10, number_of_clusters = 2, force_matching = T, silent = F)
+#' CampaRi::basin_optimization(the_sap = "PROGIDX_000000000001.dat",  
+#' how_fine_search = 10, number_of_clusters = 2, force_matching = T, silent = F)
 #' }
 #' 
 #' @details For details regarding the SAPPHIRE plot, please refer to the relative publications \url{http://www.nature.com/articles/srep06264}. 
@@ -286,13 +286,13 @@ basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fi
   # NB: this function follow the assumption that the score, being a mean, it is optimizing for the optimal number of bins. 
   #     There is no guarantee of convergence, neither of optimal score.
   if (mean(bweights) > previous_score + tol) { # score is higher (it must mean it has less barriers or they are better. -> I reduce still the number)
-    if (start.idx == end.idx) return(list('found' = FALSE, 'ncl' = ncl_found, 'start.idx' = start.idx, 'nbins' = lin_scale[start.idx]))
+    if (start.idx == end.idx) return(list('found' = FALSE, 'ncl' = mean(bweights), 'start.idx' = start.idx, 'nbins' = lin_scale[start.idx]))
     Recall(st, previous_score = mean(bweights), start.idx = start.idx, end.idx = m - 1L, lin_scale = lin_scale,
            force_matching = force_matching, tol = tol, check = FALSE, silent = silent)
   } else if (mean(bweights) < previous_score - tol) {
-    if (start.idx == end.idx) return(list('found' = FALSE, 'ncl' = ncl_found, 'start.idx' = start.idx, 'nbins' = lin_scale[start.idx]))
+    if (start.idx == end.idx) return(list('found' = FALSE, 'ncl' = mean(bweights), 'start.idx' = start.idx, 'nbins' = lin_scale[start.idx]))
     Recall(st, previous_score = mean(bweights), start.idx = m + 1L, end.idx = end.idx, lin_scale = lin_scale,
            force_matching = force_matching, tol = tol, check = FALSE, silent = silent)
-  } else return(list('found' = TRUE, 'ncl' = ncl_found, 'idx' = m, 'nbins' = lin_scale[m]))
+  } else return(list('found' = TRUE, 'ncl' = mean(bweights), 'idx' = m, 'nbins' = lin_scale[m]))
 }
 

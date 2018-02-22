@@ -14,3 +14,7 @@ LICENCE
 ^inst/doc/$
 _config.yml
 ^src/to_del*
+.gitlab-ci.yml
+inst/extdata/for_campari/source/Makefile
+inst/extdata/for_campari/source/hsl/Makefile
+inst/extdata/for_campari/source/xdr/Makefile

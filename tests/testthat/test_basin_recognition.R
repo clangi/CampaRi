@@ -2,7 +2,7 @@ context('basins_recognition')
 
 test_that('Test for basin recognition with ext files', {
     
-  silent <- T
+  silent <- F
   plt_stff <- !silent
   if(!silent) require(testthat)
   ## dir.cur <- getwd()

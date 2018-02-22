@@ -22,8 +22,10 @@ before_script:
   - apt-get install -y libgmp-dev
   - apt-get install -y libtiff5-dev
   - apt-get install -y libcurl4-openssl-dev libssh2-1-dev libssl-dev git # for devtools
+  - apt-get install -y libxml2-dev # for roxygen2
   - apt-get install -y qpdf pandoc pandoc-citeproc # for pandoc
   - apt-get install -y r-base-dev
+  - apt-get install -y git-svn
   - export _R_CHECK_CRAN_INCOMING_=FALSE
   - export _R_CHECK_FORCE_SUGGESTS_=TRUE
   
@@ -43,13 +45,14 @@ r-base:
   stage: test
   #image: r-base:latest
   script:
+    - Rscript -e 'Sys.unsetenv("GITHUB_PAT")' # for error with github bad credentials
     - Rscript -e 'install.packages(c("devtools", "roxygen2"), repos = "http://cran.us.r-project.org")'
     - Rscript -e 'install.packages(c("bio3d", "ggplot2", "parallel", "data.table", "Rcpp", "gplots", "grDevices", "graphics", "outliers", "pcaPP", "prospectr"), repos = "http://cran.us.r-project.org")'
     - Rscript -e 'install.packages(c("splus2R", "stats", "expm", "Hmisc", "Rcpp", "sfsmisc", "plotly", "Rtsne", "TSA", "ClusterR", "RColorBrewer"), repos = "http://cran.us.r-project.org")'
     - Rscript -e 'install.packages(c("TransferEntropy", "infotheo", "e1071"), repos = "http://cran.us.r-project.org")'
-    - Rscript -e 'devtools::install_bioc("AnnotationDbi", "impute", "GO.db", "preprocessCore")'
-    - Rscript -e 'devtools::install_github("jimhester/covr", "cran/WGCNA", "cran/PairViz", "rstudio/rmarkdown", "sinhrks/ggfortify")'
     - Rscript -e 'devtools::install_dev_deps()'
+    - Rscript -e 'devtools::install_bioc("graph", "AnnotationDbi", "impute", "GO.db", "preprocessCore")'
+    - Rscript -e 'devtools::install_github("jimhester/covr", "cran/WGCNA", "cran/PairViz", "rstudio/rmarkdown", "sinhrks/ggfortify")'
     - Rscript -e 'devtools::check()'
     - Rscript -e 'covr::codecov(type = "all", quiet = FALSE)'
   tags:
