@@ -46,12 +46,13 @@ r-base:
   #image: r-base:latest
   script:
     - Rscript -e 'Sys.unsetenv("GITHUB_PAT")' # for error with github bad credentials
-    - Rscript -e 'install.packages(c("devtools", "roxygen2"), repos = "http://cran.us.r-project.org")'
+    - Rscript -e 'install.packages(c("devtools", "remotes", "roxygen2"), repos = "http://cran.us.r-project.org")'
     - Rscript -e 'install.packages(c("bio3d", "ggplot2", "parallel", "data.table", "Rcpp", "gplots", "grDevices", "graphics", "outliers", "pcaPP", "prospectr"), repos = "http://cran.us.r-project.org")'
     - Rscript -e 'install.packages(c("splus2R", "stats", "expm", "Hmisc", "Rcpp", "sfsmisc", "plotly", "Rtsne", "TSA", "ClusterR", "RColorBrewer"), repos = "http://cran.us.r-project.org")'
     - Rscript -e 'install.packages(c("TransferEntropy", "infotheo", "e1071"), repos = "http://cran.us.r-project.org")'
     - Rscript -e 'devtools::install_dev_deps()'
-    - Rscript -e 'devtools::install_bioc("graph", "AnnotationDbi", "impute", "GO.db", "preprocessCore")'
+    - Rscript -e 'source("https://bioconductor.org/biocLite.R")'
+    - Rscript -e 'biocLite(c("graph", "AnnotationDbi", "impute", "GO.db", "preprocessCore"))'
     - Rscript -e 'devtools::install_github("jimhester/covr", "cran/WGCNA", "cran/PairViz", "rstudio/rmarkdown", "sinhrks/ggfortify")'
     - Rscript -e 'devtools::check()'
     - Rscript -e 'covr::codecov(type = "all", quiet = FALSE)'
