@@ -12,7 +12,7 @@ stages:
 # Define commands that run before each job's script
 linux_libs:
   stage: libs
-  enviroment: pkgenv
+  environment: pkgenv
   script:
     - apt-get update -q
     - apt-get install -y libblas-common
@@ -50,7 +50,7 @@ linux_libs:
 
 pkg_build:
   stage: build
-  enviroment: pkgenv
+  environment: pkgenv
   #dependencies: linux_libs
   #image: r-base:latest
   script:
@@ -66,13 +66,13 @@ pkg_build:
   #tags: docker
 pkg_check:
     stage: check
-    enviroment: pkgenv
+    environment: pkgenv
     script: Rscript -e 'devtools::check()'
    # tags: docker
     
 pkg_codecov:
     stage: codecov
-    enviroment: pkgenv
+    environment: pkgenv
     script: Rscript -e 'covr::package_coverage(type="tests", quiet = TRUE)'
     #tags: docker
 
