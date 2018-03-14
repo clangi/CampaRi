@@ -10,32 +10,33 @@ stages:
   - codecov
 
 # Define commands that run before each job's script
-linux-libs:
+linux_libs:
   stage: libs
   script:
-  - apt-get update -q
-  - apt-get install -y libblas-common
-  - apt-get install -y liblapack-dev
-  - apt-get install -y libfftw3-dev
-  - apt-get install -y libfftw3-bin
-  - apt-get install -y libarpack2-dev
-  - apt-get install -y automake
-  - apt-get install -y gfortran
-  - apt-get install -y libnetcdff6
-  - apt-get install -y libnetcdff-dev
-  - apt-get install -y netcdf-bin
-  - apt-get install -y libopenmpi-dev
-  - apt-get install -y openmpi-bin
-  - apt-get install -y libgmp-dev
-  - apt-get install -y libtiff5-dev
-  - apt-get install -y libcurl4-openssl-dev libssh2-1-dev libssl-dev git # for devtools
-  - apt-get install -y libxml2-dev # for roxygen2
-  - apt-get install -y qpdf pandoc pandoc-citeproc # for pandoc
-  - apt-get install -y r-base-dev
-  - apt-get install -y git-svn
-  - export _R_CHECK_CRAN_INCOMING_=FALSE
-  - export _R_CHECK_FORCE_SUGGESTS_=TRUE
-  
+    - apt-get update -q
+    - apt-get install -y libblas-common
+    - apt-get install -y liblapack-dev
+    - apt-get install -y libfftw3-dev
+    - apt-get install -y libfftw3-bin
+    - apt-get install -y libarpack2-dev
+    - apt-get install -y automake
+    - apt-get install -y gfortran
+    - apt-get install -y libnetcdff6
+    - apt-get install -y libnetcdff-dev
+    - apt-get install -y netcdf-bin
+    - apt-get install -y libopenmpi-dev
+    - apt-get install -y openmpi-bin
+    - apt-get install -y libgmp-dev
+    - apt-get install -y libtiff5-dev
+    - apt-get install -y libcurl4-openssl-dev libssh2-1-dev libssl-dev git # for devtools
+    - apt-get install -y libxml2-dev # for roxygen2
+    - apt-get install -y qpdf pandoc pandoc-citeproc # for pandoc
+    - apt-get install -y r-base-dev
+    - apt-get install -y git-svn
+    - export _R_CHECK_CRAN_INCOMING_=FALSE
+    - export _R_CHECK_FORCE_SUGGESTS_=TRUE
+  artifacts:
+    paths
 #  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libnetcdff5; fi
 #  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libnetcdf-dev; fi # must be specified
 
@@ -50,6 +51,7 @@ linux-libs:
 
 pkg_build:
   stage: build
+  dependencies: linux_libs
   #image: r-base:latest
   script:
     - Rscript -e 'Sys.unsetenv("GITHUB_PAT")' # for error with github bad credentials
@@ -60,17 +62,23 @@ pkg_build:
     - Rscript -e 'devtools::install_dev_deps()'
     - Rscript -e 'source("https://bioconductor.org/biocLite.R")'
     - Rscript -e 'BiocInstaller::biocLite(c("graph", "AnnotationDbi", "impute", "GO.db", "preprocessCore"))'
-    - Rscript -e 'Sys.unsetenv("GITHUB_PAT"); devtools::install_github(c("jimhester/covr", "cran/WGCNA", "cran/PairViz", "rstudio/rmarkdown", "sinhrks/ggfortify"))'
+    - Rscript -e 'devtools::install_github(c("jimhester/covr", "cran/WGCNA", "cran/PairViz", "rstudio/rmarkdown", "sinhrks/ggfortify"))'
   #tags: docker
-    
 pkg_check:
     stage: check
+    dependencies: 
+      - linux_libs
+      - pkg_build
     script: Rscript -e 'devtools::check()'
    # tags: docker
     
 pkg_codecov:
     stage: codecov
-    script: Rscript -e 'covr::codecov(type = "all", quiet = FALSE)'
+    dependencies: 
+      - linux_libs
+      - pkg_build
+      - pkg_check
+    script: Rscript -e 'covr::package_coverage(type="tests", quiet = TRUE)'
     #tags: docker
 
 #r-devel:
