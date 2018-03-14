@@ -12,6 +12,7 @@ stages:
 # Define commands that run before each job's script
 linux-libs:
   stage: libs
+  script:
   - apt-get update -q
   - apt-get install -y libblas-common
   - apt-get install -y liblapack-dev
