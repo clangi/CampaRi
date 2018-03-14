@@ -53,7 +53,7 @@ r-base:
     - Rscript -e 'devtools::install_dev_deps()'
     - Rscript -e 'source("https://bioconductor.org/biocLite.R")'
     - Rscript -e 'BiocInstaller::biocLite(c("graph", "AnnotationDbi", "impute", "GO.db", "preprocessCore"))'
-    - Rscript -e 'devtools::install_github("jimhester/covr", "cran/WGCNA", "cran/PairViz", "rstudio/rmarkdown", "sinhrks/ggfortify")'
+    - Rscript -e 'Sys.unsetenv("GITHUB_PAT"); devtools::install_github("jimhester/covr", "cran/WGCNA", "cran/PairViz", "rstudio/rmarkdown", "sinhrks/ggfortify")'
     - Rscript -e 'devtools::check()'
     - Rscript -e 'covr::codecov(type = "all", quiet = FALSE)'
   tags:
