@@ -10,7 +10,7 @@ stages:
   - codecov
 
 # Define commands that run before each job's script
-linux_libs:
+CampaRi:
   stage: libs
   environment: pkgenv
   script:
@@ -36,21 +36,7 @@ linux_libs:
     - apt-get install -y git-svn
     - export _R_CHECK_CRAN_INCOMING_=FALSE
     - export _R_CHECK_FORCE_SUGGESTS_=TRUE
-#  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libnetcdff5; fi
-#  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libnetcdf-dev; fi # must be specified
-
-#image: rocker/rstudio  
-#test:  
-#   script:
-#    - R -e 'install.packages(c("needed here"))'
-#    - R CMD build . --no-build-vignettes --no-manual
-#    - PKG_FILE_NAME=$(ls -1t *.tar.gz | head -n 1)
-#    - R CMD check "${PKG_FILE_NAME}" --no-build-vignettes --no-manual
-#    - R -e 'devtools::test()'
-
-pkg_build:
   stage: build
-  environment: pkgenv
   #dependencies: linux_libs
   #image: r-base:latest
   script:
@@ -75,6 +61,17 @@ pkg_codecov:
     environment: pkgenv
     script: Rscript -e 'covr::package_coverage(type="tests", quiet = TRUE)'
     #tags: docker
+#  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libnetcdff5; fi
+#  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libnetcdf-dev; fi # must be specified
+
+#image: rocker/rstudio  
+#test:  
+#   script:
+#    - R -e 'install.packages(c("needed here"))'
+#    - R CMD build . --no-build-vignettes --no-manual
+#    - PKG_FILE_NAME=$(ls -1t *.tar.gz | head -n 1)
+#    - R CMD check "${PKG_FILE_NAME}" --no-build-vignettes --no-manual
+#    - R -e 'devtools::test()'
 
 #r-devel:
 #  stage: test
