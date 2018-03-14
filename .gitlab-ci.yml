@@ -3,9 +3,15 @@
 image: ubuntu:16.04
 variables:
   CODECOV_TOKEN: "266db23c-b9d1-405f-9aef-c5889ea5227d"
+stages:
+  - libs
+  - build
+  - check
+  - codecov
 
 # Define commands that run before each job's script
-before_script:
+linux-libs:
+  stage: libs
   - apt-get update -q
   - apt-get install -y libblas-common
   - apt-get install -y liblapack-dev
@@ -41,8 +47,9 @@ before_script:
 #    - R CMD check "${PKG_FILE_NAME}" --no-build-vignettes --no-manual
 #    - R -e 'devtools::test()'
 
-r-base:
-  stage: test
+CampaRi-build:
+  stage: build
+  tags: docker
   #image: r-base:latest
   script:
     - Rscript -e 'Sys.unsetenv("GITHUB_PAT")' # for error with github bad credentials
@@ -54,10 +61,16 @@ r-base:
     - Rscript -e 'source("https://bioconductor.org/biocLite.R")'
     - Rscript -e 'BiocInstaller::biocLite(c("graph", "AnnotationDbi", "impute", "GO.db", "preprocessCore"))'
     - Rscript -e 'Sys.unsetenv("GITHUB_PAT"); devtools::install_github(c("jimhester/covr", "cran/WGCNA", "cran/PairViz", "rstudio/rmarkdown", "sinhrks/ggfortify"))'
-    - Rscript -e 'devtools::check()'
-    - Rscript -e 'covr::codecov(type = "all", quiet = FALSE)'
-  tags:
-    - docker
+    
+CampaRi-check:
+    stage: check
+    script: Rscript -e 'devtools::check()'
+    tags: docker
+    
+CampaRi-codecov:
+    stage: codecov
+    script: Rscript -e 'covr::codecov(type = "all", quiet = FALSE)'
+    tags: docker
 
 #r-devel:
 #  stage: test
