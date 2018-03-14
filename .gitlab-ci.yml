@@ -52,7 +52,7 @@ r-base:
     - Rscript -e 'install.packages(c("TransferEntropy", "infotheo", "e1071"), repos = "http://cran.us.r-project.org")'
     - Rscript -e 'devtools::install_dev_deps()'
     - Rscript -e 'source("https://bioconductor.org/biocLite.R")'
-    - Rscript -e 'biocLite(c("graph", "AnnotationDbi", "impute", "GO.db", "preprocessCore"))'
+    - Rscript -e 'BiocInstaller::biocLite(c("graph", "AnnotationDbi", "impute", "GO.db", "preprocessCore"))'
     - Rscript -e 'devtools::install_github("jimhester/covr", "cran/WGCNA", "cran/PairViz", "rstudio/rmarkdown", "sinhrks/ggfortify")'
     - Rscript -e 'devtools::check()'
     - Rscript -e 'covr::codecov(type = "all", quiet = FALSE)'
