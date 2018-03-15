@@ -31,7 +31,9 @@ before_script:
 
 pkg_check:
     stage: check
-    script: Rscript -e 'devtools::check()'
+    script: 
+    - Rscript -e 'install.packages("testthat", repos = "http://cran.us.r-project.org")'
+    - Rscript -e 'devtools::check()'
     
 pkg_codecov:
     stage: codecov
