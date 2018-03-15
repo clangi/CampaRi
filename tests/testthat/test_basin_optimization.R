@@ -3,7 +3,7 @@ context('basin_optimization')
 test_that('optimize sapphire plot clusters using SBR', {
   
   # CREATION OF THE DATASET
-  silent <- T
+  silent <- F
   plt_stff <- !silent
   if(!silent) {require(testthat); require(CampaRi)} 
   # data generation is now already made and put in the package
@@ -38,6 +38,7 @@ test_that('optimize sapphire plot clusters using SBR', {
   # BASINS OPTIMIZATION
   nbin <- round(sqrt(n_snap*10)); if(!silent) print(nbin)
   if(plt_stff) basins_recognition(data = file.pi, nx = nbin, match = F, plot = T, out.file = F, new.dev = F)
+  if(plt_stff) basins_recognition(data = file.pi, nx = nbin, match = T, plot = T, out.file = F, new.dev = F)
   # if(plt_stff) basins_recognition(file.pi, nx = nbin, match = T, plot = T, out.file = F, new.dev = F)
   expect_error(optimal_bas <- CampaRi::basin_optimization(the_sap = file.pi,  how_fine_search = 100, number_of_clusters = 3, force_matching = F, silent = F, 
                                                           plot_basin_identification = plt_stff), NA)
