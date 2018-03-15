@@ -1,11 +1,10 @@
 # Specify the docker image to use (only used if using docker runners)
 # See: http://doc.gitlab.com/ee/ci/docker/using_docker_images.html
-image: ubuntu:16.04
+image: itzlacoliuhque/con-campari:latest
 variables:
   CODECOV_TOKEN: "266db23c-b9d1-405f-9aef-c5889ea5227d"
 stages:
 #  - libs
-  - build
   - check
   - codecov
 
@@ -15,26 +14,6 @@ stages:
 #  environment:      
 #    name: pkgenv
 before_script:
-  - apt-get update -q
-  - apt-get install -y libblas-common
-  - apt-get install -y liblapack-dev
-  - apt-get install -y libfftw3-dev
-  - apt-get install -y libfftw3-bin
-  - apt-get install -y libarpack2-dev
-  - apt-get install -y automake
-  - apt-get install -y gfortran
-  - apt-get install -y libnetcdff6
-  - apt-get install -y libnetcdff-dev
-  - apt-get install -y netcdf-bin
-  - apt-get install -y libopenmpi-dev
-  - apt-get install -y openmpi-bin
-  - apt-get install -y libgmp-dev
-  - apt-get install -y libtiff5-dev
-  - apt-get install -y libcurl4-openssl-dev libssh2-1-dev libssl-dev git # for devtools
-  - apt-get install -y libxml2-dev # for roxygen2
-  - apt-get install -y qpdf pandoc pandoc-citeproc # for pandoc
-  - apt-get install -y r-base-dev
-  - apt-get install -y git-svn
   - export _R_CHECK_CRAN_INCOMING_=FALSE
   - export _R_CHECK_FORCE_SUGGESTS_=TRUE
 #  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libnetcdff5; fi
@@ -49,34 +28,14 @@ before_script:
 #    - R CMD check "${PKG_FILE_NAME}" --no-build-vignettes --no-manual
 #    - R -e 'devtools::test()'
 
-pkg_build:
-  stage: build
-  environment: 
-    name: pkgenv
-  script:
-    - Rscript -e 'Sys.unsetenv("GITHUB_PAT")' # for error with github bad credentials
-    - Rscript -e 'install.packages(c("devtools", "remotes", "roxygen2"), repos = "http://cran.us.r-project.org")'
-    - Rscript -e 'install.packages(c("bio3d", "ggplot2", "parallel", "data.table", "Rcpp", "gplots", "grDevices", "graphics", "outliers", "pcaPP", "prospectr"), repos = "http://cran.us.r-project.org")'
-    - Rscript -e 'install.packages(c("splus2R", "stats", "expm", "Hmisc", "Rcpp", "sfsmisc", "plotly", "Rtsne", "TSA", "ClusterR", "RColorBrewer"), repos = "http://cran.us.r-project.org")'
-    - Rscript -e 'install.packages(c("TransferEntropy", "infotheo", "e1071"), repos = "http://cran.us.r-project.org")'
-    - Rscript -e 'devtools::install_dev_deps()'
-    - Rscript -e 'source("https://bioconductor.org/biocLite.R")'
-    - Rscript -e 'BiocInstaller::biocLite(c("graph", "AnnotationDbi", "impute", "GO.db", "preprocessCore"))'
-    - Rscript -e 'devtools::install_github(c("jimhester/covr", "cran/WGCNA", "cran/PairViz", "rstudio/rmarkdown", "sinhrks/ggfortify"))'
 
 pkg_check:
     stage: check
-    environment:      
-      name: pkgenv
     script: Rscript -e 'devtools::check()'
-   # tags: docker
     
 pkg_codecov:
     stage: codecov
-    environment:      
-      name: pkgenv
     script: Rscript -e 'covr::package_coverage(type="tests", quiet = TRUE)'
-    #tags: docker
 
 #r-devel:
 #  stage: test
