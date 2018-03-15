@@ -3,7 +3,7 @@ context('basin_optimization')
 test_that('optimize sapphire plot clusters using SBR', {
   
   # CREATION OF THE DATASET
-  silent <- F
+  silent <- T
   plt_stff <- !silent
   if(!silent) {require(testthat); require(CampaRi)} 
   # data generation is now already made and put in the package

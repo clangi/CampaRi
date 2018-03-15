@@ -189,7 +189,7 @@ basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fi
     
     if(basin_optimization_method[1] == 'MI_barrier_weighting'){
       search_method <- 'exaustive' 
-      search_method <- 'binary_search' # broken (there is no guarantee of convexity)
+      # search_method <- 'binary_search' # broken (there is no guarantee of convexity)
       if(is.null(number_of_clusters)) {
         bin_search_space <- lin_scale
       }else {
@@ -278,14 +278,14 @@ basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fi
   if(check) stopifnot(!is.null(end.idx))
   m <- as.integer(ceiling((end.idx + start.idx) / 2)) # Midpoint
   if(!is.null(lin_scale)) nbins <- lin_scale[m] else nbins <- m
-  if(is.na(nbins)) return(list('found' = FALSE, 'ncl' = ncl_found,
+  if(is.na(nbins) || end.idx < 1) return(list('found' = FALSE, 'ncl' = ncl_found,
                                'start.idx' = start.idx - 1, 'nbins' = lin_scale[start.idx-1],
                                'searched_hist' = searched_hist))
-  if(!silent) cat('Looking for right divisions using', nbins, 'nbins...')
+  if(!silent) cat('Looking for divisions using', nbins, 'nbins...')
   bas <- CampaRi::basins_recognition(st, nx = nbins, plot = F, match = force_matching, out.file = F, new.dev = F, silent = T, 
                                      cluster.statistics.weight.barriers = barriers)
   ncl_found <- nrow(bas$tab.st)
-  if(!silent) cat(' found', ncl_found,'clusters. \n')
+  if(!silent) cat(' found', ncl_found, 'clusters. \n')
   if(barriers){
     if(is.null(searched_hist)) searched_hist <- list()
     searched_hist[[.lt(searched_hist) + 1]] <- list('bas' = bas, 'ncl' = ncl_found, 

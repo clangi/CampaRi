@@ -901,7 +901,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
   #######################################################################
   #### final calculations for scores - dgarol
   #######################################################################
-    # browser()
+    browser()
     if(cluster.statistics && !is.null(breaks)){
       
       # functions
