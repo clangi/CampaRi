@@ -50,7 +50,7 @@ test_that('Test run_campari from installation', {
                            FMCSC_CRADIUS=10880,
                            FMCSC_CCUTOFF=10880,
                            FMCSC_CPROGINDWIDTH=1000), NA) #local cut is automatically adjusted to 1/10 if it is too big (as here)
-  debugonce(run_campari)
+  # debugonce(run_campari)
   expect_error(run_campari(data_file = 'ascii_based_analysis.tsv', base_name = "ascii_based_analysis", campari_exe = ca_exe,
                            FMCSC_CPROGINDMODE=1, #mst
                            FMCSC_CCOLLECT=1, print_status = T,
