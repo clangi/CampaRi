@@ -128,7 +128,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
   avail.extra.arg <- c("pol.degree", "only.kin", "time.series",
                        "cl.stat", "plot.cl.stat", 'cl.stat.entropy', 'cl.stat.weight.barriers',
                        'cl.stat.stft', 'cl.stat.TE', 'cl.stat.KL', 'cl.stat.wMI',
-                       'cl.stat.nUni', 'cl.stat.nBreaks', 'cl.stat.MI_comb', 'cl.stat.denat')
+                       'cl.stat.nUni', 'cl.stat.nBreaks', 'cl.stat.MI_comb', 'cl.stat.denat', 'dbg')
   
   if(!is.null(names(input.args)) && any(!(names(input.args) %in% avail.extra.arg))) 
     warning('There is a probable mispelling in one of the inserted variables. Please check the available extra input arguments.')
@@ -136,6 +136,12 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
     only.kin <- input.args$only.kin
     if(only.kin) match <- TRUE
   } else only.kin <- FALSE
+  
+  # dbg for stats - dgarol
+  if("dbg" %in% names(input.args)) { # dgarol
+    dbg <- input.args$dbg
+    stopifnot(is.logical(dbg))
+  } else dbg <- FALSE
   
   # cluster statistics check - dgarol
   cl.stat.wMI <- FALSE      # can be long
@@ -175,7 +181,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
   
   if("cl.stat.nUni" %in% names(input.args)) { # dgarol
     cl.stat.nUni <- input.args$cl.stat.nUni
-    stopifnot(any(sapply(a, function(x) x%%1) != 0))
+    stopifnot(all(sapply(cl.stat.nUni, function(x) x%%1) == 0))
     if(!cl.stat && cl.stat.nUni) cl.stat <- TRUE
   } else cl.stat.nUni <- NULL
   
@@ -935,7 +941,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
   #######################################################################
   #### final calculations for scores - dgarol
   #######################################################################
-    browser()
+    if(dbg) browser()
     if(cl.stat && !is.null(breaks)){
       
       # functions
@@ -1223,7 +1229,6 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
                                   labels = c("Classic", "/size_cl", "/max-min", "/max", "sd(cnts)", "mean(dens!=0)"), 
                                   values = RColorBrewer::brewer.pal(n = 6, name = 'Dark2')) +
                 guides(color = guide_legend(override.aes = list(size=5)))
-      
           print(gg)    
         }
       }
@@ -1244,7 +1249,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
       }
       if(cl.stat.wMI) { statistics[[ele]] <- sl_MI; names(ele)[ele] <- 'winMI'; ele <- ele + 1 }
       if(cl.stat.stft) { statistics[[ele]] <- xpeaks; names(ele)[ele] <- 'stFT'; ele <- ele + 1 }
-      if(cl.stat.weight.barriers) tab.st <- cbind(tab.st, 'barWeight' = c(-1, MI_sbr*expand_MI_uni[breaks]))
+      if(cl.stat.weight.barriers) tab.st <- cbind(tab.st, 'barWeight' = c(-1, MI_ratio))
     } else statistics <- NULL
   if(is.null(breaks)) statistic <- FALSE
   if(cl.stat && is.null(breaks)) {
