@@ -109,7 +109,7 @@ basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fi
     # final plot and saving results
     if(!is.null(basin_optimization_method)) {pp <- FALSE; ss <- TRUE} else {pp <- TRUE; ss <- FALSE}
     bas <- CampaRi::basins_recognition(st, nx = bisbr.out$nbins, new.dev = F, out.file = F, match = force_matching, plot = pp, silent = ss,
-                                       cluster.statistics.weight.barriers = T, plot.cluster.statistics = pp)
+                                       cl.stat.weight.barriers = T, plot.cl.stat = pp)
     if(!silent) cat('Number of (automatically) selected bins for the basin recognition step is', bisbr.out$nbins, '\n')
   }else{
     # initial linear scale for the basin_optimization_method
@@ -205,7 +205,7 @@ basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fi
           cat(bl, ' ')
           if(bl == bin_search_space[.lt(bin_search_space)]) cat('\n')
           bout <- CampaRi::basins_recognition(st, nx = bl, plot = F, match = force_matching, out.file = F, new.dev = F, silent = T,
-                                              cluster.statistics.weight.barriers = T)
+                                              cl.stat.weight.barriers = T)
           if(!is.null(bout$statistics) && !bout$statistics) {
             bw <- NA
             b_n_empty <- NA
@@ -236,7 +236,7 @@ basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fi
         
         # final plot/execution
         bas <- CampaRi::basins_recognition(st, nx = bw_tot$bins[1], new.dev = F, out.file = F, match = force_matching, plot = plot_basin_identification, silent = silent,
-                                           cluster.statistics.weight.barriers = T, plot.cluster.statistics = plot_basin_identification)
+                                           cl.stat.weight.barriers = T, plot.cl.stat = plot_basin_identification)
         
       }else if(search_method == 'binary_search'){ # broken
         bisbr.out <- .BiSBRstat(st = st, previous_score = 0, start.idx = 1,
@@ -283,7 +283,7 @@ basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fi
                                'searched_hist' = searched_hist))
   if(!silent) cat('Looking for divisions using', nbins, 'nbins...')
   bas <- CampaRi::basins_recognition(st, nx = nbins, plot = F, match = force_matching, out.file = F, new.dev = F, silent = T, 
-                                     cluster.statistics.weight.barriers = barriers)
+                                     cl.stat.weight.barriers = barriers)
   ncl_found <- nrow(bas$tab.st)
   if(!silent) cat(' found', ncl_found, 'clusters. \n')
   if(barriers){
@@ -322,7 +322,7 @@ basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fi
   if(!is.null(lin_scale)) nbins <- lin_scale[m] else nbins <- m
   if(!silent) cat('Looking for best average score using', nbins, 'nbins...')
   bas <- CampaRi::basins_recognition(st, nx = nbins, plot = F, match = force_matching, out.file = F, new.dev = F, silent = T, 
-                                     cluster.statistics.weight.barriers = T)
+                                     cl.stat.weight.barriers = T)
   bweights <- bas$tab.st$barWeight[-1]
   if(!silent) cat(' found', .lt(bweights),'barriers with an average MI ratio of ', mean(bweights), '. \n')
   # NB: this function follow the assumption that the score, being a mean, it is optimizing for the optimal number of bins. 

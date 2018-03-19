@@ -29,7 +29,9 @@ basins_recognition(data, nx, ny = nx, ny.aut = FALSE, local.cut = FALSE,
      \item "\code{SG}" for savitzkyGolay filter
 }}
 
-\item{plot}{A logical value indicating whether to display the SAPPHIRE plot with the resulting partitions or not. Black partitions are the matched ones, blue ones derive only from the dynamic analysis and orange ones only from the kinetic analysis. The green curve is the kinetic annotation (black curve) where the parabolic shape has been subtracted, i.e. the actual curve used for the peaks identification. Default value is \code{FALSE}.}
+\item{plot}{A logical value indicating whether to display the SAPPHIRE plot with the resulting partitions or not. Black partitions 
+are the matched ones, blue ones derive only from the dynamic analysis and orange ones only from the kinetic analysis. The green curve is the kinetic annotation (black curve) 
+where the parabolic shape has been subtracted, i.e. the actual curve used for the peaks identification. Default value is \code{FALSE}.}
 
 \item{new.dev}{A logical value indicating whether a new window/device has to plotted or not when \code{plot=TRUE}.}
 
@@ -38,38 +40,50 @@ basins_recognition(data, nx, ny = nx, ny.aut = FALSE, local.cut = FALSE,
 \item{silent}{A logical value indicating whether the function has to remain silent or not. Default value is \code{FALSE}.}
 
 \item{...}{\itemize{
-  \item "\code{time.series}" File name. If specified, it substitutes the time series of the PROGIDX_<..> file with the one provided by the file.
-  \item "\code{only.kin}" Logical value indicating whether it should be performed only the analysis of the kinetic annotation, thus disregarding completely 
-  the dynamic trace.  
-  \item "\code{pol.degree}" Degree of the Savitzky-Golay filter in case it was chosen. Default to 2.
-  \item "\code{cluster.statistics}" If \code{TRUE} it will activate the cluster analysis with Mutual Information, Hellinger distance and Shannon Entropy
-  as defaults.
-  \item "\code{cluster.statistics.weight.barriers}" If \code{TRUE} (standard once cluster.statistics is active) it will calculate two different Mutual Information: 
-  one based on the clusters founds and one based on uniform subsampling (done using \code{cluster.statistics.nBreaks} or the number of cluster founds using 
-  SBR multiplied for 10). The second one will be inverted to find the discontinuities and the barriers will be weighted simply multiplying the two values 
-  found on the specific progress index data point.  
-  \item "\code{cluster.statistics.nBreaks}" Integer. This variable defines the number of splits for the analysis. If set to 0 it will use the breaks found in the SBR.
-  \item "\code{cluster.statistics.nUni}" Integer. This variable defines the number of splits for the uniform sampling. If not set the algorithm will use nsnaps/50 which 
-  could not be optimal for clogged data. Generally speaking, this value is useful for the MI - ratio weighting of the barriers.
-  \item "\code{plot.cluster.statistics}" Logical for plotting the statistics of the SBR basins using various colors for the methods along with 
-  the temporal annotation (points in a progress index / time plot). Time has been normalized between 0 and 1 as all the statistics.
-  \item "\code{cluster.statistics.entropy}" Logical. Calculate Shannon entropy.
-  \item "\code{cluster.statistics.stft}" Logical. Calculate short time fourier transform.
-  \item "\code{cluster.statistics.TE}" Logical. Calculate symmetric Transfer Entropy.
-  \item "\code{cluster.statistics.KL}" Logical. Calculate symmetric and non-symmetric Kullback-Leibler divergence.
-  \item "\code{cluster.statistics.wMI}" Logical. Use the number of breaks (\code{cluster.statistics.nBreaks}) to find the Mutual Information for 10 slided divisions.
-  This will result in 10*nBreaks values.
+    \item "\code{time.series}" File name. If specified, it substitutes the time series of the PROGIDX_<..> file with the one provided by the file.
+    \item "\code{only.kin}" Logical value indicating whether it should be performed only the analysis of the kinetic annotation, thus disregarding completely 
+    the dynamic trace.  
+    \item "\code{pol.degree}" Degree of the Savitzky-Golay filter in case it was chosen. Default to 2.
+    \item "\code{cl.stat}" If \code{TRUE} it will activate the cluster analysis with Mutual Information, Hellinger distance and Shannon Entropy
+    as defaults.
+    \item "\code{cl.stat.weight.barriers}" If \code{TRUE} (standard once cl.stat is active) it will calculate two different Mutual Information: 
+    one based on the clusters founds and one based on uniform subsampling (done using \code{cl.stat.nBreaks} or the number of cluster founds using 
+    SBR multiplied for 10). The second one will be inverted to find the discontinuities and the barriers will be weighted simply multiplying the two values 
+    found on the specific progress index data point.  
+    \item "\code{cl.stat.nBreaks}" Integer. This variable defines the number of splits for the analysis. If set to 0 it will use the breaks found in the SBR.
+    \item "\code{cl.stat.denat}" Logical. \code{TRUE} if should the kinetic annotation and the MI based on uniform suvdivision be rescaled for parabolic 
+    artifacts. The polynomial fit is by default 7 and 12.
+    \item "\code{cl.stat.MI_comb}" This value is the representative of how the various calculation in barrier weighting are combined. In particular the options 
+    are the following:
+    \itemize{
+      \item "\code{mean}" Mean between the MI based on the SBR and the MI based on uniform subdivisions
+      \item "\code{multip}" Multiplication between the MI based on the SBR and the MI based on uniform subdivisions
+      \item "\code{kin_ann}" Mean between the kinetic annotaton and the MI based on the SBR and the MI based on uniform subdivisions
+      \item "\code{kin}" Only kinetic annotation value on the barrier
+      \item "\code{ann}" Only the MI based on the SBR and the MI based on uniform subdivisions
+    }
+    \item "\code{cl.stat.nUni}" Integer. This variable defines the number of splits for the uniform sampling. If not set the algorithm will use 40 divisions which 
+    could not be optimal for clogged data. Generally speaking, this value is useful for the MI - ratio weighting of the barriers. It is also possible to insert a 
+    vector of integer and the resulting value is an average of these expanded results. We advice to use \code{c(5,10,15,20,25,30,40,50)} generally.
+    \item "\code{plot.cl.stat}" Logical for plotting the statistics of the SBR basins using various colors for the methods along with 
+    the temporal annotation (points in a progress index / time plot). Time has been normalized between 0 and 1 as all the statistics.
+    \item "\code{cl.stat.entropy}" Logical. Calculate Shannon entropy.
+    \item "\code{cl.stat.stft}" Logical. Calculate short time fourier transform.
+    \item "\code{cl.stat.TE}" Logical. Calculate symmetric Transfer Entropy.
+    \item "\code{cl.stat.KL}" Logical. Calculate symmetric and non-symmetric Kullback-Leibler divergence.
+    \item "\code{cl.stat.wMI}" Logical. Use the number of breaks (\code{cl.stat.nBreaks}) to find the Mutual Information for 10 slided divisions.
+    This will result in 10*nBreaks values.
 }}
 }
 \value{
 A list containing
       \itemize{
-        \item "\code{tab.st}" Data frame containing the boundaries of each state, their lengths and the type of the right boundary. If the cluster.statistics option
+        \item "\code{tab.st}" Data frame containing the boundaries of each state, their lengths and the type of the right boundary. If the cl.stat option
         is active this will have other columns with the barrier statistics (e.g. Hellinger distance).
         Type=1 means that it is a matched partition, type=2 is only dynamic, type=3 is only kinetic. The type of the last state is always equal to 1.
         \item "\code{nbins}" 2-D vector containing number of bins on x-axis and y-axis.
         \item "\code{seq.st}" The time-ordered discretized trajectory.
-        \item "\code{statistics}" If \code{cluster.statistics} is \code{TRUE} this element will contain all the cluster statistics (unbound to the found barriers). 
+        \item "\code{statistics}" If \code{cl.stat} is \code{TRUE} this element will contain all the cluster statistics (unbound to the found barriers). 
         Otherwise it is \code{NULL}. If no barrier has been found this value defaults to \code{FALSE}.
         \item "\code{call}" The matched call. 
       }
@@ -77,9 +91,14 @@ A list containing
 \description{
 \code{basins_recognition} uses the information provided by the SAPPHIRE plot in order to identify free energy basins, 
     thus leading to a discretized trajectory. In particular, it inspects both the kinetic annotation and times of occurence
-    (called dynamic annotation hereafter) of the progress index and, at the end, it matches (or merges) the resulting state barriers coming from each of the single analysis.  
-    The analysis of the dynamical trace is driven by an underlying 2-D histogram whose number of bins has to be given either manually or automatically (this option is available only for number of bins on the y-axis). These values has to be chosen appropriately because they provide the minimum size that a state should have in order to be identified.
-    Regarding the kinetic annotation, the identification of the states is equivalent to discerning its main peaks. This task is performed by means of a smoothing filter, either moving average or Savitzky Golay, and a naive algorithm to find the local maxima. The window size of the filter and of the peak search algorithm is equal to the number of snapshots divided by \code{nx}.
+    (called dynamic annotation hereafter) of the progress index and, at the end, it matches (or merges) the resulting state barriers 
+    coming from each of the single analysis.  
+    The analysis of the dynamical trace is driven by an underlying 2-D histogram whose number of bins has to be given either manually 
+    or automatically (this option is available only for number of bins on the y-axis). These values has to be chosen appropriately because 
+    they provide the minimum size that a state should have in order to be identified.
+    Regarding the kinetic annotation, the identification of the states is equivalent to discerning its main peaks. This task is performed 
+    by means of a smoothing filter, either moving average or Savitzky Golay, and a naive algorithm to find the local maxima. The window size 
+    of the filter and of the peak search algorithm is equal to the number of snapshots divided by \code{nx}.
     Eventually, the user can decide on either selecting only the partitions in common to both the annotation (matching) or retaining them all (merging).
 }
 \details{

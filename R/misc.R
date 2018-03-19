@@ -134,5 +134,20 @@
   if(is.null(xmin)) xmin <- min(x)
   if(xmin == xmax) return(x/xmax)
   else return((x*1.0 - xmin)/(xmax - xmin))
+}
+
+# fitting a quadratic model
+.denaturate <- function(yyy, xxx, polydeg = 7, plotit = FALSE){
+  # yyy <- kin.pl
+  # xxx <- seq(lpi)
+  q.mod <- lm(yyy ~ poly(xxx, polydeg, raw=TRUE))
+  new_yyy <- .normalize(yyy - predict(q.mod))
+  if(plotit){
+    plot(xxx, yyy, type = 'l', ylim = c(0,1))
+    abline(lm(yyy ~ xxx), col = 'darkblue') # linear
+    lines(xxx, predict(q.mod), col = "darkgreen", lwd = 2)
+    lines(xxx, new_yyy, col = "red", lwd = 3)
   }
+  return(new_yyy)
+}
 
