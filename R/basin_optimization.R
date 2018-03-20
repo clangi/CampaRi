@@ -85,9 +85,9 @@ basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fi
     st <- the_sap
   
   # checking the number of bins inserted
-  if(is.null(nbins_x_max)) nbins_x_max <- round(sqrt(nrow(st)*10))
+  if(is.null(nbins_x_max)) nbins_x_max <- round(sqrt(nrow(st)*10)/2)
   if(is.null(nbins_x_min)) nbins_x_min <- 7
-  if(is.null(nbins_y)) nbins_y <- round(sqrt(nrow(st)*10))
+  if(is.null(nbins_y)) nbins_y <- round(sqrt(nrow(st)*10)/2)
   if(nbins_x_max != nbins_y) {
     if(!silent) cat('For simplicity we do not allow yet to use different number of nx and ny (bins for x and y).')
     nbins_x_max <- nbins_y <- max(nbins_x_max, nbins_y)

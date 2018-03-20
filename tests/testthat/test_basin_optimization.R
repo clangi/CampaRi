@@ -69,22 +69,28 @@ test_that('optimize sapphire plot clusters using SBR', {
   
   # fpi_empty
   expect_error(optimal_bas <- CampaRi::basin_optimization(the_sap = fpi_empty,  how_fine_search = 10, basin_optimization_method = "MI_barrier_weighting", 
-                                                          force_matching = T, number_of_clusters = 4, denat_opt = 'process_subtraction',
+                                                          force_matching = T, number_of_clusters = 3, denat_opt = 'process_subtraction',
                                                           plot_basin_identification = plt_stff, silent = silent), NA)
   
   
   if(do_it){
+    ncl <- NULL
+    ncl <- 4
+    
     # fpi_best  
-    optimal_bas <- CampaRi::basin_optimization(the_sap = fpi_best,  how_fine_search = 10, basin_optimization_method = "MI_barrier_weighting", 
-                                               force_matching = F, number_of_clusters = 4, denat_opt = 'process_subtraction',
+    optimal_bas <- CampaRi::basin_optimization(the_sap = fpi_best,  how_fine_search = 10, nbins_x_min = 50, nbins_x_max = 200,
+                                               basin_optimization_method = "MI_barrier_weighting", 
+                                               force_matching = T, number_of_clusters = ncl, denat_opt = 'process_subtraction',
                                                plot_basin_identification = plt_stff, silent = silent)
     # fpi_ave  
     optimal_bas <- CampaRi::basin_optimization(the_sap = fpi_ave,  how_fine_search = 10, basin_optimization_method = "MI_barrier_weighting", 
-                                               force_matching = T, 
+                                               force_matching = T, number_of_clusters = ncl, nbins_x_min = 7, nbins_x_max = 200,
+                                               denat_opt = 'process_subtraction',
                                                plot_basin_identification = plt_stff, silent = silent)
     # fpi_worst  
-    optimal_bas <- CampaRi::basin_optimization(the_sap = fpi_worst,  how_fine_search = 10, basin_optimization_method = "MI_barrier_weighting", 
-                                               force_matching = T, 
+    optimal_bas <- CampaRi::basin_optimization(the_sap = fpi_worst,  how_fine_search = 20, basin_optimization_method = "MI_barrier_weighting", 
+                                               force_matching = T, number_of_clusters = ncl, nbins_x_min = 7, nbins_x_max = 200,
+                                               denat_opt = 'process_subtraction',
                                                plot_basin_identification = plt_stff, silent = silent)
   }
   
