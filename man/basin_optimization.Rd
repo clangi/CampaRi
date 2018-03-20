@@ -5,8 +5,9 @@
 \title{Basin optimization of the SBR}
 \usage{
 basin_optimization(the_sap, basin_optimization_method = NULL,
-  how_fine_search = 100, plot_basin_identification = FALSE,
-  nbins_x = NULL, nbins_y = nbins_x, number_of_clusters = NULL,
+  how_fine_search = 100, denat_opt = NULL,
+  plot_basin_identification = FALSE, nbins_x_min = NULL,
+  nbins_x_max = NULL, nbins_y = nbins_x_max, number_of_clusters = NULL,
   force_matching = FALSE, silent = FALSE)
 }
 \arguments{
@@ -20,17 +21,22 @@ with the following subgroups.
    \item "\code{MI_barrier_weighting}" not available yet (the description)
 }}
 
-\item{how_fine_search}{This variable define the length of the vector of bins in which is splitted the 7-nbins_x interval. As the algorithm undergo binary 
+\item{how_fine_search}{This variable define the length of the vector of bins in which is splitted the nbins_x_min-nbins_x_max interval. As the algorithm undergo binary 
 search this is a fundamental variable to define the sensitivity of the search.}
+
+\item{denat_opt}{This value can be set to \code{"process_subtraction"} or \code{"poly_interpolation"} and it is defining the removal of 
+parabolic artifacts in the kinetic trace. Check \code{\link{basins_recognition}} for details.}
 
 \item{plot_basin_identification}{A logical value indicating whether to display the SAPPHIRE plot with the resulting partitions or not. 
 Black partitions are the matched ones, blue ones derive only from the dynamic analysis and orange ones only from the kinetic analysis. 
 The green curve is the kinetic annotation (black curve) where the parabolic shape has been subtracted, i.e. the actual curve used for 
 the peaks identification. Default value is \code{FALSE}.}
 
-\item{nbins_x}{Number of bins on  x-axis of the 2-D histogram. Default to sqrt(nrow(the_sap)).}
+\item{nbins_x_min}{Min number of bins on  x-axis of the 2-D histogram. Default to 7. It is the lower end of the search space.}
 
-\item{nbins_y}{Number of bins on the y-axis of the 2-D histogram. Default to sqrt(nrow(the_sap)).}
+\item{nbins_x_max}{Max number of bins on  x-axis of the 2-D histogram. Default to sqrt(nrow(the_sap)). It is the upper end of the search space.}
+
+\item{nbins_y}{Number of bins on the y-axis of the 2-D histogram. Default to nbins_x_max. This option is at the moment ininfluential.}
 
 \item{number_of_clusters}{if basin_optimization_method is active accordingly this must be set to integer.}
 

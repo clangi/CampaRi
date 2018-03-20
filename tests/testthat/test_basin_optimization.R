@@ -3,7 +3,7 @@ context('basin_optimization')
 test_that('optimize sapphire plot clusters using SBR', {
   
   # CREATION OF THE DATASET
-  silent <- T
+  silent <- F
   plt_stff <- !silent
   if(!silent) {require(testthat); require(CampaRi)} 
   # data generation is now already made and put in the package
@@ -52,6 +52,49 @@ test_that('optimize sapphire plot clusters using SBR', {
   expect_error(optimal_bas <- CampaRi::basin_optimization(the_sap = file.pi,  how_fine_search = 10, basin_optimization_method = "MI_barrier_weighting",
                                                           number_of_clusters = 3, force_matching = T, 
                                                           plot_basin_identification = plt_stff, silent = silent), NA)
+  
+  # ------------------------------------------------------- neuro tests
+  # the following tests have been executed only 
+  # extensive testing on real cases. It needs not to be
+  # executed at all
+  do_it <- FALSE
+  if(do_it){
+    fpi_empty <- data.table::fread('/disk2a/dgarolini/neuro/simulated_data/analysis/ISI_networks_end17/PROGIDX_000000000100.dat', data.table = F)
+    fpi_best  <- data.table::fread('/disk2a/dgarolini/neuro/simulated_data/analysis/ISI_networks_end17/PROGIDX_000000000102.dat', data.table = F)
+    fpi_ave   <- data.table::fread('/disk2a/dgarolini/neuro/simulated_data/analysis/ISI_networks_end17/PROGIDX_000000001102.dat', data.table = F)
+    fpi_worst <- data.table::fread('/disk2a/dgarolini/neuro/simulated_data/analysis/ISI_networks_end17/PROGIDX_000000001281.dat', data.table = F)
+  }else{
+    fpi_empty <- fpi_best <- fpi_ave <- fpi_worst <- file.pi
+  }
+  
+  # fpi_empty
+  expect_error(optimal_bas <- CampaRi::basin_optimization(the_sap = fpi_empty,  how_fine_search = 10, basin_optimization_method = "MI_barrier_weighting", 
+                                                          force_matching = T, number_of_clusters = 4, denat_opt = 'process_subtraction',
+                                                          plot_basin_identification = plt_stff, silent = silent), NA)
+  
+  
+  if(do_it){
+    # fpi_best  
+    optimal_bas <- CampaRi::basin_optimization(the_sap = fpi_best,  how_fine_search = 10, basin_optimization_method = "MI_barrier_weighting", 
+                                               force_matching = F, number_of_clusters = 4, denat_opt = 'process_subtraction',
+                                               plot_basin_identification = plt_stff, silent = silent)
+    # fpi_ave  
+    optimal_bas <- CampaRi::basin_optimization(the_sap = fpi_ave,  how_fine_search = 10, basin_optimization_method = "MI_barrier_weighting", 
+                                               force_matching = T, 
+                                               plot_basin_identification = plt_stff, silent = silent)
+    # fpi_worst  
+    optimal_bas <- CampaRi::basin_optimization(the_sap = fpi_worst,  how_fine_search = 10, basin_optimization_method = "MI_barrier_weighting", 
+                                               force_matching = T, 
+                                               plot_basin_identification = plt_stff, silent = silent)
+  }
+  
+  
+  
+  
+  
+  
+  
+  
   
   # if(file.exists('MST_DUMPLING.nc')) file.remove('MST_DUMPLING.nc')
   # if(file.exists('REPIX_000000000021.dat')) file.remove('REPIX_000000000021.dat')

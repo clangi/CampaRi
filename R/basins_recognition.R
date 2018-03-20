@@ -43,8 +43,9 @@
 #'          SBR multiplied for 10). The second one will be inverted to find the discontinuities and the barriers will be weighted simply multiplying the two values 
 #'          found on the specific progress index data point.  
 #'          \item "\code{cl.stat.nBreaks}" Integer. This variable defines the number of splits for the analysis. If set to 0 it will use the breaks found in the SBR.
-#'          \item "\code{cl.stat.denat}" Logical. \code{TRUE} if should the kinetic annotation and the MI based on uniform suvdivision be rescaled for parabolic 
-#'          artifacts. The polynomial fit is by default 7 and 12.
+#'          \item "\code{cl.stat.denat}" This value can be set to \code{"process_subtraction"} or \code{"poly_interpolation"} and it is defining the removal of 
+#'          parabolic artifacts in the kinetic trace. The polynomial fit is by default 7 and 12 in degree for the kinetic annotation and uniform MI curves. The process 
+#'          option istead is referring to 
 #'          \item "\code{cl.stat.MI_comb}" This value is the representative of how the various calculation in barrier weighting are combined. In particular the options 
 #'          are the following:
 #'          \itemize{
@@ -150,7 +151,11 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
   cl.stat.stft <- FALSE     # it is plotting too much
   cl.stat.weight.barriers <- FALSE
   cl.stat.MI_comb <- 'kin_ann'
-  cl.stat.denat <- FALSE
+  cl.stat.denat <- NULL
+  cl.stat.nUni <- NULL
+  cl.stat.entropy <- FALSE
+  plot.cl.stat <- FALSE
+  cl.stat.nBreaks <- 0
   
   if("cl.stat" %in% names(input.args)) { # dgarol
     cl.stat <- input.args$cl.stat
@@ -162,28 +167,40 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
   if("cl.stat.nBreaks" %in% names(input.args)) { # dgarol
     cl.stat.nBreaks <- input.args$cl.stat.nBreaks
     stopifnot(.isSingleInteger(cl.stat.nBreaks))
-    if(!cl.stat && cl.stat.nBreaks) cl.stat <- TRUE
-  } else cl.stat.nBreaks <- 0
+    if(!cl.stat) cl.stat <- TRUE
+  } 
   
   # checking the uniform sampling nsplits
   if("cl.stat.denat" %in% names(input.args)) { # dgarol
     cl.stat.denat <- input.args$cl.stat.denat
-    stopifnot(is.logical(cl.stat.denat))
-    if(!cl.stat && cl.stat.denat) cl.stat <- TRUE
+    denat_opt.ava <- c("process_subtraction", "poly_interpolation")
+    stopifnot(is.character(cl.stat.denat))
+    if(!(cl.stat.denat[1] %in% denat_opt.ava)) 
+      stop("cl.stat.denat method option not valid.")
+    if(!cl.stat) {
+      cl.stat <- TRUE
+      cl.stat.weight.barriers <- TRUE
+    }
   }
   
   if("cl.stat.MI_comb" %in% names(input.args)) { # dgarol
     cl.stat.MI_comb <- input.args$cl.stat.MI_comb
     stopifnot(!is.character(cl.stat.MI_comb))
     stopifnot(!(cl.stat.MI_comb %in% c('ann', 'kin', 'mean', 'kin_ann', 'multip')))
-    if(!cl.stat && cl.stat.MI_comb) cl.stat <- TRUE
+    if(!cl.stat) {
+      cl.stat <- TRUE
+      cl.stat.weight.barriers <- TRUE
+    }
   } 
   
   if("cl.stat.nUni" %in% names(input.args)) { # dgarol
     cl.stat.nUni <- input.args$cl.stat.nUni
     stopifnot(all(sapply(cl.stat.nUni, function(x) x%%1) == 0))
-    if(!cl.stat && cl.stat.nUni) cl.stat <- TRUE
-  } else cl.stat.nUni <- NULL
+    if(!cl.stat) {
+      cl.stat <- TRUE
+      cl.stat.weight.barriers <- TRUE
+    }
+  } 
   
   # Checking the weight of the barriers
   if("cl.stat.weight.barriers" %in% names(input.args)) { # dgarol
@@ -218,14 +235,14 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
     cl.stat.entropy <- input.args$cl.stat.entropy
     stopifnot(is.logical(cl.stat.entropy))
     if(!cl.stat && cl.stat.entropy) cl.stat <- TRUE
-  } else cl.stat.entropy <- FALSE
+  } 
   
   # Plotting
   if("plot.cl.stat" %in% names(input.args)) { # dgarol
     plot.cl.stat <- input.args$plot.cl.stat
     stopifnot(is.logical(plot.cl.stat))
     if(!cl.stat && plot.cl.stat) cl.stat <- TRUE
-  } else plot.cl.stat <- FALSE
+  }
   
   # other checks
   avg.opt.arg <- c("movav", "SG")
@@ -1057,10 +1074,13 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
         kin.pl <- .normalize(-log(cutf / cstored)) # xr1 impose a selection of 99% of the snapshots to avoid the initial inf
         
         # normalizing the results to avoid parabolic effects (it depends on the grade of the poly!)
-        if(denat){
+        if(!is.null(denat) && denat == 'poly_interpolation'){
           kinpl <- .denaturate(yyy = kin.pl, xxx = seq(lpi), polydeg = 7, plotit = F)
           miuni <- .denaturate(yyy = expand_MI_uni, xxx = seq(lpi), polydeg = 12, plotit = F)
           # MI_ratio <- (kin.pl[breaks] + miuni[breaks]) / 2
+        }else if(!is.null(denat) && denat == 'process_subtraction'){
+          kinpl <- .normalize(kin)
+          miuni <- .denaturate(yyy = expand_MI_uni, xxx = seq(lpi), polydeg = 12, plotit = F)
         }else{
           kinpl <- kin.pl
           miuni <- expand_MI_uni
@@ -1292,7 +1312,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
     points(progind$PI[lst], max(progind$Time[lst])+progind$Time[lst]*(sc-1), cex=0.005, col="tomato1")
     lines(xr1, scale(kin.pl), lwd=1, col="black")
     lines(xr1, scale(kin[xr1]), lwd=0.8, col="forestgreen") #the one without the parabol
-    if(cl.stat.denat) { # my simple fit (dgarol)
+    if(!is.null(denat) && denat == 'poly_interpolation') { # my simple fit (dgarol)
       den_kin <- .denaturate(-log(cutf / cstored), seq(cstored), polydeg = 7, plotit = FALSE)
       lines(xr1, scale(den_kin[xr1]), lwd = 0.8, col = 'darkblue')
     }
@@ -1307,8 +1327,11 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
     } else abline(v=breaks, lwd=0.7, col="black")
     if(cl.stat.weight.barriers){
       # select_non_border <- -c(1, .lt(breaks))
-      select_non_border <- seq(.lt(breaks))
+      if(!silent) cat('Keeping only the barriers which are reasonably far from borders.\n')
+      select_non_border <- breaks > lpi/n_unif[.lt(n_unif)] & breaks < lpi - lpi/n_unif[.lt(n_unif)]
+      if(!silent) cat('Discarded the following barrier indexes (from left):', seq(1, .lt(breaks))[!select_non_border], '\n')
       points(breaks[select_non_border], MI_ratio[select_non_border]*max(yr), pch ='+', col = 'red', cex = 5)
+      abline(h=mean(MI_ratio)*max(yr), lwd=1.1, col= 'grey')
     }
     par(save_par)
   }

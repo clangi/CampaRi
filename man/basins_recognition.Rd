@@ -51,8 +51,9 @@ where the parabolic shape has been subtracted, i.e. the actual curve used for th
     SBR multiplied for 10). The second one will be inverted to find the discontinuities and the barriers will be weighted simply multiplying the two values 
     found on the specific progress index data point.  
     \item "\code{cl.stat.nBreaks}" Integer. This variable defines the number of splits for the analysis. If set to 0 it will use the breaks found in the SBR.
-    \item "\code{cl.stat.denat}" Logical. \code{TRUE} if should the kinetic annotation and the MI based on uniform suvdivision be rescaled for parabolic 
-    artifacts. The polynomial fit is by default 7 and 12.
+    \item "\code{cl.stat.denat}" This value can be set to \code{"process_subtraction"} or \code{"poly_interpolation"} and it is defining the removal of 
+    parabolic artifacts in the kinetic trace. The polynomial fit is by default 7 and 12 in degree for the kinetic annotation and uniform MI curves. The process 
+    option istead is referring to 
     \item "\code{cl.stat.MI_comb}" This value is the representative of how the various calculation in barrier weighting are combined. In particular the options 
     are the following:
     \itemize{

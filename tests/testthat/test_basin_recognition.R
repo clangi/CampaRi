@@ -62,7 +62,7 @@ test_that('Test for basin recognition with ext files', {
                                          cl.stat.KL = T,
                                          cl.stat.TE = T,
                                          cl.stat.wMI = T,
-                                         cl.stat.entropy = T, #cl.stat.denat = T,
+                                         cl.stat.entropy = T, cl.stat.denat = 'process_subtraction',
                                          plot.cl.stat = T), NA)
   expect_error(bas <- basins_recognition(data = file.pi, nx = 7, match = F, plot = plt_stff, out.file = F, plot.cl.stat = plt_stff,
                                          new.dev = F, cl.stat.weight.barriers = T), NA)
@@ -75,8 +75,8 @@ test_that('Test for basin recognition with ext files', {
   do_it <- FALSE
   if(do_it){
     fpi_empty <- data.table::fread('/disk2a/dgarolini/neuro/simulated_data/analysis/ISI_networks_end17/PROGIDX_000000000100.dat', data.table = F)
-    fpi_best <- data.table::fread('/disk2a/dgarolini/neuro/simulated_data/analysis/ISI_networks_end17/PROGIDX_000000000102.dat', data.table = F)
-    fpi_ave <- data.table::fread('/disk2a/dgarolini/neuro/simulated_data/analysis/ISI_networks_end17/PROGIDX_000000001102.dat', data.table = F)
+    fpi_best  <- data.table::fread('/disk2a/dgarolini/neuro/simulated_data/analysis/ISI_networks_end17/PROGIDX_000000000102.dat', data.table = F)
+    fpi_ave   <- data.table::fread('/disk2a/dgarolini/neuro/simulated_data/analysis/ISI_networks_end17/PROGIDX_000000001102.dat', data.table = F)
     fpi_worst <- data.table::fread('/disk2a/dgarolini/neuro/simulated_data/analysis/ISI_networks_end17/PROGIDX_000000001281.dat', data.table = F)
   }else{
     fpi_empty <- fpi_best <- fpi_ave <- fpi_worst <- file.pi
@@ -84,21 +84,24 @@ test_that('Test for basin recognition with ext files', {
   
   # fpi_empty  
   expect_error(bas <- basins_recognition(data = fpi_empty, nx = 150, match = F, plot = T, out.file = F, new.dev = F, 
-                                         cl.stat = T, cl.stat.denat = T, dbg = F,
+                                         cl.stat = T, cl.stat.denat = 'poly_interpolation', dbg = F,
                                          plot.cl.stat = T,
                                          cl.stat.nUni = c(5,10,15,20,25,30,40,50,60)), NA)
   if(do_it){
     # fpi_best  
     bas <- basins_recognition(data = fpi_best, nx = 150, match = T, plot = T, out.file = F, new.dev = F, 
-                              cl.stat = T, cl.stat.denat = T, cl.stat.nUni = 20,
+                              cl.stat = T, cl.stat.denat = 'process_subtraction', cl.stat.nUni = 20,
                               plot.cl.stat = T)
     # fpi_ave  
     bas <- basins_recognition(data = fpi_ave, nx = 150, match = T, plot = T, out.file = F, new.dev = F, 
-                              cl.stat = T, cl.stat.denat = T, cl.stat.nUni = 20,
+                              cl.stat = T, cl.stat.denat = 'process_subtraction', cl.stat.nUni = 20,
                               plot.cl.stat = T)
     # fpi_worst  
     bas <- basins_recognition(data = fpi_worst, nx = 150, match = T, plot = T, out.file = F, new.dev = F, 
-                              cl.stat = T, cl.stat.denat = T, cl.stat.nUni = c(5,10,15,20,25,30,40,50,60),
+                              cl.stat = T, cl.stat.denat = 'process_subtraction', cl.stat.nUni = c(5,10,15,20,25,30,40,50,60),
+                              plot.cl.stat = T)
+    bas <- basins_recognition(data = fpi_worst, nx = 150, match = T, plot = T, out.file = F, new.dev = F, 
+                              cl.stat = T, cl.stat.denat = 'poly_interpolation', cl.stat.nUni = c(5,10,15,20,25,30,40,50,60),
                               plot.cl.stat = T)
   }
   
