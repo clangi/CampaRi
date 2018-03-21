@@ -85,18 +85,18 @@ test_that('Test for basin recognition with ext files', {
   # fpi_empty  
   expect_error(bas <- basins_recognition(data = fpi_empty, nx = 150, match = F, plot = T, out.file = F, new.dev = F, 
                                          cl.stat = T, cl.stat.denat = 'poly_interpolation', dbg = F,
-                                         plot.cl.stat = T,
+                                         plot.cl.stat = T, cl.stat.MI_comb = 'MI',
                                          cl.stat.nUni = c(5,10,15,20,25,30,40,50,60)), NA)
   if(do_it){
     # fpi_best  
     bas <- basins_recognition(data = fpi_best, nx = 150, match = T, plot = T, out.file = F, new.dev = F, 
                               cl.stat = T, cl.stat.denat = 'process_subtraction', cl.stat.nUni = 20,
                               plot.cl.stat = T)
-    bout1 <- CampaRi::basins_recognition(fpi_best, nx = 67, plot = T, match = force_matching, out.file = F, new.dev = F, silent = F,
-                                         cl.stat.weight.barriers = T, cl.stat.denat = T, plot.cl.stat = T,
-                                         cl.stat.nUni = c(5,10,15,20,25,30,40,50,60), dbg =T) #hard wired
-    bout2 <- CampaRi::basins_recognition(fpi_best, nx = 133, plot = T, match = force_matching, out.file = F, new.dev = F, silent = F,
-                                         cl.stat.weight.barriers = T, cl.stat.denat = T, plot.cl.stat = T,
+    bout1 <- CampaRi::basins_recognition(fpi_best, nx = 67, plot = T, match = T, out.file = F, new.dev = F, silent = F,
+                                         cl.stat.weight.barriers = T, cl.stat.denat = T, plot.cl.stat = T, # true is like process_subtraction
+                                         cl.stat.nUni = c(5,10,15,20,25,30,40,50,60), dbg = F, cl.stat.MI_comb = 'MI') #hard wired
+    bout2 <- CampaRi::basins_recognition(fpi_best, nx = 133, plot = T, match = T, out.file = F, new.dev = F, silent = F,
+                                         cl.stat.weight.barriers = T, cl.stat.denat = T, plot.cl.stat = T, cl.stat.MI_comb = 'MI',
                                          cl.stat.nUni = c(5,10,15,20,25,30,40,50,60)) #hard wired
     # fpi_ave  
     bas <- basins_recognition(data = fpi_ave, nx = 150, match = T, plot = T, out.file = F, new.dev = F, 

@@ -8,7 +8,7 @@ basin_optimization(the_sap, basin_optimization_method = NULL,
   how_fine_search = 100, denat_opt = NULL,
   plot_basin_identification = FALSE, nbins_x_min = NULL,
   nbins_x_max = NULL, nbins_y = nbins_x_max, number_of_clusters = NULL,
-  force_matching = FALSE, silent = FALSE)
+  force_matching = FALSE, silent = FALSE, ...)
 }
 \arguments{
 \item{the_sap}{Name of the PROGIDX_<...>.dat or REPIX_<...>.dat file or Data frame with three columns containing, in order, the (sorted) progress index,
@@ -43,6 +43,8 @@ the peaks identification. Default value is \code{FALSE}.}
 \item{force_matching}{Please refer to \code{\link{basins_recognition}} for further details about the match option.}
 
 \item{silent}{A logical value indicating whether the function has to remain silent or not. Default value is \code{FALSE}.}
+
+\item{...}{vars for \code{\link{basins_recognition}}}
 }
 \value{
 A list containing

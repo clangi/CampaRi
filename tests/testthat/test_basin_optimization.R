@@ -75,22 +75,41 @@ test_that('optimize sapphire plot clusters using SBR', {
   
   if(do_it){
     ncl <- NULL
-    ncl <- 4
+    # ncl <- 4
+    
+    # fpi_best - explicative  
+    optimal_bas <- CampaRi::basin_optimization(the_sap = fpi_best,                                   # PI data
+                                               how_fine_search = 20,                                 # number of bins searched between nbins_x_min and nbins_x_max
+                                               nbins_x_min = 7,                                      # minimum number of bins (range)
+                                               nbins_x_max = 200,                                    # maximum number of bins (range)
+                                               basin_optimization_method = "MI_barrier_weighting",   # ranking method
+                                               cl.stat.MI_comb = 'kin_MI',                           # Final score combination 
+                                               cl.stat.nUni = c(5,10,15,20,25,30,40,50,60),          # MI curve splits 
+                                               force_matching = T,                                   # match kin and tempann for the barriers
+                                               number_of_clusters = ncl,                             # number of cluster approach. NULL in this case it must be
+                                               denat_opt = 'process_subtraction',                    # kin ann is corrected for parabolic artefacts
+                                               cl.stat.denat.MI = 7,                                 # if a number also the MI curve is corrected
+                                               plot_basin_identification = plt_stff,                 # final plot?
+                                               silent = silent)                                      # silent?
     
     # fpi_best  
-    optimal_bas <- CampaRi::basin_optimization(the_sap = fpi_best,  how_fine_search = 10, nbins_x_min = 50, nbins_x_max = 200,
-                                               basin_optimization_method = "MI_barrier_weighting", 
-                                               force_matching = T, number_of_clusters = ncl, denat_opt = 'process_subtraction',
+    optimal_bas <- CampaRi::basin_optimization(the_sap = fpi_best,  how_fine_search = 20, nbins_x_min = 50, nbins_x_max = 200,
+                                               basin_optimization_method = "MI_barrier_weighting",  cl.stat.MI_comb = 'kin_MI',
+                                               cl.stat.nUni = c(5,10,15,20,25),
+                                               force_matching = T, number_of_clusters = ncl, denat_opt = 'process_subtraction', 
+                                               cl.stat.denat.MI = 7, # it is dampening the score of the borders (parabolic artefacts)
                                                plot_basin_identification = plt_stff, silent = silent)
     # fpi_ave  
-    optimal_bas <- CampaRi::basin_optimization(the_sap = fpi_ave,  how_fine_search = 20, basin_optimization_method = "MI_barrier_weighting", 
-                                               force_matching = F, number_of_clusters = ncl, nbins_x_min = 7, nbins_x_max = 200,
-                                               denat_opt = 'process_subtraction',
+    optimal_bas <- CampaRi::basin_optimization(the_sap = fpi_ave,  how_fine_search = 40, basin_optimization_method = "MI_barrier_weighting", 
+                                               force_matching = T, number_of_clusters = ncl, nbins_x_min = 7, nbins_x_max = 200,
+                                               denat_opt = 'process_subtraction', cl.stat.MI_comb = 'kin_MI',
+                                               cl.stat.nUni = c(5,10,15,20,25,30,40,50,60), cl.stat.denat.MI = 7,
                                                plot_basin_identification = plt_stff, silent = silent)
     # fpi_worst  
     optimal_bas <- CampaRi::basin_optimization(the_sap = fpi_worst,  how_fine_search = 20, basin_optimization_method = "MI_barrier_weighting", 
                                                force_matching = T, number_of_clusters = ncl, nbins_x_min = 7, nbins_x_max = 200,
-                                               denat_opt = 'process_subtraction',
+                                               denat_opt = 'process_subtraction', cl.stat.MI_comb = 'kin_MI',
+                                               cl.stat.nUni = c(5,10,15,20,25,30,40,50,60), cl.stat.denat.MI = 12,
                                                plot_basin_identification = plt_stff, silent = silent)
   }
   

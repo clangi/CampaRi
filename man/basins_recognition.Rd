@@ -60,9 +60,9 @@ where the parabolic shape has been subtracted, i.e. the actual curve used for th
     \itemize{
       \item "\code{mean}" Mean between the MI based on the SBR and the MI based on uniform subdivisions
       \item "\code{multip}" Multiplication between the MI based on the SBR and the MI based on uniform subdivisions
-      \item "\code{kin_ann}" Mean between the kinetic annotaton and the MI based on the SBR and the MI based on uniform subdivisions
+      \item "\code{kin_MI}" Mean between the kinetic annotaton and the MI based on the SBR and the MI based on uniform subdivisions
       \item "\code{kin}" Only kinetic annotation value on the barrier
-      \item "\code{ann}" Only the MI based on the SBR and the MI based on uniform subdivisions
+      \item "\code{MI}" Only the MI based on the SBR and the MI based on uniform subdivisions
     }
     \item "\code{cl.stat.nUni}" Integer. This variable defines the number of splits for the uniform sampling. If not set the algorithm will use 40 divisions which 
     could not be optimal for clogged data. Generally speaking, this value is useful for the MI - ratio weighting of the barriers. It is also possible to insert a 

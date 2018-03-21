@@ -52,9 +52,9 @@
 #'          \itemize{
 #'            \item "\code{mean}" Mean between the MI based on the SBR and the MI based on uniform subdivisions
 #'            \item "\code{multip}" Multiplication between the MI based on the SBR and the MI based on uniform subdivisions
-#'            \item "\code{kin_ann}" Mean between the kinetic annotaton and the MI based on the SBR and the MI based on uniform subdivisions
+#'            \item "\code{kin_MI}" Mean between the kinetic annotaton and the MI based on the SBR and the MI based on uniform subdivisions
 #'            \item "\code{kin}" Only kinetic annotation value on the barrier
-#'            \item "\code{ann}" Only the MI based on the SBR and the MI based on uniform subdivisions
+#'            \item "\code{MI}" Only the MI based on the SBR and the MI based on uniform subdivisions
 #'          }
 #'          \item "\code{cl.stat.nUni}" Integer. This variable defines the number of splits for the uniform sampling. If not set the algorithm will use 40 divisions which 
 #'          could not be optimal for clogged data. Generally speaking, this value is useful for the MI - ratio weighting of the barriers. It is also possible to insert a 
@@ -130,7 +130,8 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
   avail.extra.arg <- c("pol.degree", "only.kin", "time.series",
                        "cl.stat", "plot.cl.stat", 'cl.stat.entropy', 'cl.stat.weight.barriers',
                        'cl.stat.stft', 'cl.stat.TE', 'cl.stat.KL', 'cl.stat.wMI',
-                       'cl.stat.nUni', 'cl.stat.nBreaks', 'cl.stat.MI_comb', 'cl.stat.denat', 'cl.stat.denat.MI', 'dbg')
+                       'cl.stat.nUni', 'cl.stat.nBreaks', 'cl.stat.MI_comb', 'cl.stat.denat', 'cl.stat.denat.MI', 
+                       'dbg_basins_recognition')
   
   if(!is.null(names(input.args)) && any(!(names(input.args) %in% avail.extra.arg))) 
     warning('There is a probable mispelling in one of the inserted variables. Please check the available extra input arguments.')
@@ -139,11 +140,11 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
     if(only.kin) match <- TRUE
   } else only.kin <- FALSE
   
-  # dbg for stats - dgarol
-  if("dbg" %in% names(input.args)) { # dgarol
-    dbg <- input.args$dbg
-    stopifnot(is.logical(dbg))
-  } else dbg <- FALSE
+  # dbg_basins_recognition for stats - dgarol
+  if("dbg_basins_recognition" %in% names(input.args)) { # dgarol
+    dbg_basins_recognition <- input.args$dbg_basins_recognition
+    stopifnot(is.logical(dbg_basins_recognition))
+  } else dbg_basins_recognition <- FALSE
   
   # cluster statistics check - dgarol
   
@@ -180,12 +181,12 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
   } else cl.stat.denat <- NULL
   if("cl.stat.denat.MI" %in% names(input.args)) { # dgarol
     cl.stat.denat.MI <- input.args$cl.stat.denat.MI
-    denat_opt.ava <- c("process_subtraction", "poly_interpolation")
     if(!is.null(cl.stat.denat.MI)){
+      if(is.logical(cl.stat.denat.MI) && cl.stat.denat.MI){
+        cl.stat.denat.MI <- 7
+      }else if(is.logical(cl.stat.denat.MI) && !cl.stat.denat.MI) cl.stat.denat.MI <- NULL 
       stopifnot(.isSingleInteger(cl.stat.denat.MI))
       if(cl.stat.denat.MI < 1 || cl.stat.denat.MI > 50) stop('cl.stat.denat.MI must be between 1 and 50.')
-      if(!(cl.stat.denat.MI[1] %in% denat_opt.ava)) 
-        stop("cl.stat.denat method option not valid.")
       if(!cl.stat) cl.stat <- TRUE
       if(!cl.stat.weight.barriers) cl.stat.weight.barriers <- TRUE
       if(is.null(cl.stat.denat)) cl.stat.denat <- 'poly_interpolation'
@@ -194,13 +195,13 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
   
   if("cl.stat.MI_comb" %in% names(input.args)) { # dgarol
     cl.stat.MI_comb <- input.args$cl.stat.MI_comb
-    stopifnot(!is.character(cl.stat.MI_comb))
-    stopifnot(!(cl.stat.MI_comb %in% c('ann', 'kin', 'mean', 'kin_ann', 'multip')))
+    stopifnot(is.character(cl.stat.MI_comb))
+    stopifnot(cl.stat.MI_comb %in% c('MI', 'kin', 'mean', 'kin_MI', 'multip'))
     if(!cl.stat) {
       cl.stat <- TRUE
       cl.stat.weight.barriers <- TRUE
     }
-  } else cl.stat.MI_comb <- 'kin_ann'
+  } else cl.stat.MI_comb <- 'kin_MI'
   
   if("cl.stat.nUni" %in% names(input.args)) { # dgarol
     cl.stat.nUni <- input.args$cl.stat.nUni
@@ -969,7 +970,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
   #######################################################################
   #### final calculations for scores - dgarol
   #######################################################################
-    if(dbg) browser()
+    if(dbg_basins_recognition) browser()
     if(cl.stat && !is.null(breaks)){
       
       # functions
@@ -1106,9 +1107,9 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
         # select the final barrier_weight
         if(MI_comb == 'mean') MI_ratio <- (MI_sbr + miuni[breaks]) / 2 
         else if(MI_comb == 'multip') MI_ratio <- MI_sbr * miuni[breaks]
-        else if(MI_comb == 'kin_ann') MI_ratio <- (kinpl[breaks] + miuni[breaks]) / 2
+        else if(MI_comb == 'kin_MI') MI_ratio <- (kinpl[breaks] + miuni[breaks]) / 2
         else if(MI_comb == 'kin') MI_ratio <- kinpl[breaks]
-        else if(MI_comb == 'ann') MI_ratio <- miuni[breaks]
+        else if(MI_comb == 'MI') MI_ratio <- miuni[breaks]
         if(plot.cl.stat){
           
           # plot the found histogram Mutual Information
@@ -1286,7 +1287,14 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
       }
       if(cl.stat.wMI) { statistics[[ele]] <- sl_MI; names(ele)[ele] <- 'winMI'; ele <- ele + 1 }
       if(cl.stat.stft) { statistics[[ele]] <- xpeaks; names(ele)[ele] <- 'stFT'; ele <- ele + 1 }
-      if(cl.stat.weight.barriers) tab.st <- cbind(tab.st, 'barWeight' = c(-1, MI_ratio))
+      if(cl.stat.weight.barriers) {
+      if(!silent) cat('Keeping only the barriers which are reasonably far from borders.\n')
+        select_non_border <- breaks > lpi/n_unif[.lt(n_unif)] & breaks < lpi - lpi/n_unif[.lt(n_unif)]
+        if(!silent) cat('Discarded the following barrier indexes (from left / also on the stats out):', seq(1, .lt(breaks))[!select_non_border], '\n')
+        forout <- MI_ratio
+        forout[!select_non_border] <- -1
+        tab.st <- cbind(tab.st, 'barWeight' = c(-1, forout))
+      }
     } else statistics <- NULL
   if(is.null(breaks)) statistic <- FALSE
   if(cl.stat && is.null(breaks)) {
@@ -1335,7 +1343,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
       lines(xr1, scale(den_kin[xr1]), lwd = 0.8, col = 'darkblue')
     }
     if(only.kin) abline(v=breaks, lwd=0.7, col="orange4")
-    else if(!match) {
+    else if(!match) { # we want to plot all the vertical line also to see the effects on the plot
       ## Not-matched vdyn
       abline(v=vdyn, lwd=0.4, col="blue")
       ## Not-matched vkin
@@ -1344,10 +1352,9 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
       abline(v=brk.mtc, lwd=0.7, col="black")
     } else abline(v=breaks, lwd=0.7, col="black")
     if(cl.stat.weight.barriers){
-      # select_non_border <- -c(1, .lt(breaks))
-      if(!silent) cat('Keeping only the barriers which are reasonably far from borders.\n')
       select_non_border <- breaks > lpi/n_unif[.lt(n_unif)] & breaks < lpi - lpi/n_unif[.lt(n_unif)]
-      if(!silent) cat('Discarded the following barrier indexes (from left):', seq(1, .lt(breaks))[!select_non_border], '\n')
+      # if(!silent) cat('Discarded the following barrier indexes (from left):', seq(1, .lt(breaks))[!select_non_border], '\n')
+      # select_non_border <- -c(1, .lt(breaks))
       points(breaks[select_non_border], MI_ratio[select_non_border]*max(yr), pch ='+', col = 'red', cex = 5)
       abline(h=mean(MI_ratio)*max(yr), lwd=1.1, col= 'grey')
     }
