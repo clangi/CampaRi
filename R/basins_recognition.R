@@ -133,8 +133,11 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
                        'cl.stat.nUni', 'cl.stat.nBreaks', 'cl.stat.MI_comb', 'cl.stat.denat', 'cl.stat.denat.MI', 
                        'dbg_basins_recognition')
   
-  if(!is.null(names(input.args)) && any(!(names(input.args) %in% avail.extra.arg))) 
+  if(!is.null(names(input.args)) && any(!(names(input.args) %in% avail.extra.arg))){
     warning('There is a probable mispelling in one of the inserted variables. Please check the available extra input arguments.')
+    if(!silent) cat('!!!!!!!!! We found the following variables without a father (not between our extra input arguments) !!!!!!!!!!\n')
+    if(!silent) cat(names(input.args)[!(names(input.args) %in% avail.extra.arg)], '\n')
+  }
   if("only.kin" %in% names(input.args)) {
     only.kin <- input.args$only.kin
     if(only.kin) match <- TRUE
