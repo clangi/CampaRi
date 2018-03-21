@@ -53,7 +53,8 @@ where the parabolic shape has been subtracted, i.e. the actual curve used for th
     \item "\code{cl.stat.nBreaks}" Integer. This variable defines the number of splits for the analysis. If set to 0 it will use the breaks found in the SBR.
     \item "\code{cl.stat.denat}" This value can be set to \code{"process_subtraction"} or \code{"poly_interpolation"} and it is defining the removal of 
     parabolic artifacts in the kinetic trace. The polynomial fit is by default 7 and 12 in degree for the kinetic annotation and uniform MI curves. The process 
-    option istead is referring to 
+    option istead is referring to the simulated process which is behind the kin ann. This option can be set to \code{TRUE} for using the process way.
+    \item "\code{cl.stat.denat.MI}" Integer. If NULL its default is 7 for poly_interpolation of the kinetic ann but nothing is done on the MI score. 
     \item "\code{cl.stat.MI_comb}" This value is the representative of how the various calculation in barrier weighting are combined. In particular the options 
     are the following:
     \itemize{

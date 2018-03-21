@@ -214,7 +214,7 @@ basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fi
         if(!silent) cat('We will use exaustive search of the best barrier using the following bins: \n')
         # mean_bar_weights <- parallel::parLapply(cl = cl, x = as.list(bin_search_space), fun = function(bl){
         mean_bar_weights <- lapply(as.list(bin_search_space), function(bl){
-          cat(bl, ' ')
+          if(!silent) cat(bl, ' ')
           if(bl == bin_search_space[.lt(bin_search_space)]) cat('\n')
           bout <- CampaRi::basins_recognition(st, nx = bl, plot = F, match = force_matching, out.file = F, new.dev = F, silent = T,
                                               cl.stat.weight.barriers = T, cl.stat.denat = denat_opt,
@@ -226,12 +226,31 @@ basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fi
             bw <- mean(bout$tab.st$barWeight[-1])
             b_n_empty <- sum(bout$tab.st$barWeight[-1] > .Machine$double.eps ^ 0.5)
           }
-          outing <- list('bins' = bl, 'bweights' = bw, 'nbarr' = nrow(bout$tab.st) - 1, 'nbar_not_empty' = b_n_empty)
+          outing <- list('bins' = bl, 'bweights' = bw, 'nbarr' = nrow(bout$tab.st) - 1, 'nbar_not_empty' = b_n_empty, 'tabsts' = list(bout$tab.st))
           return(outing)
         })
         # parallel::stopCluster(cl)
         
         bw_tot <- data.table::rbindlist(mean_bar_weights) # they say it is slow (better rbindlist)
+        
+        # calculating the area under the curve of the bar_weights
+        bws <- sort(bw_tot$tabsts[[1]]$barWeight[-1], decreasing = T)
+        # plot(x = seq(0,1, length.out = .lt(bws)), y = bws, type = 'l', xlim = c(0,1), ylim = c(0,1))
+        aucWB <- array(NA, dim = .lt(mean_bar_weights))
+        maxWB <- array(NA, dim = .lt(mean_bar_weights))
+        aucWB[1] <- MESS::auc(x = seq(0,1, length.out = .lt(bws)), y = bws)
+        maxWB[1] <- max(bws)
+        for(abc in seq(2, .lt(mean_bar_weights))) {
+          bws <- sort(bw_tot$tabsts[[abc]]$barWeight[-1], decreasing = T)
+          aucWB[abc] <- MESS::auc(x = seq(0,1, length.out = .lt(bws)), y = bws)
+          maxWB[abc] <- max(bws)
+          # lines(x = seq(0,1, length.out = .lt(bws)), y = bws)
+        }
+        stopifnot(!anyNA(aucWB) || !anyNA(maxWB))
+        bw_tot <- cbind(bw_tot, 'aucWB'= aucWB, 'maxWB' = maxWB)
+        
+        dbg <- TRUE
+        if(dbg) browser()
         
         # -------- FILTERS ---------
         if(!is.null(number_of_clusters)) bw_tot <- rbind(bw_tot, bw_ini)                                   # bw_ini was the result from before
@@ -239,9 +258,33 @@ basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fi
         bw_tot <- bw_tot[which(bw_tot[,3] != 0),]                                                          # selecting the not empty barriers
         
         # -------- RANKING --------
-        if(!is.null(number_of_clusters)) bw_tot <- bw_tot[order(bw_tot[,4], bw_tot[,2], decreasing = T),]  # sorting for the most not empty and the higher MI-ratio
-        else bw_tot <- bw_tot[order(bw_tot[,2], decreasing = T),]                                          # sorting for the most not empty and the higher MI-ratio
+        # ranking_met <- 'n_cl'
+        # ranking_met <- 'mean'
+        # ranking_met <- 'max'
+        ranking_met <- 'auc'
+        if(ranking_met == 'n_cl') bw_tot <- bw_tot[order(bw_tot[,4], bw_tot[,2], decreasing = T),]         # sorting for the most not empty and the higher MI-ratio
+        else if(ranking_met == 'mean') bw_tot <- bw_tot[order(bw_tot[,2], decreasing = T),]                # sorting for the higher mean MI-ratio
+        else if(ranking_met == 'auc') bw_tot <- bw_tot[order(bw_tot[,6], decreasing = T),]                 # sorting for the higher auc MI-ratio
+        else if(ranking_met == 'max') bw_tot <- bw_tot[order(bw_tot[,7], decreasing = T),]                 # sorting for the higher max MI-ratio
 
+        # testing for further comparison: why more separations?
+        a <- bw_tot$tabsts[[1]] # 133 -> the one I get (2 barriers not needed and not apparent)
+        b <- bw_tot$tabsts[[5]] # 67  -> the one I want
+        
+        
+        plot(x=seq(0,1, length.out = .lt(a$barWeight[-1])), y=a$barWeight[-1], type = 'l', ylim = c(0,1), 
+             xlab='Timeline prop', ylab='B weight', col = 'darkred')
+        lines(x=seq(0,1, length.out = .lt(b$barWeight[-1])), y=b$barWeight[-1],  col = 'darkblue')
+        legend("bottomright", legend =  c(round(bw_tot$aucWB[1], 4), round(bw_tot$aucWB[5],4)), lty =1, 
+               title = "aucWB", col = c('darkred', 'darkblue')) 
+        bout1 <- CampaRi::basins_recognition(st, nx = 67, plot = T, match = force_matching, out.file = F, new.dev = F, silent = F,
+                                             cl.stat.weight.barriers = T, cl.stat.denat = denat_opt, plot.cl.stat = T,
+                                             cl.stat.nUni = c(5,10,15,20,25,30,40,50,60), dbg =T) #hard wired
+        bout2 <- CampaRi::basins_recognition(st, nx = 133, plot = T, match = force_matching, out.file = F, new.dev = F, silent = F,
+                                             cl.stat.weight.barriers = T, cl.stat.denat = denat_opt, plot.cl.stat = T,
+                                             cl.stat.nUni = c(5,10,15,20,25,30,40,50,60)) #hard wired
+        
+        
         if(nrow(bw_tot) < 1) stop('We were not able to find a convenient partitioning.')
         if(!silent) cat('In the following we will plot the best 5 divisions (if presents): \n')
         if(nrow(bw_tot) > 5) to_show <- 5 else to_show <- nrow(bw_tot)

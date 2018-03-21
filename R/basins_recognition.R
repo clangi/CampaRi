@@ -45,7 +45,8 @@
 #'          \item "\code{cl.stat.nBreaks}" Integer. This variable defines the number of splits for the analysis. If set to 0 it will use the breaks found in the SBR.
 #'          \item "\code{cl.stat.denat}" This value can be set to \code{"process_subtraction"} or \code{"poly_interpolation"} and it is defining the removal of 
 #'          parabolic artifacts in the kinetic trace. The polynomial fit is by default 7 and 12 in degree for the kinetic annotation and uniform MI curves. The process 
-#'          option istead is referring to 
+#'          option istead is referring to the simulated process which is behind the kin ann. This option can be set to \code{TRUE} for using the process way.
+#'          \item "\code{cl.stat.denat.MI}" Integer. If NULL its default is 7 for poly_interpolation of the kinetic ann but nothing is done on the MI score. 
 #'          \item "\code{cl.stat.MI_comb}" This value is the representative of how the various calculation in barrier weighting are combined. In particular the options 
 #'          are the following:
 #'          \itemize{
@@ -129,7 +130,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
   avail.extra.arg <- c("pol.degree", "only.kin", "time.series",
                        "cl.stat", "plot.cl.stat", 'cl.stat.entropy', 'cl.stat.weight.barriers',
                        'cl.stat.stft', 'cl.stat.TE', 'cl.stat.KL', 'cl.stat.wMI',
-                       'cl.stat.nUni', 'cl.stat.nBreaks', 'cl.stat.MI_comb', 'cl.stat.denat', 'dbg')
+                       'cl.stat.nUni', 'cl.stat.nBreaks', 'cl.stat.MI_comb', 'cl.stat.denat', 'cl.stat.denat.MI', 'dbg')
   
   if(!is.null(names(input.args)) && any(!(names(input.args) %in% avail.extra.arg))) 
     warning('There is a probable mispelling in one of the inserted variables. Please check the available extra input arguments.')
@@ -145,17 +146,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
   } else dbg <- FALSE
   
   # cluster statistics check - dgarol
-  cl.stat.wMI <- FALSE      # can be long
-  cl.stat.KL <- FALSE
-  cl.stat.TE <- FALSE
-  cl.stat.stft <- FALSE     # it is plotting too much
-  cl.stat.weight.barriers <- FALSE
-  cl.stat.MI_comb <- 'kin_ann'
-  cl.stat.denat <- NULL
-  cl.stat.nUni <- NULL
-  cl.stat.entropy <- FALSE
-  plot.cl.stat <- FALSE
-  cl.stat.nBreaks <- 0
+  
   
   if("cl.stat" %in% names(input.args)) { # dgarol
     cl.stat <- input.args$cl.stat
@@ -168,20 +159,38 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
     cl.stat.nBreaks <- input.args$cl.stat.nBreaks
     stopifnot(.isSingleInteger(cl.stat.nBreaks))
     if(!cl.stat) cl.stat <- TRUE
-  } 
-  
+  } else cl.stat.nBreaks <- 0
+
   # checking the uniform sampling nsplits
   if("cl.stat.denat" %in% names(input.args)) { # dgarol
     cl.stat.denat <- input.args$cl.stat.denat
     denat_opt.ava <- c("process_subtraction", "poly_interpolation")
-    stopifnot(is.character(cl.stat.denat))
-    if(!(cl.stat.denat[1] %in% denat_opt.ava)) 
-      stop("cl.stat.denat method option not valid.")
-    if(!cl.stat) {
-      cl.stat <- TRUE
-      cl.stat.weight.barriers <- TRUE
+    if(is.logical(cl.stat.denat) && cl.stat.denat){
+      cl.stat.denat <- denat_opt.ava[1]
+    }else if(is.logical(cl.stat.denat) && !cl.stat.denat) cl.stat.denat <- NULL 
+    if(!is.null(cl.stat.denat)){
+      stopifnot(is.character(cl.stat.denat))
+      if(!(cl.stat.denat[1] %in% denat_opt.ava)) 
+        stop("cl.stat.denat method option not valid.")
+      if(!cl.stat) {
+        cl.stat <- TRUE
+        cl.stat.weight.barriers <- TRUE
+      }
     }
-  }
+  } else cl.stat.denat <- NULL
+  if("cl.stat.denat.MI" %in% names(input.args)) { # dgarol
+    cl.stat.denat.MI <- input.args$cl.stat.denat.MI
+    denat_opt.ava <- c("process_subtraction", "poly_interpolation")
+    if(!is.null(cl.stat.denat.MI)){
+      stopifnot(.isSingleInteger(cl.stat.denat.MI))
+      if(cl.stat.denat.MI < 1 || cl.stat.denat.MI > 50) stop('cl.stat.denat.MI must be between 1 and 50.')
+      if(!(cl.stat.denat.MI[1] %in% denat_opt.ava)) 
+        stop("cl.stat.denat method option not valid.")
+      if(!cl.stat) cl.stat <- TRUE
+      if(!cl.stat.weight.barriers) cl.stat.weight.barriers <- TRUE
+      if(is.null(cl.stat.denat)) cl.stat.denat <- 'poly_interpolation'
+    }
+  } else cl.stat.denat.MI <- NULL
   
   if("cl.stat.MI_comb" %in% names(input.args)) { # dgarol
     cl.stat.MI_comb <- input.args$cl.stat.MI_comb
@@ -191,58 +200,60 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
       cl.stat <- TRUE
       cl.stat.weight.barriers <- TRUE
     }
-  } 
+  } else cl.stat.MI_comb <- 'kin_ann'
   
   if("cl.stat.nUni" %in% names(input.args)) { # dgarol
     cl.stat.nUni <- input.args$cl.stat.nUni
-    stopifnot(all(sapply(cl.stat.nUni, function(x) x%%1) == 0))
-    if(!cl.stat) {
-      cl.stat <- TRUE
-      cl.stat.weight.barriers <- TRUE
+    if(!is.null(cl.stat.nUni)){
+      stopifnot(all(sapply(cl.stat.nUni, function(x) x%%1) == 0))
+      if(!cl.stat) {
+        cl.stat <- TRUE
+        cl.stat.weight.barriers <- TRUE
+      }
     }
-  } 
+  } else cl.stat.nUni <- NULL
   
   # Checking the weight of the barriers
   if("cl.stat.weight.barriers" %in% names(input.args)) { # dgarol
     cl.stat.weight.barriers <- input.args$cl.stat.weight.barriers
     stopifnot(is.logical(cl.stat.weight.barriers))
     if(!cl.stat && cl.stat.weight.barriers) cl.stat <- TRUE
-  }
+  } else cl.stat.weight.barriers <- FALSE
   # Specific cluster statistics
   if("cl.stat.wMI" %in% names(input.args)) { # dgarol
     cl.stat.wMI <- input.args$cl.stat.wMI
     stopifnot(is.logical(cl.stat.wMI))
     if(!cl.stat && cl.stat.wMI) cl.stat <- TRUE
-  }
+  } else cl.stat.wMI <- FALSE      # can be long
   if("cl.stat.KL" %in% names(input.args)) { # dgarol
     cl.stat.KL <- input.args$cl.stat.KL
     stopifnot(is.logical(cl.stat.KL))
     if(!cl.stat && cl.stat.KL) cl.stat <- TRUE
-  }
+  } else cl.stat.KL <- FALSE
   if("cl.stat.TE" %in% names(input.args)) { # dgarol
     cl.stat.TE <- input.args$cl.stat.TE
     stopifnot(is.logical(cl.stat.TE))
     if(!cl.stat && cl.stat.TE) cl.stat <- TRUE
-  }
+  } else cl.stat.TE <- FALSE
   if("cl.stat.stft" %in% names(input.args)) { # dgarol
     cl.stat.stft <- input.args$cl.stat.stft
     stopifnot(is.logical(cl.stat.stft))
     if(!cl.stat && cl.stat.stft) cl.stat <- TRUE
-  }
+  } else cl.stat.stft <- FALSE     # it is plotting too much
   
   # Entropy deeper exploration
   if("cl.stat.entropy" %in% names(input.args)) { # dgarol
     cl.stat.entropy <- input.args$cl.stat.entropy
     stopifnot(is.logical(cl.stat.entropy))
     if(!cl.stat && cl.stat.entropy) cl.stat <- TRUE
-  } 
+  } else cl.stat.entropy <- FALSE
   
   # Plotting
   if("plot.cl.stat" %in% names(input.args)) { # dgarol
     plot.cl.stat <- input.args$plot.cl.stat
     stopifnot(is.logical(plot.cl.stat))
     if(!cl.stat && plot.cl.stat) cl.stat <- TRUE
-  }
+  } else plot.cl.stat <- FALSE
   
   # other checks
   avg.opt.arg <- c("movav", "SG")
@@ -1068,19 +1079,25 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
         # hard wired options for the basin weights
         MI_comb <- cl.stat.MI_comb
         denat <- cl.stat.denat 
-        
+        denat.MI <- cl.stat.denat.MI
         # Calculating the kinetical cut and the uniform MI denaturation if necessary
         # xr1 <- c(margin:(cstored-round(cstored*0.99)))
         kin.pl <- .normalize(-log(cutf / cstored)) # xr1 impose a selection of 99% of the snapshots to avoid the initial inf
         
         # normalizing the results to avoid parabolic effects (it depends on the grade of the poly!)
         if(!is.null(denat) && denat == 'poly_interpolation'){
-          kinpl <- .denaturate(yyy = kin.pl, xxx = seq(lpi), polydeg = 7, plotit = F)
-          miuni <- .denaturate(yyy = expand_MI_uni, xxx = seq(lpi), polydeg = 12, plotit = F)
-          # MI_ratio <- (kin.pl[breaks] + miuni[breaks]) / 2
+          if(!is.null(denat.MI)){
+            kinpl <- .denaturate(yyy = kin.pl, xxx = seq(lpi), polydeg = denat.MI, plotit = F)
+            miuni <- .denaturate(yyy = expand_MI_uni, xxx = seq(lpi), polydeg = denat.MI, plotit = F)
+            # MI_ratio <- (kin.pl[breaks] + miuni[breaks]) / 2
+          }else{
+            kinpl <- .denaturate(yyy = kin.pl, xxx = seq(lpi), polydeg = 7, plotit = F)
+            miuni <- expand_MI_uni
+          }
         }else if(!is.null(denat) && denat == 'process_subtraction'){
           kinpl <- .normalize(kin)
-          miuni <- .denaturate(yyy = expand_MI_uni, xxx = seq(lpi), polydeg = 12, plotit = F)
+          if(!is.null(denat.MI)) miuni <- .denaturate(yyy = expand_MI_uni, xxx = seq(lpi), polydeg = denat.MI, plotit = F)
+          else miuni <- expand_MI_uni
         }else{
           kinpl <- kin.pl
           miuni <- expand_MI_uni
@@ -1312,8 +1329,9 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
     points(progind$PI[lst], max(progind$Time[lst])+progind$Time[lst]*(sc-1), cex=0.005, col="tomato1")
     lines(xr1, scale(kin.pl), lwd=1, col="black")
     lines(xr1, scale(kin[xr1]), lwd=0.8, col="forestgreen") #the one without the parabol
-    if(!is.null(denat) && denat == 'poly_interpolation') { # my simple fit (dgarol)
-      den_kin <- .denaturate(-log(cutf / cstored), seq(cstored), polydeg = 7, plotit = FALSE)
+    if(!is.null(cl.stat.denat) && cl.stat.denat == 'poly_interpolation') { # my simple fit (dgarol)
+      if(!is.null(denat.MI)) den_kin <- .denaturate(-log(cutf / cstored), seq(cstored), polydeg = denat.MI, plotit = FALSE)
+      else den_kin <- .denaturate(-log(cutf / cstored), seq(cstored), polydeg = 7, plotit = FALSE)
       lines(xr1, scale(den_kin[xr1]), lwd = 0.8, col = 'darkblue')
     }
     if(only.kin) abline(v=breaks, lwd=0.7, col="orange4")

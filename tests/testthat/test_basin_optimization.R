@@ -83,8 +83,8 @@ test_that('optimize sapphire plot clusters using SBR', {
                                                force_matching = T, number_of_clusters = ncl, denat_opt = 'process_subtraction',
                                                plot_basin_identification = plt_stff, silent = silent)
     # fpi_ave  
-    optimal_bas <- CampaRi::basin_optimization(the_sap = fpi_ave,  how_fine_search = 10, basin_optimization_method = "MI_barrier_weighting", 
-                                               force_matching = T, number_of_clusters = ncl, nbins_x_min = 7, nbins_x_max = 200,
+    optimal_bas <- CampaRi::basin_optimization(the_sap = fpi_ave,  how_fine_search = 20, basin_optimization_method = "MI_barrier_weighting", 
+                                               force_matching = F, number_of_clusters = ncl, nbins_x_min = 7, nbins_x_max = 200,
                                                denat_opt = 'process_subtraction',
                                                plot_basin_identification = plt_stff, silent = silent)
     # fpi_worst  
