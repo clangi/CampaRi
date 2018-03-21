@@ -16,7 +16,7 @@ stages:
 before_script:
   - export _R_CHECK_CRAN_INCOMING_=FALSE
   - export _R_CHECK_FORCE_SUGGESTS_=TRUE
-#  - Rscript -e 'install.packages("testthat", repos = "http://cran.us.r-project.org")'
+  - Rscript -e 'install.packages("MESS", repos = "http://cran.us.r-project.org")'
 
 #  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libnetcdff5; fi
 #  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libnetcdf-dev; fi # must be specified

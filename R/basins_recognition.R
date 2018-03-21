@@ -155,6 +155,13 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
     stopifnot(is.logical(cl.stat))
   } else cl.stat <- FALSE
   
+  # Checking the weight of the barriers
+  if("cl.stat.weight.barriers" %in% names(input.args)) { # dgarol
+    cl.stat.weight.barriers <- input.args$cl.stat.weight.barriers
+    stopifnot(is.logical(cl.stat.weight.barriers))
+    if(!cl.stat && cl.stat.weight.barriers) cl.stat <- TRUE
+  } else cl.stat.weight.barriers <- FALSE
+  
   # Checking the number of breaks for the statistics (0 is the standard barriers)
   if("cl.stat.nBreaks" %in% names(input.args)) { # dgarol
     cl.stat.nBreaks <- input.args$cl.stat.nBreaks
@@ -186,7 +193,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
         cl.stat.denat.MI <- 7
       }else if(is.logical(cl.stat.denat.MI) && !cl.stat.denat.MI) cl.stat.denat.MI <- NULL 
       stopifnot(.isSingleInteger(cl.stat.denat.MI))
-      if(cl.stat.denat.MI < 1 || cl.stat.denat.MI > 50) stop('cl.stat.denat.MI must be between 1 and 50.')
+      if(cl.stat.denat.MI < -1 || cl.stat.denat.MI == 0 || cl.stat.denat.MI > 50) stop('cl.stat.denat.MI must be between 1 and 50.')
       if(!cl.stat) cl.stat <- TRUE
       if(!cl.stat.weight.barriers) cl.stat.weight.barriers <- TRUE
       if(is.null(cl.stat.denat)) cl.stat.denat <- 'poly_interpolation'
@@ -214,12 +221,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
     }
   } else cl.stat.nUni <- NULL
   
-  # Checking the weight of the barriers
-  if("cl.stat.weight.barriers" %in% names(input.args)) { # dgarol
-    cl.stat.weight.barriers <- input.args$cl.stat.weight.barriers
-    stopifnot(is.logical(cl.stat.weight.barriers))
-    if(!cl.stat && cl.stat.weight.barriers) cl.stat <- TRUE
-  } else cl.stat.weight.barriers <- FALSE
+
   # Specific cluster statistics
   if("cl.stat.wMI" %in% names(input.args)) { # dgarol
     cl.stat.wMI <- input.args$cl.stat.wMI
@@ -1047,11 +1049,18 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
       lpi <- .lt(progind$PI)
       stopifnot(cl.stat.nBreaks >= 0, cl.stat.nBreaks <= floor(lpi/2))
       
+      # sliding window MI
+      if(cl.stat.nBreaks == 0) nbr <- .lt(breaks)
+      else nbr <- cl.stat.nBreaks
+      if(cl.stat.wMI) {
+        if(!silent) cat('Calculating the slided MI using 10 sub-division of the uniform divisions. \n')
+        sl_MI <- sliding_MI(progind = progind, n_breaks = nbr, n_slides = 10, nx = nx, ny = ny)
+      }
+      
       # calculating the weights for the barriers 
       if(cl.stat.weight.barriers) {
         if(is.null(cl.stat.nUni)) n_unif <- 40
         else n_unif <- cl.stat.nUni
-        if(!silent) cat('Calculating the barrier statistics using', n_unif, 'division for the MI ratio. \n')
         stopifnot(n_unif > 0, n_unif < lpi/ 2)
         
         # SBR based mutual information
@@ -1064,8 +1073,11 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
         # n_unif <- round(lpi/50) 
         # n_unif <- 10
         # n_unif <- c(5,10,15,20,25,30,40,50,60)
+        # n_unif <- seq(5, 150, 5)
+        if(!silent) cat('Calculating the barrier statistics using ') 
         expand_MI_uni <- array(0, dim = lpi)
         for(nun in n_unif){
+          if(!silent) cat(nun, ' ')
           brks_uni <- floor(seq(1, lpi, length.out = nun))
           dhc_uni <- dens_histCounts(progind, breaks = brks_uni, nx = nx, ny = ny) # breaks are the barriers points on x
           uni_cnts <- dhc_uni$counts    
@@ -1073,6 +1085,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
           MI_uni <- .normalize(MI_uni)
           expand_MI_uni <- expand_MI_uni + stats::approx(seq(nun), 1 - MI_uni, n = lpi)$y
         }
+        if(!silent) cat('divisions for the MI ratio. \n')
         expand_MI_uni <- expand_MI_uni/.lt(n_unif)
         # MI_sbr <- .normalize(MI_sbr, xmax = max(c(MI_sbr, MI_uni)), xmin = min(c(MI_sbr, MI_uni)))
         # MI_uni <- .normalize(MI_uni, xmax = max(c(MI_sbr, MI_uni)), xmin = min(c(MI_sbr, MI_uni)))
@@ -1088,8 +1101,10 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
         # normalizing the results to avoid parabolic effects (it depends on the grade of the poly!)
         if(!is.null(denat) && denat == 'poly_interpolation'){
           if(!is.null(denat.MI)){
-            kinpl <- .denaturate(yyy = kin.pl, xxx = seq(lpi), polydeg = denat.MI, plotit = F)
-            miuni <- .denaturate(yyy = expand_MI_uni, xxx = seq(lpi), polydeg = denat.MI, plotit = F)
+            if(denat.MI != -1) kinpl <- .denaturate(yyy = kin.pl, xxx = seq(lpi), polydeg = denat.MI, plotit = F)
+            else kinpl <- .denaturate(yyy = kin.pl, xxx = seq(lpi), polydeg = 7, plotit = F)
+            if(denat.MI != -1) miuni <- .denaturate(yyy = expand_MI_uni, xxx = seq(lpi), polydeg = denat.MI, plotit = F)
+            else miuni <- 1 - expand_MI_uni
             # MI_ratio <- (kin.pl[breaks] + miuni[breaks]) / 2
           }else{
             kinpl <- .denaturate(yyy = kin.pl, xxx = seq(lpi), polydeg = 7, plotit = F)
@@ -1097,8 +1112,10 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
           }
         }else if(!is.null(denat) && denat == 'process_subtraction'){
           kinpl <- .normalize(kin)
-          if(!is.null(denat.MI)) miuni <- .denaturate(yyy = expand_MI_uni, xxx = seq(lpi), polydeg = denat.MI, plotit = F)
-          else miuni <- expand_MI_uni
+          if(!is.null(denat.MI)) {
+            if(denat.MI != -1) miuni <- .denaturate(yyy = expand_MI_uni, xxx = seq(lpi), polydeg = denat.MI, plotit = F)
+            else miuni <- 1 - expand_MI_uni
+          }else miuni <- expand_MI_uni
         }else{
           kinpl <- kin.pl
           miuni <- expand_MI_uni
@@ -1122,6 +1139,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
           points(breaks[which_barrier], MI_ratio[which_barrier], pch ='+', col = 'red', cex = 2)
           points(progind$PI, progind$Time/lpi, pch='.', cex = 2)
           lines(kinpl, col = 'darkred')
+          # if(cl.stat.wMI) lines(seq(1, lpi, length.out = .lt(sl_MI)), sl_MI, col = 'darkgreen')
           
           # what is the relation with the kinetic curve?
           # plot((kin.pl + expand_MI_uni)/2, type = "l")
@@ -1135,13 +1153,6 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
       dens <- dhc$density
       cnts <- dhc$counts
       
-      # sliding window MI
-      if(cl.stat.nBreaks == 0) nbr <- .lt(breaks)
-      else nbr <- cl.stat.nBreaks
-      if(cl.stat.wMI) {
-        if(!silent) cat('Calculating the slided MI using 10 sub-division of the uniform divisions. \n')
-        sl_MI <- sliding_MI(progind = progind, n_breaks = nbr, n_slides = 10, nx = nx, ny = ny)
-      }
       # Analysis of it - rolling means/max/min
       # require(RcppRoll)
       # plot(sl_MI, type = 'l')
@@ -1199,7 +1210,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
       ini_points <- c(1, tobrk); end_points <- c(1, tobrk) + diff(c(1, tobrk, lpi))
       
       # Plotting the barriers, breaks and statistics on the breaks 
-      if(plot.cl.stat){
+      if(plot.cl.stat && F){ # I will put it back in a moment
         gg <- ggplot() + theme_classic() + xlab('Progress Index') + ylab('Barrier score') +
               geom_line(aes(tobrk, distHell, col = as.factor(1)), size = 0.5) +
               geom_segment(aes(x = ini_points, xend = end_points, y = ent, yend = ent, col = as.factor(2)), size = 4) +
@@ -1358,7 +1369,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
       points(breaks[select_non_border], MI_ratio[select_non_border]*max(yr), pch ='+', col = 'red', cex = 5)
       abline(h=mean(MI_ratio)*max(yr), lwd=1.1, col= 'grey')
     }
-    par(save_par)
+    suppressWarnings(par(save_par))
   }
     invisible(list(tab.st=tab.st, nbins=c(nx,ny), seq.st=seq.st[order(progind$Time)], statistics = statistics, call=call))
 }

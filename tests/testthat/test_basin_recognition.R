@@ -94,10 +94,10 @@ test_that('Test for basin recognition with ext files', {
                               plot.cl.stat = T)
     bout1 <- CampaRi::basins_recognition(fpi_best, nx = 67, plot = T, match = T, out.file = F, new.dev = F, silent = F,
                                          cl.stat.weight.barriers = T, cl.stat.denat = T, plot.cl.stat = T, # true is like process_subtraction
-                                         cl.stat.nUni = c(5,10,15,20,25,30,40,50,60), dbg = F, cl.stat.MI_comb = 'MI') #hard wired
+                                         cl.stat.nUni = c(5,10,15,20,25,30,40,50,60), dbg = F, cl.stat.MI_comb = 'kin_MI', dbg_basins_recognition = F) #hard wired
     bout2 <- CampaRi::basins_recognition(fpi_best, nx = 133, plot = T, match = T, out.file = F, new.dev = F, silent = F,
-                                         cl.stat.weight.barriers = T, cl.stat.denat = T, plot.cl.stat = T, cl.stat.MI_comb = 'MI',
-                                         cl.stat.nUni = c(5,10,15,20,25,30,40,50,60)) #hard wired
+                                         cl.stat.weight.barriers = T, cl.stat.denat = T, plot.cl.stat = T, cl.stat.MI_comb = 'kin_MI', cl.stat.denat.MI = -1,
+                                         cl.stat.nUni = seq(50,200,5)) #hard wired
     # fpi_ave  
     bas <- basins_recognition(data = fpi_ave, nx = 150, match = T, plot = T, out.file = F, new.dev = F, 
                               cl.stat = T, cl.stat.denat = 'process_subtraction', cl.stat.nUni = 20,
