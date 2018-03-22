@@ -179,19 +179,33 @@ basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fi
       ncl <- unlist(lapply(basFin, FUN = function(x) return(x$ncl)))                                   # select the right number of clusters
       which_to_keep <- which(ncl == number_of_clusters)                                                # select the right number of clusters
       bw <- lapply(basFin, FUN = function(x) return(x$bas$tab.st$barWeight[-1]))[which_to_keep]        # extracting the barrier weights (first one is -1 flagged)
+      bwtabst <- lapply(basFin, FUN = function(x) return(x$bas$tab.st))[which_to_keep]                 # extracting tab.st
       idx <- sort(unlist(lapply(basFin, FUN = function(x) return(x$idx)))[which_to_keep])              # extracting the position of the linspace (idx)
       nbb <- sort(unlist(lapply(basFin, FUN = function(x) return(x$nbins)))[which_to_keep])            # extracting the number of bins
       if(!silent) cat('We found', .lt(which_to_keep), 'possible values from the following bins (i.e. partitions with the desired # of clu): \n', nbb,'\n')
       
+      if(dbg_basin_optimization) browser()
       # collapsing the results
-      bw_ini <- data.frame('bins' = nbb, 'bweights' = unlist(lapply(bw, mean)), 
+      bw_ini <- cbind('bins' = nbb, 'bweights' = unlist(lapply(bw, mean)), 
                            'nbarr' = unlist(lapply(bw, .lt)), 
-                           'nbar_not_empty' = unlist(lapply(bw, function(x) sum(x!=0))))
-      bw_ini <- bw_ini[which(bw_ini[,3] != 0),] # selecting the not empty barriers (runs in which no barrier was found)
-
-      # ------- RANKING ------
-      # here the algorithm should be thinked properly. for now max nbarr with higher bweight      
-      bw_ini <- bw_ini[order(bw_ini[,4], bw_ini[,2], decreasing = T),] # sorting for the most not empty and the higher MI-ratio
+                           'nbar_not_empty' = unlist(lapply(bw, function(x) sum(x!=0))), 
+                           'tabsts' = (bwtabst))
+      bw_ini <- data.table::data.table(bw_ini)
+      # calculating the area under the curve of the bar_weights
+      bws <- sort(bw_ini$tabsts[[1]]$barWeight[-1], decreasing = T)
+      aucWB <- array(NA, dim = nrow(bw_ini))
+      maxWB <- array(NA, dim = nrow(bw_ini))
+      aucWB[1] <- MESS::auc(x = seq(0,1, length.out = .lt(bws)), y = bws)
+      maxWB[1] <- max(bws)
+      if(nrow(bw_ini) > 1){
+        for(abc in seq(2, nrow(bw_ini))) {
+          bws <- sort(bw_ini$tabsts[[abc]]$barWeight[-1], decreasing = T)
+          aucWB[abc] <- MESS::auc(x = seq(0,1, length.out = .lt(bws)), y = bws)
+          maxWB[abc] <- max(bws)
+        }
+      }
+      stopifnot(!anyNA(aucWB) || !anyNA(maxWB))
+      bw_ini <- cbind(bw_ini, 'aucWB'= aucWB, 'maxWB' = maxWB)
       
       # final range of search
       to_search_finer <- c(min(nbb), max(nbb)) 
@@ -220,7 +234,33 @@ basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fi
         bin_search_space <- lin_scale
       }else {
         bin_search_space <- unique(round(seq(to_search_finer[1], to_search_finer[2], length.out = how_fine_search)))
-        bin_search_space <- setdiff(bin_search_space, nbb) # looking only for new nbins
+        test1 <- setdiff(bin_search_space, nbb) # looking only for new nbins
+        if(.lt(test1) == 0){
+          if(!silent) cat('Found only one bin which is fitting our need. Expanding around it. \n')
+          ltnbb <- .lt(bin_search_space) # found ones (it can not be 0 because before it would have stopped)
+          if(ltnbb > 1){
+            expanded_vec <- stats::approx(x = bin_search_space, n = how_fine_search - 1 + ltnbb)$y
+            expanded_vec <- unique(round(expanded_vec))
+            expanded_vec <- setdiff(expanded_vec, nbb)
+            if(.lt(expanded_vec) == 0) ltnbb <- 1 # this expansion was not useful (feed-in the next)
+            else bin_search_space <- expanded_vec
+          }
+          if(ltnbb == 1){
+            # taking a neighborhood of the point (first)
+            what <- bin_search_space[1]
+            what_l <- bin_search_space - floor(how_fine_search/2)
+            what_r <- bin_search_space + ceiling(how_fine_search/2)
+            if(what_l < 7) what_l <- 7
+            expanded_vec <- seq(what_l, what_r)
+            expanded_vec <- unique(round(expanded_vec))
+            expanded_vec <- setdiff(expanded_vec, nbb)
+            if(.lt(expanded_vec) == 0) bin_search_space <- bin_search_space # keep the only one found!
+            else bin_search_space <- expanded_vec
+          }
+          if(!silent) cat('Found/using the following:', bin_search_space, '\n')
+        }else{
+          bin_search_space <- test1
+        }
       }
       # n_cores <- parallel::detectCores()
       # cl <- parallel::makeCluster(n_cores, type = 'FORK')
@@ -243,7 +283,6 @@ basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fi
           return(outing)
         })
         # parallel::stopCluster(cl)
-        if(dbg_basin_optimization) browser()
         bw_tot <- data.table::rbindlist(mean_bar_weights) # they say it is slow (better rbindlist)
         
         # calculating the area under the curve of the bar_weights
@@ -279,7 +318,7 @@ basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fi
         else if(ranking_met == 'max') bw_tot <- bw_tot[order(bw_tot[,7], decreasing = T),]                 # sorting for the higher max MI-ratio
 
         # testing for further comparison: why more separations?
-        if(dbg_basin_optimization){
+        if(F){
           a <- bw_tot$tabsts[[1]] # 133 -> the one I get (2 barriers not needed and not apparent)
           b <- bw_tot$tabsts[[5]] # 67  -> the one I want
           
@@ -304,7 +343,8 @@ basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fi
         if(!silent) print(bw_tot[1:to_show,])
         
         # final plot/execution
-        bas <- CampaRi::basins_recognition(st, nx = bw_tot$bins[1], new.dev = F, out.file = F, match = force_matching, plot = plot_basin_identification, silent = silent,
+        bas <- CampaRi::basins_recognition(st, nx = bw_tot$bins[[1]], new.dev = F, out.file = F, match = force_matching, 
+                                           plot = plot_basin_identification, silent = silent,
                                            cl.stat.weight.barriers = T, plot.cl.stat = plot_basin_identification, cl.stat.denat = denat_opt, ...) # hard wired
         
       }else if(search_method == 'binary_search'){ # broken
