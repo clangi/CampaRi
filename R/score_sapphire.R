@@ -13,11 +13,12 @@
 #'            \item "\code{jaccard_index}" 
 #'            \item "\code{purity}" 
 #'       }
-#' @param basin_optimization If \code{TRUE} it will use \code{\link{basin_optimization}} to optimize the clusters. Please consider adding its relevant variables.
+#' @param basin_optimization If \code{TRUE} it will use \code{\link{basin_optimization}} to optimize the clusters. Please consider adding 
+#' its relevant variables. It is possible to use
 #' @param plot_basin_identification A logical value indicating whether to display the SAPPHIRE plot with the resulting partitions or not. 
 #' Black partitions are the matched ones, blue ones derive only from the dynamic analysis and orange ones only from the kinetic analysis. 
 #' The green curve is the kinetic annotation (black curve) where the parabolic shape has been subtracted, i.e. the actual curve used for 
-#' the peaks identification. Default value is \code{FALSE}.
+#' the peaks identification. Default value is \code{FALSE}. 
 #' @param plot_pred_true_resume Defaults tp \code{FALSE}. If set to true it plots the predicted and true labels one along the other.
 #' @param nbins_x Number of bins on  x-axis of the 2-D histogram. Default to sqrt(nrow(the_sap)).
 #' @param nbins_y Number of bins on the y-axis of the 2-D histogram. Default to sqrt(nrow(the_sap)).
@@ -25,7 +26,7 @@
 #' @param force_matching Please refer to \code{\link{basins_recognition}} for further details about the match option.
 #' @param silent A logical value indicating whether the function has to remain silent or not. Default value is \code{FALSE}.
 #' @param merge_clusters A logical value for indicating if merging consecutive clusters with same labels.
-#' @param ... This variables will be sent to \code{\link{basin_optimization}} without any checking
+#' @param ... This variables will be sent to \code{\link{basin_optimization}} without any checking.
 #' 
 #' @return A list containing
 #'       \itemize{
@@ -51,13 +52,29 @@
 #' @import ggplot2
 #' @export score_sapphire
 
-score_sapphire <- function(the_sap, ann, scoring_method = 'nmi', merge_clusters = FALSE, 
-                           basin_optimization = FALSE, plot_basin_identification = FALSE, plot_pred_true_resume = FALSE,
-                           nbins_x = NULL, nbins_y = nbins_x, force_matching = FALSE, silent = FALSE, ...){
+score_sapphire <- function(the_sap=NULL, ann, basin_optimization = FALSE,                                            # fundamental inputs
+                           scoring_method = 'nmi', merge_clusters = FALSE,                                      # scoring details
+                           plot_basin_identification = FALSE, nbins_x = NULL,                                   # settings for the recognition/optimi
+                           nbins_y = nbins_x, force_matching = FALSE,                                           # settings for the recognition/optimi
+                           plot_pred_true_resume = FALSE, silent = FALSE,                                       # it refers to this function
+                           ...){
   
   # general input checking
-  if(!is.character(the_sap) && !is.data.frame(the_sap)) stop("the_sap must be a string or a data frame")
-  if(is.character(the_sap) && (!all(grepl("PROGIDX", the_sap)) && !all(grepl("REPIX", the_sap)))) stop("Please provide a data name starting with 'PROGIDX' or 'REPIX'" )
+  have_the_bas <- FALSE
+  if(!is.null(the_sap)){
+    if(!is.character(the_sap) && !is.data.frame(the_sap)) stop("the_sap must be a string or a data frame")
+    if(is.character(the_sap) && (!all(grepl("PROGIDX", the_sap)) && !all(grepl("REPIX", the_sap)))) 
+      stop("Please provide a data name starting with 'PROGIDX' or 'REPIX'" )
+  }else if(!is.logical(basin_optimization)){
+    if(is.null(names(basin_optimization)) || names(basin_optimization)[1] != 'tab.st') 
+      stop('Use the basin_optimization (optimal_bas) or the basin_recognition output for basin_optimization var.
+           It must be of the shape tab.st nbins seq.st etc.. (or put it TRUE/FALSE).')
+    have_the_bas <- TRUE
+  }else if(is.logical(basin_optimization)) {
+    if(!silent) cat('You are using basin_optimization as a logical. We see it. \n')
+  }else{
+    stop('One between the_sap = "PROGIDX_..." and basin_optimization=its_obj must be provided. ')
+  }
   if(!is.numeric(ann) && (!is.null(dim(ann)))) stop('Please provide an integer vector for ann')
   if(!is.null(nbins_x) && !.isSingleInteger(nbins_x)) stop('nbins_x must be a single integer')
   if(!is.null(nbins_y) && !.isSingleInteger(nbins_x)) stop('nbins_y must be a single integer')
@@ -73,34 +90,60 @@ score_sapphire <- function(the_sap, ann, scoring_method = 'nmi', merge_clusters 
   if(!(scoring_method[1] %in% scoring_method.opt)) stop("Scoring method option not valid")
   
   # sapphire table loading
-  if(!is.data.frame(the_sap))
+  if(!is.null(the_sap) && !is.data.frame(the_sap))
     st <- as.data.frame(data.table::fread(the_sap, data.table = F))
   else
     st <- the_sap
   
   # checking the number of bins inserted
-  if(is.null(nbins_x)) nbins_x <- round(sqrt(nrow(st)*10))
-  if(is.null(nbins_y)) nbins_y <- round(sqrt(nrow(st)*10))
-  if(nbins_x != nbins_y) {
-    if(!silent) cat('For simplicity we do not allow yet to use different number of nx and ny (bins for x and y).')
-    nbins_x <- nbins_y <- max(nbins_x, nbins_y)
-  }
   
   # browser()
-  if(!silent) cat('Number of (automatically) selected bins for the basin recognition step is', nbins_x, '\n')
-  if(basin_optimization){
-    optim_bas <- CampaRi::basin_optimization(the_sap = the_sap, plot_basin_identification = plot_basin_identification, 
-                                             nbins_x = nbins_x, nbins_y = nbins_x, force_matching = force_matching, silent = silent, ...)
-    bas <- optim_bas$bas
-    n_fin_cl <- nrow(bas$tab.st)
+  pifilename <- NULL
+  if(!have_the_bas){
+    if(basin_optimization){
+      if(!silent) cat('It is advisable to use the basin_optimization function EXTERNALLY to this one and feed the output to basin_optimization.\n')
+      if(!is.null(n_bins))
+      optim_bas <- CampaRi::basin_optimization(the_sap = the_sap, plot_basin_identification = plot_basin_identification, 
+                                               basin_optimization_method = 'MI_barrier_weighting',
+                                               force_matching = force_matching, silent = silent, ...)
+      bas <- optim_bas$bas
+      n_fin_cl <- nrow(bas$tab.st)
+    }else{
+      if(is.null(nbins_x)) nbins_x <- round(sqrt(nrow(st)*10))
+      if(is.null(nbins_y)) nbins_y <- round(sqrt(nrow(st)*10))
+      if(nbins_x != nbins_y) {
+        if(!silent) cat('For simplicity we do not allow yet to use different number of nx and ny (bins for x and y).')
+        nbins_x <- nbins_y <- max(nbins_x, nbins_y)
+      }
+      if(!silent) cat('Number of (automatically) selected bins for the basin recognition step is', nbins_x, '\n')
+      bas <- CampaRi::basins_recognition(st, nx = nbins_x, ny = nbins_x, dyn.check = 1, 
+                                         plot = plot_basin_identification, match = force_matching, out.file = F, new.dev = F, silent = silent)
+      n_fin_cl <- nrow(bas$tab.st) # here we suppose that our split is the one we wanted and we define the number of resulting clusters
+    }
   }else{
-    bas <- CampaRi::basins_recognition(st, nx = nbins_x, ny = nbins_x, dyn.check = 1, 
-                                       plot = plot_basin_identification, match = force_matching, out.file = F, new.dev = F, silent = silent)
-    n_fin_cl <- nrow(bas$tab.st) # here we suppose that our split is the one we wanted and we define the number of resulting clusters
+    if(!silent) cat('You inserted the bas object directly. No specific check of your wrong doing is applied. Therefore USE THE RIGHT ONE.\n')
+    bas <- basin_optimization
+    n_fin_cl <- nrow(bas$tab.st)
+    pifilename <- bas$filename
   }
   
+  
+  
+  # ---------------------------------------------------------------------------------------------- Annotation analysis
   # ann is reordered following progrex index and it is checked for the absence of 0s
-  pin <- ann[c(st[,3])]
+  if(!is.null(the_sap)) {
+    if(!silent) cat('Having inserted the_sap we reorder the ann using it.\n')
+    pin <- ann[c(st[,3])]
+  } else if(!is.null(pifilename)){
+    if(!silent) cat('You did not set the_sap filename (or table) but we found the filename from the inserted basin_optimization obj. Using it to reorder ann.\n')
+    st <- as.data.frame(data.table::fread(pifilename, data.table = F))
+    pin <- ann[c(st[,3])]
+  } else {
+    if(!silent) cat('No filename for the sapphire table was provided. We will keep the ordering of the annotation as it has been found.\n')
+    warning('No filename for the sapphire table was provided. We will keep the ordering of the annotation as it has been found.')
+    pin <- ann
+  }
+  
   lpin <- .lt(pin)
   uni_ann <- unique(pin)
   if(anyNA(pin)) stop('We can not handle NAs in the annotation. Check it!')
@@ -133,6 +176,7 @@ score_sapphire <- function(the_sap, ann, scoring_method = 'nmi', merge_clusters 
   # plot(pin, pch='.')
   # sort(table(pin), decreasing=TRUE) # sorted
   
+  # ---------------------------------------------------------------------------------------------- Creation of the Entropy levels
   # we choose the representative label
   label_freq_list <- list() # each element of this list is a cluster
   for(jk in 1:n_fin_cl){
@@ -209,6 +253,7 @@ score_sapphire <- function(the_sap, ann, scoring_method = 'nmi', merge_clusters 
     slct <- array(1, dim = .lt(label_freq_list))
   } 
   
+  # ---------------------------------------------------------------------------------------------- Creation of Predicted vector
   # main constructor loop for the selected (slct) labels
   lab <- list()
   size <- list()
@@ -332,6 +377,7 @@ score_sapphire <- function(the_sap, ann, scoring_method = 'nmi', merge_clusters 
   # max_freq_table
   # max_freq_table[order(max_freq_table$sh_en), ]
   
+  # ---------------------------------------------------------------------------------------------- Final scoring
   # scoring it with accuracy?
   # external_validation(true_labels = ann[st[,3]], clusters = predicted_div, method = "adjusted_rand_index", summary_stats = FALSE)
   # external_validation(true_labels = ann[st[,3]], clusters = predicted_div, method = "jaccard_index", summary_stats = FALSE)

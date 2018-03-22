@@ -88,6 +88,7 @@ A list containing
         \item "\code{statistics}" If \code{cl.stat} is \code{TRUE} this element will contain all the cluster statistics (unbound to the found barriers). 
         Otherwise it is \code{NULL}. If no barrier has been found this value defaults to \code{FALSE}.
         \item "\code{call}" The matched call. 
+        \item "\code{filename}" The sapphire file name if it is provided, otherwise \code{NULL}.
       }
 }
 \description{

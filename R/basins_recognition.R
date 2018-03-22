@@ -79,6 +79,7 @@
 #'         \item "\code{statistics}" If \code{cl.stat} is \code{TRUE} this element will contain all the cluster statistics (unbound to the found barriers). 
 #'         Otherwise it is \code{NULL}. If no barrier has been found this value defaults to \code{FALSE}.
 #'         \item "\code{call}" The matched call. 
+#'         \item "\code{filename}" The sapphire file name if it is provided, otherwise \code{NULL}.
 #'       }   
 #' @examples
 #' 
@@ -359,6 +360,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
       progind <- data.frame(PI=foo[[1]], Time=foo[[2]], Cut=(foo[[3]]+foo[[4]])/2)
       rm(foo)
     }
+    filename <- NULL
   } else {
     if(!local.cut) {
       progind <- data.frame(fread(data, showProgress=FALSE)[, c(1, 3, 4)])
@@ -373,6 +375,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
       progind$Time <- as.vector(unlist(fread(time.series, showProgress=FALSE)[,1]))
       if(!silent) cat("Time series given by", time.series, "\n")
     }
+    filename <- data
   }
   if(nrow(progind) < 80) stop('It is impossible to recognize basins with less than 80 snapshots in the sapphire table.')
   cstored <- dim(progind)[1]
@@ -1374,6 +1377,6 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
     }
     suppressWarnings(par(save_par))
   }
-    invisible(list(tab.st=tab.st, nbins=c(nx,ny), seq.st=seq.st[order(progind$Time)], statistics = statistics, call=call))
+    invisible(list(tab.st=tab.st, nbins=c(nx,ny), seq.st=seq.st[order(progind$Time)], statistics = statistics, call=call, filename = filename))
 }
 
