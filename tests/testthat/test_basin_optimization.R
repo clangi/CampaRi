@@ -107,25 +107,17 @@ test_that('optimize sapphire plot clusters using SBR', {
                                                plot_basin_identification = plt_stff, silent = silent)
     # fpi_ave  
     optimal_bas <- CampaRi::basin_optimization(the_sap = fpi_ave,  how_fine_search = 10, basin_optimization_method = "MI_barrier_weighting", 
-                                               force_matching = T, number_of_clusters = ncl, nbins_x_min = 7, nbins_x_max = 200,
+                                               force_matching = T, number_of_clusters = 4, nbins_x_min = 7, nbins_x_max = 200,
                                                denat_opt = 'process_subtraction', cl.stat.MI_comb = 'kin_MI',
-                                               cl.stat.nUni = c(5,10,15,20,25,30,40,50,60), cl.stat.denat.MI = -1,
+                                               cl.stat.nUni = c(5,10,15,20,25,30,40,50,60), cl.stat.denat.MI = NULL,
                                                plot_basin_identification = plt_stff, silent = silent, dbg_basin_optimization =F)
     # fpi_worst  
     optimal_bas <- CampaRi::basin_optimization(the_sap = fpi_worst,  how_fine_search = 20, basin_optimization_method = "MI_barrier_weighting", 
-                                               force_matching = T, number_of_clusters = ncl, nbins_x_min = 7, nbins_x_max = 200,
+                                               force_matching = T, number_of_clusters = 4, nbins_x_min = 7, nbins_x_max = 200,
                                                denat_opt = 'process_subtraction', cl.stat.MI_comb = 'kin_MI',
-                                               cl.stat.nUni = seq(20,200,10), cl.stat.denat.MI = -1,
+                                               cl.stat.nUni = seq(20,200,10), cl.stat.denat.MI = NULL,
                                                plot_basin_identification = plt_stff, silent = silent, dbg_basin_optimization = F)
   }
-  
-  
-  
-  
-  
-  
-  
-  
   
   # if(file.exists('MST_DUMPLING.nc')) file.remove('MST_DUMPLING.nc')
   # if(file.exists('REPIX_000000000021.dat')) file.remove('REPIX_000000000021.dat')

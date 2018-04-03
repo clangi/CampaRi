@@ -48,7 +48,7 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', post_processi
   if(any(!(names(input_args) %in% avail_extra_argoments))) 
     stop('There is a probable mispelling in one of the inserted variables. Please check the available extra input arguments.')
   if(!('wgcna_type' %in% names(input_args))) wgcna_type <- 'unsigned' else wgcna_type <- input_args[['wgcna_type']]
-  if(!('wgcna_power' %in% names(input_args))) wgcna_power <- 1 else wgcna_power <- input_args[['wgcna_power']]
+  if(!('wgcna_power' %in% names(input_args))) wgcna_power <- 2 else wgcna_power <- input_args[['wgcna_power']]
   if(!('wgcna_corOp' %in% names(input_args))) wgcna_corOp <- "use = 'p'" else wgcna_corOp <- input_args[['wgcna_corOp']]
   if(!('minkowski_p' %in% names(input_args))) minkowski_p <- 3 else minkowski_p <- input_args[['minkowski_p']]
   if(!('cov_method' %in% names(input_args))) cov_method <- 'pearson' else cov_method <- input_args[['cov_method']]
@@ -95,7 +95,13 @@ c('path_euclidean', 'path_minkowski', 'path_manhattan', 'path_maximum', 'path_ca
   if(method == 'none' && is.null(post_processing_method))
     stop('It is needed a post_processing_method if you want to use directly the window (without any network construction).')
   
-  # Checking input variables 
+  # Checking input variables and files
+  if(!is.data.frame(trj)){
+    if(!is.character(trj))
+      stop('The trj must be the tsv of the trj or a data.frame.')
+    cat("Reading trj file...\n")
+    trj <- as.matrix(fread(file = trj, data.table = F)) 
+  }
   if(!is.null(window) && (length(window) != 1 || !is.numeric(window) || window <= 3 || window > nrow(trj)/2))
     stop('The used window (distance 12) is too small or too big (must be less than half to have sense) or it is simply an erroneus insertion.')
   
@@ -244,7 +250,7 @@ c('path_euclidean', 'path_minkowski', 'path_manhattan', 'path_maximum', 'path_ca
         built_net <- WGCNA::mutualInfoAdjacency(tmp_trj, entropyEstimationMethod = strsplit(method, split = '_')[[1]][2])
       
         # construction based on Fourier Transform
-      }else if( method == 'fft'){
+      }else if(method == 'fft'){
         vec_freq <- c()
         for(fr in 1:ncol(trj)){
           if(is.null(post_processing_method) || (!is.null(post_processing_method) && post_processing_method != 'amplitude')) # just to avoid further calc
@@ -263,7 +269,7 @@ c('path_euclidean', 'path_minkowski', 'path_manhattan', 'path_maximum', 'path_ca
       
         # distance inverse (e.g. Minkowskij similarity)
       }else if(!(method %in% c('wgcna', 'covariance', 'MI_MM', 'MI_ML', 'MI_shrink', 'MI_SG'))){
-        distOptions_manual <- paste0("method = '",method,"'")
+        distOptions_manual <- paste0("method = '", method, "'")
         if(method == 'minkowski') distOptions_manual <- paste0(distOptions_manual, minkowski_p)
         built_net <- WGCNA::adjacency(tmp_trj, type = "distance", distOptions = distOptions_manual)
       
@@ -311,8 +317,8 @@ c('path_euclidean', 'path_minkowski', 'path_manhattan', 'path_maximum', 'path_ca
   
   # Checking the creation of NAs in the inference
   # -------------------------
-  if(any(is.na(trj_out))){
-    n_na_trj <- sum(is.na(trj_out))
+  n_na_trj <- sum(is.na(trj_out))
+  if(n_na_trj > 0){
     warning('Attention: NA generated. Probably it is due to too short window of time used. Fraction of NA: ', 
             (n_na_trj*100/(nrow(trj_out)*ncol(trj_out))), ' %')
   if((n_na_trj*100/(nrow(trj_out)*ncol(trj_out))) > 5) 
@@ -321,5 +327,5 @@ c('path_euclidean', 'path_minkowski', 'path_manhattan', 'path_maximum', 'path_ca
     trj_out[is.na(trj_out)] <- 0 
   }
   message('Network construction completed.')
-  return(trj_out)
+  invisible(list('trj_out' = trj_out, 'n_na_trj' = n_na_trj))
 }

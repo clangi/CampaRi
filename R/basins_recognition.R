@@ -67,6 +67,7 @@
 #'          \item "\code{cl.stat.KL}" Logical. Calculate symmetric and non-symmetric Kullback-Leibler divergence.
 #'          \item "\code{cl.stat.wMI}" Logical. Use the number of breaks (\code{cl.stat.nBreaks}) to find the Mutual Information for 10 slided divisions.
 #'          This will result in 10*nBreaks values.
+#'          \item "\code{data.out.it}" Should I output the data.frame in input?
 #'      }
 #'      
 #' @return A list containing
@@ -79,7 +80,7 @@
 #'         \item "\code{statistics}" If \code{cl.stat} is \code{TRUE} this element will contain all the cluster statistics (unbound to the found barriers). 
 #'         Otherwise it is \code{NULL}. If no barrier has been found this value defaults to \code{FALSE}.
 #'         \item "\code{call}" The matched call. 
-#'         \item "\code{filename}" The sapphire file name if it is provided, otherwise \code{NULL}.
+#'         \item "\code{data}" The sapphire file name if it is provided, otherwise the data obj. It is used by \code{\link{score_sapphire}}.
 #'       }   
 #' @examples
 #' 
@@ -132,7 +133,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
                        "cl.stat", "plot.cl.stat", 'cl.stat.entropy', 'cl.stat.weight.barriers',
                        'cl.stat.stft', 'cl.stat.TE', 'cl.stat.KL', 'cl.stat.wMI',
                        'cl.stat.nUni', 'cl.stat.nBreaks', 'cl.stat.MI_comb', 'cl.stat.denat', 'cl.stat.denat.MI', 
-                       'dbg_basins_recognition')
+                       'dbg_basins_recognition', 'data.out.it')
   
   if(!is.null(names(input.args)) && any(!(names(input.args) %in% avail.extra.arg))){
     warning('There is a probable mispelling in one of the inserted variables. Please check the available extra input arguments.')
@@ -150,8 +151,13 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
     stopifnot(is.logical(dbg_basins_recognition))
   } else dbg_basins_recognition <- FALSE
   
-  # cluster statistics check - dgarol
   
+  if("data.out.it" %in% names(input.args)) { # dgarol
+    data.out.it <- input.args$data.out.it
+    stopifnot(is.logical(data.out.it))
+  } else data.out.it <- FALSE
+  
+  # cluster statistics check - dgarol
   
   if("cl.stat" %in% names(input.args)) { # dgarol
     cl.stat <- input.args$cl.stat
@@ -164,7 +170,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
     cl.stat.weight.barriers <- input.args$cl.stat.weight.barriers
     stopifnot(is.logical(cl.stat.weight.barriers))
     if(!cl.stat && cl.stat.weight.barriers) cl.stat <- TRUE
-  } else cl.stat.weight.barriers <- FALSE
+  } else if(!cl.stat) cl.stat.weight.barriers <- FALSE
   
   # Checking the number of breaks for the statistics (0 is the standard barriers)
   if("cl.stat.nBreaks" %in% names(input.args)) { # dgarol
@@ -360,7 +366,12 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
       progind <- data.frame(PI=foo[[1]], Time=foo[[2]], Cut=(foo[[3]]+foo[[4]])/2)
       rm(foo)
     }
-    filename <- NULL
+    if(!data.out.it) {
+      data.out <- NULL # was NULL but for my cases I need it always evan with silent
+      warning('Putting the silent mode, no input data will be outputted!')
+    }else{
+      data.out <- data
+    }
   } else {
     if(!local.cut) {
       progind <- data.frame(fread(data, showProgress=FALSE)[, c(1, 3, 4)])
@@ -375,7 +386,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
       progind$Time <- as.vector(unlist(fread(time.series, showProgress=FALSE)[,1]))
       if(!silent) cat("Time series given by", time.series, "\n")
     }
-    filename <- data
+    data.out <- data
   }
   if(nrow(progind) < 80) stop('It is impossible to recognize basins with less than 80 snapshots in the sapphire table.')
   cstored <- dim(progind)[1]
@@ -1084,15 +1095,17 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
         expand_MI_uni <- array(0, dim = lpi)
         for(nun in n_unif){
           if(!silent) cat(nun, ' ')
-          brks_uni <- floor(seq(1, lpi, length.out = nun))
+          brks_uni <- floor(seq(1, lpi, length.out = nun))[-c(1,nun)]
           dhc_uni <- dens_histCounts(progind, breaks = brks_uni, nx = nx, ny = ny) # breaks are the barriers points on x
           uni_cnts <- dhc_uni$counts    
-          MI_uni <- sapply(seq(nun), function(j) infotheo::mutinformation(uni_cnts[, j], uni_cnts[, j+1]))
+          MI_uni <- sapply(seq(nun-2), function(j) infotheo::mutinformation(uni_cnts[, j], uni_cnts[, j+1]))
           MI_uni <- .normalize(MI_uni)
-          expand_MI_uni <- expand_MI_uni + stats::approx(seq(nun), 1 - MI_uni, n = lpi)$y
+          expand_MI_uni <- expand_MI_uni + stats::approx(seq(nun), c(0, 1 - MI_uni, 0), n = lpi)$y
         }
         if(!silent) cat('divisions for the MI ratio. \n')
         expand_MI_uni <- expand_MI_uni/.lt(n_unif)
+        # expand_MI_uni <- .normalize(expand_MI_uni)
+        # plot(x = seq(1,80000, length.out = .lt(MI_uni)), y = 1-MI_uni, type = 'l'); lines(expand_MI_uni, col = 'red')
         # MI_sbr <- .normalize(MI_sbr, xmax = max(c(MI_sbr, MI_uni)), xmin = min(c(MI_sbr, MI_uni)))
         # MI_uni <- .normalize(MI_uni, xmax = max(c(MI_sbr, MI_uni)), xmin = min(c(MI_sbr, MI_uni)))
         
@@ -1151,6 +1164,10 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
           # plot((kin.pl + expand_MI_uni)/2, type = "l")
           # points(breaks, (kin.pl[breaks] + expand_MI_uni[breaks]) / 2, col = 'darkblue')
         }
+      }else{
+        MI_comb <- cl.stat.MI_comb # should be NULL as the others
+        denat <- cl.stat.denat 
+        denat.MI <- cl.stat.denat.MI
       }
         
       if(cl.stat.nBreaks == 0) tobrk <- breaks
@@ -1377,6 +1394,6 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
     }
     suppressWarnings(par(save_par))
   }
-    invisible(list(tab.st=tab.st, nbins=c(nx,ny), seq.st=seq.st[order(progind$Time)], statistics = statistics, call=call, filename = filename))
+    invisible(list(tab.st=tab.st, nbins=c(nx,ny), seq.st=seq.st[order(progind$Time)], statistics = statistics, call=call, data.out = data.out))
 }
 

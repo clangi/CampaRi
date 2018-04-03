@@ -75,12 +75,13 @@ score_sapphire <- function(the_sap=NULL, ann, basin_optimization = FALSE,       
   }else{
     stop('One between the_sap = "PROGIDX_..." and basin_optimization=its_obj must be provided. ')
   }
+  if(!is.null(the_sap) && !is.logical(basin_optimization)) stop('Please choose one option only. Rather the_sap or basin_optimization?')
   if(!is.numeric(ann) && (!is.null(dim(ann)))) stop('Please provide an integer vector for ann')
   if(!is.null(nbins_x) && !.isSingleInteger(nbins_x)) stop('nbins_x must be a single integer')
   if(!is.null(nbins_y) && !.isSingleInteger(nbins_x)) stop('nbins_y must be a single integer')
   # if(!is.null(number_of_clusters) && !.isSingleInteger(number_of_clusters)) stop('number_of_clusters must be a single integer')
   if(!is.logical(silent)) stop('silent must be a logical')
-  if(!is.logical(basin_optimization)) stop('basin_optimization must be a logical')
+  # if(!is.logical(basin_optimization)) stop('basin_optimization must be a logical')
   if(!is.logical(plot_basin_identification)) stop('plot_basin_identification must be a logical')
   if(!is.logical(plot_pred_true_resume)) stop('plot_pred_true_resume must be a logical')
   if(!is.logical(merge_clusters)) stop('merge_clusters must be a logical')
@@ -102,7 +103,8 @@ score_sapphire <- function(the_sap=NULL, ann, basin_optimization = FALSE,       
   if(!have_the_bas){
     if(basin_optimization){
       if(!silent) cat('It is advisable to use the basin_optimization function EXTERNALLY to this one and feed the output to basin_optimization.\n')
-      if(!is.null(n_bins))
+      if(!is.null(nbins_x) && !silent) cat('NB: you inserted the number of bins (nbis_x) but you also want to optimize the basin recognition. 
+                                           Therefore we do not care about your nbins_x and you should put vars for basin_optimization.\n')
       optim_bas <- CampaRi::basin_optimization(the_sap = the_sap, plot_basin_identification = plot_basin_identification, 
                                                basin_optimization_method = 'MI_barrier_weighting',
                                                force_matching = force_matching, silent = silent, ...)
@@ -112,7 +114,7 @@ score_sapphire <- function(the_sap=NULL, ann, basin_optimization = FALSE,       
       if(is.null(nbins_x)) nbins_x <- round(sqrt(nrow(st)*10))
       if(is.null(nbins_y)) nbins_y <- round(sqrt(nrow(st)*10))
       if(nbins_x != nbins_y) {
-        if(!silent) cat('For simplicity we do not allow yet to use different number of nx and ny (bins for x and y).')
+        if(!silent) cat('For simplicity we do not allow yet to use different number of nx and ny (bins for x and y).\n')
         nbins_x <- nbins_y <- max(nbins_x, nbins_y)
       }
       if(!silent) cat('Number of (automatically) selected bins for the basin recognition step is', nbins_x, '\n')
@@ -124,7 +126,7 @@ score_sapphire <- function(the_sap=NULL, ann, basin_optimization = FALSE,       
     if(!silent) cat('You inserted the bas object directly. No specific check of your wrong doing is applied. Therefore USE THE RIGHT ONE.\n')
     bas <- basin_optimization
     n_fin_cl <- nrow(bas$tab.st)
-    pifilename <- bas$filename
+    data.in <- bas$data.out
   }
   
   
@@ -134,9 +136,10 @@ score_sapphire <- function(the_sap=NULL, ann, basin_optimization = FALSE,       
   if(!is.null(the_sap)) {
     if(!silent) cat('Having inserted the_sap we reorder the ann using it.\n')
     pin <- ann[c(st[,3])]
-  } else if(!is.null(pifilename)){
+  } else if(!is.null(data.in)){
     if(!silent) cat('You did not set the_sap filename (or table) but we found the filename from the inserted basin_optimization obj. Using it to reorder ann.\n')
-    st <- as.data.frame(data.table::fread(pifilename, data.table = F))
+    if(!is.data.frame(data.in)) st <- as.data.frame(data.table::fread(data.in, data.table = F))
+    else st <- data.in
     pin <- ann[c(st[,3])]
   } else {
     if(!silent) cat('No filename for the sapphire table was provided. We will keep the ordering of the annotation as it has been found.\n')
@@ -382,8 +385,8 @@ score_sapphire <- function(the_sap=NULL, ann, basin_optimization = FALSE,       
   # external_validation(true_labels = ann[st[,3]], clusters = predicted_div, method = "adjusted_rand_index", summary_stats = FALSE)
   # external_validation(true_labels = ann[st[,3]], clusters = predicted_div, method = "jaccard_index", summary_stats = FALSE)
   # external_validation(true_labels = ann[st[,3]], clusters = predicted_div, method = "purity", summary_stats = FALSE)
-  score.out <- ClusterR::external_validation(true_labels = ann[st[,3]], clusters = predicted_div, method = scoring_method, summary_stats = FALSE)
-  if(!silent) cat('Using', scoring_method,'we obtained a final score of', score.out, '\n')
+  score.out <- ClusterR::external_validation(true_labels = pin, clusters = predicted_div, method = scoring_method, summary_stats = FALSE)
+  if(!silent) cat('Using', scoring_method,'we obtained a final score of', score.out, 'using a final number of', bas$nbins[1], 'nbins.\n')
   invisible(list('score.out' = score.out, 'max_freq_table' = max_freq_table, 'label_freq_list' = label_freq_list))
 }
 

@@ -86,7 +86,7 @@ test_that('Test for basin recognition with ext files', {
   expect_error(bas <- basins_recognition(data = fpi_empty, nx = 150, match = F, plot = T, out.file = F, new.dev = F, 
                                          cl.stat = T, cl.stat.denat = 'poly_interpolation', dbg = F,
                                          plot.cl.stat = T, cl.stat.MI_comb = 'MI',
-                                         cl.stat.nUni = c(5,10,15,20,25,30,40,50,60)), NA)
+                                         cl.stat.nUni = c(5,10,15,20,25,30,40,50,60), dbg_basins_recognition = T), NA)
   if(do_it){
     # fpi_best  
     bas <- basins_recognition(data = fpi_best, nx = 150, match = T, plot = T, out.file = F, new.dev = F, 
@@ -101,7 +101,7 @@ test_that('Test for basin recognition with ext files', {
     # fpi_ave  
     bas <- basins_recognition(data = fpi_ave, nx = 150, match = T, plot = T, out.file = F, new.dev = F, 
                               cl.stat = T, cl.stat.denat = 'process_subtraction', cl.stat.nUni = 20,
-                              plot.cl.stat = T)
+                              plot.cl.stat = T, dbg_basins_recognition = F)
     # fpi_worst  
     bas <- basins_recognition(data = fpi_worst, nx = 150, match = T, plot = T, out.file = F, new.dev = F, 
                               cl.stat = T, cl.stat.denat = 'process_subtraction', cl.stat.nUni = c(5,10,15,20,25,30,40,50,60),

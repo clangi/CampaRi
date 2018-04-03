@@ -195,12 +195,12 @@ basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fi
       bws <- sort(bw_ini$tabsts[[1]]$barWeight[-1], decreasing = T)
       aucWB <- array(NA, dim = nrow(bw_ini))
       maxWB <- array(NA, dim = nrow(bw_ini))
-      aucWB[1] <- MESS::auc(x = seq(0,1, length.out = .lt(bws)), y = bws)
+      aucWB[1] <- MESS::auc(x = seq(0,1, length.out = .lt(bws) + 2), y = c(0,bws,0))
       maxWB[1] <- max(bws)
       if(nrow(bw_ini) > 1){
         for(abc in seq(2, nrow(bw_ini))) {
           bws <- sort(bw_ini$tabsts[[abc]]$barWeight[-1], decreasing = T)
-          aucWB[abc] <- MESS::auc(x = seq(0,1, length.out = .lt(bws)), y = bws)
+          aucWB[abc] <- MESS::auc(x = seq(0,1, length.out = .lt(bws) + 2), y = c(0,bws,0))
           maxWB[abc] <- max(bws)
         }
       }
@@ -248,8 +248,8 @@ basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fi
           if(ltnbb == 1){
             # taking a neighborhood of the point (first)
             what <- bin_search_space[1]
-            what_l <- bin_search_space - floor(how_fine_search/2)
-            what_r <- bin_search_space + ceiling(how_fine_search/2)
+            what_l <- bin_search_space - floor(min(20, how_fine_search)/2)
+            what_r <- bin_search_space + ceiling(min(20, how_fine_search)/2)
             if(what_l < 7) what_l <- 7
             expanded_vec <- seq(what_l, what_r)
             expanded_vec <- unique(round(expanded_vec))
@@ -290,13 +290,15 @@ basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fi
         # plot(x = seq(0,1, length.out = .lt(bws)), y = bws, type = 'l', xlim = c(0,1), ylim = c(0,1))
         aucWB <- array(NA, dim = .lt(mean_bar_weights))
         maxWB <- array(NA, dim = .lt(mean_bar_weights))
-        aucWB[1] <- MESS::auc(x = seq(0,1, length.out = .lt(bws)), y = bws)
+        aucWB[1] <- MESS::auc(x = seq(0,1, length.out = .lt(bws) + 2), y = c(0,bws,0))
         maxWB[1] <- max(bws)
-        for(abc in seq(2, .lt(mean_bar_weights))) {
-          bws <- sort(bw_tot$tabsts[[abc]]$barWeight[-1], decreasing = T)
-          aucWB[abc] <- MESS::auc(x = seq(0,1, length.out = .lt(bws)), y = bws)
-          maxWB[abc] <- max(bws)
-          # lines(x = seq(0,1, length.out = .lt(bws)), y = bws)
+        if(nrow(bw_tot) > 1){
+          for(abc in seq(2, .lt(mean_bar_weights))) {
+            bws <- sort(bw_tot$tabsts[[abc]]$barWeight[-1], decreasing = T)
+            aucWB[abc] <- MESS::auc(x = seq(0,1, length.out = .lt(bws) + 2), y = c(0,bws,0))
+            maxWB[abc] <- max(bws)
+            # lines(x = seq(0,1, length.out = .lt(bws)), y = bws)
+          }
         }
         stopifnot(!anyNA(aucWB) || !anyNA(maxWB))
         bw_tot <- cbind(bw_tot, 'aucWB'= aucWB, 'maxWB' = maxWB)
