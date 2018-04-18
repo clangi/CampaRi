@@ -3,7 +3,7 @@ context('nSBR')
 test_that('new trials for SBR', {
   
   # CREATION OF THE DATASET
-  silent <- T
+  silent <- F
   plt_stff <- !silent
   if(!silent) {require(testthat); require(CampaRi)} 
   stdd <- 3; n_dim <- 10; n_snap <- 3000; n_tot <- n_dim*n_snap/3; if(!silent) print(n_tot)
@@ -13,7 +13,7 @@ test_that('new trials for SBR', {
   
   # BASINS OPTIMIZATION
   nbin <- round(sqrt(n_snap*10)); if(!silent) print(nbin)
-  expect_error(optimal_bas <- CampaRi::nSBR(the_sap = file.pi,  how_fine_search = 100, force_matching = T, silent = silent))
+  expect_error(optimal_bas <- CampaRi::nSBR(data = file.pi, nx = 100, ny.aut = T, plot = T, cl.stat = T, silent = silent, dbg_basins_recognition = T), NA)
   
   
   # ------------------------------------------------------- neuro tests
