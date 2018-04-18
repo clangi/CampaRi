@@ -248,8 +248,8 @@ basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fi
           if(ltnbb == 1){
             # taking a neighborhood of the point (first)
             what <- bin_search_space[1]
-            what_l <- bin_search_space - floor(min(20, how_fine_search)/2)
-            what_r <- bin_search_space + ceiling(min(20, how_fine_search)/2)
+            what_l <- what - floor(min(20, how_fine_search)/2)
+            what_r <- what + ceiling(min(20, how_fine_search)/2)
             if(what_l < 7) what_l <- 7
             expanded_vec <- seq(what_l, what_r)
             expanded_vec <- unique(round(expanded_vec))

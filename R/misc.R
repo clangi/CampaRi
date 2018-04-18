@@ -68,7 +68,7 @@
   if(state_to_print%%1 == 0){
     if(timeit){
       time_spent <- proc.time() - time_first
-      time_spent <- time_spent["elapsed"] + time_spent["user.self"] + time_spent["sys.self"]
+      time_spent <- time_spent["elapsed"]
       time_spent <- round(as.numeric(time_spent), digits = 0)
       if(time_spent>120)
         time_needed <- paste0("(needs: ", round((time_spent*1.0/itering)*total_to_iter,digits = 0)," s)")
