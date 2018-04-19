@@ -29,11 +29,10 @@ test_that('new trials for SBR', {
   }else{
     fpi_empty <- fpi_best <- fpi_ave <- fpi_worst <- file.pi
   }
-  
-  expect_error(optimal_bas <- CampaRi::nSBR(the_sap = file.pi,  how_fine_search = 10, nSBR_method = "MI_barrier_weighting",
-                                                          force_matching = T, number_of_clusters = 3, denat_opt = 'process_subtraction',
-                                                          plot_basin_identification = plt_stff, silent = silent), NA)
-  
+  sapphire_plot(sap_table = fpi_empty, timeline = T, sub_sampling_factor = 10)
+  expect_error(optimal_bas <- CampaRi::nSBR(data = fpi_best, ny = 200, plot = T, silent = silent, dbg_nSBR = T), NA)
+  expect_error(optimal_bas <- CampaRi::nSBR(data = fpi_ave, ny = 200, plot = T, silent = silent, dbg_nSBR = T), NA)
+  expect_error(optimal_bas <- CampaRi::nSBR(data = fpi_empty, ny = 100, plot = T, silent = silent, dbg_nSBR = T), NA)
   
   if(do_it){
     ncl <- NULL
