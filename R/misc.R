@@ -136,6 +136,9 @@
   else return((x*1.0 - xmin)/(xmax - xmin))
 }
 
+# cutting the 0s
+.cut0 <- function(x) { x[x<0] <- 0; x }
+
 # fitting a quadratic model
 .denaturate <- function(yyy, xxx, polydeg = 7, plotit = FALSE){
   # yyy <- kin.pl

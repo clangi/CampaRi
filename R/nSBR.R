@@ -335,12 +335,12 @@ nSBR <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, plot=FALSE, sil
   n_unif <- c(5,10,15,20,25,30,40,50,60)
   # n_unif <- seq(5, 150, 5)
   if(!silent) cat('Calculating the barrier statistics using ') 
-  expand_MI_uni <- array(0, dim = lpi)
-  expand_MIC_uni <- array(0, dim = lpi)
-  expand_MAS_uni <- array(0, dim = lpi)
-  expand_MEV_uni <- array(0, dim = lpi)
-  expand_MCN_uni <- array(0, dim = lpi)
-  expand_MICR2_uni <- array(0, dim = lpi)
+  e_MI_uni <- array(0, dim = lpi)
+  e_MIC_uni <- array(0, dim = lpi)
+  e_MAS_uni <- array(0, dim = lpi)
+  e_MEV_uni <- array(0, dim = lpi)
+  e_MCN_uni <- array(0, dim = lpi)
+  e_MICR2_uni <- array(0, dim = lpi)
   for(nun in n_unif){
     if(!silent) cat(nun, ' ')
     brks_uni <- floor(seq(1, lpi, length.out = nun))[-c(1,nun)]
@@ -354,37 +354,49 @@ nSBR <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, plot=FALSE, sil
     MEV_uni <- .normalize(unlist(minerva.out[3,]))
     MCN_uni <- .normalize(unlist(minerva.out[4,]))
     MICR2_uni <- .normalize(unlist(minerva.out[5,]))
-    expand_MI_uni <- expand_MI_uni + stats::approx(seq(nun), c(0, 1 - MI_uni, 0), n = lpi)$y
-    expand_MIC_uni <- expand_MIC_uni + stats::approx(seq(nun), c(0, 1 - MIC_uni, 0), n = lpi)$y
-    expand_MAS_uni <- expand_MAS_uni + stats::approx(seq(nun), c(0, 1 - MAS_uni, 0), n = lpi)$y
-    expand_MEV_uni <- expand_MEV_uni + stats::approx(seq(nun), c(0, 1 - MEV_uni, 0), n = lpi)$y
-    expand_MCN_uni <- expand_MCN_uni + stats::approx(seq(nun), c(0, 1 - MCN_uni, 0), n = lpi)$y
-    expand_MICR2_uni <- expand_MICR2_uni + stats::approx(seq(nun), c(0, MICR2_uni, 0), n = lpi)$y
+    e_MI_uni <- e_MI_uni + stats::approx(seq(nun), c(0, 1 - MI_uni, 0), n = lpi)$y
+    e_MIC_uni <- e_MIC_uni + stats::approx(seq(nun), c(0, 1 - MIC_uni, 0), n = lpi)$y
+    e_MAS_uni <- e_MAS_uni + stats::approx(seq(nun), c(0, 1 - MAS_uni, 0), n = lpi)$y
+    e_MEV_uni <- e_MEV_uni + stats::approx(seq(nun), c(0, 1 - MEV_uni, 0), n = lpi)$y
+    e_MCN_uni <- e_MCN_uni + stats::approx(seq(nun), c(0, 1 - MCN_uni, 0), n = lpi)$y
+    e_MICR2_uni <- e_MICR2_uni + stats::approx(seq(nun), c(0, MICR2_uni, 0), n = lpi)$y
   }
   if(!silent) cat('divisions for the MI ratio. \n')
-  expand_MI_uni <- expand_MI_uni/.lt(n_unif)
-  expand_MIC_uni <- expand_MIC_uni/.lt(n_unif)
-  expand_MAS_uni <- expand_MAS_uni/.lt(n_unif)
-  expand_MEV_uni <- expand_MEV_uni/.lt(n_unif)
-  expand_MCN_uni <- expand_MCN_uni/.lt(n_unif)
-  expand_MICR2_uni <- expand_MICR2_uni/.lt(n_unif)
+  e_MI_uni <- e_MI_uni/.lt(n_unif)
+  e_MIC_uni <- e_MIC_uni/.lt(n_unif)
+  e_MAS_uni <- e_MAS_uni/.lt(n_unif)
+  e_MEV_uni <- e_MEV_uni/.lt(n_unif)
+  e_MCN_uni <- e_MCN_uni/.lt(n_unif)
+  e_MICR2_uni <- e_MICR2_uni/.lt(n_unif)
   
-  convMIC_cov <- .normalize(convolve(x = 1:lpi, y = expand_MIC_uni))
-  convMIC <- (expand_MIC_uni - convMIC_cov)
-  convMIC[convMIC < 0] <- 0
+  
+  convMIC_cov <- .normalize(convolve(x = 1:lpi, y = e_MIC_uni))
+  convMIC <- .cut0(e_MIC_uni - convMIC_cov)
   df.plot <- cbind('PI' = 1:lpi,
-                   'MI' = expand_MI_uni, 
-                   'MIC' = expand_MIC_uni, 
-                   'MAS' = expand_MAS_uni, 
-                   'MEV' = expand_MEV_uni, 
-                   'MCN' = expand_MCN_uni, 
-                   'MICR2' = expand_MICR2_uni,
+                   'MI' = e_MI_uni, 
+                   'MIC' = e_MIC_uni, 
+                   'MAS' = e_MAS_uni, 
+                   'MEV' = e_MEV_uni, 
+                   'MCN' = e_MCN_uni, 
+                   'MICR2' = e_MICR2_uni,
                    'PI_points_x' = progind$PI, 
                    'PI_points_y' = progind$Time/lpi,
                    'kin' = kin,
                    'convDiff' = convMIC,
-                   'conv' = convMIC_cov)
-  
+                   'conv' = convMIC_cov,
+                   'diff' = .normalize(c(0,diff(e_MIC_uni))),
+                   'diffcut' = .normalize(cut0(c(0,diff(e_MIC_uni)))),
+                   'ddiffcut' = .normalize(cut0(-c(0,diff(.normalize(cut0(c(0,diff(e_MIC_uni)))))))),
+                   'ddcutkin' = .normalize(cut0(-c(0,diff(.normalize(cut0(c(0,diff(e_MIC_uni + kin))))))))
+                   )
+  df.plot <- as.data.frame(df.plot)
+  pky <- array(0, lpi)
+  where.pk <- peaks(df.plot$ddiffcut, span = 100)
+  rank.pk <- sort(df.plot$ddiffcut)
+  pky <- as.numeric(where.pk)[where.pk]
+  pkx <- 1:lpi
+  pkx <- pkx[where.pk]
+  df.pp <- cbind(pkx, pky)
   
   ggplot(data = df.plot, mapping = aes(x = PI)) + theme_classic() + ylab('UniDiv score') +
     geom_point(mapping = aes(x = PI_points_x, y = PI_points_y), size = 0.8, col = 'grey') +
@@ -394,8 +406,11 @@ nSBR <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, plot=FALSE, sil
     # geom_line(mapping = aes(y = MEV)) +
     # geom_line(mapping = aes(y = MCN)) +
     # geom_line(mapping = aes(y = convDiff), col = 'purple') +
-    geom_line(mapping = aes(y = MICR2), col = 'green') +
-    geom_line(mapping = aes(y = kin), col = 'black') 
+    # geom_line(mapping = aes(y = MICR2), col = 'green') +
+    geom_line(mapping = aes(y = ddiffcut), col = 'green') +
+    geom_line(mapping = aes(y = ddcutkin), col = 'yellow') +
+    geom_line(mapping = aes(y = kin), col = 'black')  + 
+    geom_point(data = df.pp, mapping = aes(y = pky, x = pkx))
   
   # microbenchmarking MIC MI
   if(F){
@@ -421,22 +436,22 @@ nSBR <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, plot=FALSE, sil
     if(!is.null(denat.MI)){
       if(denat.MI != -1) kinpl <- .denaturate(yyy = kin.pl, xxx = seq(lpi), polydeg = denat.MI, plotit = F)
       else kinpl <- .denaturate(yyy = kin.pl, xxx = seq(lpi), polydeg = 7, plotit = F)
-      if(denat.MI != -1) miuni <- .denaturate(yyy = expand_MI_uni, xxx = seq(lpi), polydeg = denat.MI, plotit = F)
-      else miuni <- 1 - expand_MI_uni
+      if(denat.MI != -1) miuni <- .denaturate(yyy = e_MI_uni, xxx = seq(lpi), polydeg = denat.MI, plotit = F)
+      else miuni <- 1 - e_MI_uni
       # MI_ratio <- (kin.pl[breaks] + miuni[breaks]) / 2
     }else{
       kinpl <- .denaturate(yyy = kin.pl, xxx = seq(lpi), polydeg = 7, plotit = F)
-      miuni <- expand_MI_uni
+      miuni <- e_MI_uni
     }
   }else if(!is.null(denat) && denat == 'process_subtraction'){
     kinpl <- .normalize(kin)
     if(!is.null(denat.MI)) {
-      if(denat.MI != -1) miuni <- .denaturate(yyy = expand_MI_uni, xxx = seq(lpi), polydeg = denat.MI, plotit = F)
-      else miuni <- 1 - expand_MI_uni
-    }else miuni <- expand_MI_uni
+      if(denat.MI != -1) miuni <- .denaturate(yyy = e_MI_uni, xxx = seq(lpi), polydeg = denat.MI, plotit = F)
+      else miuni <- 1 - e_MI_uni
+    }else miuni <- e_MI_uni
   }else{
     kinpl <- kin.pl
-    miuni <- expand_MI_uni
+    miuni <- e_MI_uni
   }
   
   # select the final barrier_weight
@@ -460,8 +475,8 @@ nSBR <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, plot=FALSE, sil
     # if(cs.wMI) lines(seq(1, lpi, length.out = .lt(sl_MI)), sl_MI, col = 'darkgreen')
     
     # what is the relation with the kinetic curve?
-    # plot((kin.pl + expand_MI_uni)/2, type = "l")
-    # points(breaks, (kin.pl[breaks] + expand_MI_uni[breaks]) / 2, col = 'darkblue')
+    # plot((kin.pl + e_MI_uni)/2, type = "l")
+    # points(breaks, (kin.pl[breaks] + e_MI_uni[breaks]) / 2, col = 'darkblue')
   }
   
   # sliding window MI
@@ -563,7 +578,7 @@ nSBR <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, plot=FALSE, sil
       lbls <- c(lbls, 'stFT barriers')
     }
     gg <- gg + geom_segment(aes(x = breaks - round(lpi/30), xend = breaks + round(lpi/30), 
-                                y = MI_sbr*expand_MI_uni[breaks], yend = MI_sbr*expand_MI_uni[breaks]), col = 'red', size = 1.5)
+                                y = MI_sbr*e_MI_uni[breaks], yend = MI_sbr*e_MI_uni[breaks]), col = 'red', size = 1.5)
     gg <- gg + scale_color_manual(name = "Method", labels = lbls, values = RColorBrewer::brewer.pal(n = 8, name = 'Dark2')) +
       guides(color = guide_legend(override.aes = list(size=5)))
     print(gg)
