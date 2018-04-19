@@ -75,19 +75,25 @@
 #' 
 #' @export nSBR
 
-nSBR <- function(data, ny, local.cut=FALSE, comb_met= c('MIC', 'MIC_kin', 'kin'), pk_span = NULL, plot=FALSE, silent=FALSE,...) {
+nSBR <- function(data, ny, local.cut=FALSE, n.cluster=NULL, comb_met=c('MIC'), 
+                 unif.splits = NULL, pk_span = NULL, plot=FALSE, silent=FALSE, ...) {
   call <- match.call()
   
   if(!is.character(data) && !is.data.frame(data)) stop("data must be a string or a data frame")
   if(is.character(data) && (!all(grepl("PROGIDX", data)) && !all(grepl("REPIX", data)))) stop("Please provide a data name starting with 'PROGIDX' or 'REPIX'" )
+  if(!is.character(comb_met[1])) stop('comb_met must be a string')
+  if(!(comb_met[1] %in% c('MIC', 'MIC_kin', 'kin', 'diff', 'diff_kin'))) stop("comb_met must be in c('MIC', 'MIC_kin', 'kin', 'diff', 'diff_kin')")
+  if(!is.null(pk_span) && !.isSingleInteger(pk_span)) stop('pk_span must be a single integer')
+  if(!is.null(n.cluster) && !.isSingleInteger(n.cluster)) stop('pk_span must be a single integer')
   if((ny %% 1) != 0) stop("ny must be an integer")
   if(ny < 7) stop('ny must be > 7')
   if(!is.logical(local.cut)) stop("local.cut must be a logical value")
   if(!is.logical(plot)) stop("plot must be a logical value")
-  
+  if(!is.logical(silent)) stop("plot must be a logical value")
+  if(!is.null(unif.splits)) stopifnot(all(sapply(unif.splits, function(x) x%%1) == 0))
   # Extra arguments checks
   input.args <- list(...)
-  avail.extra.arg <- c("time.series",
+  avail.extra.arg <- c("time.series", "return_plot",
                        # 'cs.entropy', # DEPRECATED
                        # 'cs.stft', 'cs.TE', 'cs.KL', 'cs.wMI',
                        # 'cs.nUni', 'cs.nBreaks', 'cs.MI_comb', 'cs.denat', 'cs.denat.MI', 
@@ -98,6 +104,11 @@ nSBR <- function(data, ny, local.cut=FALSE, comb_met= c('MIC', 'MIC_kin', 'kin')
     if(!silent) cat('!!!!!!!!! We found the following variables without a father (not between our extra input arguments) !!!!!!!!!!\n')
     if(!silent) cat(names(input.args)[!(names(input.args) %in% avail.extra.arg)], '\n')
   }
+  
+  if('return_plot' %in% names(input.args)){
+    return_plot <- input.args$return_plot
+    stopifnot(is.logical(return_plot))
+  } else return_plot <- FALSE
   
   # dbg_nSBR for stats - dgarol
   if("dbg_nSBR" %in% names(input.args)) { # dgarol
@@ -161,19 +172,17 @@ nSBR <- function(data, ny, local.cut=FALSE, comb_met= c('MIC', 'MIC_kin', 'kin')
 
   # using the division to calculate the densities and the counts
   lpi <- .lt(progind$PI)
-  stopifnot(cs.nBreaks >= 0, cs.nBreaks <= floor(lpi/2))
   
   # calculating the weights for the barriers 
-  if(is.null(cs.nUni)) n_unif <- 40
-  else n_unif <- cs.nUni
+  if(is.null(unif.splits)) n_unif <- c(5,10,15,20,25,30,40,50,60)
+  else n_unif <- unif.splits
   stopifnot(n_unif > 0, n_unif < lpi/ 2)
   
   
   # Uniform division based mutual information
   # n_unif <- round(lpi/50) 
   # n_unif <- 10
-  n_unif <- c(5,10,15,20,25,30,40,50,60)
-  n_unif <- seq(50, 350, 15)
+  # n_unif <- seq(50, 350, 15)
   if(!silent) cat('Calculating the barrier statistics using ') 
   e_MI_uni <- array(0, dim = lpi)
   e_MIC_uni <- array(0, dim = lpi)
@@ -232,11 +241,16 @@ nSBR <- function(data, ny, local.cut=FALSE, comb_met= c('MIC', 'MIC_kin', 'kin')
   
   # setting up the stats
   df.plot <- as.data.frame(df.plot)
-  # wtp <- (df.plot$ddiffcut + kin )/ 2 # wtp what to plot (the ending peak finding subject)
-  # wtp <- df.plot$ddiffcut
-  wtp <- kin
-  nclu <- 4; nba <- nclu - 1 # cluster and barrier number 
-  span <- 5000 # number of snapshots in which only one peak
+  if(comb_met[1] == 'MIC') wtp <- df.plot$MIC
+  else if(comb_met[1] == 'kin') wtp <- kin
+  else if(comb_met[1] == 'MIC_kin') wtp <- (df.plot$MIC + kin )/ 2 # wtp what to plot (the ending peak finding subject)
+  else if(comb_met[1] == 'diff_kin') wtp <- (df.plot$ddiffcut + kin )/ 2
+  else if(comb_met[1] == 'diff') wtp <- df.plot$ddiffcut
+  else stop('comb_met[1] not in permitted ones. This here should not happen.')
+  
+  if(is.null(pk_span)) span <- round(lpi/50) # number of snapshots in which only one peak
+  else span <- pk_span
+  stopifnot(span > 3, span < lpi/2)
   
   # finding peaks and ordering 
   pky <- array(0, lpi)
@@ -247,28 +261,40 @@ nSBR <- function(data, ny, local.cut=FALSE, comb_met= c('MIC', 'MIC_kin', 'kin')
   rank.pk <- order(wtp[where.pk], decreasing = T)
   rank.pk <- pkx[rank.pk]
   df.pp <- cbind(pkx, pky)
-  rnk_ts <- rank.pk[1:(min(15, .lt(rank.pk)))] # rank to show (number of peaks to show)
+  
+  if(is.null(n.cluster)) nclu <- 15
+  else nclu <- n.cluster
+  nba <- nclu - 1 # cluster and barrier number 
+  rnk_ts <- rank.pk[1:(min(max(15, nclu), .lt(rank.pk)))] # rank to show (number of peaks to show)
+  
+  dhc <- dens_histCounts(progind, breaks = rank.pk, nx = ny, ny = ny) # breaks are the barriers points on x
+  dens <- dhc$density
+  ent <- .normalize(apply(dens, 2, .myShEn))
+  
   
   # if(nrow(df.plot) > 50000) df.plot <- df.plot[unique(round(seq(1, lpi, length.out = 50000))),] # it is not clear for the barriers
   ggp <- ggplot(data = df.plot, mapping = aes(x = PI)) + theme_classic() + ylab('UniDiv score') +
          geom_point(mapping = aes(x = PI_points_x, y = PI_points_y), size = 0.8, col = 'grey') +
          # geom_line(mapping = aes(y = MI), col = 'blue') +
-         geom_line(mapping = aes(y = MIC, col = 'MIC')) +
+         geom_line(mapping = aes(y = MIC), color = 'darkred') +
          # geom_line(mapping = aes(y = MAS)) +
          # geom_line(mapping = aes(y = MEV)) +
          # geom_line(mapping = aes(y = MCN)) +
          # geom_line(mapping = aes(y = convDiff), col = 'purple') +
          # geom_line(mapping = aes(y = MICR2), col = 'green') +
-         geom_line(mapping = aes(y = ddiffcut, col = 'ddiffcut')) +
+         # geom_line(mapping = aes(y = ddiffcut, col = 'ddiffcut')) +
          # geom_line(mapping = aes(y = ddcutkin), col = 'yellow') +
-         geom_line(mapping = aes(y = kin, col = 'kin'))  + 
+         # geom_line(mapping = aes(y = kin, col = 'kin'))  + 
          geom_point(data = df.pp, mapping = aes(y = pky, x = pkx)) +
          geom_vline(xintercept = rank.pk[1:nba], col = 'black', size = 1, linetype="dotted") +
          geom_point(data = data.frame(a = rnk_ts, b = wtp[rnk_ts]), 
                    mapping = aes(x = a, y = b),
-                   shape = 3, col = 'deeppink3', size = 5, stroke = 4) +
-    scale_colour_manual(name="Statistic", values=c("MIC"="darkred","ddiffcut"="lightgreen","kin"="black"))
-  print(ggp)
+                   shape = 3, col = 'darkblue', size = 5, stroke = 2.5) + xlab('Progress Index') + ylab('IMI')
+  #+ #deeppink3
+    # scale_colour_manual(name="Statistic", values=c("MIC"="darkred","ddiffcut"="lightgreen","kin"="black"))
+  if(return_plot) return(ggp)
+  else if(plot) print(ggp)
+  
   # microbenchmarking MIC MI
   if(F){
     mbm <- microbenchmark::microbenchmark(
@@ -278,193 +304,15 @@ nSBR <- function(data, ny, local.cut=FALSE, comb_met= c('MIC', 'MIC_kin', 'kin')
     )
     ggplot2::autoplot(mbm)  
   }
-  
-  
-  
-  if(F){
-    
-    # SBR based mutual information - it needs breaks
-    dhc_sbr <- dens_histCounts(progind, breaks = breaks, nx = ny, ny = ny) # breaks are the barriers points on x
-    sbr_cnts <- dhc_sbr$counts    
-    MI_sbr <- sapply(seq(.lt(breaks)), function(j) infotheo::mutinformation(sbr_cnts[, j], sbr_cnts[, j+1]))
-    MI_sbr <- .normalize(MI_sbr)
-    
-    # sliding window MI
-    if(cs.nBreaks == 0) nbr <- .lt(breaks)
-    else nbr <- cs.nBreaks
-    if(cs.wMI) {
-      if(!silent) cat('Calculating the slided MI using 10 sub-division of the uniform divisions. \n')
-      sl_MI <- sliding_MI(progind = progind, n_breaks = nbr, n_slides = 10, nx = ny, ny = ny)
-    }
-    
-    if(cs.nBreaks == 0) tobrk <- breaks
-    else tobrk <- floor(seq(1, lpi, length.out = cs.nBreaks))
-    dhc <- dens_histCounts(progind, breaks = tobrk, nx = ny, ny = ny) # breaks are the barriers points on x
-    dens <- dhc$density
-    cnts <- dhc$counts
-    
-    # Analysis of it - rolling means/max/min
-    # require(RcppRoll)
-    # plot(sl_MI, type = 'l')
-    # lines(x = c(1, .lt(sl_MI)), y = rep(mean(sl_MI), 2))
-    # lines(RcppRoll::roll_mean(sl_MI, n = 18), col = 'red')
-    # lines(RcppRoll::roll_sd(sl_MI, n = 30), col = 'blue')
-    # lines(RcppRoll::roll_min(sl_MI, n = 20), col = 'blue')
-    # lines(RcppRoll::roll_max(sl_MI, n = 20), col = 'blue')
-    # lines(abs(RcppRoll::roll_mean(sl_MI, n = 10) - RcppRoll::roll_mean(sl_MI, n = 60)), col = 'blue')
-    
-    # short time Fourier Transform
-    if(cs.stft){
-      if(!silent) cat('Calculating the short time Fourier Transform using a window of 30 and an increment of 1. \n')
-      short_time_FT <- e1071::stft(sl_MI, win = 30, inc = 1)
-      histOfStft <- apply(short_time_FT$values, 1, sum)
-      histOfStft <- .normalize(histOfStft)
-      if(plot){
-        plot(short_time_FT)
-        # plot(apply(short_time_FT$values, 2, sum), type = 'l', xlab = 'Freq')
-        plot(histOfStft, type = 'l')
-        lines(abs(diff(abs(diff(histOfStft))))^2, type = 'l')
-        lines(abs(diff(histOfStft))^2, type = 'l')
-      }
-      
-      # peaks finding
-      # peakss <- RcppRoll::roll_mean(abs(diff(histOfStft))^2, 10)
-      if(!silent) cat('Finding the peaks using a standard span of 80. \n')
-      peakss <- abs(diff(histOfStft))^2
-      TFpeakss <- splus2R::peaks(peakss, span = 80)
-      if(plot){
-        plot(peakss, type = 'l')
-        lines(TFpeakss, type = 'l')
-      }
-      
-      # now we try to project it back to the original points (.lt -> 441)
-      # .lt(TFpeakss)
-      xpeaks <- seq(1, lpi, length.out = .lt(TFpeakss))[TFpeakss]
-    }
-    
-    # good_areas_for_thresholds # deprecated
-    # gaft <- 1 - RcppRoll::roll_min(sl_MI, n = 20)
-    # plot(x= seq(1, lpi - (.lt(sl_MI) - .lt(gaft))*lpi/.lt(sl_MI), length.out = .lt(gaft)), y=gaft, type = 'l')
-    # segments(x0=breaks_save, y0 = 0, y1 = 1)
-    
-    # calculating the standards and not
-    ent <- .normalize(apply(dens, 2, myShEn)) # this is a value PER cluster
-    distHell <- sapply(seq(.lt(tobrk)), function(j) myHell(dens[, j], dens[, j+1]))
-    distMI <- sapply(seq(.lt(tobrk)), function(j) infotheo::mutinformation(cnts[, j], cnts[, j+1])); distMI <- .normalize(distMI)
-    if(cs.KL) { distSymKL <- sapply(seq(.lt(tobrk)), function(j) myKL(dens[, j], dens[, j+1], T)); distSymKL <- .normalize(distSymKL) }
-    if(cs.KL) { distKL <- sapply(seq(.lt(tobrk)), function(j) myKL(dens[, j], dens[, j+1], F)); distKL <- .normalize(distKL) }
-    if(cs.TE) { distSymTE <- sapply(seq(.lt(tobrk)), function(j) myTE(dens[, j], dens[, j+1], emb = 3, sym = T)); distSymTE <- .normalize(distSymTE) }
-    
-    # defining the centers/ini/end of the splits
-    center_cl <- diff(c(1, tobrk, lpi))/2 + c(1, tobrk)
-    ini_points <- c(1, tobrk); end_points <- c(1, tobrk) + diff(c(1, tobrk, lpi))
-    
-    # Plotting the barriers, breaks and statistics on the breaks 
-    if(plot && F){ # I will put it back in a moment
-      gg <- ggplot() + theme_classic() + xlab('Progress Index') + ylab('Barrier score') +
-        geom_line(aes(tobrk, distHell, col = as.factor(1)), size = 0.5) +
-        geom_segment(aes(x = ini_points, xend = end_points, y = ent, yend = ent, col = as.factor(2)), size = 4) +
-        geom_line(aes(tobrk, distMI, col = as.factor(3)), size = 2) +
-        geom_point(aes(progind$PI, progind$Time/lpi), size = 0.1) + 
-        geom_vline(aes(xintercept=c(1, tobrk, lpi)), size = 0.1) + # MI and entropy calculations 
-        geom_vline(aes(xintercept=c(1, breaks, lpi)), size = 0.5)  # Found barriers from SBR
-      lbls <- c('Hellinger', 'Entropy', 'MI')
-      if(cs.KL){
-        gg <- gg + geom_line(aes(tobrk, distKL, col = as.factor(4)), size = 0.5) +
-          geom_line(aes(tobrk, distSymKL, col = as.factor(5)), size = 0.5)
-        lbls <- c(lbls, 'KL', 'symKL')
-      }
-      if(cs.TE){
-        gg <- gg + geom_line(aes(tobrk, distSymTE, col = as.factor(6)), size = 0.5)
-        lbls <- c(lbls, 'symTE')
-      }
-      if(cs.wMI){
-        gg <- gg + geom_line(aes(seq(1, lpi, length.out = .lt(sl_MI)), sl_MI, col = as.factor(7)), size = 1) + 
-          geom_hline(aes(yintercept = mean(sl_MI)))
-        lbls <- c(lbls, 'WinMI')
-      }
-      if(cs.stft){
-        gg <- gg + geom_vline(aes(xintercept=c(xpeaks, lpi), col = as.factor(8)), size = 0.2) # no need of new splits... better to score the bsr split (cohesion - MI) 
-        lbls <- c(lbls, 'stFT barriers')
-      }
-      gg <- gg + geom_segment(aes(x = breaks - round(lpi/30), xend = breaks + round(lpi/30), 
-                                  y = MI_sbr*e_MI_uni[breaks], yend = MI_sbr*e_MI_uni[breaks]), col = 'red', size = 1.5)
-      gg <- gg + scale_color_manual(name = "Method", labels = lbls, values = RColorBrewer::brewer.pal(n = 8, name = 'Dark2')) +
-        guides(color = guide_legend(override.aes = list(size=5)))
-      print(gg)
-    }
-    
-    # Entropy calculations
-    if(cs.entropy){
-      if(!silent) cat('Calculating various entropy scores. This feature remains for visualization only. \n')
-      # ent <- .normalize(apply(dens, 2, myShEn)/apply(dens, 2, function(x) mean(x)))
-      ent <- .normalize(apply(dens, 2, myShEn)) # this is a value PER cluster
-      # ent1 <- .normalize(apply(dens, 2, myShEn)/diff(c(1, tobrk, lpi))) # the size is not really relevant
-      ent1 <- .normalize(apply(dens, 2, myShEn) * apply(cnts, 2, function(x) sum(x)/sum(x != 0)))
-      ent2 <- .normalize(apply(dens, 2, myShEn)/apply(dens, 2, function(x) max(x)-min(x))) 
-      ent3 <- .normalize(apply(dens, 2, myShEn)/apply(dens, 2, function(x) sd(x)))
-      ent4 <- .normalize(apply(cnts, 2, function(x) sd(x)))
-      ent5 <- .normalize(apply(dens, 2, function(x) mean(x[which(x!=0)])))
-      
-      # Check for NAs
-      if(anyNA(ent) || anyNA(ent1) || anyNA(ent2) || anyNA(ent3) || anyNA(ent4) || anyNA(ent5))
-        stop('We found NAs in the entropy calculations. you should reduce or re consider statistical binning.')
-      
-      # Plotting entropy calculations
-      if(plot){
-        gg <- ggplot() + theme_classic() + xlab('Progress Index') + ylab('Barrier score') +
-          geom_segment(aes(x = ini_points, xend = end_points, y = ent, yend = ent, col = as.factor(1)), size = 3, alpha = 0.5) +
-          geom_segment(aes(x = ini_points, xend = end_points, y = ent1, yend = ent1, col = as.factor(2)), size = 3, alpha = 0.5) +
-          geom_segment(aes(x = ini_points, xend = end_points, y = ent2, yend = ent2, col = as.factor(3)), size = 3, alpha = 0.5) +
-          geom_segment(aes(x = ini_points, xend = end_points, y = ent3, yend = ent3, col = as.factor(4)), size = 3, alpha = 0.5) +
-          geom_segment(aes(x = ini_points, xend = end_points, y = ent4, yend = ent4, col = as.factor(5)), size = 3, alpha = 0.5) +
-          geom_segment(aes(x = ini_points, xend = end_points, y = ent5, yend = ent5, col = as.factor(6)), size = 3, alpha = 0.5) +
-          geom_point(aes(progind$PI, progind$Time/lpi), size = 0.1) +  
-          geom_vline(aes(xintercept=c(1, tobrk, lpi)), size = 0.1) + # MI and entropy calculations 
-          geom_vline(aes(xintercept=c(1, breaks, lpi)), size = 0.5) + # Found barriers from SBR
-          scale_color_manual(name = "Entropy", 
-                             labels = c("Classic", "/size_cl", "/max-min", "/max", "sd(cnts)", "mean(dens!=0)"), 
-                             values = RColorBrewer::brewer.pal(n = 6, name = 'Dark2')) +
-          guides(color = guide_legend(override.aes = list(size=5)))
-        print(gg)    
-      }
-    }
-  }
-  
-  
-  # Final assignment for output
-  if(F){
-    statistics <- NULL
-    ele <- 1
-    if(cs.nBreaks == 0){ # case in which the statistic comes from SBR splits
-      tab.st <- cbind(tab.st, 'Hellinger' =  c(-1, distHell), 'Entropy' = ent, 'MI' = c(-1, distMI))
-      if(cs.KL) tab.st <- cbind(tab.st, 'symKL' = c(-1, distSymKL))
-      if(cs.KL) tab.st <- cbind(tab.st, 'KL' = c(-1, distKL))
-      if(cs.TE) tab.st <- cbind(tab.st, 'symTE' = c(-1, distSymTE))
-    }else{ # otherwise
-      statistics <- list('Hellinger' =  distHell, 'Entropy' = ent, 'MI' = distMI); ele <- ele + 3
-      if(cs.KL) { statistics[[ele]] <- distSymKL; names(ele)[ele] <- 'symKL'; ele <- ele + 1 }
-      if(cs.KL) { statistics[[ele]] <- distKL; names(ele)[ele] <- 'KL'; ele <- ele + 1 }
-      if(cs.TE) { statistics[[ele]] <- distSymTE; names(ele)[ele] <- 'symTE'; ele <- ele + 1 }
-    }
-    if(cs.wMI) { statistics[[ele]] <- sl_MI; names(ele)[ele] <- 'winMI'; ele <- ele + 1 }
-    if(cs.stft) { statistics[[ele]] <- xpeaks; names(ele)[ele] <- 'stFT'; ele <- ele + 1 }
-    if(!silent) cat('Keeping only the barriers which are reasonably far from borders.\n')
-    select_non_border <- breaks > lpi/n_unif[.lt(n_unif)] & breaks < lpi - lpi/n_unif[.lt(n_unif)]
-    if(!silent) cat('Discarded the following barrier indexes (from left / also on the stats out):', seq(1, .lt(breaks))[!select_non_border], '\n')
-    forout <- MI_ratio
-    forout[!select_non_border] <- -1
-    tab.st <- cbind(tab.st, 'barWeight' = c(-1, forout))
-  }
 
+  
+  # FINAL OUTPUT
   invisible(list('nbins' = c(ny, ny), 
                  'barriers' = rank.pk, 
                  # 'seq.st' = seq.st[order(progind$Time)], 
                  'call' = call, 
                  'data.out' = data.out))
 }
-
-
 
 
 #########################################################
@@ -478,7 +326,7 @@ myTE <- function(x, y, emb, sym = T, sd = 0.001){
   if(sym) return((unlist(xy) + unlist(yx))/2)
   else return(unlist(xy))
 }
-myShEn <- function(x){
+.myShEn <- function(x){
   x2 <- replace(x = x, list = which(x == 0), values = 1)
   return(-sum(x2*log(x2)))
 }
@@ -531,7 +379,7 @@ sliding_MI <- function(progind, n_breaks = 50, n_slides = 10, nx, ny = nx){
   return(c(t(do.call(cbind, span_MI))))
 }
 
-# --------------------------- functions
+# --------------------------- functions - fra
 .scale <- function(x) {
   scl <- (max(progind$Time)-1)/(max(x)-min(x))
   return(1+(x-min(x))*scl)
