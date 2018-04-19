@@ -16,16 +16,12 @@
 #'          \item "\code{time.series}" File name. If specified, it substitutes the time series of the PROGIDX_<..> file with the one provided by the file.
 #'          \item "\code{cl.stat}" If \code{TRUE} it will activate the cluster analysis with Mutual Information, Hellinger distance and Shannon Entropy
 #'          as defaults.
-#'          \item "\code{cl.stat.weight.barriers}" If \code{TRUE} (standard once cl.stat is active) it will calculate two different Mutual Information: 
-#'          one based on the clusters founds and one based on uniform subsampling (done using \code{cl.stat.nBreaks} or the number of cluster founds using 
-#'          SBR multiplied for 10). The second one will be inverted to find the discontinuities and the barriers will be weighted simply multiplying the two values 
-#'          found on the specific progress index data point.  
-#'          \item "\code{cl.stat.nBreaks}" Integer. This variable defines the number of splits for the analysis. If set to 0 it will use the breaks found in the SBR.
-#'          \item "\code{cl.stat.denat}" This value can be set to \code{"process_subtraction"} or \code{"poly_interpolation"} and it is defining the removal of 
+#'          \item "\code{cs.nBreaks}" Integer. This variable defines the number of splits for the analysis. If set to 0 it will use the breaks found in the SBR.
+#'          \item "\code{cs.denat}" This value can be set to \code{"process_subtraction"} or \code{"poly_interpolation"} and it is defining the removal of 
 #'          parabolic artifacts in the kinetic trace. The polynomial fit is by default 7 and 12 in degree for the kinetic annotation and uniform MI curves. The process 
 #'          option istead is referring to the simulated process which is behind the kin ann. This option can be set to \code{TRUE} for using the process way.
-#'          \item "\code{cl.stat.denat.MI}" Integer. If NULL its default is 7 for poly_interpolation of the kinetic ann but nothing is done on the MI score. 
-#'          \item "\code{cl.stat.MI_comb}" This value is the representative of how the various calculation in barrier weighting are combined. In particular the options 
+#'          \item "\code{cs.denat.MI}" Integer. If NULL its default is 7 for poly_interpolation of the kinetic ann but nothing is done on the MI score. 
+#'          \item "\code{cs.MI_comb}" This value is the representative of how the various calculation in barrier weighting are combined. In particular the options 
 #'          are the following:
 #'          \itemize{
 #'            \item "\code{mean}" Mean between the MI based on the SBR and the MI based on uniform subdivisions
@@ -34,16 +30,14 @@
 #'            \item "\code{kin}" Only kinetic annotation value on the barrier
 #'            \item "\code{MI}" Only the MI based on the SBR and the MI based on uniform subdivisions
 #'          }
-#'          \item "\code{cl.stat.nUni}" Integer. This variable defines the number of splits for the uniform sampling. If not set the algorithm will use 40 divisions which 
+#'          \item "\code{cs.nUni}" Integer. This variable defines the number of splits for the uniform sampling. If not set the algorithm will use 40 divisions which 
 #'          could not be optimal for clogged data. Generally speaking, this value is useful for the MI - ratio weighting of the barriers. It is also possible to insert a 
 #'          vector of integer and the resulting value is an average of these expanded results. We advice to use \code{c(5,10,15,20,25,30,40,50)} generally.
-#'          \item "\code{plot.cl.stat}" Logical for plotting the statistics of the SBR basins using various colors for the methods along with 
-#'          the temporal annotation (points in a progress index / time plot). Time has been normalized between 0 and 1 as all the statistics.
-#'          \item "\code{cl.stat.entropy}" Logical. Calculate Shannon entropy.
-#'          \item "\code{cl.stat.stft}" Logical. Calculate short time fourier transform.
-#'          \item "\code{cl.stat.TE}" Logical. Calculate symmetric Transfer Entropy.
-#'          \item "\code{cl.stat.KL}" Logical. Calculate symmetric and non-symmetric Kullback-Leibler divergence.
-#'          \item "\code{cl.stat.wMI}" Logical. Use the number of breaks (\code{cl.stat.nBreaks}) to find the Mutual Information for 10 slided divisions.
+#'          \item "\code{cs.entropy}" Logical. Calculate Shannon entropy.
+#'          \item "\code{cs.stft}" Logical. Calculate short time fourier transform.
+#'          \item "\code{cs.TE}" Logical. Calculate symmetric Transfer Entropy.
+#'          \item "\code{cs.KL}" Logical. Calculate symmetric and non-symmetric Kullback-Leibler divergence.
+#'          \item "\code{cs.wMI}" Logical. Use the number of breaks (\code{cs.nBreaks}) to find the Mutual Information for 10 slided divisions.
 #'          This will result in 10*nBreaks values.
 #'          \item "\code{data.out.it}" Should I output the data.frame in input?
 #'      }
@@ -95,10 +89,10 @@ nSBR <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, plot=FALSE, sil
   # Extra arguments checks
   input.args <- list(...)
   avail.extra.arg <- c("pol.degree", "time.series",
-                       "cl.stat", "plot.cl.stat", 'cl.stat.entropy', 'cl.stat.weight.barriers',
-                       'cl.stat.stft', 'cl.stat.TE', 'cl.stat.KL', 'cl.stat.wMI',
-                       'cl.stat.nUni', 'cl.stat.nBreaks', 'cl.stat.MI_comb', 'cl.stat.denat', 'cl.stat.denat.MI', 
-                       'dbg_basins_recognition', 'data.out.it')
+                       'cs.entropy',
+                       'cs.stft', 'cs.TE', 'cs.KL', 'cs.wMI',
+                       'cs.nUni', 'cs.nBreaks', 'cs.MI_comb', 'cs.denat', 'cs.denat.MI', 
+                       'dbg_nSBR', 'data.out.it')
   
   if(!is.null(names(input.args)) && any(!(names(input.args) %in% avail.extra.arg))){
     warning('There is a probable mispelling in one of the inserted variables. Please check the available extra input arguments.')
@@ -106,11 +100,11 @@ nSBR <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, plot=FALSE, sil
     if(!silent) cat(names(input.args)[!(names(input.args) %in% avail.extra.arg)], '\n')
   }
   
-  # dbg_basins_recognition for stats - dgarol
-  if("dbg_basins_recognition" %in% names(input.args)) { # dgarol
-    dbg_basins_recognition <- input.args$dbg_basins_recognition
-    stopifnot(is.logical(dbg_basins_recognition))
-  } else dbg_basins_recognition <- FALSE
+  # dbg_nSBR for stats - dgarol
+  if("dbg_nSBR" %in% names(input.args)) { # dgarol
+    dbg_nSBR <- input.args$dbg_nSBR
+    stopifnot(is.logical(dbg_nSBR))
+  } else dbg_nSBR <- FALSE
   
   
   if("data.out.it" %in% names(input.args)) { # dgarol
@@ -118,116 +112,74 @@ nSBR <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, plot=FALSE, sil
     stopifnot(is.logical(data.out.it))
   } else data.out.it <- FALSE
   
-  # cluster statistics check - dgarol
-  
-  if("cl.stat" %in% names(input.args)) { # dgarol
-    cl.stat <- input.args$cl.stat
-    cl.stat.weight.barriers <- TRUE
-    stopifnot(is.logical(cl.stat))
-  } else cl.stat <- FALSE
-  
-  # Checking the weight of the barriers
-  if("cl.stat.weight.barriers" %in% names(input.args)) { # dgarol
-    cl.stat.weight.barriers <- input.args$cl.stat.weight.barriers
-    stopifnot(is.logical(cl.stat.weight.barriers))
-    if(!cl.stat && cl.stat.weight.barriers) cl.stat <- TRUE
-  } else if(!cl.stat) cl.stat.weight.barriers <- FALSE
-  
   # Checking the number of breaks for the statistics (0 is the standard barriers)
-  if("cl.stat.nBreaks" %in% names(input.args)) { # dgarol
-    cl.stat.nBreaks <- input.args$cl.stat.nBreaks
-    stopifnot(.isSingleInteger(cl.stat.nBreaks))
-    if(!cl.stat) cl.stat <- TRUE
-  } else cl.stat.nBreaks <- 0
+  if("cs.nBreaks" %in% names(input.args)) { # dgarol
+    cs.nBreaks <- input.args$cs.nBreaks
+    stopifnot(.isSingleInteger(cs.nBreaks))
+  } else cs.nBreaks <- 0
   
   # checking the uniform sampling nsplits
-  if("cl.stat.denat" %in% names(input.args)) { # dgarol
-    cl.stat.denat <- input.args$cl.stat.denat
+  if("cs.denat" %in% names(input.args)) { # dgarol
+    cs.denat <- input.args$cs.denat
     denat_opt.ava <- c("process_subtraction", "poly_interpolation")
-    if(is.logical(cl.stat.denat) && cl.stat.denat){
-      cl.stat.denat <- denat_opt.ava[1]
-    }else if(is.logical(cl.stat.denat) && !cl.stat.denat) cl.stat.denat <- NULL 
-    if(!is.null(cl.stat.denat)){
-      stopifnot(is.character(cl.stat.denat))
-      if(!(cl.stat.denat[1] %in% denat_opt.ava)) 
-        stop("cl.stat.denat method option not valid.")
-      if(!cl.stat) {
-        cl.stat <- TRUE
-        cl.stat.weight.barriers <- TRUE
-      }
+    if(is.logical(cs.denat) && cs.denat){
+      cs.denat <- denat_opt.ava[1]
+    }else if(is.logical(cs.denat) && !cs.denat) cs.denat <- NULL 
+    if(!is.null(cs.denat)){
+      stopifnot(is.character(cs.denat))
+      if(!(cs.denat[1] %in% denat_opt.ava)) 
+        stop("cs.denat method option not valid.")
     }
-  } else cl.stat.denat <- NULL
-  if("cl.stat.denat.MI" %in% names(input.args)) { # dgarol
-    cl.stat.denat.MI <- input.args$cl.stat.denat.MI
-    if(!is.null(cl.stat.denat.MI)){
-      if(is.logical(cl.stat.denat.MI) && cl.stat.denat.MI){
-        cl.stat.denat.MI <- 7
-      }else if(is.logical(cl.stat.denat.MI) && !cl.stat.denat.MI) cl.stat.denat.MI <- NULL 
-      stopifnot(.isSingleInteger(cl.stat.denat.MI))
-      if(cl.stat.denat.MI < -1 || cl.stat.denat.MI == 0 || cl.stat.denat.MI > 50) stop('cl.stat.denat.MI must be between 1 and 50.')
-      if(!cl.stat) cl.stat <- TRUE
-      if(!cl.stat.weight.barriers) cl.stat.weight.barriers <- TRUE
-      if(is.null(cl.stat.denat)) cl.stat.denat <- 'poly_interpolation'
+  } else cs.denat <- NULL
+  if("cs.denat.MI" %in% names(input.args)) { # dgarol
+    cs.denat.MI <- input.args$cs.denat.MI
+    if(!is.null(cs.denat.MI)){
+      if(is.logical(cs.denat.MI) && cs.denat.MI){
+        cs.denat.MI <- 7
+      }else if(is.logical(cs.denat.MI) && !cs.denat.MI) cs.denat.MI <- NULL 
+      stopifnot(.isSingleInteger(cs.denat.MI))
+      if(cs.denat.MI < -1 || cs.denat.MI == 0 || cs.denat.MI > 50) stop('cs.denat.MI must be between 1 and 50.')
+      if(is.null(cs.denat)) cs.denat <- 'poly_interpolation'
     }
-  } else cl.stat.denat.MI <- NULL
+  } else cs.denat.MI <- NULL
   
-  if("cl.stat.MI_comb" %in% names(input.args)) { # dgarol
-    cl.stat.MI_comb <- input.args$cl.stat.MI_comb
-    stopifnot(is.character(cl.stat.MI_comb))
-    stopifnot(cl.stat.MI_comb %in% c('MI', 'kin', 'mean', 'kin_MI', 'multip'))
-    if(!cl.stat) {
-      cl.stat <- TRUE
-      cl.stat.weight.barriers <- TRUE
-    }
-  } else cl.stat.MI_comb <- 'kin_MI'
+  if("cs.MI_comb" %in% names(input.args)) { # dgarol
+    cs.MI_comb <- input.args$cs.MI_comb
+    stopifnot(is.character(cs.MI_comb))
+    stopifnot(cs.MI_comb %in% c('MI', 'kin', 'mean', 'kin_MI', 'multip'))
+  } else cs.MI_comb <- 'kin_MI'
   
-  if("cl.stat.nUni" %in% names(input.args)) { # dgarol
-    cl.stat.nUni <- input.args$cl.stat.nUni
-    if(!is.null(cl.stat.nUni)){
-      stopifnot(all(sapply(cl.stat.nUni, function(x) x%%1) == 0))
-      if(!cl.stat) {
-        cl.stat <- TRUE
-        cl.stat.weight.barriers <- TRUE
-      }
+  if("cs.nUni" %in% names(input.args)) { # dgarol
+    cs.nUni <- input.args$cs.nUni
+    if(!is.null(cs.nUni)){
+      stopifnot(all(sapply(cs.nUni, function(x) x%%1) == 0))
     }
-  } else cl.stat.nUni <- NULL
+  } else cs.nUni <- NULL
   
   
   # Specific cluster statistics
-  if("cl.stat.wMI" %in% names(input.args)) { # dgarol
-    cl.stat.wMI <- input.args$cl.stat.wMI
-    stopifnot(is.logical(cl.stat.wMI))
-    if(!cl.stat && cl.stat.wMI) cl.stat <- TRUE
-  } else cl.stat.wMI <- FALSE      # can be long
-  if("cl.stat.KL" %in% names(input.args)) { # dgarol
-    cl.stat.KL <- input.args$cl.stat.KL
-    stopifnot(is.logical(cl.stat.KL))
-    if(!cl.stat && cl.stat.KL) cl.stat <- TRUE
-  } else cl.stat.KL <- FALSE
-  if("cl.stat.TE" %in% names(input.args)) { # dgarol
-    cl.stat.TE <- input.args$cl.stat.TE
-    stopifnot(is.logical(cl.stat.TE))
-    if(!cl.stat && cl.stat.TE) cl.stat <- TRUE
-  } else cl.stat.TE <- FALSE
-  if("cl.stat.stft" %in% names(input.args)) { # dgarol
-    cl.stat.stft <- input.args$cl.stat.stft
-    stopifnot(is.logical(cl.stat.stft))
-    if(!cl.stat && cl.stat.stft) cl.stat <- TRUE
-  } else cl.stat.stft <- FALSE     # it is plotting too much
+  if("cs.wMI" %in% names(input.args)) { # dgarol
+    cs.wMI <- input.args$cs.wMI
+    stopifnot(is.logical(cs.wMI))
+  } else cs.wMI <- FALSE      # can be long
+  if("cs.KL" %in% names(input.args)) { # dgarol
+    cs.KL <- input.args$cs.KL
+    stopifnot(is.logical(cs.KL))
+  } else cs.KL <- FALSE
+  if("cs.TE" %in% names(input.args)) { # dgarol
+    cs.TE <- input.args$cs.TE
+    stopifnot(is.logical(cs.TE))
+  } else cs.TE <- FALSE
+  if("cs.stft" %in% names(input.args)) { # dgarol
+    cs.stft <- input.args$cs.stft
+    stopifnot(is.logical(cs.stft))
+  } else cs.stft <- FALSE     # it is plotting too much
   
   # Entropy deeper exploration
-  if("cl.stat.entropy" %in% names(input.args)) { # dgarol
-    cl.stat.entropy <- input.args$cl.stat.entropy
-    stopifnot(is.logical(cl.stat.entropy))
-    if(!cl.stat && cl.stat.entropy) cl.stat <- TRUE
-  } else cl.stat.entropy <- FALSE
-  
-  # Plotting
-  if("plot.cl.stat" %in% names(input.args)) { # dgarol
-    plot.cl.stat <- input.args$plot.cl.stat
-    stopifnot(is.logical(plot.cl.stat))
-    if(!cl.stat && plot.cl.stat) cl.stat <- TRUE
-  } else plot.cl.stat <- FALSE
+  if("cs.entropy" %in% names(input.args)) { # dgarol
+    cs.entropy <- input.args$cs.entropy
+    stopifnot(is.logical(cs.entropy))
+  } else cs.entropy <- FALSE
   
   # --------------------------- functions
   scale <- function(x) {
@@ -352,192 +304,176 @@ nSBR <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, plot=FALSE, sil
   # lx <- round(cstored/nx)
   # sd.kin <- 1*lx
   # sd.dyn <- 1*lx
+  parabol <- 2*progind$PI*(cstored-progind$PI)/cstored
+  parabol <- replace(parabol, which(parabol==0), min(parabol[-which(parabol==0)]))
+  parabol.log <- -log(parabol/cstored)
+  cutf <- replace(progind$Cut, which(progind$Cut==0), min(progind$Cut[which(progind$Cut>0)]))
+  kin <- -log(cutf / cstored)-parabol.log
+  kin[kin < 0] <- 0
+  kin <- .normalize(kin)
   
-  
-  #######################################################################
-  #### final calculations for scores - dgarol
-  #######################################################################
-  if(dbg_basins_recognition) browser()
-  # functions
-  # ----------------------------------------------------
-  myTE <- function(x, y, emb, sym = T, sd = 0.001){
-    nx <- x + stats::rnorm(n = .lt(x), mean = 0, sd = sd)
-    ny <- y + stats::rnorm(n = .lt(x), mean = 0, sd = sd)
-    xy <- TransferEntropy::computeTE(nx, ny, embedding = emb, k = 2, safetyCheck = T)
-    yx <- TransferEntropy::computeTE(ny, nx, embedding = emb, k = 2, safetyCheck = T)
-    if(sym) return((unlist(xy) + unlist(yx))/2)
-    else return(unlist(xy))
-  }
-  myShEn <- function(x){
-    x2 <- replace(x = x, list = which(x == 0), values = 1)
-    return(-sum(x2*log(x2)))
-  }
-  
-  myKL <- function(x, y, sym = T){
-    xn <- x[-which(x==0 | y==0)]
-    yn <- y[-which(x==0 | y==0)]
-    if(sym) return((sum(xn*log(xn/yn)) + sum(yn*log(yn/xn)))/2)
-    else return(sum(xn*log(xn/yn)))
-  }
-  
-  # creates the densities and the counts over bins (only ny is relevant) - doing hist2d
-  dens_histCounts <- function(progind, breaks, nx, ny = nx){
-    hist.internal <- hist2d(matrix(c(progind[,1], progind[,2]), ncol=2, nrow=.lt(progind$PI)), nbins=c(nx, ny), show=FALSE)
-    cnts <- matrix(0, nrow=ny, ncol=(.lt(breaks) + 1))
-    for (i in 1:ncol(cnts)) {
-      if (i==1) {
-        ncls <- 1
-        ncle <- which.min(abs(hist.internal$x - breaks[i]))
-      } else if (i == (.lt(breaks) + 1) ) {
-        ncls <- which.min(abs(hist.internal$x - breaks[i-1])) 
-        ncle <- nx
-      } else {
-        ncls <- which.min(abs(hist.internal$x - breaks[i-1]))
-        ncle <- which.min(abs(hist.internal$x - breaks[i]))
-      }
-      ## ColSums doesn't work if ncls==ncle
-      for (j in 1:ny) cnts[j, i] <- sum(hist.internal$counts[c(ncls:ncle), j])
-    }
-    dens <- apply(cnts, 2, function(x) x/sum(x)) # this can break if you change the number of bins
-    # dens <- apply(cnts, 2, function(x) { # probably useless if we put the histogram in the function!
-    #   if(sum(x) != 0) return(x/sum(x))
-    #   else return(rep(0, .lt(x)))
-    #   })
-    if(nrow(dens) != ny) dens <- t(dens) # safety check
-    
-    return(list('density' = dens, 'counts' = cnts))
-  }
-  
-  # once defined a split (e.g. 50 parts) it uses a certain number of slides (e.g. 10) to calculate the MI
-  sliding_MI <- function(progind, n_breaks = 50, n_slides = 10, nx, ny = nx){
-    lpi <- .lt(progind$PI)
-    brks <- floor(seq(1, lpi, length.out = n_breaks))
-    span_MI <- sapply(X = floor(seq(1, brks[2]-1, length.out = n_slides)), FUN = function(x){
-      br <- floor(seq(x, lpi, by = brks[2]))
-      dhc <- dens_histCounts(progind, breaks = br, nx = nx, ny = ny)
-      mi.out <- list(.normalize(sapply(seq(.lt(br)), function(j) infotheo::mutinformation(dhc$counts[, j], dhc$counts[, j+1]))))
-      return(mi.out)
-    })
-    return(c(t(do.call(cbind, span_MI))))
-  }
-  # ----------------------------------------------------
-  
-  # color exploration
-  # require(RColorBrewer)
-  # RColorBrewer::display.brewer.all()
-  # ncolor = 7; pie(x = rep(1, ncolor), labels = 1:ncolor, col = RColorBrewer::brewer.pal(n = ncolor, name = 'Set1'))
-  # ncolor = 7; pie(x = rep(1, ncolor), labels = 1:ncolor, col = RColorBrewer::brewer.pal(n = ncolor, name = 'Dark2'))
-  
+  if(dbg_nSBR) browser()
+
   # using the division to calculate the densities and the counts
   lpi <- .lt(progind$PI)
-  stopifnot(cl.stat.nBreaks >= 0, cl.stat.nBreaks <= floor(lpi/2))
+  stopifnot(cs.nBreaks >= 0, cs.nBreaks <= floor(lpi/2))
   
   # calculating the weights for the barriers 
-  if(cl.stat.weight.barriers) {
-    if(is.null(cl.stat.nUni)) n_unif <- 40
-    else n_unif <- cl.stat.nUni
-    stopifnot(n_unif > 0, n_unif < lpi/ 2)
-    
-    # SBR based mutual information
-    dhc_sbr <- dens_histCounts(progind, breaks = breaks, nx = nx, ny = ny) # breaks are the barriers points on x
-    sbr_cnts <- dhc_sbr$counts    
-    MI_sbr <- sapply(seq(.lt(breaks)), function(j) infotheo::mutinformation(sbr_cnts[, j], sbr_cnts[, j+1]))
-    MI_sbr <- .normalize(MI_sbr)
-    
-    # Uniform division based mutual information
-    # n_unif <- round(lpi/50) 
-    # n_unif <- 10
-    # n_unif <- c(5,10,15,20,25,30,40,50,60)
-    # n_unif <- seq(5, 150, 5)
-    if(!silent) cat('Calculating the barrier statistics using ') 
-    expand_MI_uni <- array(0, dim = lpi)
-    for(nun in n_unif){
-      if(!silent) cat(nun, ' ')
-      brks_uni <- floor(seq(1, lpi, length.out = nun))[-c(1,nun)]
-      dhc_uni <- dens_histCounts(progind, breaks = brks_uni, nx = nx, ny = ny) # breaks are the barriers points on x
-      uni_cnts <- dhc_uni$counts    
-      MI_uni <- sapply(seq(nun-2), function(j) infotheo::mutinformation(uni_cnts[, j], uni_cnts[, j+1]))
-      MI_uni <- .normalize(MI_uni)
-      expand_MI_uni <- expand_MI_uni + stats::approx(seq(nun), c(0, 1 - MI_uni, 0), n = lpi)$y
-    }
-    if(!silent) cat('divisions for the MI ratio. \n')
-    expand_MI_uni <- expand_MI_uni/.lt(n_unif)
-    # expand_MI_uni <- .normalize(expand_MI_uni)
-    # plot(x = seq(1,80000, length.out = .lt(MI_uni)), y = 1-MI_uni, type = 'l'); lines(expand_MI_uni, col = 'red')
-    # MI_sbr <- .normalize(MI_sbr, xmax = max(c(MI_sbr, MI_uni)), xmin = min(c(MI_sbr, MI_uni)))
-    # MI_uni <- .normalize(MI_uni, xmax = max(c(MI_sbr, MI_uni)), xmin = min(c(MI_sbr, MI_uni)))
-    
-    # hard wired options for the basin weights
-    MI_comb <- cl.stat.MI_comb
-    denat <- cl.stat.denat 
-    denat.MI <- cl.stat.denat.MI
-    # Calculating the kinetical cut and the uniform MI denaturation if necessary
-    # xr1 <- c(margin:(cstored-round(cstored*0.99)))
-    kin.pl <- .normalize(-log(cutf / cstored)) # xr1 impose a selection of 99% of the snapshots to avoid the initial inf
-    
-    # normalizing the results to avoid parabolic effects (it depends on the grade of the poly!)
-    if(!is.null(denat) && denat == 'poly_interpolation'){
-      if(!is.null(denat.MI)){
-        if(denat.MI != -1) kinpl <- .denaturate(yyy = kin.pl, xxx = seq(lpi), polydeg = denat.MI, plotit = F)
-        else kinpl <- .denaturate(yyy = kin.pl, xxx = seq(lpi), polydeg = 7, plotit = F)
-        if(denat.MI != -1) miuni <- .denaturate(yyy = expand_MI_uni, xxx = seq(lpi), polydeg = denat.MI, plotit = F)
-        else miuni <- 1 - expand_MI_uni
-        # MI_ratio <- (kin.pl[breaks] + miuni[breaks]) / 2
-      }else{
-        kinpl <- .denaturate(yyy = kin.pl, xxx = seq(lpi), polydeg = 7, plotit = F)
-        miuni <- expand_MI_uni
-      }
-    }else if(!is.null(denat) && denat == 'process_subtraction'){
-      kinpl <- .normalize(kin)
-      if(!is.null(denat.MI)) {
-        if(denat.MI != -1) miuni <- .denaturate(yyy = expand_MI_uni, xxx = seq(lpi), polydeg = denat.MI, plotit = F)
-        else miuni <- 1 - expand_MI_uni
-      }else miuni <- expand_MI_uni
+  if(is.null(cs.nUni)) n_unif <- 40
+  else n_unif <- cs.nUni
+  stopifnot(n_unif > 0, n_unif < lpi/ 2)
+  
+  # SBR based mutual information - it needs breaks
+  dhc_sbr <- dens_histCounts(progind, breaks = breaks, nx = nx, ny = ny) # breaks are the barriers points on x
+  sbr_cnts <- dhc_sbr$counts    
+  MI_sbr <- sapply(seq(.lt(breaks)), function(j) infotheo::mutinformation(sbr_cnts[, j], sbr_cnts[, j+1]))
+  MI_sbr <- .normalize(MI_sbr)
+  
+  # Uniform division based mutual information
+  # n_unif <- round(lpi/50) 
+  # n_unif <- 10
+  n_unif <- c(5,10,15,20,25,30,40,50,60)
+  # n_unif <- seq(5, 150, 5)
+  if(!silent) cat('Calculating the barrier statistics using ') 
+  expand_MI_uni <- array(0, dim = lpi)
+  expand_MIC_uni <- array(0, dim = lpi)
+  expand_MAS_uni <- array(0, dim = lpi)
+  expand_MEV_uni <- array(0, dim = lpi)
+  expand_MCN_uni <- array(0, dim = lpi)
+  expand_MICR2_uni <- array(0, dim = lpi)
+  for(nun in n_unif){
+    if(!silent) cat(nun, ' ')
+    brks_uni <- floor(seq(1, lpi, length.out = nun))[-c(1,nun)]
+    dhc_uni <- dens_histCounts(progind, breaks = brks_uni, nx = nx, ny = ny) # breaks are the barriers points on x
+    uni_cnts <- dhc_uni$counts    
+    MI_uni <- sapply(seq(nun-2), function(j) infotheo::mutinformation(uni_cnts[, j], uni_cnts[, j+1]))
+    minerva.out <- sapply(seq(nun-2), function(j) minerva::mine(x = uni_cnts[, j], y = uni_cnts[, j+1]))
+    MI_uni <- .normalize(MI_uni)
+    MIC_uni <- .normalize(unlist(minerva.out[1,]))
+    MAS_uni <- .normalize(unlist(minerva.out[2,]))
+    MEV_uni <- .normalize(unlist(minerva.out[3,]))
+    MCN_uni <- .normalize(unlist(minerva.out[4,]))
+    MICR2_uni <- .normalize(unlist(minerva.out[5,]))
+    expand_MI_uni <- expand_MI_uni + stats::approx(seq(nun), c(0, 1 - MI_uni, 0), n = lpi)$y
+    expand_MIC_uni <- expand_MIC_uni + stats::approx(seq(nun), c(0, 1 - MIC_uni, 0), n = lpi)$y
+    expand_MAS_uni <- expand_MAS_uni + stats::approx(seq(nun), c(0, 1 - MAS_uni, 0), n = lpi)$y
+    expand_MEV_uni <- expand_MEV_uni + stats::approx(seq(nun), c(0, 1 - MEV_uni, 0), n = lpi)$y
+    expand_MCN_uni <- expand_MCN_uni + stats::approx(seq(nun), c(0, 1 - MCN_uni, 0), n = lpi)$y
+    expand_MICR2_uni <- expand_MICR2_uni + stats::approx(seq(nun), c(0, MICR2_uni, 0), n = lpi)$y
+  }
+  if(!silent) cat('divisions for the MI ratio. \n')
+  expand_MI_uni <- expand_MI_uni/.lt(n_unif)
+  expand_MIC_uni <- expand_MIC_uni/.lt(n_unif)
+  expand_MAS_uni <- expand_MAS_uni/.lt(n_unif)
+  expand_MEV_uni <- expand_MEV_uni/.lt(n_unif)
+  expand_MCN_uni <- expand_MCN_uni/.lt(n_unif)
+  expand_MICR2_uni <- expand_MICR2_uni/.lt(n_unif)
+  
+  convMIC_cov <- .normalize(convolve(x = 1:lpi, y = expand_MIC_uni))
+  convMIC <- (expand_MIC_uni - convMIC_cov)
+  convMIC[convMIC < 0] <- 0
+  df.plot <- cbind('PI' = 1:lpi,
+                   'MI' = expand_MI_uni, 
+                   'MIC' = expand_MIC_uni, 
+                   'MAS' = expand_MAS_uni, 
+                   'MEV' = expand_MEV_uni, 
+                   'MCN' = expand_MCN_uni, 
+                   'MICR2' = expand_MICR2_uni,
+                   'PI_points_x' = progind$PI, 
+                   'PI_points_y' = progind$Time/lpi,
+                   'kin' = kin,
+                   'convDiff' = convMIC,
+                   'conv' = convMIC_cov)
+  
+  
+  ggplot(data = df.plot, mapping = aes(x = PI)) + theme_classic() + ylab('UniDiv score') +
+    geom_point(mapping = aes(x = PI_points_x, y = PI_points_y), size = 0.8, col = 'grey') +
+    geom_line(mapping = aes(y = MI), col = 'blue') +
+    geom_line(mapping = aes(y = MIC), col = 'red') +
+    # geom_line(mapping = aes(y = MAS)) +
+    # geom_line(mapping = aes(y = MEV)) +
+    # geom_line(mapping = aes(y = MCN)) +
+    # geom_line(mapping = aes(y = convDiff), col = 'purple') +
+    geom_line(mapping = aes(y = MICR2), col = 'green') +
+    geom_line(mapping = aes(y = kin), col = 'black') 
+  
+  # microbenchmarking MIC MI
+  if(F){
+    mbm <- microbenchmark::microbenchmark(
+      minerva.out = sapply(seq(nun-2), function(j) minerva::mine(x = uni_cnts[, j], y = uni_cnts[, j+1])),
+      MI_uni = sapply(seq(nun-2), function(j) infotheo::mutinformation(uni_cnts[, j], uni_cnts[, j+1])), 
+      times = 100
+    )
+    ggplot2::autoplot(mbm)  
+  }
+  
+  
+  # hard wired options for the basin weights
+  MI_comb <- cs.MI_comb
+  denat <- cs.denat 
+  denat.MI <- cs.denat.MI
+  # Calculating the kinetical cut and the uniform MI denaturation if necessary
+  # xr1 <- c(margin:(cstored-round(cstored*0.99)))
+  kin.pl <- .normalize(-log(cutf / cstored)) # xr1 impose a selection of 99% of the snapshots to avoid the initial inf
+  
+  # normalizing the results to avoid parabolic effects (it depends on the grade of the poly!)
+  if(!is.null(denat) && denat == 'poly_interpolation'){
+    if(!is.null(denat.MI)){
+      if(denat.MI != -1) kinpl <- .denaturate(yyy = kin.pl, xxx = seq(lpi), polydeg = denat.MI, plotit = F)
+      else kinpl <- .denaturate(yyy = kin.pl, xxx = seq(lpi), polydeg = 7, plotit = F)
+      if(denat.MI != -1) miuni <- .denaturate(yyy = expand_MI_uni, xxx = seq(lpi), polydeg = denat.MI, plotit = F)
+      else miuni <- 1 - expand_MI_uni
+      # MI_ratio <- (kin.pl[breaks] + miuni[breaks]) / 2
     }else{
-      kinpl <- kin.pl
+      kinpl <- .denaturate(yyy = kin.pl, xxx = seq(lpi), polydeg = 7, plotit = F)
       miuni <- expand_MI_uni
     }
-    
-    # select the final barrier_weight
-    if(MI_comb == 'mean') MI_ratio <- (MI_sbr + miuni[breaks]) / 2 
-    else if(MI_comb == 'multip') MI_ratio <- MI_sbr * miuni[breaks]
-    else if(MI_comb == 'kin_MI') MI_ratio <- (kinpl[breaks] + miuni[breaks]) / 2
-    else if(MI_comb == 'kin') MI_ratio <- kinpl[breaks]
-    else if(MI_comb == 'MI') MI_ratio <- miuni[breaks]
-    if(plot.cl.stat){
-      
-      # plot the found histogram Mutual Information
-      plot(miuni, type = 'l', ylim = c(0,1), xlim = c(0,lpi))                             # from uniform sampling (average of different x-divisions)
-      points(breaks, MI_sbr, pch ='o', col = 'green', cex = 2)                                    # from SBR division
-      points(breaks, miuni[breaks], pch = 20, col = 'darkblue', cex = 2)                  # height of the point on barriers using uniform sampling
-      
-      # selecting the barriers and 
-      which_barrier <- breaks > lpi/n_unif[.lt(n_unif)] & breaks < lpi - lpi/n_unif[.lt(n_unif)]
-      points(breaks[which_barrier], MI_ratio[which_barrier], pch ='+', col = 'red', cex = 2)
-      points(progind$PI, progind$Time/lpi, pch='.', cex = 2)
-      lines(kinpl, col = 'darkred')
-      # if(cl.stat.wMI) lines(seq(1, lpi, length.out = .lt(sl_MI)), sl_MI, col = 'darkgreen')
-      
-      # what is the relation with the kinetic curve?
-      # plot((kin.pl + expand_MI_uni)/2, type = "l")
-      # points(breaks, (kin.pl[breaks] + expand_MI_uni[breaks]) / 2, col = 'darkblue')
-    }
+  }else if(!is.null(denat) && denat == 'process_subtraction'){
+    kinpl <- .normalize(kin)
+    if(!is.null(denat.MI)) {
+      if(denat.MI != -1) miuni <- .denaturate(yyy = expand_MI_uni, xxx = seq(lpi), polydeg = denat.MI, plotit = F)
+      else miuni <- 1 - expand_MI_uni
+    }else miuni <- expand_MI_uni
   }else{
-    MI_comb <- cl.stat.MI_comb # should be NULL as the others
-    denat <- cl.stat.denat 
-    denat.MI <- cl.stat.denat.MI
+    kinpl <- kin.pl
+    miuni <- expand_MI_uni
+  }
+  
+  # select the final barrier_weight
+  if(MI_comb == 'mean') MI_ratio <- (MI_sbr + miuni[breaks]) / 2 
+  else if(MI_comb == 'multip') MI_ratio <- MI_sbr * miuni[breaks]
+  else if(MI_comb == 'kin_MI') MI_ratio <- (kinpl[breaks] + miuni[breaks]) / 2
+  else if(MI_comb == 'kin') MI_ratio <- kinpl[breaks]
+  else if(MI_comb == 'MI') MI_ratio <- miuni[breaks]
+  if(plot){
+    
+    # plot the found histogram Mutual Information
+    plot(miuni, type = 'l', ylim = c(0,1), xlim = c(0,lpi))                             # from uniform sampling (average of different x-divisions)
+    points(breaks, MI_sbr, pch ='o', col = 'green', cex = 2)                                    # from SBR division
+    points(breaks, miuni[breaks], pch = 20, col = 'darkblue', cex = 2)                  # height of the point on barriers using uniform sampling
+    
+    # selecting the barriers and 
+    which_barrier <- breaks > lpi/n_unif[.lt(n_unif)] & breaks < lpi - lpi/n_unif[.lt(n_unif)]
+    points(breaks[which_barrier], MI_ratio[which_barrier], pch ='+', col = 'red', cex = 2)
+    points(progind$PI, progind$Time/lpi, pch='.', cex = 2)
+    lines(kinpl, col = 'darkred')
+    # if(cs.wMI) lines(seq(1, lpi, length.out = .lt(sl_MI)), sl_MI, col = 'darkgreen')
+    
+    # what is the relation with the kinetic curve?
+    # plot((kin.pl + expand_MI_uni)/2, type = "l")
+    # points(breaks, (kin.pl[breaks] + expand_MI_uni[breaks]) / 2, col = 'darkblue')
   }
   
   # sliding window MI
-  if(cl.stat.nBreaks == 0) nbr <- .lt(breaks)
-  else nbr <- cl.stat.nBreaks
-  if(cl.stat.wMI) {
+  if(cs.nBreaks == 0) nbr <- .lt(breaks)
+  else nbr <- cs.nBreaks
+  if(cs.wMI) {
     if(!silent) cat('Calculating the slided MI using 10 sub-division of the uniform divisions. \n')
     sl_MI <- sliding_MI(progind = progind, n_breaks = nbr, n_slides = 10, nx = nx, ny = ny)
   }
   
-  if(cl.stat.nBreaks == 0) tobrk <- breaks
-  else tobrk <- floor(seq(1, lpi, length.out = cl.stat.nBreaks))
+  if(cs.nBreaks == 0) tobrk <- breaks
+  else tobrk <- floor(seq(1, lpi, length.out = cs.nBreaks))
   dhc <- dens_histCounts(progind, breaks = tobrk, nx = nx, ny = ny) # breaks are the barriers points on x
   dens <- dhc$density
   cnts <- dhc$counts
@@ -553,12 +489,12 @@ nSBR <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, plot=FALSE, sil
   # lines(abs(RcppRoll::roll_mean(sl_MI, n = 10) - RcppRoll::roll_mean(sl_MI, n = 60)), col = 'blue')
   
   # short time Fourier Transform
-  if(cl.stat.stft){
+  if(cs.stft){
     if(!silent) cat('Calculating the short time Fourier Transform using a window of 30 and an increment of 1. \n')
     short_time_FT <- e1071::stft(sl_MI, win = 30, inc = 1)
     histOfStft <- apply(short_time_FT$values, 1, sum)
     histOfStft <- .normalize(histOfStft)
-    if(plot.cl.stat){
+    if(plot){
       plot(short_time_FT)
       # plot(apply(short_time_FT$values, 2, sum), type = 'l', xlab = 'Freq')
       plot(histOfStft, type = 'l')
@@ -571,7 +507,7 @@ nSBR <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, plot=FALSE, sil
     if(!silent) cat('Finding the peaks using a standard span of 80. \n')
     peakss <- abs(diff(histOfStft))^2
     TFpeakss <- splus2R::peaks(peakss, span = 80)
-    if(plot.cl.stat){
+    if(plot){
       plot(peakss, type = 'l')
       lines(TFpeakss, type = 'l')
     }
@@ -590,16 +526,16 @@ nSBR <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, plot=FALSE, sil
   ent <- .normalize(apply(dens, 2, myShEn)) # this is a value PER cluster
   distHell <- sapply(seq(.lt(tobrk)), function(j) myHell(dens[, j], dens[, j+1]))
   distMI <- sapply(seq(.lt(tobrk)), function(j) infotheo::mutinformation(cnts[, j], cnts[, j+1])); distMI <- .normalize(distMI)
-  if(cl.stat.KL) { distSymKL <- sapply(seq(.lt(tobrk)), function(j) myKL(dens[, j], dens[, j+1], T)); distSymKL <- .normalize(distSymKL) }
-  if(cl.stat.KL) { distKL <- sapply(seq(.lt(tobrk)), function(j) myKL(dens[, j], dens[, j+1], F)); distKL <- .normalize(distKL) }
-  if(cl.stat.TE) { distSymTE <- sapply(seq(.lt(tobrk)), function(j) myTE(dens[, j], dens[, j+1], emb = 3, sym = T)); distSymTE <- .normalize(distSymTE) }
+  if(cs.KL) { distSymKL <- sapply(seq(.lt(tobrk)), function(j) myKL(dens[, j], dens[, j+1], T)); distSymKL <- .normalize(distSymKL) }
+  if(cs.KL) { distKL <- sapply(seq(.lt(tobrk)), function(j) myKL(dens[, j], dens[, j+1], F)); distKL <- .normalize(distKL) }
+  if(cs.TE) { distSymTE <- sapply(seq(.lt(tobrk)), function(j) myTE(dens[, j], dens[, j+1], emb = 3, sym = T)); distSymTE <- .normalize(distSymTE) }
   
   # defining the centers/ini/end of the splits
   center_cl <- diff(c(1, tobrk, lpi))/2 + c(1, tobrk)
   ini_points <- c(1, tobrk); end_points <- c(1, tobrk) + diff(c(1, tobrk, lpi))
   
   # Plotting the barriers, breaks and statistics on the breaks 
-  if(plot.cl.stat && F){ # I will put it back in a moment
+  if(plot && F){ # I will put it back in a moment
     gg <- ggplot() + theme_classic() + xlab('Progress Index') + ylab('Barrier score') +
       geom_line(aes(tobrk, distHell, col = as.factor(1)), size = 0.5) +
       geom_segment(aes(x = ini_points, xend = end_points, y = ent, yend = ent, col = as.factor(2)), size = 4) +
@@ -608,35 +544,33 @@ nSBR <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, plot=FALSE, sil
       geom_vline(aes(xintercept=c(1, tobrk, lpi)), size = 0.1) + # MI and entropy calculations 
       geom_vline(aes(xintercept=c(1, breaks, lpi)), size = 0.5)  # Found barriers from SBR
     lbls <- c('Hellinger', 'Entropy', 'MI')
-    if(cl.stat.KL){
+    if(cs.KL){
       gg <- gg + geom_line(aes(tobrk, distKL, col = as.factor(4)), size = 0.5) +
         geom_line(aes(tobrk, distSymKL, col = as.factor(5)), size = 0.5)
       lbls <- c(lbls, 'KL', 'symKL')
     }
-    if(cl.stat.TE){
+    if(cs.TE){
       gg <- gg + geom_line(aes(tobrk, distSymTE, col = as.factor(6)), size = 0.5)
       lbls <- c(lbls, 'symTE')
     }
-    if(cl.stat.wMI){
+    if(cs.wMI){
       gg <- gg + geom_line(aes(seq(1, lpi, length.out = .lt(sl_MI)), sl_MI, col = as.factor(7)), size = 1) + 
         geom_hline(aes(yintercept = mean(sl_MI)))
       lbls <- c(lbls, 'WinMI')
     }
-    if(cl.stat.stft){
+    if(cs.stft){
       gg <- gg + geom_vline(aes(xintercept=c(xpeaks, lpi), col = as.factor(8)), size = 0.2) # no need of new splits... better to score the bsr split (cohesion - MI) 
       lbls <- c(lbls, 'stFT barriers')
     }
-    if(cl.stat.weight.barriers){
-      gg <- gg + geom_segment(aes(x = breaks - round(lpi/30), xend = breaks + round(lpi/30), 
-                                  y = MI_sbr*expand_MI_uni[breaks], yend = MI_sbr*expand_MI_uni[breaks]), col = 'red', size = 1.5)
-    }
+    gg <- gg + geom_segment(aes(x = breaks - round(lpi/30), xend = breaks + round(lpi/30), 
+                                y = MI_sbr*expand_MI_uni[breaks], yend = MI_sbr*expand_MI_uni[breaks]), col = 'red', size = 1.5)
     gg <- gg + scale_color_manual(name = "Method", labels = lbls, values = RColorBrewer::brewer.pal(n = 8, name = 'Dark2')) +
       guides(color = guide_legend(override.aes = list(size=5)))
     print(gg)
   }
   
   # Entropy calculations
-  if(cl.stat.entropy){
+  if(cs.entropy){
     if(!silent) cat('Calculating various entropy scores. This feature remains for visualization only. \n')
     # ent <- .normalize(apply(dens, 2, myShEn)/apply(dens, 2, function(x) mean(x)))
     ent <- .normalize(apply(dens, 2, myShEn)) # this is a value PER cluster
@@ -652,7 +586,7 @@ nSBR <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, plot=FALSE, sil
       stop('We found NAs in the entropy calculations. you should reduce or re consider statistical binning.')
     
     # Plotting entropy calculations
-    if(plot.cl.stat){
+    if(plot){
       gg <- ggplot() + theme_classic() + xlab('Progress Index') + ylab('Barrier score') +
         geom_segment(aes(x = ini_points, xend = end_points, y = ent, yend = ent, col = as.factor(1)), size = 3, alpha = 0.5) +
         geom_segment(aes(x = ini_points, xend = end_points, y = ent1, yend = ent1, col = as.factor(2)), size = 3, alpha = 0.5) +
@@ -674,27 +608,25 @@ nSBR <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, plot=FALSE, sil
   # Final assignment for output
   statistics <- NULL
   ele <- 1
-  if(cl.stat.nBreaks == 0){ # case in which the statistic comes from SBR splits
+  if(cs.nBreaks == 0){ # case in which the statistic comes from SBR splits
     tab.st <- cbind(tab.st, 'Hellinger' =  c(-1, distHell), 'Entropy' = ent, 'MI' = c(-1, distMI))
-    if(cl.stat.KL) tab.st <- cbind(tab.st, 'symKL' = c(-1, distSymKL))
-    if(cl.stat.KL) tab.st <- cbind(tab.st, 'KL' = c(-1, distKL))
-    if(cl.stat.TE) tab.st <- cbind(tab.st, 'symTE' = c(-1, distSymTE))
+    if(cs.KL) tab.st <- cbind(tab.st, 'symKL' = c(-1, distSymKL))
+    if(cs.KL) tab.st <- cbind(tab.st, 'KL' = c(-1, distKL))
+    if(cs.TE) tab.st <- cbind(tab.st, 'symTE' = c(-1, distSymTE))
   }else{ # otherwise
     statistics <- list('Hellinger' =  distHell, 'Entropy' = ent, 'MI' = distMI); ele <- ele + 3
-    if(cl.stat.KL) { statistics[[ele]] <- distSymKL; names(ele)[ele] <- 'symKL'; ele <- ele + 1 }
-    if(cl.stat.KL) { statistics[[ele]] <- distKL; names(ele)[ele] <- 'KL'; ele <- ele + 1 }
-    if(cl.stat.TE) { statistics[[ele]] <- distSymTE; names(ele)[ele] <- 'symTE'; ele <- ele + 1 }
+    if(cs.KL) { statistics[[ele]] <- distSymKL; names(ele)[ele] <- 'symKL'; ele <- ele + 1 }
+    if(cs.KL) { statistics[[ele]] <- distKL; names(ele)[ele] <- 'KL'; ele <- ele + 1 }
+    if(cs.TE) { statistics[[ele]] <- distSymTE; names(ele)[ele] <- 'symTE'; ele <- ele + 1 }
   }
-  if(cl.stat.wMI) { statistics[[ele]] <- sl_MI; names(ele)[ele] <- 'winMI'; ele <- ele + 1 }
-  if(cl.stat.stft) { statistics[[ele]] <- xpeaks; names(ele)[ele] <- 'stFT'; ele <- ele + 1 }
-  if(cl.stat.weight.barriers) {
-    if(!silent) cat('Keeping only the barriers which are reasonably far from borders.\n')
-    select_non_border <- breaks > lpi/n_unif[.lt(n_unif)] & breaks < lpi - lpi/n_unif[.lt(n_unif)]
-    if(!silent) cat('Discarded the following barrier indexes (from left / also on the stats out):', seq(1, .lt(breaks))[!select_non_border], '\n')
-    forout <- MI_ratio
-    forout[!select_non_border] <- -1
-    tab.st <- cbind(tab.st, 'barWeight' = c(-1, forout))
-  }
+  if(cs.wMI) { statistics[[ele]] <- sl_MI; names(ele)[ele] <- 'winMI'; ele <- ele + 1 }
+  if(cs.stft) { statistics[[ele]] <- xpeaks; names(ele)[ele] <- 'stFT'; ele <- ele + 1 }
+  if(!silent) cat('Keeping only the barriers which are reasonably far from borders.\n')
+  select_non_border <- breaks > lpi/n_unif[.lt(n_unif)] & breaks < lpi - lpi/n_unif[.lt(n_unif)]
+  if(!silent) cat('Discarded the following barrier indexes (from left / also on the stats out):', seq(1, .lt(breaks))[!select_non_border], '\n')
+  forout <- MI_ratio
+  forout[!select_non_border] <- -1
+  tab.st <- cbind(tab.st, 'barWeight' = c(-1, forout))
 
   if(plot){
     if(new.dev) dev.new(width=15, height=10)
@@ -727,7 +659,7 @@ nSBR <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, plot=FALSE, sil
     points(progind$PI[lst], max(progind$Time[lst])+progind$Time[lst]*(sc-1), cex=0.005, col="tomato1")
     lines(xr1, scale(kin.pl), lwd=1, col="black")
     lines(xr1, scale(kin[xr1]), lwd=0.8, col="forestgreen") #the one without the parabol
-    if(!is.null(cl.stat.denat) && cl.stat.denat == 'poly_interpolation') { # my simple fit (dgarol)
+    if(!is.null(cs.denat) && cs.denat == 'poly_interpolation') { # my simple fit (dgarol)
       if(!is.null(denat.MI)) den_kin <- .denaturate(-log(cutf / cstored), seq(cstored), polydeg = denat.MI, plotit = FALSE)
       else den_kin <- .denaturate(-log(cutf / cstored), seq(cstored), polydeg = 7, plotit = FALSE)
       lines(xr1, scale(den_kin[xr1]), lwd = 0.8, col = 'darkblue')
@@ -741,15 +673,79 @@ nSBR <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, plot=FALSE, sil
       ## Matched breaks
       abline(v=brk.mtc, lwd=0.7, col="black")
     } else abline(v=breaks, lwd=0.7, col="black")
-    if(cl.stat.weight.barriers){
-      select_non_border <- breaks > lpi/n_unif[.lt(n_unif)] & breaks < lpi - lpi/n_unif[.lt(n_unif)]
-      # if(!silent) cat('Discarded the following barrier indexes (from left):', seq(1, .lt(breaks))[!select_non_border], '\n')
-      # select_non_border <- -c(1, .lt(breaks))
-      points(breaks[select_non_border], MI_ratio[select_non_border]*max(yr), pch ='+', col = 'red', cex = 5)
-      abline(h=mean(MI_ratio)*max(yr), lwd=1.1, col= 'grey')
-    }
+    select_non_border <- breaks > lpi/n_unif[.lt(n_unif)] & breaks < lpi - lpi/n_unif[.lt(n_unif)]
+    # if(!silent) cat('Discarded the following barrier indexes (from left):', seq(1, .lt(breaks))[!select_non_border], '\n')
+    # select_non_border <- -c(1, .lt(breaks))
+    points(breaks[select_non_border], MI_ratio[select_non_border]*max(yr), pch ='+', col = 'red', cex = 5)
+    abline(h=mean(MI_ratio)*max(yr), lwd=1.1, col= 'grey')
     suppressWarnings(par(save_par))
   }
   invisible(list(tab.st=tab.st, nbins=c(nx,ny), seq.st=seq.st[order(progind$Time)], statistics = statistics, call=call, data.out = data.out))
 }
 
+
+
+
+#########################################################
+#          Functions ext
+#########################################################
+myTE <- function(x, y, emb, sym = T, sd = 0.001){
+  nx <- x + stats::rnorm(n = .lt(x), mean = 0, sd = sd)
+  ny <- y + stats::rnorm(n = .lt(x), mean = 0, sd = sd)
+  xy <- TransferEntropy::computeTE(nx, ny, embedding = emb, k = 2, safetyCheck = T)
+  yx <- TransferEntropy::computeTE(ny, nx, embedding = emb, k = 2, safetyCheck = T)
+  if(sym) return((unlist(xy) + unlist(yx))/2)
+  else return(unlist(xy))
+}
+myShEn <- function(x){
+  x2 <- replace(x = x, list = which(x == 0), values = 1)
+  return(-sum(x2*log(x2)))
+}
+
+myKL <- function(x, y, sym = T){
+  xn <- x[-which(x==0 | y==0)]
+  yn <- y[-which(x==0 | y==0)]
+  if(sym) return((sum(xn*log(xn/yn)) + sum(yn*log(yn/xn)))/2)
+  else return(sum(xn*log(xn/yn)))
+}
+
+# creates the densities and the counts over bins (only ny is relevant) - doing hist2d
+dens_histCounts <- function(progind, breaks, nx, ny = nx){
+  hist.internal <- hist2d(matrix(c(progind[,1], progind[,2]), ncol=2, nrow=.lt(progind$PI)), nbins=c(nx, ny), show=FALSE)
+  cnts <- matrix(0, nrow=ny, ncol=(.lt(breaks) + 1))
+  for (i in 1:ncol(cnts)) {
+    if (i==1) {
+      ncls <- 1
+      ncle <- which.min(abs(hist.internal$x - breaks[i]))
+    } else if (i == (.lt(breaks) + 1) ) {
+      ncls <- which.min(abs(hist.internal$x - breaks[i-1])) 
+      ncle <- nx
+    } else {
+      ncls <- which.min(abs(hist.internal$x - breaks[i-1]))
+      ncle <- which.min(abs(hist.internal$x - breaks[i]))
+    }
+    ## ColSums doesn't work if ncls==ncle
+    for (j in 1:ny) cnts[j, i] <- sum(hist.internal$counts[c(ncls:ncle), j])
+  }
+  dens <- apply(cnts, 2, function(x) x/sum(x)) # this can break if you change the number of bins
+  # dens <- apply(cnts, 2, function(x) { # probably useless if we put the histogram in the function!
+  #   if(sum(x) != 0) return(x/sum(x))
+  #   else return(rep(0, .lt(x)))
+  #   })
+  if(nrow(dens) != ny) dens <- t(dens) # safety check
+  
+  return(list('density' = dens, 'counts' = cnts))
+}
+
+# once defined a split (e.g. 50 parts) it uses a certain number of slides (e.g. 10) to calculate the MI
+sliding_MI <- function(progind, n_breaks = 50, n_slides = 10, nx, ny = nx){
+  lpi <- .lt(progind$PI)
+  brks <- floor(seq(1, lpi, length.out = n_breaks))
+  span_MI <- sapply(X = floor(seq(1, brks[2]-1, length.out = n_slides)), FUN = function(x){
+    br <- floor(seq(x, lpi, by = brks[2]))
+    dhc <- dens_histCounts(progind, breaks = br, nx = nx, ny = ny)
+    mi.out <- list(.normalize(sapply(seq(.lt(br)), function(j) infotheo::mutinformation(dhc$counts[, j], dhc$counts[, j+1]))))
+    return(mi.out)
+  })
+  return(c(t(do.call(cbind, span_MI))))
+}

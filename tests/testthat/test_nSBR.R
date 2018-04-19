@@ -13,7 +13,7 @@ test_that('new trials for SBR', {
   
   # BASINS OPTIMIZATION
   nbin <- round(sqrt(n_snap*10)); if(!silent) print(nbin)
-  expect_error(optimal_bas <- CampaRi::nSBR(data = file.pi, nx = 100, ny.aut = T, plot = T, cl.stat = T, silent = silent, dbg_basins_recognition = T), NA)
+  expect_error(optimal_bas <- CampaRi::nSBR(data = file.pi, nx = 100, ny.aut = T, plot = T, silent = silent, dbg_nSBR = T), NA)
   
   
   # ------------------------------------------------------- neuro tests
