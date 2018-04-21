@@ -24,7 +24,10 @@ test_that('new trials for SBR', {
   if(do_it){
     fpi_empty <- data.table::fread('/disk2a/dgarolini/neuro/simulated_data/analysis/ISI_networks_end17/PROGIDX_000000000100.dat', data.table = F)
     fpi_best  <- data.table::fread('/disk2a/dgarolini/neuro/simulated_data/analysis/ISI_networks_end17/PROGIDX_000000000102.dat', data.table = F)
-    fpi_ave   <- data.table::fread('/disk2a/dgarolini/neuro/simulated_data/analysis/ISI_networks_end17/PROGIDX_000000001102.dat', data.table = F)
+    fpi_ave1   <- data.table::fread('/disk2a/dgarolini/neuro/simulated_data/analysis/ISI_networks_end17/PROGIDX_000000000221.dat', data.table = F)
+    fpi_ave2   <- data.table::fread('/disk2a/dgarolini/neuro/simulated_data/analysis/ISI_networks_end17/PROGIDX_000000000261.dat', data.table = F)
+    fpi_ave3   <- data.table::fread('/disk2a/dgarolini/neuro/simulated_data/analysis/ISI_networks_end17/PROGIDX_000000001102.dat', data.table = F)
+    fpi_ave4   <- data.table::fread('/disk2a/dgarolini/neuro/simulated_data/analysis/ISI_networks_end17/PROGIDX_000000001231.dat', data.table = F)
     fpi_worst <- data.table::fread('/disk2a/dgarolini/neuro/simulated_data/analysis/ISI_networks_end17/PROGIDX_000000001281.dat', data.table = F)
   }else{
     fpi_empty <- fpi_best <- fpi_ave <- fpi_worst <- file.pi
@@ -35,16 +38,21 @@ test_that('new trials for SBR', {
                                                      unif.splits = seq(5, 100, 8),  
                                                      pk_span = 5000, ny = 50, plot = T, 
                                                      silent = F, dbg_nSBR = F, return_plot = T))} 
-  expect_error(ob1 <- wrapperone(fpi_ave), NA)
-  expect_error(ob2 <- wrapperone(fpi_best), NA)
-  expect_error(ob3 <- wrapperone(fpi_worst), NA)
+  expect_error(ob1 <- wrapperone(fpi_best), NA); ob1
+  expect_error(ob21 <- wrapperone(fpi_ave1), NA); ob21
+  expect_error(ob22 <- wrapperone(fpi_ave2), NA); ob22
+  expect_error(ob23 <- wrapperone(fpi_ave3), NA); ob23
+  expect_error(ob24 <- wrapperone(fpi_ave4), NA); ob24
+  expect_error(ob3 <- wrapperone(fpi_worst), NA); ob3
   
   library(cowplot)
   cowplot::plot_grid(ob2, ob1, nrow = 2, labels = c('A', 'B'))
   cowplot::plot_grid(ob2, ob1, ob3, nrow = 3, labels = c('A', 'B', 'C'))
+  cwpl <- cowplot::plot_grid(ob1, ob21, ob22, ob23, ob24, ob3, nrow = 2, labels = c('A', 'B', 'C', 'D', 'E', 'F'))
   
   ggsave('p1.png', width = 6, height = 8)
   ggsave('p2.png', width = 6, height = 10)
+  ggsave(plot = cwpl, filename = 'p3.png', width = 13, height = 9)
   
   if(do_it){
     ncl <- NULL
