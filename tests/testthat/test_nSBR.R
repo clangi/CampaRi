@@ -33,28 +33,36 @@ test_that('new trials for SBR', {
     fpi_empty <- fpi_best <- fpi_ave <- fpi_worst <- file.pi
   }
   sapphire_plot(sap_table = fpi_worst, timeline = T, sub_sampling_factor = 10)
-  wrapperone <- function(x){ invisible(CampaRi::nSBR(data = x, n.cluster = 4, 
+  wrapperone <- function(x,...){ invisible(CampaRi::nSBR(data = x, n.cluster = 4, 
                                                      comb_met = c('MIC', 'MIC', 'kin'),
                                                      unif.splits = seq(5, 100, 8),  
                                                      pk_span = 5000, ny = 50, plot = T, 
-                                                     silent = F, dbg_nSBR = F, return_plot = T))} 
-  expect_error(ob1 <- wrapperone(fpi_best), NA); ob1
-  expect_error(ob21 <- wrapperone(fpi_ave1), NA); ob21
-  expect_error(ob22 <- wrapperone(fpi_ave2), NA); ob22
-  expect_error(ob23 <- wrapperone(fpi_ave3), NA); ob23
-  expect_error(ob24 <- wrapperone(fpi_ave4), NA); ob24
-  expect_error(ob3 <- wrapperone(fpi_worst), NA); ob3
+                                                     silent = F, dbg_nSBR = F, return_plot = F,...))} 
+  expect_error(ob1 <- wrapperone(fpi_best, data.out.it = F), NA); ob1
+  expect_error(a1 <- CampaRi::nSBR(data = file.pi, n.cluster = 3, 
+                                   comb_met = c('MIC'),
+                                   unif.splits = seq(5, 100, 8),  
+                                   pk_span = 500, ny = 50, plot = T, 
+                                   silent = F, dbg_nSBR = F, return_plot = F), NA)
+  expect_error(ahahscore <- CampaRi::score_sapphire(the_sap = file.pi, ann = ann, manual_barriers = a1$barriers[1:2]), NA)
   
-  library(cowplot)
-  cowplot::plot_grid(ob2, ob1, nrow = 2, labels = c('A', 'B'))
-  cowplot::plot_grid(ob2, ob1, ob3, nrow = 3, labels = c('A', 'B', 'C'))
-  cwpl <- cowplot::plot_grid(ob1, ob21, ob22, ob23, ob24, ob3, nrow = 2, labels = c('A', 'B', 'C', 'D', 'E', 'F'))
-  
-  ggsave('p1.png', width = 6, height = 8)
-  ggsave('p2.png', width = 6, height = 10)
-  ggsave(plot = cwpl, filename = 'p3.png', width = 13, height = 9)
   
   if(do_it){
+    # expect_error(ahahscore <- CampaRi::score_sapphire(the_sap = fpi_best, ann = rep(1:4, each = 20000), manual_barriers = ob1$barriers[1:3]))
+    expect_error(ob21 <- wrapperone(fpi_ave1), NA); ob21
+    expect_error(ob22 <- wrapperone(fpi_ave2), NA); ob22
+    expect_error(ob23 <- wrapperone(fpi_ave3), NA); ob23
+    expect_error(ob24 <- wrapperone(fpi_ave4), NA); ob24
+    expect_error(ob3 <- wrapperone(fpi_worst), NA); ob3
+    
+    library(cowplot)
+    cowplot::plot_grid(ob2, ob1, nrow = 2, labels = c('A', 'B'))
+    cowplot::plot_grid(ob2, ob1, ob3, nrow = 3, labels = c('A', 'B', 'C'))
+    cwpl <- cowplot::plot_grid(ob1, ob21, ob22, ob23, ob24, ob3, nrow = 2, labels = c('A', 'B', 'C', 'D', 'E', 'F'))
+    
+    ggsave('p1.png', width = 6, height = 8)
+    ggsave('p2.png', width = 6, height = 10)
+    ggsave(plot = cwpl, filename = 'p3.png', width = 13, height = 9)
     ncl <- NULL
     ncl <- 4
     

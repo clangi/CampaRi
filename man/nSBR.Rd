@@ -4,17 +4,13 @@
 \alias{nSBR}
 \title{New identifying basins in the SAPPHIRE plot}
 \usage{
-nSBR(data, nx, ny = nx, ny.aut = FALSE, local.cut = FALSE, plot = FALSE,
-  silent = FALSE, ...)
+nSBR(data, ny, local.cut = FALSE, n.cluster = NULL, comb_met = c("MIC"),
+  unif.splits = NULL, pk_span = NULL, plot = FALSE, silent = FALSE, ...)
 }
 \arguments{
 \item{data}{Name of the PROGIDX_<...>.dat file or Data frame with three columns containing, in order, the (sorted) progress index, the relative time indices and the cut function.}
 
-\item{nx}{Number of bins on the x-axis of the 2-D histogram.}
-
 \item{ny}{Number of bins on the y-axis of the 2-D histogram. Default to nx.}
-
-\item{ny.aut}{Logical value indicating whether a suitable number of bins on the y-axis has to be identified automatically. Default value is \code{FALSE}.}
 
 \item{local.cut}{Logical value indicating whether the localized cut function has to be used (see references). Default value is \code{FALSE}.}
 
@@ -28,16 +24,12 @@ where the parabolic shape has been subtracted, i.e. the actual curve used for th
     \item "\code{time.series}" File name. If specified, it substitutes the time series of the PROGIDX_<..> file with the one provided by the file.
     \item "\code{cl.stat}" If \code{TRUE} it will activate the cluster analysis with Mutual Information, Hellinger distance and Shannon Entropy
     as defaults.
-    \item "\code{cl.stat.weight.barriers}" If \code{TRUE} (standard once cl.stat is active) it will calculate two different Mutual Information: 
-    one based on the clusters founds and one based on uniform subsampling (done using \code{cl.stat.nBreaks} or the number of cluster founds using 
-    SBR multiplied for 10). The second one will be inverted to find the discontinuities and the barriers will be weighted simply multiplying the two values 
-    found on the specific progress index data point.  
-    \item "\code{cl.stat.nBreaks}" Integer. This variable defines the number of splits for the analysis. If set to 0 it will use the breaks found in the SBR.
-    \item "\code{cl.stat.denat}" This value can be set to \code{"process_subtraction"} or \code{"poly_interpolation"} and it is defining the removal of 
+    \item "\code{cs.nBreaks}" Integer. This variable defines the number of splits for the analysis. If set to 0 it will use the breaks found in the SBR.
+    \item "\code{cs.denat}" This value can be set to \code{"process_subtraction"} or \code{"poly_interpolation"} and it is defining the removal of 
     parabolic artifacts in the kinetic trace. The polynomial fit is by default 7 and 12 in degree for the kinetic annotation and uniform MI curves. The process 
     option istead is referring to the simulated process which is behind the kin ann. This option can be set to \code{TRUE} for using the process way.
-    \item "\code{cl.stat.denat.MI}" Integer. If NULL its default is 7 for poly_interpolation of the kinetic ann but nothing is done on the MI score. 
-    \item "\code{cl.stat.MI_comb}" This value is the representative of how the various calculation in barrier weighting are combined. In particular the options 
+    \item "\code{cs.denat.MI}" Integer. If NULL its default is 7 for poly_interpolation of the kinetic ann but nothing is done on the MI score. 
+    \item "\code{cs.MI_comb}" This value is the representative of how the various calculation in barrier weighting are combined. In particular the options 
     are the following:
     \itemize{
       \item "\code{mean}" Mean between the MI based on the SBR and the MI based on uniform subdivisions
@@ -46,19 +38,21 @@ where the parabolic shape has been subtracted, i.e. the actual curve used for th
       \item "\code{kin}" Only kinetic annotation value on the barrier
       \item "\code{MI}" Only the MI based on the SBR and the MI based on uniform subdivisions
     }
-    \item "\code{cl.stat.nUni}" Integer. This variable defines the number of splits for the uniform sampling. If not set the algorithm will use 40 divisions which 
+    \item "\code{cs.nUni}" Integer. This variable defines the number of splits for the uniform sampling. If not set the algorithm will use 40 divisions which 
     could not be optimal for clogged data. Generally speaking, this value is useful for the MI - ratio weighting of the barriers. It is also possible to insert a 
     vector of integer and the resulting value is an average of these expanded results. We advice to use \code{c(5,10,15,20,25,30,40,50)} generally.
-    \item "\code{plot.cl.stat}" Logical for plotting the statistics of the SBR basins using various colors for the methods along with 
-    the temporal annotation (points in a progress index / time plot). Time has been normalized between 0 and 1 as all the statistics.
-    \item "\code{cl.stat.entropy}" Logical. Calculate Shannon entropy.
-    \item "\code{cl.stat.stft}" Logical. Calculate short time fourier transform.
-    \item "\code{cl.stat.TE}" Logical. Calculate symmetric Transfer Entropy.
-    \item "\code{cl.stat.KL}" Logical. Calculate symmetric and non-symmetric Kullback-Leibler divergence.
-    \item "\code{cl.stat.wMI}" Logical. Use the number of breaks (\code{cl.stat.nBreaks}) to find the Mutual Information for 10 slided divisions.
+    \item "\code{cs.entropy}" Logical. Calculate Shannon entropy.
+    \item "\code{cs.stft}" Logical. Calculate short time fourier transform.
+    \item "\code{cs.TE}" Logical. Calculate symmetric Transfer Entropy.
+    \item "\code{cs.KL}" Logical. Calculate symmetric and non-symmetric Kullback-Leibler divergence.
+    \item "\code{cs.wMI}" Logical. Use the number of breaks (\code{cs.nBreaks}) to find the Mutual Information for 10 slided divisions.
     This will result in 10*nBreaks values.
     \item "\code{data.out.it}" Should I output the data.frame in input?
 }}
+
+\item{nx}{Number of bins on the x-axis of the 2-D histogram.}
+
+\item{ny.aut}{Logical value indicating whether a suitable number of bins on the y-axis has to be identified automatically. Default value is \code{FALSE}.}
 }
 \value{
 A list containing

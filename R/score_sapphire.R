@@ -19,6 +19,7 @@
 #' Black partitions are the matched ones, blue ones derive only from the dynamic analysis and orange ones only from the kinetic analysis. 
 #' The green curve is the kinetic annotation (black curve) where the parabolic shape has been subtracted, i.e. the actual curve used for 
 #' the peaks identification. Default value is \code{FALSE}. 
+#' @param manual_barriers If an integer vector is inserted, it is used as the barrier locations.
 #' @param plot_pred_true_resume Defaults tp \code{FALSE}. If set to true it plots the predicted and true labels one along the other.
 #' @param nbins_x Number of bins on  x-axis of the 2-D histogram. Default to sqrt(nrow(the_sap)).
 #' @param nbins_y Number of bins on the y-axis of the 2-D histogram. Default to sqrt(nrow(the_sap)).
@@ -52,7 +53,7 @@
 #' @import ggplot2
 #' @export score_sapphire
 
-score_sapphire <- function(the_sap=NULL, ann, basin_optimization = FALSE,                                            # fundamental inputs
+score_sapphire <- function(the_sap=NULL, ann, manual_barriers=NULL, basin_optimization = FALSE,                                            # fundamental inputs
                            scoring_method = 'nmi', merge_clusters = FALSE,                                      # scoring details
                            plot_basin_identification = FALSE, nbins_x = NULL,                                   # settings for the recognition/optimi
                            nbins_y = nbins_x, force_matching = FALSE,                                           # settings for the recognition/optimi
@@ -61,19 +62,30 @@ score_sapphire <- function(the_sap=NULL, ann, basin_optimization = FALSE,       
   
   # general input checking
   have_the_bas <- FALSE
+  manual_mode <- FALSE
   if(!is.null(the_sap)){
     if(!is.character(the_sap) && !is.data.frame(the_sap)) stop("the_sap must be a string or a data frame")
     if(is.character(the_sap) && (!all(grepl("PROGIDX", the_sap)) && !all(grepl("REPIX", the_sap)))) 
       stop("Please provide a data name starting with 'PROGIDX' or 'REPIX'" )
+    # if(!is.null(manual_mode)) stop('use manual mode or direct sapphire mode')
   }else if(!is.logical(basin_optimization)){
     if(is.null(names(basin_optimization)) || names(basin_optimization)[1] != 'tab.st') 
       stop('Use the basin_optimization (optimal_bas) or the basin_recognition output for basin_optimization var.
            It must be of the shape tab.st nbins seq.st etc.. (or put it TRUE/FALSE).')
+    if(!is.null(manual_mode)) stop('use manual mode or bas mode')
     have_the_bas <- TRUE
   }else if(is.logical(basin_optimization)) {
     if(!silent) cat('You are using basin_optimization as a logical. We see it. \n')
+    do_optimization <- basin_optimization
+    if(!is.null(manual_mode) && basin_optimization) stop('use manual mode or basin optimization mode')
   }else{
-    stop('One between the_sap = "PROGIDX_..." and basin_optimization=its_obj must be provided. ')
+    if(!is.null(manual_barriers) && !silent) cat('If you want to manually insert barriers please use also the_sap option for reordering of ann.')
+    stop('One between the_sap = "PROGIDX_...", basin_optimization=its_obj or manual_barriers must be provided. ')
+  }
+  if(!is.null(manual_barriers)){
+    if(!all(sapply(manual_barriers, .isSingleInteger))) stop('All the values in manual_barriers must be integers')
+    if(any(manual_barriers < 2)) stop('the manual barriers should be above 1')
+    manual_mode <- TRUE
   }
   if(!is.null(the_sap) && !is.logical(basin_optimization)) stop('Please choose one option only. Rather the_sap or basin_optimization?')
   if(!is.numeric(ann) && (!is.null(dim(ann)))) stop('Please provide an integer vector for ann')
@@ -91,16 +103,17 @@ score_sapphire <- function(the_sap=NULL, ann, basin_optimization = FALSE,       
   if(!(scoring_method[1] %in% scoring_method.opt)) stop("Scoring method option not valid")
   
   # sapphire table loading
-  if(!is.null(the_sap) && !is.data.frame(the_sap))
+  if(!is.null(the_sap) && !is.data.frame(the_sap)){
     st <- as.data.frame(data.table::fread(the_sap, data.table = F))
-  else
+  }else{
     st <- the_sap
+  }
   
   # checking the number of bins inserted
   
   # browser()
   pifilename <- NULL
-  if(!have_the_bas){
+  if(!have_the_bas && !manual_mode){
     if(basin_optimization){
       if(!silent) cat('It is advisable to use the basin_optimization function EXTERNALLY to this one and feed the output to basin_optimization.\n')
       if(!is.null(nbins_x) && !silent) cat('NB: you inserted the number of bins (nbis_x) but you also want to optimize the basin recognition. 
@@ -122,11 +135,17 @@ score_sapphire <- function(the_sap=NULL, ann, basin_optimization = FALSE,       
                                          plot = plot_basin_identification, match = force_matching, out.file = F, new.dev = F, silent = silent)
       n_fin_cl <- nrow(bas$tab.st) # here we suppose that our split is the one we wanted and we define the number of resulting clusters
     }
-  }else{
+  }else if(have_the_bas){
     if(!silent) cat('You inserted the bas object directly. No specific check of your wrong doing is applied. Therefore USE THE RIGHT ONE.\n')
     bas <- basin_optimization
     n_fin_cl <- nrow(bas$tab.st)
-    data.in <- bas$data.out
+    pifilename <- bas$filename
+  }else if(manual_mode){
+    if(!silent) cat('You inserted manual barriers for testing.\n')
+    n_fin_cl <- .lt(manual_barriers) + 1
+    if(is.null(the_sap)) stop('with manual_barriers it is needed to specify the SAPPHIRE table in the_sap')
+  }else{
+    stop('We did not understood what to do.')
   }
   
   
@@ -136,10 +155,9 @@ score_sapphire <- function(the_sap=NULL, ann, basin_optimization = FALSE,       
   if(!is.null(the_sap)) {
     if(!silent) cat('Having inserted the_sap we reorder the ann using it.\n')
     pin <- ann[c(st[,3])]
-  } else if(!is.null(data.in)){
+  } else if(!is.null(pifilename)){
     if(!silent) cat('You did not set the_sap filename (or table) but we found the filename from the inserted basin_optimization obj. Using it to reorder ann.\n')
-    if(!is.data.frame(data.in)) st <- as.data.frame(data.table::fread(data.in, data.table = F))
-    else st <- data.in
+    st <- as.data.frame(data.table::fread(pifilename, data.table = F))
     pin <- ann[c(st[,3])]
   } else {
     if(!silent) cat('No filename for the sapphire table was provided. We will keep the ordering of the annotation as it has been found.\n')
@@ -178,6 +196,20 @@ score_sapphire <- function(the_sap=NULL, ann, basin_optimization = FALSE,       
   }
   # plot(pin, pch='.')
   # sort(table(pin), decreasing=TRUE) # sorted
+
+  # creating a 
+  if(manual_mode){
+    n_cl.b <- 1:n_fin_cl
+    if(any(manual_barriers >= lpin)) stop('one manual_barriers or more are higher than the number of snapshots!.')
+    start.b <- c(1, sort(manual_barriers))
+    end.b <- c(sort(manual_barriers), lpin)
+    lt.b <- diff(c(1, sort(manual_barriers), lpin))
+    lt.b[1] <- lt.b[1] + 1
+    if(sum(lt.b) != lpin) stop('The inserted barriers dont sum up to the length of the annotation.')
+    bastbl <- cbind('n_cl' = n_cl.b, 'start' = start.b, 'end' = end.b, '.lt' = lt.b)
+    bas <- list('tab.st' = bastbl)
+  }
+  
   
   # ---------------------------------------------------------------------------------------------- Creation of the Entropy levels
   # we choose the representative label
@@ -385,8 +417,8 @@ score_sapphire <- function(the_sap=NULL, ann, basin_optimization = FALSE,       
   # external_validation(true_labels = ann[st[,3]], clusters = predicted_div, method = "adjusted_rand_index", summary_stats = FALSE)
   # external_validation(true_labels = ann[st[,3]], clusters = predicted_div, method = "jaccard_index", summary_stats = FALSE)
   # external_validation(true_labels = ann[st[,3]], clusters = predicted_div, method = "purity", summary_stats = FALSE)
-  score.out <- ClusterR::external_validation(true_labels = pin, clusters = predicted_div, method = scoring_method, summary_stats = FALSE)
-  if(!silent) cat('Using', scoring_method,'we obtained a final score of', score.out, 'using a final number of', bas$nbins[1], 'nbins.\n')
+  score.out <- ClusterR::external_validation(true_labels = ann[st[,3]], clusters = predicted_div, method = scoring_method, summary_stats = FALSE)
+  if(!silent) cat('Using', scoring_method,'we obtained a final score of', score.out, '\n')
   invisible(list('score.out' = score.out, 'max_freq_table' = max_freq_table, 'label_freq_list' = label_freq_list))
 }
 

@@ -4,17 +4,19 @@
 \alias{score_sapphire}
 \title{Scoring the SAPPHIRE-plot basin division}
 \usage{
-score_sapphire(the_sap = NULL, ann, basin_optimization = FALSE,
-  scoring_method = "nmi", merge_clusters = FALSE,
-  plot_basin_identification = FALSE, nbins_x = NULL, nbins_y = nbins_x,
-  force_matching = FALSE, plot_pred_true_resume = FALSE, silent = FALSE,
-  ...)
+score_sapphire(the_sap = NULL, ann, manual_barriers = NULL,
+  basin_optimization = FALSE, scoring_method = "nmi",
+  merge_clusters = FALSE, plot_basin_identification = FALSE,
+  nbins_x = NULL, nbins_y = nbins_x, force_matching = FALSE,
+  plot_pred_true_resume = FALSE, silent = FALSE, ...)
 }
 \arguments{
 \item{the_sap}{Name of the PROGIDX_<...>.dat or REPIX_<...>.dat file or Data frame with three columns containing, in order, the (sorted) progress index,
 the relative time indices and the cut function.}
 
 \item{ann}{Annotation must be a single line with the true cluster labels.}
+
+\item{manual_barriers}{If an integer vector is inserted, it is used as the barrier locations.}
 
 \item{basin_optimization}{If \code{TRUE} it will use \code{\link{basin_optimization}} to optimize the clusters. Please consider adding 
 its relevant variables. It is possible to use}
