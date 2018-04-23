@@ -43,12 +43,67 @@ test_that('new trials for SBR', {
                                    comb_met = c('MIC'),
                                    unif.splits = seq(5, 100, 8),  
                                    pk_span = 500, ny = 50, plot = T, 
-                                   silent = F, dbg_nSBR = F, return_plot = F), NA)
+                                   silent = F, dbg_nSBR = F, return_plot = F), NA); a1$barriers
   expect_error(ahahscore <- CampaRi::score_sapphire(the_sap = file.pi, ann = ann, manual_barriers = a1$barriers[1:2]), NA)
   
   
+  ######################### evaluating the fluctuation and randomicity of the score ##########################
+  if(F){
+    # needs: nclu, ann, the sap
+    ncl <- 3
+    nba <- ncl - 1
+    # fpr the plot!
+    pltcalc <- CampaRi::nSBR(data = file.pi, n.cluster = ncl, 
+                        comb_met = c('MIC'),
+                        unif.splits = seq(5, 100, 8),  
+                        pk_span = 500, ny = 50, plot = T, 
+                        silent = F, dbg_nSBR = F, return_plot = T)
+    # for the reference score
+    ref_sc <- CampaRi::nSBR(data = file.pi, n.cluster = ncl, 
+                             comb_met = c('MIC'),
+                             unif.splits = seq(5, 100, 8),  
+                             pk_span = 500, ny = 50, plot = T, 
+                             silent = F, dbg_nSBR = F, return_plot = F)
+    expect_error(ref_sc <- CampaRi::score_sapphire(the_sap = file.pi, ann = ann, manual_barriers = ref_sc$barriers[1:nba]), NA)
+    
+    # calculating the repetition 
+    repe <- lapply(X = 1:1500, FUN = function(x){ 
+      ba <- round(runif(nba, 2, length(ann) - 2))
+      l1 <- CampaRi::score_sapphire(the_sap = file.pi, ann = ann, manual_barriers = ba, silent = T)
+      return(list('sc' = l1$score.out, 'ba' = ba))
+    })
+    
+    # split the results accordingly
+    sco <- sapply(repe, function(x) return(x$sc))
+    best_ba <- sapply(repe, function(x) return(x$ba))
+    
+    # show rough result
+    zcs <- (ref_sc$score.out - mean(sco)) / sd(sco)
+    mean(sco); sd(sco); zcs
+    
+    # use the classic plot to see the points (barrier points) which exceded the combination found.
+    df_pl <- data.frame('barr' = c(best_ba), 'scr' = rep(sco, nba))
+    df_pl <- df_pl[df_pl[, 'scr'] > ref_sc$score.out,]
+    # find the two maxima
+    dhe_point <- data.frame('xm' = df_pl[df_pl[, 'scr'] == max(df_pl[, 'scr']), 1], 
+                            'ym' = df_pl[df_pl[, 'scr'] == max(df_pl[, 'scr']), 2])
+    pltcalc + geom_point(data = df_pl, aes(x = barr, y = scr), col = 'green') +
+      geom_point(data = dhe_point, aes(x = xm, y = ym), col = 'red')
+    
+    # use the maxima to recalculate the score -> it is different!!!! WHYYYYY?    
+    CampaRi::score_sapphire(the_sap = file.pi, ann = ann, manual_barriers = dhe_point$xm, silent = F)
+    
+    # plotting the simple final result
+    ggplot() + geom_density(aes(x = sco), fill = 'lightblue') + theme_classic() + 
+      geom_vline(aes(xintercept = ref_sc$score.out), col = 'darkred') +
+      xlab('Score') + annotate('text', x = 0.45, y = 3, label = paste0('Z-score: ', round(zcs, digits = 2)))
+    ggsave('zscore_test3state.png')
+  }
+  
   if(do_it){
-    # expect_error(ahahscore <- CampaRi::score_sapphire(the_sap = fpi_best, ann = rep(1:4, each = 20000), manual_barriers = ob1$barriers[1:3]))
+    ahahscore <- CampaRi::score_sapphire(the_sap = fpi_best, ann = rep(1:4, each = 20000), manual_barriers = ob1$barriers[1:3])
+    ahahscore <- CampaRi::score_sapphire(the_sap = fpi_best, ann = rep(1:4, each = 20000), manual_barriers = round(runif(3, min = 2, max = 79998)))
+    
     expect_error(ob21 <- wrapperone(fpi_ave1), NA); ob21
     expect_error(ob22 <- wrapperone(fpi_ave2), NA); ob22
     expect_error(ob23 <- wrapperone(fpi_ave3), NA); ob23
@@ -71,7 +126,7 @@ test_that('new trials for SBR', {
                                                             force_matching = T, number_of_clusters = 3, denat_opt = 'process_subtraction',
                                                             plot_basin_identification = plt_stff, silent = silent), NA)
     
-    # just curiosity
+    # just curiosity - entropy considerations
     df.test <- data.frame(a = rnorm(n = 1000, mean = 0, sd = 1), b = rnorm(n = 1000, mean = 0, sd = 1), c = rnorm(n = 1000, mean = 6, sd = 1))
     ggplot(data = df.test) + theme_classic() +
       geom_freqpoly(mapping = aes(a), binwidth = 0.4, col = 'darkred') +

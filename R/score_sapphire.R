@@ -21,6 +21,7 @@
 #' the peaks identification. Default value is \code{FALSE}. 
 #' @param manual_barriers If an integer vector is inserted, it is used as the barrier locations.
 #' @param plot_pred_true_resume Defaults tp \code{FALSE}. If set to true it plots the predicted and true labels one along the other.
+#' @param randomization_baseline Insert the number of times the barriers should be randomly recalculated for having a random baseline.
 #' @param nbins_x Number of bins on  x-axis of the 2-D histogram. Default to sqrt(nrow(the_sap)).
 #' @param nbins_y Number of bins on the y-axis of the 2-D histogram. Default to sqrt(nrow(the_sap)).
 #' @param merge_cluster Logical that allow clusters to be merged automatically if consecutives
@@ -58,6 +59,7 @@ score_sapphire <- function(the_sap=NULL, ann, manual_barriers=NULL, basin_optimi
                            plot_basin_identification = FALSE, nbins_x = NULL,                                   # settings for the recognition/optimi
                            nbins_y = nbins_x, force_matching = FALSE,                                           # settings for the recognition/optimi
                            plot_pred_true_resume = FALSE, silent = FALSE,                                       # it refers to this function
+                           randomization_baseline = NULL,
                            ...){
   
   # general input checking
@@ -79,7 +81,7 @@ score_sapphire <- function(the_sap=NULL, ann, manual_barriers=NULL, basin_optimi
     do_optimization <- basin_optimization
     if(!is.null(manual_mode) && basin_optimization) stop('use manual mode or basin optimization mode')
   }else{
-    if(!is.null(manual_barriers) && !silent) cat('If you want to manually insert barriers please use also the_sap option for reordering of ann.')
+    if(!is.null(manual_barriers) && !silent) cat('If you want to manually insert barriers please use also the_sap option for reordering of ann.\n')
     stop('One between the_sap = "PROGIDX_...", basin_optimization=its_obj or manual_barriers must be provided. ')
   }
   if(!is.null(manual_barriers)){
@@ -89,6 +91,7 @@ score_sapphire <- function(the_sap=NULL, ann, manual_barriers=NULL, basin_optimi
   }
   if(!is.null(the_sap) && !is.logical(basin_optimization)) stop('Please choose one option only. Rather the_sap or basin_optimization?')
   if(!is.numeric(ann) && (!is.null(dim(ann)))) stop('Please provide an integer vector for ann')
+  if(!is.null(randomization_baseline) && !.isSingleInteger(randomization_baseline)) stop('randomization_baseline must be a single integer')
   if(!is.null(nbins_x) && !.isSingleInteger(nbins_x)) stop('nbins_x must be a single integer')
   if(!is.null(nbins_y) && !.isSingleInteger(nbins_x)) stop('nbins_y must be a single integer')
   # if(!is.null(number_of_clusters) && !.isSingleInteger(number_of_clusters)) stop('number_of_clusters must be a single integer')
@@ -304,7 +307,7 @@ score_sapphire <- function(the_sap=NULL, ann, manual_barriers=NULL, basin_optimi
                   round((lpin - sum(unlist(size))) * 100 / lpin, digits = 1), '% missassignment.\n\n')
   # now attaching it to the bas output
   max_freq_table <- cbind(max_freq_table, bas$tab.st)
-  if(!silent) print(max_freq_table); cat('\n')
+  if(!silent) {print(max_freq_table); cat('\n')}
   # max_freq_table[order(max_freq_table$sh_en),] # ordering based on internal entropy
   
   # merging policy - inputs: (label, size, sh_en) from major_freq_table
