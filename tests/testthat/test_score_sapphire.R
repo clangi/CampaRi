@@ -31,19 +31,19 @@ test_that('scoring sapphire plots', {
                                       silent = silent), NA)
   
   
-  optimal_bas <- CampaRi::basin_optimization(the_sap = file.pi,                                   # PI data
-                                             how_fine_search = 5,                                 # number of bins searched between nbins_x_min and nbins_x_max
-                                             nbins_x_min = 20,                                      # minimum number of bins (range)
-                                             nbins_x_max = 30,                                    # maximum number of bins (range)
+  optimal_bas <- CampaRi::basin_optimization(the_sap = file.pi,                                    # PI data
+                                             how_fine_search = 5,                                  # number of bins searched between nbins_x_min and nbins_x_max
+                                             nbins_x_min = 20,                                     # minimum number of bins (range)
+                                             nbins_x_max = 30,                                     # maximum number of bins (range)
                                              basin_optimization_method = "MI_barrier_weighting",   # ranking method
                                              cl.stat.MI_comb = 'kin_MI',                           # Final score combination 
                                              cl.stat.nUni = c(5,10,15,20,25,30,40,50,60),          # MI curve splits 
                                              force_matching = T,                                   # match kin and tempann for the barriers
-                                             number_of_clusters = 3,                             # number of cluster approach. NULL in this case it must be
-                                             denat_opt = 'poly_interpolation',                    # kin ann is corrected for parabolic artefacts
+                                             number_of_clusters = 3,                               # number of cluster approach. NULL in this case it must be
+                                             denat_opt = 'poly_interpolation',                     # kin ann is corrected for parabolic artefacts
                                              cl.stat.denat.MI = 7,                                 # if a number also the MI curve is corrected
                                              plot_basin_identification = plt_stff,                 # final plot?
-                                             dbg_basin_optimization = F,                          # debug?
+                                             dbg_basin_optimization = F,                           # debug?
                                              silent = silent)                                      # silent?  
   
   
@@ -64,8 +64,4 @@ test_that('scoring sapphire plots', {
                                   pk_span = 500, ny = 50, plot = T, 
                                   silent = silent, dbg_nSBR = F, return_plot = T), NA)
   expect_error(ahahscore <- CampaRi::score_sapphire(the_sap = file.pi, ann = ann, manual_barriers = a1$barriers[1:2], silent = silent), NA)
-  
-  
-  
-    
 })

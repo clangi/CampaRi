@@ -39,9 +39,9 @@ pkg_check:
     script: Rscript -e 'devtools::check()'
 
 # buggy
-#pkg_codecov:
-#    stage: codecov
-#    script: Rscript -e 'covr::package_coverage(type="tests", quiet = FALSE)'
+pkg_codecov:
+    stage: codecov
+    script: Rscript -e 'covr::package_coverage(type="all", quiet = FALSE)'
 
 #r-devel:
 #  stage: test

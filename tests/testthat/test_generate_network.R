@@ -2,9 +2,7 @@ context('generate_network')
 
 test_that('pre-processing with network inference', {
   test_plotting <- F
-  my_libs <- F
-  if(my_libs) library(TSA)
-  trj <- matrix(rnorm(1000), nrow = 100, ncol = 10)
+  trj <- data.frame(rnorm(1000), nrow = 100, ncol = 10)
   expect_true(!is.null(trj))
   
   # checking some (expected) errors
@@ -13,13 +11,11 @@ test_that('pre-processing with network inference', {
   expect_error(a <- generate_network(trj, window = 20, post_processing_method = "asdsads"))
   # testing for distances and postprocessing
   # -----------------------------------
-  expect_error(net_joint_tr <- generate_network(trj, method = 'minkowski', post_processing_method = 'svd', window = 18), NA)
+  expect_error(net_joint_tr <- generate_network(trj, method = 'minkowski', post_processing_method = 'svd', window = 12), NA)
   expect_error(net1 <- generate_network(trj, method = 'minkowski', window = 20), NA)
   expect_error(path_net <- generate_network(trj, method = 'minkowski', post_processing_method = 'path_minkowski', window = 15), NA)
   expect_error(SVD_net <- generate_network(trj, method = 'minkowski', post_processing_method = 'svd', window = 20), NA)
   # expect_error(MI_net <- generate_network(trj, method = 'MI', post_processing_method = "SymmetricUncertainty", window = 7), NA)
-  # testing for time line
-  expect_error(net_joint_tr <- generate_network(matrix(rnorm(51000), nrow = 1000, ncol = 51), method = 'minkowski', window = 18), NA)
   
   # testing for tsne
   # -----------------------------------
@@ -67,7 +63,9 @@ test_that('pre-processing with network inference', {
   expect_warning(asd <- generate_network(trj, post_processing_method = "maxfreq", window = 10))
   expect_error(asd <- generate_network(trj, post_processing_method = "maxfreq", window = 10), NA)
   res <- c()
-  if(my_libs){
+  do_it <- F
+  if(do_it) library(TSA)
+  if(do_it){
     for(i in 1:ncol(trj)){
       P <- periodogram(c(trj[1:5, i], trj[1:5, i]), plot = F)
       res <- c(res, P$freq[which(P$spec == max(P$spec))])

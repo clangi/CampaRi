@@ -144,34 +144,41 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
     if(only.kin) match <- TRUE
   } else only.kin <- FALSE
   
+  cl.stat.weight.barriers <- FALSE
+  cl.stat.nBreaks <- 0
+  cl.stat <- FALSE
+  dbg_basins_recognition <- FALSE
+  cl.stat.denat <- NULL
+  cl.stat.denat.MI <- NULL
+  cl.stat.MI_comb <- 'kin_MI'
+  cl.stat.nUni <- NULL
+  
   # dbg_basins_recognition for stats - dgarol
   if("dbg_basins_recognition" %in% names(input.args)) { # dgarol
     dbg_basins_recognition <- input.args$dbg_basins_recognition
     stopifnot(is.logical(dbg_basins_recognition))
-  } else dbg_basins_recognition <- FALSE
+  } 
   
   # cluster statistics check - dgarol
-  
-  
   if("cl.stat" %in% names(input.args)) { # dgarol
     cl.stat <- input.args$cl.stat
     cl.stat.weight.barriers <- TRUE
     stopifnot(is.logical(cl.stat))
-  } else cl.stat <- FALSE
+  } 
   
   # Checking the weight of the barriers
   if("cl.stat.weight.barriers" %in% names(input.args)) { # dgarol
     cl.stat.weight.barriers <- input.args$cl.stat.weight.barriers
     stopifnot(is.logical(cl.stat.weight.barriers))
     if(!cl.stat && cl.stat.weight.barriers) cl.stat <- TRUE
-  } else cl.stat.weight.barriers <- FALSE
+  } 
   
   # Checking the number of breaks for the statistics (0 is the standard barriers)
   if("cl.stat.nBreaks" %in% names(input.args)) { # dgarol
     cl.stat.nBreaks <- input.args$cl.stat.nBreaks
     stopifnot(.isSingleInteger(cl.stat.nBreaks))
     if(!cl.stat) cl.stat <- TRUE
-  } else cl.stat.nBreaks <- 0
+  } 
 
   # checking the uniform sampling nsplits
   if("cl.stat.denat" %in% names(input.args)) { # dgarol
@@ -189,7 +196,8 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
         cl.stat.weight.barriers <- TRUE
       }
     }
-  } else cl.stat.denat <- NULL
+  }
+  
   if("cl.stat.denat.MI" %in% names(input.args)) { # dgarol
     cl.stat.denat.MI <- input.args$cl.stat.denat.MI
     if(!is.null(cl.stat.denat.MI)){
@@ -202,7 +210,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
       if(!cl.stat.weight.barriers) cl.stat.weight.barriers <- TRUE
       if(is.null(cl.stat.denat)) cl.stat.denat <- 'poly_interpolation'
     }
-  } else cl.stat.denat.MI <- NULL
+  }
   
   if("cl.stat.MI_comb" %in% names(input.args)) { # dgarol
     cl.stat.MI_comb <- input.args$cl.stat.MI_comb
@@ -212,7 +220,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
       cl.stat <- TRUE
       cl.stat.weight.barriers <- TRUE
     }
-  } else cl.stat.MI_comb <- 'kin_MI'
+  } 
   
   if("cl.stat.nUni" %in% names(input.args)) { # dgarol
     cl.stat.nUni <- input.args$cl.stat.nUni
@@ -223,7 +231,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
         cl.stat.weight.barriers <- TRUE
       }
     }
-  } else cl.stat.nUni <- NULL
+  } 
   
 
   # Specific cluster statistics
@@ -1325,7 +1333,6 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
   
   if(plot && !is.null(breaks)){
     if(new.dev) dev.new(width=15, height=10)
-    save_par <- par()
     par(mgp=c(0, 0.4, 0))
     par(ps=6)
     par(mar = c(3.5, 0, 1, 3), oma = c(2, 4, 2, 2))
@@ -1354,7 +1361,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
     points(progind$PI[lst], max(progind$Time[lst])+progind$Time[lst]*(sc-1), cex=0.005, col="tomato1")
     lines(xr1, scale(kin.pl), lwd=1, col="black")
     lines(xr1, scale(kin[xr1]), lwd=0.8, col="forestgreen") #the one without the parabol
-    if(!is.null(cl.stat.denat) && cl.stat.denat == 'poly_interpolation') { # my simple fit (dgarol)
+    if(cl.stat.weight.barriers && !is.null(cl.stat.denat) && cl.stat.denat == 'poly_interpolation') { # my simple fit (dgarol)
       if(!is.null(denat.MI)) den_kin <- .denaturate(-log(cutf / cstored), seq(cstored), polydeg = denat.MI, plotit = FALSE)
       else den_kin <- .denaturate(-log(cutf / cstored), seq(cstored), polydeg = 7, plotit = FALSE)
       lines(xr1, scale(den_kin[xr1]), lwd = 0.8, col = 'darkblue')
@@ -1375,7 +1382,6 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
       points(breaks[select_non_border], MI_ratio[select_non_border]*max(yr), pch ='+', col = 'red', cex = 5)
       abline(h=mean(MI_ratio)*max(yr), lwd=1.1, col= 'grey')
     }
-    suppressWarnings(par(save_par))
   }
     invisible(list(tab.st=tab.st, nbins=c(nx,ny), seq.st=seq.st[order(progind$Time)], statistics = statistics, call=call, filename = filename))
 }

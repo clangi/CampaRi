@@ -3,7 +3,7 @@ context('nSBR')
 test_that('new trials for SBR', {
   
   # CREATION OF THE DATASET
-  silent <- F
+  silent <- T
   plt_stff <- !silent
   if(!silent) {require(testthat); require(CampaRi)} 
   stdd <- 3; n_dim <- 10; n_snap <- 3000; n_tot <- n_dim*n_snap/3; if(!silent) print(n_tot)
@@ -21,24 +21,13 @@ test_that('new trials for SBR', {
   # extensive testing on real cases. It needs not to be
   # executed at all
   do_it <- FALSE
-  if(do_it){
-    fpi_empty <- data.table::fread('/disk2a/dgarolini/neuro/simulated_data/analysis/ISI_networks_end17/PROGIDX_000000000100.dat', data.table = F)
-    fpi_best  <- data.table::fread('/disk2a/dgarolini/neuro/simulated_data/analysis/ISI_networks_end17/PROGIDX_000000000102.dat', data.table = F)
-    fpi_ave1   <- data.table::fread('/disk2a/dgarolini/neuro/simulated_data/analysis/ISI_networks_end17/PROGIDX_000000000221.dat', data.table = F)
-    fpi_ave2   <- data.table::fread('/disk2a/dgarolini/neuro/simulated_data/analysis/ISI_networks_end17/PROGIDX_000000000261.dat', data.table = F)
-    fpi_ave3   <- data.table::fread('/disk2a/dgarolini/neuro/simulated_data/analysis/ISI_networks_end17/PROGIDX_000000001102.dat', data.table = F)
-    fpi_ave4   <- data.table::fread('/disk2a/dgarolini/neuro/simulated_data/analysis/ISI_networks_end17/PROGIDX_000000001231.dat', data.table = F)
-    fpi_worst <- data.table::fread('/disk2a/dgarolini/neuro/simulated_data/analysis/ISI_networks_end17/PROGIDX_000000001281.dat', data.table = F)
-  }else{
-    fpi_empty <- fpi_best <- fpi_ave <- fpi_worst <- file.pi
-  }
-  sapphire_plot(sap_table = fpi_worst, timeline = T, sub_sampling_factor = 10)
+  # sapphire_plot(sap_table = fpi_worst, timeline = T, sub_sampling_factor = 10)
   wrapperone <- function(x,...){ invisible(CampaRi::nSBR(data = x, n.cluster = 4, 
                                                      comb_met = c('MIC', 'MIC', 'kin'),
                                                      unif.splits = seq(5, 100, 8),  
                                                      pk_span = 5000, ny = 50, plot = T, 
                                                      silent = silent, dbg_nSBR = F, return_plot = F,...))} 
-  expect_error(ob1 <- wrapperone(fpi_best, data.out.it = F), NA); ob1
+  # expect_error(ob1 <- wrapperone(fpi_best, data.out.it = F), NA); ob1
   expect_error(a1 <- CampaRi::nSBR(data = file.pi, n.cluster = 3, 
                                    comb_met = c('MIC'),
                                    unif.splits = seq(5, 100, 8),  
@@ -48,84 +37,8 @@ test_that('new trials for SBR', {
   
   
   ######################### evaluating the fluctuation and randomicity of the score ##########################
-  if(F){
-    # needs: nclu, ann, the sap
-    ncl <- 3
-    nba <- ncl - 1
-    # fpr the plot!
-    pltcalc <- CampaRi::nSBR(data = file.pi, n.cluster = ncl, 
-                        comb_met = c('MIC'),
-                        unif.splits = seq(5, 100, 8),  
-                        pk_span = 500, ny = 50, plot = T, 
-                        silent = F, dbg_nSBR = F, return_plot = T)
-    # for the reference score
-    ref_sc <- CampaRi::nSBR(data = file.pi, n.cluster = ncl, 
-                             comb_met = c('MIC'),
-                             unif.splits = seq(5, 100, 8),  
-                             pk_span = 500, ny = 50, plot = T, 
-                             silent = F, dbg_nSBR = F, return_plot = F)
-    expect_error(ref_sc <- CampaRi::score_sapphire(the_sap = file.pi, ann = ann, manual_barriers = ref_sc$barriers[1:nba]), NA)
-    
-    # calculating the repetition 
-    repe <- lapply(X = 1:1500, FUN = function(x){ 
-      ba <- round(runif(nba, 2, length(ann) - 2))
-      l1 <- CampaRi::score_sapphire(the_sap = file.pi, ann = ann, manual_barriers = ba, silent = T)
-      return(list('sc' = l1$score.out, 'ba' = ba))
-    })
-    
-    # split the results accordingly
-    sco <- sapply(repe, function(x) return(x$sc))
-    best_ba <- sapply(repe, function(x) return(x$ba))
-    
-    # show rough result
-    zcs <- (ref_sc$score.out - mean(sco)) / sd(sco)
-    mean(sco); sd(sco); zcs
-    
-    # use the classic plot to see the points (barrier points) which exceded the combination found.
-    df_pl <- data.frame('barr' = c(best_ba), 'scr' = rep(sco, nba))
-    df_pl <- df_pl[df_pl[, 'scr'] > ref_sc$score.out,]
-    # find the two maxima
-    dhe_point <- data.frame('xm' = df_pl[df_pl[, 'scr'] == max(df_pl[, 'scr']), 1], 
-                            'ym' = df_pl[df_pl[, 'scr'] == max(df_pl[, 'scr']), 2])
-    pltcalc + geom_point(data = df_pl, aes(x = barr, y = scr), col = 'green') +
-      geom_point(data = dhe_point, aes(x = xm, y = ym), col = 'red')
-    
-    # use the maxima to recalculate the score -> it is different!!!! WHYYYYY?    
-    CampaRi::score_sapphire(the_sap = file.pi, ann = ann, manual_barriers = dhe_point$xm, silent = F)
-    
-    # plotting the simple final result
-    ggplot() + geom_density(aes(x = sco), fill = 'lightblue') + theme_classic() + 
-      geom_vline(aes(xintercept = ref_sc$score.out), col = 'darkred') +
-      xlab('Score') + annotate('text', x = 0.45, y = 3, label = paste0('Z-score: ', round(zcs, digits = 2)))
-    ggsave('zscore_test3state.png')
-  }
   
   if(do_it){
-    ahahscore <- CampaRi::score_sapphire(the_sap = fpi_best, ann = rep(1:4, each = 20000), manual_barriers = ob1$barriers[1:3])
-    ahahscore <- CampaRi::score_sapphire(the_sap = fpi_best, ann = rep(1:4, each = 20000), manual_barriers = round(runif(3, min = 2, max = 79998)))
-    
-    expect_error(ob21 <- wrapperone(fpi_ave1), NA); ob21
-    expect_error(ob22 <- wrapperone(fpi_ave2), NA); ob22
-    expect_error(ob23 <- wrapperone(fpi_ave3), NA); ob23
-    expect_error(ob24 <- wrapperone(fpi_ave4), NA); ob24
-    expect_error(ob3 <- wrapperone(fpi_worst), NA); ob3
-    
-    library(cowplot)
-    cowplot::plot_grid(ob2, ob1, nrow = 2, labels = c('A', 'B'))
-    cowplot::plot_grid(ob2, ob1, ob3, nrow = 3, labels = c('A', 'B', 'C'))
-    cwpl <- cowplot::plot_grid(ob1, ob21, ob22, ob23, ob24, ob3, nrow = 2, labels = c('A', 'B', 'C', 'D', 'E', 'F'))
-    
-    ggsave('p1.png', width = 6, height = 8)
-    ggsave('p2.png', width = 6, height = 10)
-    ggsave(plot = cwpl, filename = 'p3.png', width = 13, height = 9)
-    ncl <- NULL
-    ncl <- 4
-    
-    # fpi_empty
-    expect_error(optimal_bas <- CampaRi::nSBR(the_sap = fpi_empty,  how_fine_search = 10, nSBR_method = "MI_barrier_weighting",
-                                                            force_matching = T, number_of_clusters = 3, denat_opt = 'process_subtraction',
-                                                            plot_basin_identification = plt_stff, silent = silent), NA)
-    
     # just curiosity - entropy considerations
     df.test <- data.frame(a = rnorm(n = 1000, mean = 0, sd = 1), b = rnorm(n = 1000, mean = 0, sd = 1), c = rnorm(n = 1000, mean = 6, sd = 1))
     ggplot(data = df.test) + theme_classic() +

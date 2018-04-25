@@ -73,20 +73,11 @@ test_that('Test for basin recognition with ext files', {
   # extensive testing on real cases. It needs not to be
   # executed at all
   do_it <- FALSE
-  if(do_it){
-    fpi_empty <- data.table::fread('/disk2a/dgarolini/neuro/simulated_data/analysis/ISI_networks_end17/PROGIDX_000000000100.dat', data.table = F)
-    fpi_best  <- data.table::fread('/disk2a/dgarolini/neuro/simulated_data/analysis/ISI_networks_end17/PROGIDX_000000000102.dat', data.table = F)
-    fpi_ave   <- data.table::fread('/disk2a/dgarolini/neuro/simulated_data/analysis/ISI_networks_end17/PROGIDX_000000001102.dat', data.table = F)
-    fpi_worst <- data.table::fread('/disk2a/dgarolini/neuro/simulated_data/analysis/ISI_networks_end17/PROGIDX_000000001281.dat', data.table = F)
-  }else{
-    fpi_empty <- fpi_best <- fpi_ave <- fpi_worst <- file.pi
-  }
-  
   # fpi_empty  
-  expect_error(bas <- basins_recognition(data = fpi_empty, nx = 150, match = F, plot = T, out.file = F, new.dev = F, 
-                                         cl.stat = T, cl.stat.denat = 'poly_interpolation', dbg = F,
+  expect_error(bas <- basins_recognition(data = file.pi, nx = 150, match = F, plot = T, out.file = F, new.dev = F, 
+                                         cl.stat = T, cl.stat.denat = 'poly_interpolation', dbg_basins_recognition = F,
                                          plot.cl.stat = T, cl.stat.MI_comb = 'MI',
-                                         cl.stat.nUni = c(5,10,15,20,25,30,40,50,60), dbg_basins_recognition = T), NA)
+                                         cl.stat.nUni = c(5,10,15,20,25,30,40,50,60)), NA)
   if(do_it){
     # fpi_best  
     bas <- basins_recognition(data = fpi_best, nx = 150, match = T, plot = T, out.file = F, new.dev = F, 
