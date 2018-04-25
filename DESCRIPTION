@@ -1,8 +1,8 @@
 Package: CampaRi
 Type: Package
 Title: Trajectory Analysis
-Version: 0.8.8
-Date: 2017-06-30
+Version: 0.9.1
+Date: 2018-04-25
 Author: Garolini Davide, Cocina Francesco
 Maintainer: Garolini Davide <d.garolini@bioc.uzh.ch>
 Description: Analysis algorithms extracted from the original 'campari' software package.
@@ -18,7 +18,8 @@ Imports:
   gplots, grDevices, graphics, outliers, pcaPP,
   prospectr, splus2R, stats, expm, Hmisc, utils, 
   plotly, ggfortify, PairViz, Rtsne, TSA, ClusterR,
-  RColorBrewer, TransferEntropy, infotheo, e1071, MESS
+  RColorBrewer, TransferEntropy, infotheo, e1071, MESS, 
+  minerva
 Suggests: knitr, rmarkdown, testthat, roxygen2
 VignetteBuilder: knitr
 LinkingTo: Rcpp, RcppArmadillo

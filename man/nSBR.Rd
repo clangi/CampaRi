@@ -20,6 +20,15 @@ are sparse.}
 \item{n.cluster}{Integer. If this value is inserted only the first \code{n.cluster - 1} barriers are shown with dotted lines on the plot. Note that no
 preselection of the barriers is done in the final output and this must be done again in a second instance. The output contains all the possible barriers (ordered).}
 
+\item{comb_met}{Method to weight the barriers. One of the following:
+\itemize{
+      \item "\code{MIC}" Use this to weight the barriers with the Maximal Information Coefficient.
+      \item "\code{MIC_kin}" Combine the MIC score and the kinetic annotation for weighting the barriers.
+      \item "\code{kin}" Use only kinetic annotation for weighting the barriers.
+      \item "\code{diff_kin}" Better not to use.
+      \item "\code{diff}" Better not to use.
+    }}
+
 \item{unif.splits}{Integer. This variable defines the number of splits for the uniform sampling. Using only one number, e.g. 40 divisions, 
 could not be optimal for clogged data. Generally speaking, this value is useful for the MI - ratio weighting of the barriers. It is also possible to insert a 
 vector of integer and the resulting value is an average of these expanded results. Standard is \code{c(5,10,15,20,25,30,40,50,60)} generally.}
@@ -36,31 +45,19 @@ it has been ordere by the progress index.}
 
 \item{...}{\itemize{
     \item "\code{time.series}" File name. If specified, it substitutes the time series of the PROGIDX_<..> file with the one provided by the file.
-    \item "\code{cs.MI_comb}" This value is the representative of how the various calculation in barrier weighting are combined. In particular the options 
-    are the following:
-    \itemize{
-      \item "\code{mean}" Mean between the MI based on the SBR and the MI based on uniform subdivisions
-      \item "\code{multip}" Multiplication between the MI based on the SBR and the MI based on uniform subdivisions
-      \item "\code{kin_MI}" Mean between the kinetic annotaton and the MI based on the SBR and the MI based on uniform subdivisions
-      \item "\code{kin}" Only kinetic annotation value on the barrier
-      \item "\code{MI}" Only the MI based on the SBR and the MI based on uniform subdivisions
-    }
-    \item "\code{cs.nUni}" 
     \item "\code{data.out.it}" Should I output the data.frame in input?
 }}
 }
 \value{
 A list containing
+returning_list <- list('nbins' = c(ny, ny), 'barriers' = rank.pk, 'call' = call, 'data.out' = data.out, 'plot' = ggp)
       \itemize{
-        \item "\code{tab.st}" Data frame containing the boundaries of each state, their lengths and the type of the right boundary. If the cl.stat option
-        is active this will have other columns with the barrier statistics (e.g. Hellinger distance).
+        \item "\code{nbins}" c(ny, ny). This is not influential.
         Type=1 means that it is a matched partition, type=2 is only dynamic, type=3 is only kinetic. The type of the last state is always equal to 1.
-        \item "\code{nbins}" 2-D vector containing number of bins on x-axis and y-axis.
-        \item "\code{seq.st}" The time-ordered discretized trajectory.
-        \item "\code{statistics}" If \code{cl.stat} is \code{TRUE} this element will contain all the cluster statistics (unbound to the found barriers). 
-        Otherwise it is \code{NULL}. If no barrier has been found this value defaults to \code{FALSE}.
+        \item "\code{barriers}" Found barriers (no cut is made with the number of clusters which is only for plotting).
         \item "\code{call}" The matched call. 
-        \item "\code{data}" The sapphire file name if it is provided, otherwise the data obj. It is used by \code{\link{score_sapphire}}.
+        \item "\code{data.out}" The sapphire file name if it is provided, otherwise the data obj. It is used by \code{\link{score_sapphire}}.
+        \item "\code{plot}" The plot if you wanted it returned.
       }
 }
 \description{
@@ -71,14 +68,4 @@ Extimation of the MI curve on the temporal annotation (dots). Using the inverted
 \details{
 For details regarding the SAPPHIRE plot, please refer to the relative publications \url{http://www.nature.com/articles/srep06264}. 
 Main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
-}
-\examples{
-
-adjl <- mst_from_trj(trj = matrix(rnorm(1000), nrow = 100, ncol = 10))
-ret<-gen_progindex(adjl = adjl)
-gen_annotation(ret_data = ret, local_cut_width = 10)
-\dontrun{
-basins_recognition("PROGIDX_000000000001.dat", nx=500)
-}
-
 }

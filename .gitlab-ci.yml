@@ -19,6 +19,7 @@ before_script:
   - Rscript -e 'install.packages("MESS", repos = "http://cran.us.r-project.org")'
   - echo 'R_MAX_NUM_DLLS=500' >> ~/.Renviron 
   - export R_MAX_NUM_DLLS=500  
+  - R -e 'install.packages(c("minerva"))'
 
 #  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libnetcdff5; fi
 #  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libnetcdf-dev; fi # must be specified
@@ -36,10 +37,11 @@ before_script:
 pkg_check:
     stage: check
     script: Rscript -e 'devtools::check()'
-    
-pkg_codecov:
-    stage: codecov
-    script: Rscript -e 'covr::package_coverage(type="tests", quiet = FALSE)'
+
+# buggy
+#pkg_codecov:
+#    stage: codecov
+#    script: Rscript -e 'covr::package_coverage(type="tests", quiet = FALSE)'
 
 #r-devel:
 #  stage: test

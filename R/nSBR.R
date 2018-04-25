@@ -9,6 +9,14 @@
 #' @param ny Number of bins on the y-axis of the histogram. Finer cuts can detect smaller differencies, but they could stretch to the meaningless when data points
 #' are sparse.
 #' @param local.cut Logical value indicating whether the localized cut function has to be used (see references). Default value is \code{FALSE}.
+#' @param comb_met Method to weight the barriers. One of the following:
+#'      \itemize{
+#'            \item "\code{MIC}" Use this to weight the barriers with the Maximal Information Coefficient.
+#'            \item "\code{MIC_kin}" Combine the MIC score and the kinetic annotation for weighting the barriers.
+#'            \item "\code{kin}" Use only kinetic annotation for weighting the barriers.
+#'            \item "\code{diff_kin}" Better not to use.
+#'            \item "\code{diff}" Better not to use.
+#'          }
 #' @param unif.splits Integer. This variable defines the number of splits for the uniform sampling. Using only one number, e.g. 40 divisions, 
 #' could not be optimal for clogged data. Generally speaking, this value is useful for the MI - ratio weighting of the barriers. It is also possible to insert a 
 #' vector of integer and the resulting value is an average of these expanded results. Standard is \code{c(5,10,15,20,25,30,40,50,60)} generally.
@@ -23,48 +31,30 @@
 #' @param ...
 #'      \itemize{
 #'          \item "\code{time.series}" File name. If specified, it substitutes the time series of the PROGIDX_<..> file with the one provided by the file.
-#'          \item "\code{cs.MI_comb}" This value is the representative of how the various calculation in barrier weighting are combined. In particular the options 
-#'          are the following:
-#'          \itemize{
-#'            \item "\code{mean}" Mean between the MI based on the SBR and the MI based on uniform subdivisions
-#'            \item "\code{multip}" Multiplication between the MI based on the SBR and the MI based on uniform subdivisions
-#'            \item "\code{kin_MI}" Mean between the kinetic annotaton and the MI based on the SBR and the MI based on uniform subdivisions
-#'            \item "\code{kin}" Only kinetic annotation value on the barrier
-#'            \item "\code{MI}" Only the MI based on the SBR and the MI based on uniform subdivisions
-#'          }
-#'          \item "\code{cs.nUni}" 
 #'          \item "\code{data.out.it}" Should I output the data.frame in input?
 #'      }
 #'      
 #' @return A list containing
+#' returning_list <- list('nbins' = c(ny, ny), 'barriers' = rank.pk, 'call' = call, 'data.out' = data.out, 'plot' = ggp)
 #'       \itemize{
-#'         \item "\code{tab.st}" Data frame containing the boundaries of each state, their lengths and the type of the right boundary. If the cl.stat option
-#'         is active this will have other columns with the barrier statistics (e.g. Hellinger distance).
+#'         \item "\code{nbins}" c(ny, ny). This is not influential.
 #'         Type=1 means that it is a matched partition, type=2 is only dynamic, type=3 is only kinetic. The type of the last state is always equal to 1.
-#'         \item "\code{nbins}" 2-D vector containing number of bins on x-axis and y-axis.
-#'         \item "\code{seq.st}" The time-ordered discretized trajectory.
-#'         \item "\code{statistics}" If \code{cl.stat} is \code{TRUE} this element will contain all the cluster statistics (unbound to the found barriers). 
-#'         Otherwise it is \code{NULL}. If no barrier has been found this value defaults to \code{FALSE}.
+#'         \item "\code{barriers}" Found barriers (no cut is made with the number of clusters which is only for plotting).
 #'         \item "\code{call}" The matched call. 
-#'         \item "\code{data}" The sapphire file name if it is provided, otherwise the data obj. It is used by \code{\link{score_sapphire}}.
+#'         \item "\code{data.out}" The sapphire file name if it is provided, otherwise the data obj. It is used by \code{\link{score_sapphire}}.
+#'         \item "\code{plot}" The plot if you wanted it returned.
 #'       }   
-#' @examples
-#' 
-#' adjl <- mst_from_trj(trj = matrix(rnorm(1000), nrow = 100, ncol = 10))
-#' ret<-gen_progindex(adjl = adjl)
-#' gen_annotation(ret_data = ret, local_cut_width = 10)
-#' \dontrun{
-#' basins_recognition("PROGIDX_000000000001.dat", nx=500)
-#' }
 #' 
 #' @details For details regarding the SAPPHIRE plot, please refer to the relative publications \url{http://www.nature.com/articles/srep06264}. 
 #' Main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
 #' 
 #' @importFrom data.table fread fwrite
 #' @importFrom RColorBrewer brewer.pal
-#' @importFrom TransferEntropy computeTE
+#' @importFrom minerva mine
+#' @importFrom gplots hist2d
 #' @importFrom infotheo mutinformation
-#' @importFrom e1071 stft
+#' @import ggplot2
+# @importFrom TransferEntropy computeTE
 # @importFrom RcppRoll roll_mean
 #' 
 #' @export nSBR
@@ -183,7 +173,7 @@ nSBR <- function(data, ny, local.cut=FALSE, n.cluster=NULL, comb_met=c('MIC'),
   for(nun in n_unif){
     if(!silent) cat(nun, ' ')
     brks_uni <- floor(seq(1, lpi, length.out = nun))[-c(1,nun)]
-    dhc_uni <- dens_histCounts(progind, breaks = brks_uni, nx = ny, ny = ny) # breaks are the barriers points on x
+    dhc_uni <- .dens_histCounts(progind, breaks = brks_uni, nx = ny, ny = ny) # breaks are the barriers points on x
     uni_cnts <- dhc_uni$counts    
     MI_uni <- sapply(seq(nun-2), function(j) infotheo::mutinformation(uni_cnts[, j], uni_cnts[, j+1]))
     minerva.out <- sapply(seq(nun-2), function(j) minerva::mine(x = uni_cnts[, j], y = uni_cnts[, j+1]))
@@ -257,7 +247,7 @@ nSBR <- function(data, ny, local.cut=FALSE, n.cluster=NULL, comb_met=c('MIC'),
   nba <- nclu - 1 # cluster and barrier number 
   rnk_ts <- rank.pk[1:(min(max(15, nclu), .lt(rank.pk)))] # rank to show (number of peaks to show)
   
-  dhc <- dens_histCounts(progind, breaks = rank.pk, nx = ny, ny = ny) # breaks are the barriers points on x
+  dhc <- .dens_histCounts(progind, breaks = rank.pk, nx = ny, ny = ny) # breaks are the barriers points on x
   dens <- dhc$density
   ent <- .normalize(apply(dens, 2, .myShEn))
   
@@ -305,28 +295,28 @@ nSBR <- function(data, ny, local.cut=FALSE, n.cluster=NULL, comb_met=c('MIC'),
 #########################################################
 #          Functions ext
 #########################################################
-myTE <- function(x, y, emb, sym = T, sd = 0.001){
-  nx <- x + stats::rnorm(n = .lt(x), mean = 0, sd = sd)
-  ny <- y + stats::rnorm(n = .lt(x), mean = 0, sd = sd)
-  xy <- TransferEntropy::computeTE(nx, ny, embedding = emb, k = 2, safetyCheck = T)
-  yx <- TransferEntropy::computeTE(ny, nx, embedding = emb, k = 2, safetyCheck = T)
-  if(sym) return((unlist(xy) + unlist(yx))/2)
-  else return(unlist(xy))
-}
+# myTE <- function(x, y, emb, sym = T, sd = 0.001){
+#   nx <- x + stats::rnorm(n = .lt(x), mean = 0, sd = sd)
+#   ny <- y + stats::rnorm(n = .lt(x), mean = 0, sd = sd)
+#   xy <- TransferEntropy::computeTE(nx, ny, embedding = emb, k = 2, safetyCheck = T)
+#   yx <- TransferEntropy::computeTE(ny, nx, embedding = emb, k = 2, safetyCheck = T)
+#   if(sym) return((unlist(xy) + unlist(yx))/2)
+#   else return(unlist(xy))
+# }
 .myShEn <- function(x){
   x2 <- replace(x = x, list = which(x == 0), values = 1)
   return(-sum(x2*log(x2)))
 }
 
-myKL <- function(x, y, sym = T){
-  xn <- x[-which(x==0 | y==0)]
-  yn <- y[-which(x==0 | y==0)]
-  if(sym) return((sum(xn*log(xn/yn)) + sum(yn*log(yn/xn)))/2)
-  else return(sum(xn*log(xn/yn)))
-}
+# myKL <- function(x, y, sym = T){
+#   xn <- x[-which(x==0 | y==0)]
+#   yn <- y[-which(x==0 | y==0)]
+#   if(sym) return((sum(xn*log(xn/yn)) + sum(yn*log(yn/xn)))/2)
+#   else return(sum(xn*log(xn/yn)))
+# }
 
 # creates the densities and the counts over bins (only ny is relevant) - doing hist2d
-dens_histCounts <- function(progind, breaks, nx, ny = nx){
+.dens_histCounts <- function(progind, breaks, nx, ny = nx){
   hist.internal <- hist2d(matrix(c(progind[,1], progind[,2]), ncol=2, nrow=.lt(progind$PI)), nbins=c(nx, ny), show=FALSE)
   cnts <- matrix(0, nrow=ny, ncol=(.lt(breaks) + 1))
   for (i in 1:ncol(cnts)) {
@@ -354,23 +344,23 @@ dens_histCounts <- function(progind, breaks, nx, ny = nx){
 }
 
 # once defined a split (e.g. 50 parts) it uses a certain number of slides (e.g. 10) to calculate the MI
-sliding_MI <- function(progind, n_breaks = 50, n_slides = 10, nx, ny = nx){
-  lpi <- .lt(progind$PI)
-  brks <- floor(seq(1, lpi, length.out = n_breaks))
-  span_MI <- sapply(X = floor(seq(1, brks[2]-1, length.out = n_slides)), FUN = function(x){
-    br <- floor(seq(x, lpi, by = brks[2]))
-    dhc <- dens_histCounts(progind, breaks = br, nx = nx, ny = ny)
-    mi.out <- list(.normalize(sapply(seq(.lt(br)), function(j) infotheo::mutinformation(dhc$counts[, j], dhc$counts[, j+1]))))
-    return(mi.out)
-  })
-  return(c(t(do.call(cbind, span_MI))))
-}
+# sliding_MI <- function(progind, n_breaks = 50, n_slides = 10, nx, ny = nx){
+#   lpi <- .lt(progind$PI)
+#   brks <- floor(seq(1, lpi, length.out = n_breaks))
+#   span_MI <- sapply(X = floor(seq(1, brks[2]-1, length.out = n_slides)), FUN = function(x){
+#     br <- floor(seq(x, lpi, by = brks[2]))
+#     dhc <- .dens_histCounts(progind, breaks = br, nx = nx, ny = ny)
+#     mi.out <- list(.normalize(sapply(seq(.lt(br)), function(j) infotheo::mutinformation(dhc$counts[, j], dhc$counts[, j+1]))))
+#     return(mi.out)
+#   })
+#   return(c(t(do.call(cbind, span_MI))))
+# }
 
 # --------------------------- functions - fra
-.scale <- function(x) {
-  scl <- (max(progind$Time)-1)/(max(x)-min(x))
-  return(1+(x-min(x))*scl)
-}
+# .scale <- function(x) {
+#   scl <- (max(progind$Time)-1)/(max(x)-min(x))
+#   return(1+(x-min(x))*scl)
+# }
 # ------------------------ end functions
 
 # ------------------------------------------------------------------------------------------------------------------------  

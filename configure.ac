@@ -1,4 +1,4 @@
-AC_INIT([CampaRi],[version 0.8.8],[dgarolini@gmail.com])
+AC_INIT([CampaRi],[version 0.9.1],[dgarolini@gmail.com])
 
 dnl Small macro to print out a nice, pretty section title.
 define(SECTION_TITLE,
