@@ -279,7 +279,7 @@ nSBR <- function(data, ny, local.cut=FALSE, n.cluster=NULL, comb_met=c('MIC'),
          geom_vline(xintercept = rank.pk[1:nba], col = 'black', size = 1, linetype="dotted") +
          geom_point(data = data.frame(a = rnk_ts, b = wtp[rnk_ts]), 
                    mapping = aes(x = a, y = b),
-                   shape = 3, col = 'darkblue', size = 5, stroke = 2.5) + xlab('Progress Index') + ylab('IMI')
+                   shape = 3, col = 'darkblue', size = 5, stroke = 2.5) + xlab('Progress Index') + ylab(paste0('I', comb_met))
   #+ #deeppink3
     # scale_colour_manual(name="Statistic", values=c("MIC"="darkred","ddiffcut"="lightgreen","kin"="black"))
   if(plot) print(ggp)

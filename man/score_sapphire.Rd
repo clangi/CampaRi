@@ -8,7 +8,8 @@ score_sapphire(the_sap = NULL, ann, manual_barriers = NULL,
   basin_optimization = FALSE, scoring_method = "nmi",
   merge_clusters = FALSE, plot_basin_identification = FALSE,
   nbins_x = NULL, nbins_y = nbins_x, force_matching = FALSE,
-  plot_pred_true_resume = FALSE, silent = FALSE, ...)
+  plot_pred_true_resume = FALSE, silent = FALSE,
+  randomization_baseline = NULL, ...)
 }
 \arguments{
 \item{the_sap}{Name of the PROGIDX_<...>.dat or REPIX_<...>.dat file or Data frame with three columns containing, in order, the (sorted) progress index,
@@ -45,6 +46,8 @@ the peaks identification. Default value is \code{FALSE}.}
 \item{plot_pred_true_resume}{Defaults tp \code{FALSE}. If set to true it plots the predicted and true labels one along the other.}
 
 \item{silent}{A logical value indicating whether the function has to remain silent or not. Default value is \code{FALSE}.}
+
+\item{randomization_baseline}{Insert the number of times the barriers should be randomly recalculated for having a random baseline.}
 
 \item{...}{This variables will be sent to \code{\link{basin_optimization}} without any checking.}
 

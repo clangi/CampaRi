@@ -75,7 +75,6 @@ where the parabolic shape has been subtracted, i.e. the actual curve used for th
     \item "\code{cl.stat.KL}" Logical. Calculate symmetric and non-symmetric Kullback-Leibler divergence.
     \item "\code{cl.stat.wMI}" Logical. Use the number of breaks (\code{cl.stat.nBreaks}) to find the Mutual Information for 10 slided divisions.
     This will result in 10*nBreaks values.
-    \item "\code{data.out.it}" Should I output the data.frame in input?
 }}
 }
 \value{
@@ -89,7 +88,7 @@ A list containing
         \item "\code{statistics}" If \code{cl.stat} is \code{TRUE} this element will contain all the cluster statistics (unbound to the found barriers). 
         Otherwise it is \code{NULL}. If no barrier has been found this value defaults to \code{FALSE}.
         \item "\code{call}" The matched call. 
-        \item "\code{data}" The sapphire file name if it is provided, otherwise the data obj. It is used by \code{\link{score_sapphire}}.
+        \item "\code{filename}" The sapphire file name if it is provided, otherwise \code{NULL}.
       }
 }
 \description{

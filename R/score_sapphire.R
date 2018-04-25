@@ -420,7 +420,6 @@ score_sapphire <- function(the_sap=NULL, ann, manual_barriers=NULL, basin_optimi
   # external_validation(true_labels = ann[st[,3]], clusters = predicted_div, method = "adjusted_rand_index", summary_stats = FALSE)
   # external_validation(true_labels = ann[st[,3]], clusters = predicted_div, method = "jaccard_index", summary_stats = FALSE)
   # external_validation(true_labels = ann[st[,3]], clusters = predicted_div, method = "purity", summary_stats = FALSE)
-  browser()
   score.out <- ClusterR::external_validation(true_labels = ann[st[,3]], clusters = predicted_div, method = scoring_method, summary_stats = FALSE)
   if(!silent) cat('Using', scoring_method,'we obtained a final score of', score.out, '\n')
   invisible(list('score.out' = score.out, 'max_freq_table' = max_freq_table, 'label_freq_list' = label_freq_list))
