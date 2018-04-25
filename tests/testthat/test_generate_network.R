@@ -2,6 +2,8 @@ context('generate_network')
 
 test_that('pre-processing with network inference', {
   test_plotting <- F
+  my_libs <- F
+  if(my_libs) library(TSA)
   trj <- data.frame(rnorm(1000), nrow = 100, ncol = 10)
   expect_true(!is.null(trj))
   
@@ -30,7 +32,7 @@ test_that('pre-processing with network inference', {
   
   # testing for spectrum transformation
   # -----------------------------------
-  trj <- matrix(NA, nrow = 120, ncol = 2)
+  trj <- as.data.frame(matrix(NA, nrow = 120, ncol = 2))
   trj[,1] <- sin(1:120)*(1/rep(1:30, 4) + tan(120:1)*(1/100))
   trj[,2] <- cos(1:120)*(1/rep(1:30, 4) + tanh(120:1)*(1/sin(120:1)))
   if(test_plotting) plot(trj[,1], type = 'l')
@@ -58,14 +60,12 @@ test_that('pre-processing with network inference', {
   res <- c()
   for(i in 1:ncol(trj))
     res <- c(res, diff(range(c(trj[1:5, i], trj[1:5, i]))))
-  expect_true(all(res == asd[1, ]))
+  expect_true(all(res == asd$trj_out[1, ]))
   # maxfreq
   expect_warning(asd <- generate_network(trj, post_processing_method = "maxfreq", window = 10))
   expect_error(asd <- generate_network(trj, post_processing_method = "maxfreq", window = 10), NA)
   res <- c()
-  do_it <- F
-  if(do_it) library(TSA)
-  if(do_it){
+  if(my_libs){
     for(i in 1:ncol(trj)){
       P <- periodogram(c(trj[1:5, i], trj[1:5, i]), plot = F)
       res <- c(res, P$freq[which(P$spec == max(P$spec))])
