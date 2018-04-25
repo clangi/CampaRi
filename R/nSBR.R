@@ -1,26 +1,28 @@
 #' @title New identifying basins in the SAPPHIRE plot
 #' @description
-#'     Todo.
+#'     Extimation of the MI curve on the temporal annotation (dots). Using the inverted MIC in particular we can find the clearest separations between basins
+#'     (barriers) by looking at the highest values. To calculate this line we randomly split the PI (x-axis) in randomly chosen uniformly sized pieces and we 
+#'     calculate the y-axis histogram to compare using MIC. We invert it and we interpolate all the results.
 #'     
-#' @param data Name of the PROGIDX_<...>.dat file or Data frame with three columns containing, in order, the (sorted) progress index, the relative time indices and the cut function. 
-#' @param nx Number of bins on the x-axis of the 2-D histogram.
-#' @param ny Number of bins on the y-axis of the 2-D histogram. Default to nx.
-#' @param ny.aut Logical value indicating whether a suitable number of bins on the y-axis has to be identified automatically. Default value is \code{FALSE}.
+#' @param data Name of the PROGIDX_<...>.dat file or Data frame with three columns containing, in order, the (sorted) progress index, the relative time 
+#' indices and the cut function. 
+#' @param ny Number of bins on the y-axis of the histogram. Finer cuts can detect smaller differencies, but they could stretch to the meaningless when data points
+#' are sparse.
 #' @param local.cut Logical value indicating whether the localized cut function has to be used (see references). Default value is \code{FALSE}.
-#' @param plot A logical value indicating whether to display the SAPPHIRE plot with the resulting partitions or not. Black partitions 
-#' are the matched ones, blue ones derive only from the dynamic analysis and orange ones only from the kinetic analysis. The green curve is the kinetic annotation (black curve) 
-#' where the parabolic shape has been subtracted, i.e. the actual curve used for the peaks identification. Default value is \code{FALSE}.
+#' @param unif.splits Integer. This variable defines the number of splits for the uniform sampling. Using only one number, e.g. 40 divisions, 
+#' could not be optimal for clogged data. Generally speaking, this value is useful for the MI - ratio weighting of the barriers. It is also possible to insert a 
+#' vector of integer and the resulting value is an average of these expanded results. Standard is \code{c(5,10,15,20,25,30,40,50,60)} generally.
+#' @param n.cluster Integer. If this value is inserted only the first \code{n.cluster - 1} barriers are shown with dotted lines on the plot. Note that no
+#' preselection of the barriers is done in the final output and this must be done again in a second instance. The output contains all the possible barriers (ordered).
+#' @param plot A logical value indicating whether to display the SAPPHIRE plot with the resulting partitions or not. The dark red curve indicates the MIC interpolation
+#' while black dots indicate the peaks found. Here it is possible to see the effect of the spanning variable. Grey dots in the background are the temporal annotation as
+#' it has been ordere by the progress index.
+#' @param pk_span Integer. The spanning window that should be the minimum size of the basin. It defines the peak finding step.
+#' @param return_plot Logical. This can return the plot object in the return list.
 #' @param silent A logical value indicating whether the function has to remain silent or not. Default value is \code{FALSE}.
 #' @param ...
 #'      \itemize{
 #'          \item "\code{time.series}" File name. If specified, it substitutes the time series of the PROGIDX_<..> file with the one provided by the file.
-#'          \item "\code{cl.stat}" If \code{TRUE} it will activate the cluster analysis with Mutual Information, Hellinger distance and Shannon Entropy
-#'          as defaults.
-#'          \item "\code{cs.nBreaks}" Integer. This variable defines the number of splits for the analysis. If set to 0 it will use the breaks found in the SBR.
-#'          \item "\code{cs.denat}" This value can be set to \code{"process_subtraction"} or \code{"poly_interpolation"} and it is defining the removal of 
-#'          parabolic artifacts in the kinetic trace. The polynomial fit is by default 7 and 12 in degree for the kinetic annotation and uniform MI curves. The process 
-#'          option istead is referring to the simulated process which is behind the kin ann. This option can be set to \code{TRUE} for using the process way.
-#'          \item "\code{cs.denat.MI}" Integer. If NULL its default is 7 for poly_interpolation of the kinetic ann but nothing is done on the MI score. 
 #'          \item "\code{cs.MI_comb}" This value is the representative of how the various calculation in barrier weighting are combined. In particular the options 
 #'          are the following:
 #'          \itemize{
@@ -30,15 +32,7 @@
 #'            \item "\code{kin}" Only kinetic annotation value on the barrier
 #'            \item "\code{MI}" Only the MI based on the SBR and the MI based on uniform subdivisions
 #'          }
-#'          \item "\code{cs.nUni}" Integer. This variable defines the number of splits for the uniform sampling. If not set the algorithm will use 40 divisions which 
-#'          could not be optimal for clogged data. Generally speaking, this value is useful for the MI - ratio weighting of the barriers. It is also possible to insert a 
-#'          vector of integer and the resulting value is an average of these expanded results. We advice to use \code{c(5,10,15,20,25,30,40,50)} generally.
-#'          \item "\code{cs.entropy}" Logical. Calculate Shannon entropy.
-#'          \item "\code{cs.stft}" Logical. Calculate short time fourier transform.
-#'          \item "\code{cs.TE}" Logical. Calculate symmetric Transfer Entropy.
-#'          \item "\code{cs.KL}" Logical. Calculate symmetric and non-symmetric Kullback-Leibler divergence.
-#'          \item "\code{cs.wMI}" Logical. Use the number of breaks (\code{cs.nBreaks}) to find the Mutual Information for 10 slided divisions.
-#'          This will result in 10*nBreaks values.
+#'          \item "\code{cs.nUni}" 
 #'          \item "\code{data.out.it}" Should I output the data.frame in input?
 #'      }
 #'      
@@ -76,7 +70,7 @@
 #' @export nSBR
 
 nSBR <- function(data, ny, local.cut=FALSE, n.cluster=NULL, comb_met=c('MIC'), 
-                 unif.splits = NULL, pk_span = NULL, plot=FALSE, silent=FALSE, ...) {
+                 unif.splits = NULL, pk_span = NULL, plot=FALSE, silent=FALSE, return_plot = FALSE, ...) {
   call <- match.call()
   
   if(!is.character(data) && !is.data.frame(data)) stop("data must be a string or a data frame")
@@ -88,12 +82,13 @@ nSBR <- function(data, ny, local.cut=FALSE, n.cluster=NULL, comb_met=c('MIC'),
   if((ny %% 1) != 0) stop("ny must be an integer")
   if(ny < 7) stop('ny must be > 7')
   if(!is.logical(local.cut)) stop("local.cut must be a logical value")
+  if(!is.logical(return_plot)) stop("return_plot must be a logical value")
   if(!is.logical(plot)) stop("plot must be a logical value")
   if(!is.logical(silent)) stop("plot must be a logical value")
   if(!is.null(unif.splits)) stopifnot(all(sapply(unif.splits, function(x) x%%1) == 0))
   # Extra arguments checks
   input.args <- list(...)
-  avail.extra.arg <- c("time.series", "return_plot",
+  avail.extra.arg <- c("time.series",
                        # 'cs.entropy', # DEPRECATED
                        # 'cs.stft', 'cs.TE', 'cs.KL', 'cs.wMI',
                        # 'cs.nUni', 'cs.nBreaks', 'cs.MI_comb', 'cs.denat', 'cs.denat.MI', 
@@ -104,11 +99,6 @@ nSBR <- function(data, ny, local.cut=FALSE, n.cluster=NULL, comb_met=c('MIC'),
     if(!silent) cat('!!!!!!!!! We found the following variables without a father (not between our extra input arguments) !!!!!!!!!!\n')
     if(!silent) cat(names(input.args)[!(names(input.args) %in% avail.extra.arg)], '\n')
   }
-  
-  if('return_plot' %in% names(input.args)){
-    return_plot <- input.args$return_plot
-    stopifnot(is.logical(return_plot))
-  } else return_plot <- FALSE
   
   # dbg_nSBR for stats - dgarol
   if("dbg_nSBR" %in% names(input.args)) { # dgarol
@@ -292,8 +282,7 @@ nSBR <- function(data, ny, local.cut=FALSE, n.cluster=NULL, comb_met=c('MIC'),
                    shape = 3, col = 'darkblue', size = 5, stroke = 2.5) + xlab('Progress Index') + ylab('IMI')
   #+ #deeppink3
     # scale_colour_manual(name="Statistic", values=c("MIC"="darkred","ddiffcut"="lightgreen","kin"="black"))
-  if(return_plot) return(ggp)
-  else if(plot) print(ggp)
+  if(plot) print(ggp)
   
   # microbenchmarking MIC MI
   if(F){
@@ -307,11 +296,9 @@ nSBR <- function(data, ny, local.cut=FALSE, n.cluster=NULL, comb_met=c('MIC'),
 
   
   # FINAL OUTPUT
-  invisible(list('nbins' = c(ny, ny), 
-                 'barriers' = rank.pk, 
-                 # 'seq.st' = seq.st[order(progind$Time)], 
-                 'call' = call, 
-                 'data.out' = data.out))
+  returning_list <- list('nbins' = c(ny, ny), 'barriers' = rank.pk, 'call' = call, 'data.out' = data.out)
+  if(return_plot) returning_list <- list('nbins' = c(ny, ny), 'barriers' = rank.pk, 'call' = call, 'data.out' = data.out, 'plot' = ggp)
+  invisible(returning_list)
 }
 
 

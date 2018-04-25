@@ -1,7 +1,7 @@
 context('score_sapphire')
 
 test_that('scoring sapphire plots', {
-  silent <- T
+  silent <- F
   plt_stff <- !silent
   if(!silent) {require(testthat); require(CampaRi)} 
   
@@ -54,6 +54,18 @@ test_that('scoring sapphire plots', {
   expect_error(qres <- score_sapphire(ann = ann,
                                       force_matching = T, nbins_x = 50, basin_optimization = optimal_bas$bas,
                                       plot_basin_identification = plt_stff,
-                                      silent = silent), NA) # error! to fix tomorrow
+                                      silent = silent)) # error! to fix tomorrow
+
   
+  # new tests using the nSBR function
+  expect_error(a1 <- CampaRi::nSBR(data = file.pi, n.cluster = 3, 
+                                  comb_met = c('MIC'),
+                                  unif.splits = seq(5, 100, 8),  
+                                  pk_span = 500, ny = 50, plot = T, 
+                                  silent = silent, dbg_nSBR = F, return_plot = T), NA)
+  expect_error(ahahscore <- CampaRi::score_sapphire(the_sap = file.pi, ann = ann, manual_barriers = a1$barriers[1:2], silent = silent), NA)
+  
+  
+  
+    
 })

@@ -37,14 +37,14 @@ test_that('new trials for SBR', {
                                                      comb_met = c('MIC', 'MIC', 'kin'),
                                                      unif.splits = seq(5, 100, 8),  
                                                      pk_span = 5000, ny = 50, plot = T, 
-                                                     silent = F, dbg_nSBR = F, return_plot = F,...))} 
+                                                     silent = silent, dbg_nSBR = F, return_plot = F,...))} 
   expect_error(ob1 <- wrapperone(fpi_best, data.out.it = F), NA); ob1
   expect_error(a1 <- CampaRi::nSBR(data = file.pi, n.cluster = 3, 
                                    comb_met = c('MIC'),
                                    unif.splits = seq(5, 100, 8),  
                                    pk_span = 500, ny = 50, plot = T, 
-                                   silent = F, dbg_nSBR = F, return_plot = F), NA); a1$barriers
-  expect_error(ahahscore <- CampaRi::score_sapphire(the_sap = file.pi, ann = ann, manual_barriers = a1$barriers[1:2]), NA)
+                                   silent = silent, dbg_nSBR = F, return_plot = F), NA); a1$barriers
+  expect_error(ahahscore <- CampaRi::score_sapphire(the_sap = file.pi, ann = ann, manual_barriers = a1$barriers[1:2], silent = silent), NA)
   
   
   ######################### evaluating the fluctuation and randomicity of the score ##########################
