@@ -1,7 +1,7 @@
 context('score_sapphire')
 
 test_that('scoring sapphire plots', {
-  silent <- F
+  silent <- T
   plt_stff <- !silent
   if(!silent) {require(testthat); require(CampaRi)} 
   
@@ -10,27 +10,6 @@ test_that('scoring sapphire plots', {
   file.pi <- system.file("extdata", "REPIX_000000000021.dat", package = "CampaRi")
   if(plt_stff) sapphire_plot(sap_file = file.pi, ann_trace = ann, only_timeline=F, timeline = T)
 
-  # using directly the basin recognition with a certain nbins <- 50
-  expect_error(qres <- score_sapphire(the_sap = file.pi, ann = ann, 
-                                      force_matching = T, nbins_x = 50,
-                                      plot_basin_identification = plt_stff, 
-                                      silent = silent), NA)
-  expect_error(qres <- score_sapphire(the_sap = file.pi, ann = ann, basin_optimization = T,
-                                      force_matching = T, nbins_x = 50, how_fine_search = 10,
-                                      plot_basin_identification = plt_stff, 
-                                      silent = silent), NA)
-  expect_error(qres <- score_sapphire(the_sap = file.pi, ann = ann, basin_optimization = T,
-                                      force_matching = F,
-                                      plot_basin_identification = plt_stff, 
-                                      cl.stat.MI_comb='MI', # can be an option
-                                      nbins_x_max = 30, 
-                                      # how_fine_search = 50,
-                                      how_fine_search = 5, merge_clusters = T,
-                                      denat_opt = 'process_subtraction',  
-                                      # number_of_clusters = 5,
-                                      silent = silent), NA)
-  
-  
   optimal_bas <- CampaRi::basin_optimization(the_sap = file.pi,                                    # PI data
                                              how_fine_search = 5,                                  # number of bins searched between nbins_x_min and nbins_x_max
                                              nbins_x_min = 20,                                     # minimum number of bins (range)
@@ -48,13 +27,8 @@ test_that('scoring sapphire plots', {
   
   
   expect_error(qres <- score_sapphire(the_sap = file.pi, ann = ann, 
-                                      force_matching = T, nbins_x = 50, basin_optimization = optimal_bas$bas,
-                                      plot_basin_identification = plt_stff, 
-                                      silent = silent))
-  expect_error(qres <- score_sapphire(ann = ann,
-                                      force_matching = T, nbins_x = 50, basin_optimization = optimal_bas$bas,
-                                      plot_basin_identification = plt_stff,
-                                      silent = silent)) # error! to fix tomorrow
+                                      basin_obj = optimal_bas$bas,
+                                      silent = silent), NA)
 
   
   # new tests using the nSBR function

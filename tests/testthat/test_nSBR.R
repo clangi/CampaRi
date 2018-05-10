@@ -3,7 +3,7 @@ context('nSBR')
 test_that('new trials for SBR', {
   
   # CREATION OF THE DATASET
-  silent <- T
+  silent <- F
   plt_stff <- !silent
   if(!silent) {require(testthat); require(CampaRi)} 
   stdd <- 3; n_dim <- 10; n_snap <- 3000; n_tot <- n_dim*n_snap/3; if(!silent) print(n_tot)
@@ -16,30 +16,36 @@ test_that('new trials for SBR', {
   expect_error(optimal_bas <- CampaRi::nSBR(data = file.pi, ny = 30, n.cluster = 4, plot = T, silent = silent, dbg_nSBR = F), NA)
   
   
-  # ------------------------------------------------------- neuro tests
-  # the following tests have been executed only 
-  # extensive testing on real cases. It needs not to be
-  # executed at all
-  do_it <- FALSE
-  # sapphire_plot(sap_table = fpi_worst, timeline = T, sub_sampling_factor = 10)
-  wrapperone <- function(x,...){ invisible(CampaRi::nSBR(data = x, n.cluster = 4, 
-                                                     comb_met = c('MIC', 'MIC', 'kin'),
-                                                     unif.splits = seq(5, 100, 8),  
-                                                     pk_span = 5000, ny = 50, plot = T, 
-                                                     silent = silent, dbg_nSBR = F, return_plot = F,...))} 
-  # expect_error(ob1 <- wrapperone(fpi_best, data.out.it = F), NA); ob1
+  # ------------------------------------------------------- classic test
   expect_error(a1 <- CampaRi::nSBR(data = file.pi, n.cluster = 3, 
-                                   comb_met = c('MIC'),
+                                   comb_met = c('MIC_kin', 'MIC', 'MAS', 'MEV', 'MCN', 'MICR2', 'MI', 'kin', 'diff', 'convDiff', 'conv'),
+                                   # comb_met = c('MIC_kin', 'MIC', 'MI', 'kin'),
+                                   # comb_met = c('MIC', 'MICR2', 'diff'),
                                    unif.splits = seq(5, 100, 8),  
                                    pk_span = 500, ny = 50, plot = T, 
-                                   silent = silent, dbg_nSBR = F, return_plot = F), NA); a1$barriers
-  expect_error(ahahscore <- CampaRi::score_sapphire(the_sap = file.pi, ann = ann, manual_barriers = a1$barriers[1:2], silent = silent), NA)
+                                   silent = silent, dbg_nSBR = F, return_plot = F), NA)
   
+  # ------------------------------------------------------- random test
+  expect_error(a1 <- CampaRi::nSBR(data = file.pi, n.cluster = 3, 
+                                   comb_met = c('MIC_kin'),
+                                   unif.splits = seq(5, 100, 8),  
+                                   pk_span = 500, ny = 50, plot = T, random_picks = 100, 
+                                   silent = silent, dbg_nSBR = F, return_plot = F))
+  expect_error(a1 <- CampaRi::nSBR(data = file.pi, n.cluster = 3, 
+                                   comb_met = c('MIC_kin'),
+                                   unif.splits = seq(5, 100, 8),  
+                                   pk_span = 500, ny = 50, plot = T, random_picks = 100, ann = ann,
+                                   silent = silent, dbg_nSBR = F, return_plot = F), NA)
   
   ######################### evaluating the fluctuation and randomicity of the score ##########################
-  
+  do_it <- FALSE
   if(do_it){
     # just curiosity - entropy considerations
+    wrapperone <- function(x,...){ invisible(CampaRi::nSBR(data = x, n.cluster = 4, 
+                                                       comb_met = c('MIC', 'MIC', 'kin'),
+                                                       unif.splits = seq(5, 100, 8),  
+                                                       pk_span = 5000, ny = 50, plot = T, 
+                                                       silent = silent, dbg_nSBR = F, return_plot = F,...))} 
     df.test <- data.frame(a = rnorm(n = 1000, mean = 0, sd = 1), b = rnorm(n = 1000, mean = 0, sd = 1), c = rnorm(n = 1000, mean = 6, sd = 1))
     ggplot(data = df.test) + theme_classic() +
       geom_freqpoly(mapping = aes(a), binwidth = 0.4, col = 'darkred') +
@@ -89,3 +95,8 @@ test_that('new trials for SBR', {
   if(xmin == xmax) return(x/xmax)
   else return((x*1.0 - xmin)/(xmax - xmin))
 }
+
+
+
+
+

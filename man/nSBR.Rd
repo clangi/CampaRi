@@ -6,7 +6,7 @@
 \usage{
 nSBR(data, ny, local.cut = FALSE, n.cluster = NULL, comb_met = c("MIC"),
   unif.splits = NULL, pk_span = NULL, plot = FALSE, silent = FALSE,
-  return_plot = FALSE, ...)
+  return_plot = FALSE, random_picks = NULL, ann = NULL, ...)
 }
 \arguments{
 \item{data}{Name of the PROGIDX_<...>.dat file or Data frame with three columns containing, in order, the (sorted) progress index, the relative time 
@@ -43,21 +43,34 @@ it has been ordere by the progress index.}
 
 \item{return_plot}{Logical. This can return the plot object in the return list.}
 
+\item{random_picks}{Insert the number of times the barriers should be randomly recalculated for having a random baseline.}
+
+\item{ann}{If random_picks is inserted you need to score the the random barriers against an annotation!!}
+
 \item{...}{\itemize{
     \item "\code{time.series}" File name. If specified, it substitutes the time series of the PROGIDX_<..> file with the one provided by the file.
-    \item "\code{data.out.it}" Should I output the data.frame in input?
 }}
 }
 \value{
 A list containing
-returning_list <- list('nbins' = c(ny, ny), 'barriers' = rank.pk, 'call' = call, 'data.out' = data.out, 'plot' = ggp)
-      \itemize{
+\itemize{
         \item "\code{nbins}" c(ny, ny). This is not influential.
-        Type=1 means that it is a matched partition, type=2 is only dynamic, type=3 is only kinetic. The type of the last state is always equal to 1.
         \item "\code{barriers}" Found barriers (no cut is made with the number of clusters which is only for plotting).
-        \item "\code{call}" The matched call. 
-        \item "\code{data.out}" The sapphire file name if it is provided, otherwise the data obj. It is used by \code{\link{score_sapphire}}.
         \item "\code{plot}" The plot if you wanted it returned.
+        \item "\code{rnd.picks}" This is an object containing the results of the random.picks, i.e. a list contatining:
+        \itemize{
+                \item "\code{ggp.bar}" ggplot containing the barriers found and the scores found with the random procedure.
+                \item "\code{ggp.dist.rnd.bar}"  ggplot containing the estimate (in z-scores) of the distance from random distribution (showed in light blue).
+                \item "\code{rnd.scores.nas}" Number of NAs in the randomly picked scores.
+                \item "\code{rnd.scores}" data.frame with all the scores found.
+                \item "\code{max.rnd.nmi}" score_sapphire obj on the best random pick.
+                \item "\code{max.rnd.bar}" data.frame with the best parriers found randomly and their score (xm = barrier points, ym = score).
+                \item "\code{ref.score}" score_sapphire obj with the standard best score optimization procedure.
+                \item "\code{z.scores}" Found zscore between optimal barrier and random picks distribution.
+                \item "\code{std.n.bar}" Total number of barriers found without imposing the number of clusters in optimization procedure.
+                \item "\code{pval_zsc}" The p-value calculated using the 
+                \item "\code{pval_95per}" Total number of barriers found without imposing the number of clusters in optimization procedure.
+        }
       }
 }
 \description{

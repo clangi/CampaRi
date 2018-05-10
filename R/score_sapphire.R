@@ -13,22 +13,14 @@
 #'            \item "\code{jaccard_index}" 
 #'            \item "\code{purity}" 
 #'       }
-#' @param basin_optimization If \code{TRUE} it will use \code{\link{basin_optimization}} to optimize the clusters. Please consider adding 
-#' its relevant variables. It is possible to use
-#' @param plot_basin_identification A logical value indicating whether to display the SAPPHIRE plot with the resulting partitions or not. 
-#' Black partitions are the matched ones, blue ones derive only from the dynamic analysis and orange ones only from the kinetic analysis. 
-#' The green curve is the kinetic annotation (black curve) where the parabolic shape has been subtracted, i.e. the actual curve used for 
-#' the peaks identification. Default value is \code{FALSE}. 
+#' @param basin_obj Output of \code{\link{basin_recognition}}. If you used \code{\link{basin_optimization}} to optimize the clusters please
+#'  insert only the resulting bas object
 #' @param manual_barriers If an integer vector is inserted, it is used as the barrier locations.
 #' @param plot_pred_true_resume Defaults tp \code{FALSE}. If set to true it plots the predicted and true labels one along the other.
-#' @param randomization_baseline Insert the number of times the barriers should be randomly recalculated for having a random baseline.
-#' @param nbins_x Number of bins on  x-axis of the 2-D histogram. Default to sqrt(nrow(the_sap)).
-#' @param nbins_y Number of bins on the y-axis of the 2-D histogram. Default to sqrt(nrow(the_sap)).
 #' @param merge_cluster Logical that allow clusters to be merged automatically if consecutives
-#' @param force_matching Please refer to \code{\link{basins_recognition}} for further details about the match option.
 #' @param silent A logical value indicating whether the function has to remain silent or not. Default value is \code{FALSE}.
 #' @param merge_clusters A logical value for indicating if merging consecutive clusters with same labels.
-#' @param ... This variables will be sent to \code{\link{basin_optimization}} without any checking.
+#' @param ... Not yet in use.
 #' 
 #' @return A list containing
 #'       \itemize{
@@ -54,52 +46,46 @@
 #' @import ggplot2
 #' @export score_sapphire
 
-score_sapphire <- function(the_sap=NULL, ann, manual_barriers=NULL, basin_optimization = FALSE,                                            # fundamental inputs
+score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NULL,                     # fundamental inputs
                            scoring_method = 'nmi', merge_clusters = FALSE,                                      # scoring details
-                           plot_basin_identification = FALSE, nbins_x = NULL,                                   # settings for the recognition/optimi
-                           nbins_y = nbins_x, force_matching = FALSE,                                           # settings for the recognition/optimi
                            plot_pred_true_resume = FALSE, silent = FALSE,                                       # it refers to this function
-                           randomization_baseline = NULL,
-                           ...){
+                           ...){                                                                                # to add
   
-  # general input checking
+  # ----------------------------------------------------------------------------------------------- general input checking
   have_the_bas <- FALSE
   manual_mode <- FALSE
-  if(!is.null(the_sap)){
-    if(!is.character(the_sap) && !is.data.frame(the_sap)) stop("the_sap must be a string or a data frame")
-    if(is.character(the_sap) && (!all(grepl("PROGIDX", the_sap)) && !all(grepl("REPIX", the_sap)))) 
-      stop("Please provide a data name starting with 'PROGIDX' or 'REPIX'" )
-    # if(!is.null(manual_mode)) stop('use manual mode or direct sapphire mode')
-  }else if(!is.logical(basin_optimization)){
-    if(is.null(names(basin_optimization)) || names(basin_optimization)[1] != 'tab.st') 
+  
+  # Fundamental inputs: the_sap and optimizations 
+  # - basin_obj = bas: uses bas object from basin_recognition() or basin_optimization()
+  # - manual_barriers = c(1,2,3,4): insert manually the barriers [it creates a fake bas obj]
+  if(!is.character(the_sap) && !is.data.frame(the_sap)) stop("the_sap must be a string or a data frame")
+  if(is.character(the_sap) && (!grepl("PROGIDX", the_sap) && !grepl("REPIX", the_sap))) stop("Please provide a the_sap name starting with 'PROGIDX' or 'REPIX'" )
+  
+  if(!is.null(basin_obj) && !is.logical(basin_obj)){
+    if(is.null(names(basin_obj)) || names(basin_obj)[1] != 'tab.st') 
       stop('Use the basin_optimization (optimal_bas) or the basin_recognition output for basin_optimization var.
            It must be of the shape tab.st nbins seq.st etc.. (or put it TRUE/FALSE).')
-    if(!is.null(manual_mode)) stop('use manual mode or bas mode')
+    if(!is.null(manual_barriers)) stop('Use either manual mode or bas mode')
     have_the_bas <- TRUE
-  }else if(is.logical(basin_optimization)) {
-    if(!silent) cat('You are using basin_optimization as a logical. We see it. \n')
-    do_optimization <- basin_optimization
-    if(!is.null(manual_mode) && basin_optimization) stop('use manual mode or basin optimization mode')
-  }else{
-    if(!is.null(manual_barriers) && !silent) cat('If you want to manually insert barriers please use also the_sap option for reordering of ann.\n')
-    stop('One between the_sap = "PROGIDX_...", basin_optimization=its_obj or manual_barriers must be provided. ')
   }
   if(!is.null(manual_barriers)){
     if(!all(sapply(manual_barriers, .isSingleInteger))) stop('All the values in manual_barriers must be integers')
-    if(any(manual_barriers < 2)) stop('the manual barriers should be above 1')
+    if(any(manual_barriers < 1)) stop('the manual barriers should be above 0')
     manual_mode <- TRUE
   }
-  if(!is.null(the_sap) && !is.logical(basin_optimization)) stop('Please choose one option only. Rather the_sap or basin_optimization?')
+  # - basin_optimization = TRUE: runs the optimization of the basins
+  # if(!is.null(basin_optimization) && is.logical(basin_optimization)) {
+  #   if(!silent) cat('You are using basin_optimization as a logical. We see it. \n')
+  #   do_optimization <- TRUE
+  #   if(!is.null(manual_barriers) && basin_optimization) stop('use manual mode or basin optimization mode')
+  # }
+  # 
+  
+  # Other input checks
   if(!is.numeric(ann) && (!is.null(dim(ann)))) stop('Please provide an integer vector for ann')
-  if(!is.null(randomization_baseline) && !.isSingleInteger(randomization_baseline)) stop('randomization_baseline must be a single integer')
-  if(!is.null(nbins_x) && !.isSingleInteger(nbins_x)) stop('nbins_x must be a single integer')
-  if(!is.null(nbins_y) && !.isSingleInteger(nbins_x)) stop('nbins_y must be a single integer')
-  # if(!is.null(number_of_clusters) && !.isSingleInteger(number_of_clusters)) stop('number_of_clusters must be a single integer')
-  if(!is.logical(silent)) stop('silent must be a logical')
-  # if(!is.logical(basin_optimization)) stop('basin_optimization must be a logical')
-  if(!is.logical(plot_basin_identification)) stop('plot_basin_identification must be a logical')
-  if(!is.logical(plot_pred_true_resume)) stop('plot_pred_true_resume must be a logical')
   if(!is.logical(merge_clusters)) stop('merge_clusters must be a logical')
+  if(!is.logical(plot_pred_true_resume)) stop('plot_pred_true_resume must be a logical')
+  if(!is.logical(silent)) stop('silent must be a logical')
   
   # methods input check
   scoring_method.opt <- c("adjusted_rand_index", "jaccard_index", "purity", "nmi")
@@ -109,38 +95,22 @@ score_sapphire <- function(the_sap=NULL, ann, manual_barriers=NULL, basin_optimi
   if(!is.null(the_sap) && !is.data.frame(the_sap)){
     st <- as.data.frame(data.table::fread(the_sap, data.table = F))
   }else{
-    st <- the_sap
+    st <- as.data.frame(the_sap)
   }
-  
-  # checking the number of bins inserted
-  
-  # browser()
-  pifilename <- NULL
-  if(!have_the_bas && !manual_mode){
-    if(basin_optimization){
-      if(!silent) cat('It is advisable to use the basin_optimization function EXTERNALLY to this one and feed the output to basin_optimization.\n')
-      if(!is.null(nbins_x) && !silent) cat('NB: you inserted the number of bins (nbis_x) but you also want to optimize the basin recognition. 
-                                           Therefore we do not care about your nbins_x and you should put vars for basin_optimization.\n')
-      optim_bas <- CampaRi::basin_optimization(the_sap = the_sap, plot_basin_identification = plot_basin_identification, 
-                                               basin_optimization_method = 'MI_barrier_weighting',
-                                               force_matching = force_matching, silent = silent, ...)
-      bas <- optim_bas$bas
-      n_fin_cl <- nrow(bas$tab.st)
-    }else{
-      if(is.null(nbins_x)) nbins_x <- round(sqrt(nrow(st)*10))
-      if(is.null(nbins_y)) nbins_y <- round(sqrt(nrow(st)*10))
-      if(nbins_x != nbins_y) {
-        if(!silent) cat('For simplicity we do not allow yet to use different number of nx and ny (bins for x and y).\n')
-        nbins_x <- nbins_y <- max(nbins_x, nbins_y)
-      }
-      if(!silent) cat('Number of (automatically) selected bins for the basin recognition step is', nbins_x, '\n')
-      bas <- CampaRi::basins_recognition(st, nx = nbins_x, ny = nbins_x, dyn.check = 1, 
-                                         plot = plot_basin_identification, match = force_matching, out.file = F, new.dev = F, silent = silent)
-      n_fin_cl <- nrow(bas$tab.st) # here we suppose that our split is the one we wanted and we define the number of resulting clusters
-    }
-  }else if(have_the_bas){
+
+  # - basin_optimization = TRUE: runs the optimization of the basins
+  # if(do_optimization){
+  #   if(!silent) cat('It is advisable to use the basin_optimization function EXTERNALLY to this one and feed the output to basin_optimization.\n')
+  #   optim_bas <- CampaRi::basin_optimization(the_sap = the_sap, silent = silent, ...)
+  #   bas <- optim_bas$bas
+  #   n_fin_cl <- nrow(bas$tab.st)
+    
+  # Main switcher for the final output  
+  # - basin_obj = bas: uses bas object from basin_recognition() or basin_optimization()
+  # - manual_barriers = c(1,2,3,4): insert manually the barriers [it creates a fake bas obj]
+  if(have_the_bas){
     if(!silent) cat('You inserted the bas object directly. No specific check of your wrong doing is applied. Therefore USE THE RIGHT ONE.\n')
-    bas <- basin_optimization
+    bas <- basin_obj
     n_fin_cl <- nrow(bas$tab.st)
     pifilename <- bas$filename
   }else if(manual_mode){
@@ -151,64 +121,49 @@ score_sapphire <- function(the_sap=NULL, ann, manual_barriers=NULL, basin_optimi
     stop('We did not understood what to do.')
   }
   
-  
-  
   # ---------------------------------------------------------------------------------------------- Annotation analysis
-  # ann is reordered following progrex index and it is checked for the absence of 0s
-  if(!is.null(the_sap)) {
-    if(!silent) cat('Having inserted the_sap we reorder the ann using it.\n')
-    pin <- ann[c(st[,3])]
-  } else if(!is.null(pifilename)){
-    if(!silent) cat('You did not set the_sap filename (or table) but we found the filename from the inserted basin_optimization obj. Using it to reorder ann.\n')
-    st <- as.data.frame(data.table::fread(pifilename, data.table = F))
-    pin <- ann[c(st[,3])]
-  } else {
-    if(!silent) cat('No filename for the sapphire table was provided. We will keep the ordering of the annotation as it has been found.\n')
-    warning('No filename for the sapphire table was provided. We will keep the ordering of the annotation as it has been found.')
-    pin <- ann
-  }
-  
-  lpin <- .lt(pin)
-  uni_ann <- unique(pin)
-  if(anyNA(pin)) stop('We can not handle NAs in the annotation. Check it!')
+  # Using the prog. idx for reordering and lpi
+  if(!silent) cat('Having inserted the_sap we reorder the ann using it.\n')
+  if(.lt(ann) != nrow(st)) stop('Annotation and progress index must have same length. ')
+  piann <- ann[c(st[,3])]
+  lpiann <- .lt(piann)
+  uni_ann <- unique(piann)
+  if(anyNA(piann)) stop('We can not handle NAs in the annotation. Check it!')
   
   # min of ann correction
   if(min(uni_ann) < 1){
     if(!silent) cat('Found negative or 0 values in the annotation. Correcting by sum of the abs of the min +1 per each annotation value. \n')
-    pin <- pin + abs(min(uni_ann)) + 1
-    uni_ann <- unique(pin)
+    piann <- piann + abs(min(uni_ann)) + 1
+    uni_ann <- unique(piann)
   }else if(min(uni_ann) > 1){
     if(!silent) cat('Found minimum values > 1 in the annotation. Correcting it automatically. \n')
-    pin <- pin - min(uni_ann) + 1
-    uni_ann <- unique(pin)
+    piann <- piann - min(uni_ann) + 1
+    uni_ann <- unique(piann)
   }
+  
+  # check for gaps in the annotation
   if(any(seq(1:max(uni_ann)) != sort(uni_ann))) stop('Please provide an annotation withouth gaps.')
   
-  # init 
-  n_labels <- .lt(uni_ann) # At this point I know how many annotation points we found.
+  # Checks for the number of labels VS number of clusters
+  n_labels <- .lt(uni_ann)
+  
   if(n_labels < n_fin_cl){
     if(!silent) cat('ATTENTION: found', n_fin_cl, 'clusters using basin recognition while the inserted annotation has only', n_labels, 'number of labels.',
                     'It would be the case to reduce the number of barriers. To do so, please consider reducing the number of bins (nbinsxy).\n')
-    
-    # This is the problematic case. 
-  }
-  if(n_labels > n_fin_cl){
-    # no problem we can continue...
+  } else {
     if(!silent) cat('ATTENTION: found', n_fin_cl, 'clusters while in ann we have', n_labels, 'number of labels.',
                     'This is not problematic but it will lead to a possible overestimation of the error. Please consider more bins (nbinsxy).\n')
   }
-  # plot(pin, pch='.')
-  # sort(table(pin), decreasing=TRUE) # sorted
 
-  # creating a 
+  # creating a fake bas to fit the following analysis
   if(manual_mode){
     n_cl.b <- 1:n_fin_cl
-    if(any(manual_barriers >= lpin)) stop('one manual_barriers or more are higher than the number of snapshots!.')
+    if(any(manual_barriers >= lpiann)) stop('one manual_barriers or more are higher than the number of snapshots!.')
     start.b <- c(1, sort(manual_barriers))
-    end.b <- c(sort(manual_barriers), lpin)
-    lt.b <- diff(c(1, sort(manual_barriers), lpin))
+    end.b <- c(sort(manual_barriers), lpiann)
+    lt.b <- diff(c(1, sort(manual_barriers), lpiann))
     lt.b[1] <- lt.b[1] + 1
-    if(sum(lt.b) != lpin) stop('The inserted barriers dont sum up to the length of the annotation.')
+    if(sum(lt.b) != lpiann) stop('The inserted barriers dont sum up to the length of the annotation.')
     bastbl <- cbind('n_cl' = n_cl.b, 'start' = start.b, 'end' = end.b, '.lt' = lt.b)
     bas <- list('tab.st' = bastbl)
   }
@@ -218,8 +173,8 @@ score_sapphire <- function(the_sap=NULL, ann, manual_barriers=NULL, basin_optimi
   # we choose the representative label
   label_freq_list <- list() # each element of this list is a cluster
   for(jk in 1:n_fin_cl){
-    maj_selected <- sort(table(pin[bas$tab.st[jk,2]:bas$tab.st[jk,3]]), decreasing=TRUE) # count and sort for each cluster found.
-    maj_sel_filtered <- maj_selected[1:n_labels]  # select only first 3!
+    maj_selected <- sort(table(piann[bas$tab.st[jk,2]:bas$tab.st[jk,3]]), decreasing=TRUE) # count and sort for each cluster found.
+    maj_sel_filtered <- maj_selected[1:n_labels]  # select only first n_labels!
     label_freq_list[[jk]] <- (maj_sel_filtered*1.0)/bas$tab.st[jk,4] # calculating the density of major label
     label_freq_list[[jk]] <- rbind('d' = label_freq_list[[jk]], 'n' = as.integer(maj_sel_filtered))
     label_freq_list[[jk]][is.na(label_freq_list[[jk]])] <- 0 
@@ -304,7 +259,7 @@ score_sapphire <- function(the_sap=NULL, ann, manual_barriers=NULL, basin_optimi
   
   max_freq_table <- data.frame(cbind(label = unlist(lab), size = unlist(size), sh_en = unlist(sh_en)))
   if(!silent) cat('We found the following splits, accounting for', sum(unlist(size)),'of the elemnts. This means there are roughly', 
-                  round((lpin - sum(unlist(size))) * 100 / lpin, digits = 1), '% missassignment.\n\n')
+                  round((lpiann - sum(unlist(size))) * 100 / lpiann, digits = 1), '% missassignment.\n\n')
   # now attaching it to the bas output
   max_freq_table <- cbind(max_freq_table, bas$tab.st)
   if(!silent) {print(max_freq_table); cat('\n')}
@@ -374,8 +329,8 @@ score_sapphire <- function(the_sap=NULL, ann, manual_barriers=NULL, basin_optimi
   if(plot_pred_true_resume){
     plot_df <- data.frame('predicted' = as.factor(predicted_div), 'true' = ann[st[,3]]-0.05)
     gg <- ggplot(data = plot_df) + 
-          geom_point(aes(y = 'predicted', x = 1:lpin, colour = 'red'), size = 0.3) + 
-          geom_point(aes(y = 'true', x = 1:lpin, colour = 'blue'), size = 0.3) + 
+          geom_point(aes(y = 'predicted', x = 1:lpiann, colour = 'red'), size = 0.3) + 
+          geom_point(aes(y = 'true', x = 1:lpiann, colour = 'blue'), size = 0.3) + 
           theme_minimal() + xlab('Progress Index') + ylab('Cluster') + 
           scale_color_manual(name = "Labels", labels = c("True", "Predicted"), values = c("red", "blue")) +
           guides(color = guide_legend(override.aes = list(size=5)))

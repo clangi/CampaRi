@@ -25,7 +25,7 @@ plot_traces <- function(voltage_traces_mat, return_plot = F, sub_sampling_factor
   
   # Analysis of extra args
   input_args <- list(...)
-  avail_extra_argoments <- c('add_to_this_plot')
+  avail_extra_argoments <- c('add_to_this_plot', 'y_enlargement')
   
   
   if(any(!(names(input_args) %in% avail_extra_argoments)))
@@ -33,7 +33,8 @@ plot_traces <- function(voltage_traces_mat, return_plot = F, sub_sampling_factor
 
   # Default handling
   if(!('add_to_this_plot' %in% names(input_args))) add_to_this_plot <- NULL else add_to_this_plot <- input_args[['add_to_this_plot']]
-
+  if(!('y_enlargement' %in% names(input_args))) y_enlargement <- 0 else y_enlargement <- input_args[['y_enlargement']]
+  if(!.isSingleNumeric(y_enlargement)) stop('y_enlargement must be a single numeric element')
   # 
   # ============================
   #          CHECKS
@@ -112,7 +113,7 @@ plot_traces <- function(voltage_traces_mat, return_plot = F, sub_sampling_factor
   # main vectorization and plot
   
   # var init
-  height_one_band <- 1./n_traces
+  height_one_band <- 1./n_traces 
   y_multilines <- NULL
   x_multilines <- NULL
   col_grps <- NULL
@@ -125,7 +126,7 @@ plot_traces <- function(voltage_traces_mat, return_plot = F, sub_sampling_factor
     else
       neural_v <- voltage_traces_mat[i,][seq(1, n_snaps, sub_sampling_factor)]
     max_v <- max(neural_v)
-    y_multilines <- c(y_multilines, (neural_v*height_one_band)/max_v + height_one_band*(i-1))
+    y_multilines <- c(y_multilines, (neural_v*height_one_band)/max_v + height_one_band*(i-1)) + y_enlargement
     x_multilines <- c(x_multilines, xx)
     grps <- c(grps, rep(i,n_snaps)[seq(1, n_snaps, sub_sampling_factor)])
     if(!is.null(highlight_rows) && (i %in% highlight_rows))

@@ -3,14 +3,14 @@
 # @keywords internal
 .onAttach<- function (libname, pkgname){
   packageStartupMessage(paste0(
-    " ==============================================================\n",
-    "    \n",
-    "                            CAMPARI                           \n",
-    "    \n",
-    "    \n",
-    " ------------------------------------------------------------\n",
-    " Analysing time series.                 \n",
-    " Version: ",utils::packageVersion("CampaRi"),"\n",
+    " ==============================================================\n", 
+    "    \n", 
+    "                      CAMPARI analysis tools                   \n", 
+    "    \n", 
+    "    \n", 
+    "           ----------------------------------------           \n", 
+    " Analysing time series.                 \n", 
+    " Version: ", utils::packageVersion("CampaRi"), "\n", 
     " ==============================================================\n"))
 }
 
@@ -58,6 +58,8 @@
   else 
     return(TRUE)
 }
+
+.isSingleNumeric <- function(x) return(.isSingleElement(x) && is.numeric(x))
 
 # This routine is able to print a loading bar within a loop to know the work done
 .print_consecutio <- function(itering, total_to_iter, tot_to_print = 10, other_to_print = "", timeit = T, time_first = NULL){

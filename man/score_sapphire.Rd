@@ -4,12 +4,9 @@
 \alias{score_sapphire}
 \title{Scoring the SAPPHIRE-plot basin division}
 \usage{
-score_sapphire(the_sap = NULL, ann, manual_barriers = NULL,
-  basin_optimization = FALSE, scoring_method = "nmi",
-  merge_clusters = FALSE, plot_basin_identification = FALSE,
-  nbins_x = NULL, nbins_y = nbins_x, force_matching = FALSE,
-  plot_pred_true_resume = FALSE, silent = FALSE,
-  randomization_baseline = NULL, ...)
+score_sapphire(the_sap, ann, manual_barriers = NULL, basin_obj = NULL,
+  scoring_method = "nmi", merge_clusters = FALSE,
+  plot_pred_true_resume = FALSE, silent = FALSE, ...)
 }
 \arguments{
 \item{the_sap}{Name of the PROGIDX_<...>.dat or REPIX_<...>.dat file or Data frame with three columns containing, in order, the (sorted) progress index,
@@ -19,8 +16,8 @@ the relative time indices and the cut function.}
 
 \item{manual_barriers}{If an integer vector is inserted, it is used as the barrier locations.}
 
-\item{basin_optimization}{If \code{TRUE} it will use \code{\link{basin_optimization}} to optimize the clusters. Please consider adding 
-its relevant variables. It is possible to use}
+\item{basin_obj}{Output of \code{\link{basin_recognition}}. If you used \code{\link{basin_optimization}} to optimize the clusters please
+insert only the resulting bas object}
 
 \item{scoring_method}{Precise scoring method (final comparison between cluster labels)
 \itemize{
@@ -32,24 +29,11 @@ its relevant variables. It is possible to use}
 
 \item{merge_clusters}{A logical value for indicating if merging consecutive clusters with same labels.}
 
-\item{plot_basin_identification}{A logical value indicating whether to display the SAPPHIRE plot with the resulting partitions or not. 
-Black partitions are the matched ones, blue ones derive only from the dynamic analysis and orange ones only from the kinetic analysis. 
-The green curve is the kinetic annotation (black curve) where the parabolic shape has been subtracted, i.e. the actual curve used for 
-the peaks identification. Default value is \code{FALSE}.}
-
-\item{nbins_x}{Number of bins on  x-axis of the 2-D histogram. Default to sqrt(nrow(the_sap)).}
-
-\item{nbins_y}{Number of bins on the y-axis of the 2-D histogram. Default to sqrt(nrow(the_sap)).}
-
-\item{force_matching}{Please refer to \code{\link{basins_recognition}} for further details about the match option.}
-
 \item{plot_pred_true_resume}{Defaults tp \code{FALSE}. If set to true it plots the predicted and true labels one along the other.}
 
 \item{silent}{A logical value indicating whether the function has to remain silent or not. Default value is \code{FALSE}.}
 
-\item{randomization_baseline}{Insert the number of times the barriers should be randomly recalculated for having a random baseline.}
-
-\item{...}{This variables will be sent to \code{\link{basin_optimization}} without any checking.}
+\item{...}{Not yet in use.}
 
 \item{merge_cluster}{Logical that allow clusters to be merged automatically if consecutives}
 }
