@@ -11,7 +11,9 @@
 #' AdjacencySymmetricUncertainty=2*I(X;Y)/(H(X)+H(Y)) [method='MI_*' must be active]. 'tsne' will make a tsne transformation.
 #' @param method Supported pairwise similarity measures are 'wgcna', 'binary', 'euclidean', 'maximum', 'canberra', 'minkowski', 'covariance', 
 #' 'MI_MM'. If set 'none' the windows will be used only for the pp_method (works only with path_* or tsne/svd).
-#' @param transpose_trj Defaults to F. If set T the junk of trj (i.e. with a specific window) is transposed so to infer a network with dimensions window*(window-1)/2
+#' @param transpose_trj Defaults to F. If set T the junk of trj (i.e. with a specific window) is transposed so to infer a 
+#' network with dimensions window*(window-1)/2
+#' @param silent A logical value indicating whether the function has to remain silent or not. Default value is \code{FALSE}.
 #' @param ... Various variables. Possible values are \code{c('wgcna_type', 'wgcna_power', 'wgcna_corOp')}.
 #' 
 #' @details From WGCNA::adjacency: Correlation and distance are transformed as follows: for type = "unsigned", 
@@ -34,17 +36,23 @@
 #' @importFrom TSA periodogram
 
 generate_network <- function(trj, window = NULL, method = 'wgcna', pp_method = NULL, 
-                             overlapping_reduction = NULL, transpose_trj = FALSE, ...){
+                             overlapping_reduction = NULL, transpose_trj = FALSE, silent = FALSE, ...){
  
   # checking additional variable
   input_args <- list(...)
-  avail_extra_argoments <- c('wgcna_type', 'wgcna_power', 'wgcna_corOp', 'minkowski_p', 'cov_method', 'tsne_dimensions', 'tsne_perplexity', 'tsne_maxIter')
-  avail_methods <- c('none',
-                     'wgcna',
-                     'binary', 'euclidean', 'manhattan', 'maximum', 'canberra', 'minkowski', 'mahalanobis',
-                     'covariance',
-                     'MI', 'MI_MM', 'MI_ML', 'MI_shrink', 'MI_SG',
-                     'fft')
+  avail_extra_argoments <- c('wgcna_type', 'wgcna_power', 'wgcna_corOp',                 # correlation options (WGCNA)
+                             'minkowski_p',                                              # power for minkowski
+                             'cov_method',                                               # cov met
+                             'tsne_dimensions', 'tsne_perplexity', 'tsne_maxIter')       # tsne opts
+  
+  avail_methods <- c('none',                                                                                   # only post-proc
+                     'wgcna',                                                                                  # cor
+                     'binary', 'euclidean', 'manhattan', 'maximum', 'canberra', 'minkowski', #'mahalanobis',   # distances
+                     'covariance',                                                                             # cov
+                     'MI', 'MI_MM', 'MI_ML', 'MI_shrink', 'MI_SG',                                             # MI based
+                     'fft')                                                                                    # fft 
+  which_are_not_distances <- c('wgcna', 'covariance', 'MI_MM', 'MI_ML', 'MI_shrink', 'MI_SG', 'fft')
+  
   
   # default handling of extra inputs
   if(any(!(names(input_args) %in% avail_extra_argoments))) 
@@ -58,12 +66,54 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', pp_method = N
   if(!('tsne_perplexity' %in% names(input_args))) tsne_perplexity <- 30 else tsne_perplexity <- input_args[['tsne_perplexity']]
   if(!('tsne_maxIter' %in% names(input_args))) tsne_maxIter <- 500 else tsne_maxIter <- input_args[['tsne_maxIter']]
   
-  # Method checks
+  # checks for fundamental variables: trj, window, method, (overlapping reduction)
+  # trj checks ------------------------------------------------------------------------------------------------------------------------------
+  
+  # input trj checks
+  if(!is.data.frame(trj)){
+    if(!is.character(trj)) stop('The trj must be the tsv of the trj or a data.frame.')
+    if(!silent) cat("Reading trj file...\n")
+    trj <- as.matrix(data.table::fread(file = trj, data.table = F)) 
+  }
+  
+  # long calculation warning
+  if(dim(trj)[1] > 20000) warning('The network generation can be really long. Please consider multi-threads options of the WGCNA package.')
+  if(dim(trj)[2] > 50) warning('The network generation can create an exagerated number of variables')
+  
+  # check for NA in trj
+  if(any(is.na(trj))) stop('There are NA values in the input trajectory')
+    
+  # window checks if inserted
+  if(!is.null(window) && .isSingleInteger(window) && (window <= 3 || window > nrow(trj)/2))
+    stop('The used window (distance 12) is too small or too big (must be less than half to have sense) or it is simply an erroneus insertion.')
+  
+  # setting standard window size
+  if(is.null(window)) window <- nrow(trj)/100
+
+  # setting window left and window right (if it is not divisible by 2)
+  if(((window-1)/2)%%1 == 0) {
+    window_r <- window_l <- (window-1)/2
+  }else{
+    window_r <- floor((window-1)/2)
+    window_l <- ceiling((window-1)/2)
+  } 
+  
+  # method checks
   if(!is.null(method) && (!is.character(method) || length(method) != 1)) stop('method must be a single character.')
   if(!(method %in% avail_methods)) stop(paste0('The method must be chosen between', paste0(avail_methods, collapse = ' '),'.'))
   
-  # Checking MI method
+  # checking MI method
   if(method == 'MI') method <- 'MI_MM'
+  
+  # checks for logicals: transpose_trj, silent
+  if(!is.logical(transpose_trj)) stop('transpose_trj must be a logical value.')
+  if(!is.logical(silent)) stop('silent must be a logical value.')
+  
+  # overlapping reduction checks - not available
+  if(!is.null(overlapping_reduction)) stop('overlapping_reduction functionality is not implemented still. Not use it.')
+  # if((!is.null(overlapping_reduction) && (length(overlapping_reduction) != 1 ||!is.numeric(overlapping_reduction) ||
+  #                                         overlapping_reduction <= 0 || overlapping_reduction > 1)))
+  #   warning('The used overlapping_reduction is not correctly defined. It must be a number between 0 and 1.')
   
   # checks for available pp_method
   # pp_method checks ------------------------------------------------------------------------------------------------------------------------------
@@ -92,82 +142,47 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', pp_method = N
       }
   }
   
-  # checks if you inserted
+  # checks if you inserted the pp_method when method is none (you do only post processing on windows)
   if(method == 'none' && is.null(pp_method)) stop('It is needed a pp_method if you want to use directly the window (without any network construction).')
   
-  # Checking input variables and files
-  if(!is.data.frame(trj)){
-    if(!is.character(trj))
-      stop('The trj must be the tsv of the trj or a data.frame.')
-    cat("Reading trj file...\n")
-    trj <- as.matrix(fread(file = trj, data.table = F)) 
-  }
-  if(!is.null(window) && (length(window) != 1 || !is.numeric(window) || window <= 3 || window > nrow(trj)/2))
-    stop('The used window (distance 12) is too small or too big (must be less than half to have sense) or it is simply an erroneus insertion.')
-  
-  # Additional input (...) checks
-  # ---------------------------
+  # checks for extra inputs 
+  # extra input (...) checks ------------------------------------------------------------------------------------------------------------
+
   # wgcna specific inputs
-  if(!.isSingleInteger(wgcna_power) || 
-     !.isSingleElement(wgcna_type) || 
-     !.isSingleElement(wgcna_corOp) || 
-     !is.character(wgcna_type) || !is.character(wgcna_corOp) || !is.numeric(wgcna_power)) 
-    stop('Inserted values for wgcna specifics inserted.')
+  if(!.isSingleInteger(wgcna_power)) stop('wgcna_power must be a single integer.')
+  if(!.isSingleChar(wgcna_type)) stop('wgcna_type must be a single string.')
+  if(!.isSingleChar(wgcna_corOp)) stop('wgcna_type must be a single string.')
   if(wgcna_corOp == 'pearson') wgcna_corOp <- "use = 'p'"
   else if(wgcna_corOp == 'spearman') wgcna_corOp <- "use = 'p', method = 'spearman'"
+  else stop('Inserted wgcna_corOp not valid. choose between pearson and sperman.')
   
   # minkowski specific checks
-  if(!is.numeric(minkowski_p) || minkowski_p %% 1 != 0) stop('minkowski_p must be an integer')
-  else minkowski_p <- paste0(", p = '",minkowski_p,"'") 
+  if(.isSingleInteger(minkowski_p)) stop('minkowski_p must be a single integer.')
+  else minkowski_p <- paste0(", p = '", minkowski_p, "'") 
   
   # specifiic checkings: the cov_method
-  if(!cov_method %in% c('pearson', 'spearman', 'kendall'))
-    stop('cov_method not supported.')
+  if(!.isSingleChar(cov_method)) stop('cov_method must be a single string.')
+  if(!cov_method %in% c('pearson', 'spearman', 'kendall')) stop('cov_method not supported.')
 
   # specific checks for tsne
   if(!is.null(pp_method) && pp_method == 'tsne'){
-    if(!.isSingleInteger(tsne_dimensions))
-      stop('tsne_dimensions must be a single integer')
-    if(!.isSingleInteger(tsne_perplexity))
-      stop('tsne_perplexity must be a single integer')
-    if(!.isSingleInteger(tsne_maxIter))
-      stop('tsne_maxIter must be a single integer')
+    if(!.isSingleInteger(tsne_dimensions)) stop('tsne_dimensions must be a single integer')
+    if(!.isSingleInteger(tsne_perplexity)) stop('tsne_perplexity must be a single integer')
+    if(!.isSingleInteger(tsne_maxIter)) stop('tsne_maxIter must be a single integer')
     if(tsne_perplexity > (window - 1)/3){
       warning('tsne_perplexity too big. It will be set to tsne_perplexity <- (window/2 - 1)/3')
       tsne_perplexity <- (window/2 - 1)/3
     }  
   }
   
-  if(!is.null(overlapping_reduction)) warning('overlapping_reduction functionality is not implemented still. Not use it.')
-  # if((!is.null(overlapping_reduction) && (length(overlapping_reduction) != 1 ||!is.numeric(overlapping_reduction) ||
-  #                                         overlapping_reduction <= 0 || overlapping_reduction > 1)))
-  #   warning('The used overlapping_reduction is not correctly defined. It must be a number between 0 and 1.')
-  
-  # -----------------------------
-  if(!is.logical(transpose_trj)) stop('transpose_trj must be a logical value.')
-  
-  # Long calculation warning
-  if(dim(trj)[1] > 20000) warning('The network generation can be really long. Please consider multi-threads options of the WGCNA package.')
-  if(dim(trj)[2] > 50) warning('The network generation can create an exagerated number of variables')
-  
-  # setting standard window size
-  if(is.null(window)) window <- nrow(trj)/100
-  
-  # setting window left and window right (if it is not divisible by 2)
-  if(((window-1)/2)%%1 == 0) {
-    window_r <- window_l <- (window-1)/2
-  }else{
-    window_r <- floor((window-1)/2)
-    window_l <- ceiling((window-1)/2)
-  } 
-  # Check for NA
-  if(any(is.na(trj))) stop('There are NA values in the input trajectory')
-    
-  
   # initialising the variables
-  # ============================================================================================================
+  # __init ============================================================================================================
+  
+  # transpose option 
   if(transpose_trj){
     trj_out <- matrix(NA, nrow = nrow(trj), ncol = ((window*(window-1))/2)) 
+    
+  # fft methods
   }else if(method == 'fft'){
     if(!is.null(pp_method) && pp_method %in% c('amplitude', 'amplitude_maxfreq', 'maxfreq')){
       if(pp_method == 'amplitude')
@@ -181,71 +196,84 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', pp_method = N
       tester <- length(tester$spec)
       trj_out <- matrix(NA, nrow = nrow(trj), ncol = tester*ncol(trj))   
     }
-  }else if(is.null(pp_method) || (grepl(method, pattern = 'MI', fixed = T) && 
-                                               (!grepl(pp_method, pattern = 'path_', fixed = T) || 
-                                                !grepl(pp_method, pattern = 'svd', fixed = T)))){
+    
+  # standard run methods (no post processing)
+  }else if(is.null(pp_method) || 
+           (grepl(method, pattern = 'MI', fixed = T) && (!grepl(pp_method, pattern = 'path_', fixed = T) || !grepl(pp_method, pattern = 'svd', fixed = T)))){
     trj_out <- matrix(NA, nrow = nrow(trj), ncol = ((ncol(trj)-1)*ncol(trj)/2)) 
+    
+  # path construction for final matrix
   }else if(!is.null(pp_method) && grepl(pp_method, pattern = 'path_', fixed = T)){
     net_test <- WGCNA::adjacency(trj[1:100,])
     standard_path_length <- length(c(PairViz::find_path(net_test, path = function(xu) dist(xu, method = strsplit(pp_method, split = '_')[[1]][2]))))
     trj_out <- matrix(NA, nrow = nrow(trj), ncol = standard_path_length) 
+  
+  # final svd
   }else if(!is.null(pp_method) && grepl(pp_method, pattern = 'svd', fixed = T)){
     trj_out <- matrix(NA, nrow = nrow(trj), ncol = ncol(trj))
+    
+  # final tse
   }else if(!is.null(pp_method) && grepl(pp_method, pattern = 'tsne', fixed = T)){
     trj_out <- matrix(NA, nrow = nrow(trj), ncol = tsne_dimensions*window)
+  
+  # other options are not available
   }else{
     stop('impossible initilization of the variables. Please check the modes.')
   }
-  # ============================================================================================================
-  
+
   # time keeping variables
   if(nrow(trj)*ncol(trj) > 50000) timing_it <- TRUE
   else timing_it <- FALSE
   
-  # Main transformation
-  # ============================================================================================================
+  # main transformation
+  # __ loop ============================================================================================================
+  
+  # general loop
   if(!silent) cat('Network construction started (selected window: ', window, ').\n')
   for(i in 1:dim(trj)[1]){
+    
     # adding time if necessary
-    if(i==1&&timing_it)
-      time1 <- proc.time()
+    if(i==1 && timing_it) time1 <- proc.time()
+    
+    # print the bar if necessary
     if(!silent) .print_consecutio(if(i==1) 0 else i, dim(trj)[1], 70, timeit=timing_it, time_first = time1)
     
-    if((i - window_l) <= 0) {
+    # taking the piece of trj to transform
+    if((i - window_l) <= 0) {                  # left border collision
       tmp_trj <- trj[1:(i + window_r),]
       if(transpose_trj || method == 'fft') tmp_trj <- rbind(tmp_trj, tmp_trj[1:(window - nrow(tmp_trj)),])
-    }else if((window_r + i) > nrow(trj)){
+    }else if((window_r + i) > nrow(trj)){      # right border collision
       tmp_trj <- trj[(i - window_l):dim(trj)[1],]
       if(transpose_trj || method == 'fft') tmp_trj <- rbind(tmp_trj, tmp_trj[1:(window - nrow(tmp_trj)),])
-    }else{
+    }else{                                     # usual center piece
       tmp_trj <- trj[(i - window_l):(i + window_r),]
     } 
     
-    if(transpose_trj)
-      tmp_trj <- suppressWarnings(transpose(data.frame(tmp_trj))) # I suppress the warnings for lost names
+    # transpose case
+    if(transpose_trj) tmp_trj <- suppressWarnings(transpose(data.frame(tmp_trj))) # suppress the warnings for lost names
     
     # main adjacency constructor.
-    # --------------------------
+    # main --------------------------
     if(method != 'none'){
       
       # WGCNA
       if(method == 'wgcna'){
         built_net <- WGCNA::adjacency(tmp_trj, type = wgcna_type, corFnc = 'cor', power = wgcna_power, corOptions = wgcna_corOp)
       
-        # covariance
+      # covariance
       }else if(method == 'covariance'){
         built_net <- stats::cov(tmp_trj, method = cov_method)
       
-        # mahalanobis (stat implementation)
-      }else if(method == 'covariance'){
-        built_net <- stats::cov(tmp_trj, method = cov_method)
+      # mahalanobis (stat implementation) # todo
+      # }else if(method == 'covariance'){
+      #   built_net <- stats::cov(tmp_trj, method = cov_method)
       
-        # MI based
+      # MI based
       }else if(grepl(method, pattern = 'MI', fixed = T)){
         while(dim(tmp_trj)[1] < 4) tmp_trj <- rbind(tmp_trj, tmp_trj)
         built_net <- WGCNA::mutualInfoAdjacency(tmp_trj, entropyEstimationMethod = strsplit(method, split = '_')[[1]][2])
       
-        # construction based on Fourier Transform
+      # construction based on Fourier Transform
       }else if(method == 'fft'){
         vec_freq <- c()
         for(fr in 1:ncol(trj)){
@@ -262,23 +290,23 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', pp_method = N
             vec_freq <- c(vec_freq, freq_spectr$spec)
           }
         }
-      
-        # distance inverse (e.g. Minkowskij similarity)
-      }else if(!(method %in% c('wgcna', 'covariance', 'MI_MM', 'MI_ML', 'MI_shrink', 'MI_SG'))){
+      # distance inverse (e.g. Minkowskij similarity)
+      }else if(!(method %in% which_are_not_distances)){
         distOptions_manual <- paste0("method = '", method, "'")
         if(method == 'minkowski') distOptions_manual <- paste0(distOptions_manual, minkowski_p)
         built_net <- WGCNA::adjacency(tmp_trj, type = "distance", distOptions = distOptions_manual)
       
-        # eventual misunderstanding
+      # eventual misunderstanding
       }else{
         stop('Something in the method construction went wrong. Please refer to the developers.')
       }
+    # none case -> pass on the post processing without modifications
     }else{
       built_net <- tmp_trj
     }
           
     # Post-processing
-    # -------------------------
+    # pp_method -------------------------
     # special case: MI
     if(grepl(method, pattern = 'MI', fixed = T)){
       if(!is.null(pp_method) && grepl(pp_method, pattern = 'SymmetricUncertainty', fixed = T))
@@ -307,11 +335,11 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', pp_method = N
       trj_out[i,] <- built_net_fin[lower.tri(x = built_net_fin, diag = FALSE)]
     }
   }
-  # ============================================================================================================
+  # __ end loop ============================================================================================================
   #
   
   # Checking the creation of NAs in the inference
-  # -------------------------
+  # final output -------------------------
   n_na_trj <- sum(is.na(trj_out))
   if(n_na_trj > 0){
     warning('Attention: NA generated. Maybe too short window of time used? Fraction of NA: ', (n_na_trj*100/(nrow(trj_out)*ncol(trj_out))), ' %')
