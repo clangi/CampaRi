@@ -211,7 +211,7 @@ nSBR <- function(data, ny, local.cut = FALSE, n.cluster = NULL, comb_met = c('MI
     e_MEV_uni <- e_MEV_uni/.lt(n_unif)
     e_MCN_uni <- e_MCN_uni/.lt(n_unif)
     e_MICR2_uni <- e_MICR2_uni/.lt(n_unif)
-    convMIC_cov <- .normalize(convolve(x = 1:lpi, y = e_MIC_uni))
+    convMIC_cov <- .normalize(stats::convolve(x = 1:lpi, y = e_MIC_uni))
     convMIC <- .cut0(e_MIC_uni - convMIC_cov)
     df.main <- cbind(df.main,
                      'MIC' = e_MIC_uni, 
@@ -276,8 +276,8 @@ nSBR <- function(data, ny, local.cut = FALSE, n.cluster = NULL, comb_met = c('MI
   col_vec <- c('darkred', RColorBrewer::brewer.pal(max(.lt(comb_met), 3), name = 'Set1')[-1]) # first color is a red-violet for which I prefer darkred
     
   # if(nrow(df.main) > 50000) df.main <- df.main[unique(round(seq(1, lpi, length.out = 50000))),] # it is not clear for the barriers and not nec (it is fast)
-  tpl <- ggplot(data = df.main, mapping = aes(x = PI)) + theme_classic() + ylab('UniDiv score') +
-         geom_point(mapping = aes(x = PI_points_x, y = PI_points_y), size = 0.8, col = 'grey') 
+  tpl <- ggplot(data = df.main, mapping = aes_string(x = 'PI')) + theme_classic() + ylab('UniDiv score') +
+         geom_point(mapping = aes_string(x = 'PI_points_x', y = 'PI_points_y'), size = 0.8, col = 'grey') 
   
   # Adding the specific curves
   for(met.i in 1:.lt(comb_met)) tpl <- tpl + geom_line(mapping = aes_string(y = comb_met[met.i]), col = col_vec[met.i])
@@ -295,11 +295,12 @@ nSBR <- function(data, ny, local.cut = FALSE, n.cluster = NULL, comb_met = c('MI
   # if('kin' %in% comb_met) tpl <- tpl + geom_line(mapping = aes(y = kin), col = 'darkred') 
   
   # Final add of barriers and similaria
-  tpl <- tpl + geom_point(data = df.pp, mapping = aes(y = pky, x = pkx)) +
+  tpl <- tpl + geom_point(data = df.pp, mapping = aes_string(y = 'pky', x = 'pkx')) +
                geom_vline(xintercept = rank.pk[1:nba], col = 'black', size = 1, linetype="dotted") +
-               geom_point(data = data.frame(a = rnk_ts, b = wtp[rnk_ts]), mapping = aes(x = a, y = b),
+               geom_point(data = data.frame(a = rnk_ts, b = wtp[rnk_ts]), mapping = aes_string(x = 'a', y = 'b'),
                           shape = 3, col = 'darkblue', size = 5, stroke = 2.5) + 
-               xlab('Progress Index') + ylab(paste0('I', comb_met[1])) + theme(axis.title.y.left = element_text(colour = col_vec[1]))
+               xlab('Progress Index') + ylab(paste0('I', comb_met[1])) + 
+               theme(axis.title.y.left = element_text(colour = col_vec[1]))
   # tpl + scale_colour_manual(name="Statistic", values=c("MIC"= 'darkred',"MI"="lightgreen")) # does not work with this setting
   # tpl <- tpl + scale_y_continuous(sec.axis = sec_axis(~ . *3000 , name = "Temporal progress"), limits = c(0, 1))
   # tpl + theme(axis.title.y.right = element_text(color = 'darkgray'),
@@ -308,28 +309,30 @@ nSBR <- function(data, ny, local.cut = FALSE, n.cluster = NULL, comb_met = c('MI
   #             axis.text.y.right = element_text(color = 'darkgray'))
   
   
+  if(dbg_nSBR) browser()
   
   # randomization procedure
   if(!is.null(random_picks)){
-    if(dbg_nSBR) browser()
+    if(!silent) cat('Random barrier picks started. Calculation made with the following number of uniformly random picks:', random_picks, '\n')
     
     # Checks on random_picks
     if(random_picks < 10 ) stop('Use more than 10 random_picks to have some interesting result. Please.')
 
+    # main random pick function
     rnd.obj <- .rnd_bar_estimation(pi.tab = data, ann = ann, ncl = nclu, span = span, ny = ny, 
                                    unifsplits = n_unif, random_trials = random_picks, comb_met = comb_met,
                                    silent = silent)
   }
   
   # microbenchmarking MIC MI
-  if(F){
-    mbm <- microbenchmark::microbenchmark(
-      minerva.out = sapply(seq(nun-2), function(j) minerva::mine(x = uni_cnts[, j], y = uni_cnts[, j+1])),
-      MI_uni = sapply(seq(nun-2), function(j) infotheo::mutinformation(uni_cnts[, j], uni_cnts[, j+1])), 
-      times = 100
-    )
-    ggplot2::autoplot(mbm)  
-  }
+  # if(F){
+  #   mbm <- microbenchmark::microbenchmark(
+  #     minerva.out = sapply(seq(nun-2), function(j) minerva::mine(x = uni_cnts[, j], y = uni_cnts[, j+1])),
+  #     MI_uni = sapply(seq(nun-2), function(j) infotheo::mutinformation(uni_cnts[, j], uni_cnts[, j+1])), 
+  #     times = 100
+  #   )
+  #   ggplot2::autoplot(mbm)  
+  # }
 
   # FINAL OUTPUT
   if(plot && is.null(random_picks)) print(tpl)
@@ -382,8 +385,8 @@ nSBR <- function(data, ny, local.cut = FALSE, n.cluster = NULL, comb_met = c('MI
   
   # calculating rough zscore
   zcs <- (ref_sc$score.out - mean(sco)) / sd(sco)
-  pval_zsc <- 2*pnorm(-abs(zcs))
-  pval_95per <- quantile(c(sco),  probs = 0.95)
+  pval_zsc <- 2*stats::pnorm(-abs(zcs))
+  pval_95per <- stats::quantile(c(sco),  probs = 0.95)
 
   # use the classic plot to see the points (barrier points) which exceded the combination found.
   df_pl <- data.frame('barr' = c(best_ba), 'scr' = rep(sco, each=nba))
@@ -392,14 +395,14 @@ nSBR <- function(data, ny, local.cut = FALSE, n.cluster = NULL, comb_met = c('MI
                           'ym' = df_pl[df_pl[, 'scr'] == max(df_pl[, 'scr']), 2])
   
   # add layers to the plot
-  gtemp1 <- ref_nSBR$plot + geom_point(data = df_pl, aes(x = barr, y = scr), col = 'green4', size = 0.65) +
-    geom_point(data = dhe_point, aes(x = xm, y = ym), col = 'red', size = 2.5) + 
+  gtemp1 <- ref_nSBR$plot + geom_point(data = df_pl, aes_string(x = 'barr', y = 'scr'), col = 'green4', size = 0.65) +
+    geom_point(data = dhe_point, aes_string(x = 'xm', y = 'ym'), col = 'red', size = 2.5) + 
     geom_hline(aes_string(yintercept = ref_sc$score.out), size = 1, col = 'darkblue') + 
     scale_y_continuous(sec.axis = sec_axis(~ . , name = "NMI"), limits = c(0, 1)) +
     theme(axis.title.y.right = element_text(color = 'green4', margin = margin(l = 5)),
           axis.line.y.right = element_blank(),
           axis.ticks.y.right = element_blank(),
-          axis.text.y.right = element_text(color = 'green4', margin = margin(l = -19)))
+          axis.text.y.right = element_text(color = 'green4', margin = margin(l = -16)))
   #+ ylab('') #+ 
   # annotate('text', x = -10000, y = 0.25, label = TeX('\text{IMIC / } {\\color{DarkGreen} \text{NMI}}'), angle = 90) # fail
   max_rnd_nmi <- CampaRi::score_sapphire(the_sap = pi.tab, ann = ann, manual_barriers = dhe_point$xm, silent = T)
@@ -414,7 +417,7 @@ nSBR <- function(data, ny, local.cut = FALSE, n.cluster = NULL, comb_met = c('MI
   }
   
   # plotting the simple final result
-  gtemp2 <- ggplot() + geom_density(aes_string(x = sco), fill = 'lightblue') + theme_classic() + 
+  gtemp2 <- ggplot() + geom_density(aes_string(x = 'sco'), fill = 'lightblue') + theme_classic() + 
     geom_vline(aes_string(xintercept = ref_sc$score.out), col = 'darkred') + #ggtitle(paste0('dataset ', n_to_anal, ' randomization of the barriers 500 times')) +
     xlab('Score') + ylab('Density')
   

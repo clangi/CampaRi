@@ -16,7 +16,7 @@ the relative time indices and the cut function.}
 
 \item{manual_barriers}{If an integer vector is inserted, it is used as the barrier locations.}
 
-\item{basin_obj}{Output of \code{\link{basin_recognition}}. If you used \code{\link{basin_optimization}} to optimize the clusters please
+\item{basin_obj}{Output of \code{\link{basins_recognition}}. If you used \code{\link{basin_optimization}} to optimize the clusters please
 insert only the resulting bas object}
 
 \item{scoring_method}{Precise scoring method (final comparison between cluster labels)
@@ -27,7 +27,7 @@ insert only the resulting bas object}
      \item "\code{purity}" 
 }}
 
-\item{merge_clusters}{A logical value for indicating if merging consecutive clusters with same labels.}
+\item{merge_clusters}{Logical that allow clusters to be merged automatically if consecutives}
 
 \item{plot_pred_true_resume}{Defaults tp \code{FALSE}. If set to true it plots the predicted and true labels one along the other.}
 
@@ -35,7 +35,7 @@ insert only the resulting bas object}
 
 \item{...}{Not yet in use.}
 
-\item{merge_cluster}{Logical that allow clusters to be merged automatically if consecutives}
+\item{merge_clusters}{A logical value for indicating if merging consecutive clusters with same labels.}
 }
 \value{
 A list containing

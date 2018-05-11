@@ -60,6 +60,7 @@
 }
 
 .isSingleNumeric <- function(x) return(.isSingleElement(x) && is.numeric(x))
+.isSingleChar <- function(x) return(.isSingleElement(x) && is.character(x))
 
 # This routine is able to print a loading bar within a loop to know the work done
 .print_consecutio <- function(itering, total_to_iter, tot_to_print = 10, other_to_print = "", timeit = T, time_first = NULL){
@@ -146,11 +147,11 @@
   # yyy <- kin.pl
   # xxx <- seq(lpi)
   q.mod <- lm(yyy ~ poly(xxx, polydeg, raw=TRUE))
-  new_yyy <- .normalize(yyy - predict(q.mod))
+  new_yyy <- .normalize(yyy - stats::predict(q.mod))
   if(plotit){
     plot(xxx, yyy, type = 'l', ylim = c(0,1))
     abline(lm(yyy ~ xxx), col = 'darkblue') # linear
-    lines(xxx, predict(q.mod), col = "darkgreen", lwd = 2)
+    lines(xxx, stats::predict(q.mod), col = "darkgreen", lwd = 2)
     lines(xxx, new_yyy, col = "red", lwd = 3)
   }
   return(new_yyy)

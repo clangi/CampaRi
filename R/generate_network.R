@@ -6,11 +6,11 @@
 #' @param trj Input trajectory (variables on the columns and equal-time spaced snpashots on the row). It must be a \code{matrix} or a \code{data.frame} of numeric.
 #' @param window Number of snapshots taken before and after the considered snapshot. 
 #' @param overlapping_reduction Not yet supported (It will if a great number of snapshots will be considered in this analysis - snapshot selection)
-#' @param post_processing_method 'path_euclidean', 'path_minkowski', 'path_manhattan', 'path_maximum', 'path_canberra', 'path_binary' will find the distance path to make
+#' @param pp_method 'path_euclidean', 'path_minkowski', 'path_manhattan', 'path_maximum', 'path_canberra', 'path_binary' will find the distance path to make
 #' an hamiltonian cycle. 'svd' if a singular vector decomposition will be used to have the diagional of the d matrix as output. With 'SymmetricUncertainty' you will have
 #' AdjacencySymmetricUncertainty=2*I(X;Y)/(H(X)+H(Y)) [method='MI_*' must be active]. 'tsne' will make a tsne transformation.
 #' @param method Supported pairwise similarity measures are 'wgcna', 'binary', 'euclidean', 'maximum', 'canberra', 'minkowski', 'covariance', 
-#' 'MI_MM'. If set 'none' the windows will be used only for the post_processing_method (works only with path_* or tsne/svd).
+#' 'MI_MM'. If set 'none' the windows will be used only for the pp_method (works only with path_* or tsne/svd).
 #' @param transpose_trj Defaults to F. If set T the junk of trj (i.e. with a specific window) is transposed so to infer a network with dimensions window*(window-1)/2
 #' @param ... Various variables. Possible values are \code{c('wgcna_type', 'wgcna_power', 'wgcna_corOp')}.
 #' 
@@ -33,18 +33,20 @@
 #' @importFrom Rtsne Rtsne
 #' @importFrom TSA periodogram
 
-generate_network <- function(trj, window = NULL, method = 'wgcna', post_processing_method = NULL, overlapping_reduction = NULL, transpose_trj = FALSE, ...){
+generate_network <- function(trj, window = NULL, method = 'wgcna', pp_method = NULL, 
+                             overlapping_reduction = NULL, transpose_trj = FALSE, ...){
  
   # checking additional variable
   input_args <- list(...)
   avail_extra_argoments <- c('wgcna_type', 'wgcna_power', 'wgcna_corOp', 'minkowski_p', 'cov_method', 'tsne_dimensions', 'tsne_perplexity', 'tsne_maxIter')
-  avail_methods <- c('wgcna', 'none', 
+  avail_methods <- c('none',
+                     'wgcna',
                      'binary', 'euclidean', 'manhattan', 'maximum', 'canberra', 'minkowski', 'mahalanobis',
                      'covariance',
                      'MI', 'MI_MM', 'MI_ML', 'MI_shrink', 'MI_SG',
                      'fft')
   
-  # Default handling of extra inputs
+  # default handling of extra inputs
   if(any(!(names(input_args) %in% avail_extra_argoments))) 
     stop('There is a probable mispelling in one of the inserted variables. Please check the available extra input arguments.')
   if(!('wgcna_type' %in% names(input_args))) wgcna_type <- 'unsigned' else wgcna_type <- input_args[['wgcna_type']]
@@ -57,43 +59,41 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', post_processi
   if(!('tsne_maxIter' %in% names(input_args))) tsne_maxIter <- 500 else tsne_maxIter <- input_args[['tsne_maxIter']]
   
   # Method checks
-  if(!is.null(method) && (!is.character(method) || length(method) != 1))
-    stop('method must be a single character.')
-  if(!(method %in% avail_methods))
-    stop('method not considered.')
+  if(!is.null(method) && (!is.character(method) || length(method) != 1)) stop('method must be a single character.')
+  if(!(method %in% avail_methods)) stop(paste0('The method must be chosen between', paste0(avail_methods, collapse = ' '),'.'))
   
   # Checking MI method
-  if(method == 'MI')
-    method <- 'MI_MM'
+  if(method == 'MI') method <- 'MI_MM'
   
-  # checks for available post_processing_method
-  avail_post_proc_met <- c('path_euclidean', 'path_minkowski', 'path_manhattan', 'path_maximum', 'path_canberra', 'path_binary',
-                           'svd', 'tsne',
+  # checks for available pp_method
+  # pp_method checks ------------------------------------------------------------------------------------------------------------------------------
+  avail_post_proc_met <- c('path_euclidean', 'path_minkowski', 'path_manhattan', 'path_maximum', 'path_canberra', 'path_binary', # find_path
+                           'svd', 
+                           'tsne',
                            'SymmetricUncertainty',
                            'amplitude', 'amplitude_maxfreq', 'maxfreq')
-  if(!is.null(post_processing_method) && (!is.character(post_processing_method) || length(post_processing_method) != 1))
-    stop('post_processing_method must be a single character.')
-  if(!is.null(post_processing_method) && is.character(post_processing_method) &&
-     !(post_processing_method %in% avail_post_proc_met))
-    stop("post_processing_method must be choosen between these: 
-c('path_euclidean', 'path_minkowski', 'path_manhattan', 'path_maximum', 'path_canberra', 'path_binary',
-                           'svd', 'tsne',
-                           'SymmetricUncertainty',
-                           'amplitude', 'amplitude_maxfreq', 'maxfreq')")
-  if(!is.null(post_processing_method) && grepl(post_processing_method, pattern = 'SymmetricUncertainty', fixed = T) && 
-     !grepl(method, pattern = 'MI', fixed = T)){
-    warning('You did not insert any Mutual Information option but you are trying to use SymmetricUncertainty. The method will be set to "MI".')
-    method <- 'MI'
+  
+  # general post processing checks
+  if(!is.null(pp_method) && !.isSingleChar(pp_method)) stop('pp_method must be a single character.')
+  if(!is.null(pp_method) && !(pp_method %in% avail_post_proc_met)) 
+    stop(paste0( "pp_method must be choosen between ", paste0(avail_post_proc_met, collapse = ' '))) 
+  
+  # post processing checks for MI
+  if(!is.null(pp_method) && grepl(pp_method, pattern = 'SymmetricUncertainty', fixed = T) && !grepl(method, pattern = 'MI', fixed = T)){
+    warning('You did not insert any Mutual Information method (MI) but you are trying to use SymmetricUncertainty. The method will be set to "MI".')
+    method <- 'MI_MM'
   }
-  if(!is.null(post_processing_method) && post_processing_method %in% c('amplitude', 'amplitude_maxfreq', 'maxfreq')){
+  
+  # post processing checks for fft
+  if(!is.null(pp_method) && pp_method %in% c('amplitude', 'amplitude_maxfreq', 'maxfreq')){
     if(method != 'fft'){
-      warning('You inserted post_processing_methods which depends on the fourier transformation of the dataset. "fft" method set automatically.')
+      warning('You inserted pp_methods which depends on the fourier transformation of the dataset. "fft" method set automatically.')
       method <- 'fft'
       }
   }
   
-  if(method == 'none' && is.null(post_processing_method))
-    stop('It is needed a post_processing_method if you want to use directly the window (without any network construction).')
+  # checks if you inserted
+  if(method == 'none' && is.null(pp_method)) stop('It is needed a pp_method if you want to use directly the window (without any network construction).')
   
   # Checking input variables and files
   if(!is.data.frame(trj)){
@@ -125,7 +125,7 @@ c('path_euclidean', 'path_minkowski', 'path_manhattan', 'path_maximum', 'path_ca
     stop('cov_method not supported.')
 
   # specific checks for tsne
-  if(!is.null(post_processing_method) && post_processing_method == 'tsne'){
+  if(!is.null(pp_method) && pp_method == 'tsne'){
     if(!.isSingleInteger(tsne_dimensions))
       stop('tsne_dimensions must be a single integer')
     if(!.isSingleInteger(tsne_perplexity))
@@ -144,8 +144,7 @@ c('path_euclidean', 'path_minkowski', 'path_manhattan', 'path_maximum', 'path_ca
   #   warning('The used overlapping_reduction is not correctly defined. It must be a number between 0 and 1.')
   
   # -----------------------------
-  if(!is.logical(transpose_trj))
-    stop('transpose_trj must be a logical value.')
+  if(!is.logical(transpose_trj)) stop('transpose_trj must be a logical value.')
   
   # Long calculation warning
   if(dim(trj)[1] > 20000) warning('The network generation can be really long. Please consider multi-threads options of the WGCNA package.')
@@ -170,50 +169,47 @@ c('path_euclidean', 'path_minkowski', 'path_manhattan', 'path_maximum', 'path_ca
   if(transpose_trj){
     trj_out <- matrix(NA, nrow = nrow(trj), ncol = ((window*(window-1))/2)) 
   }else if(method == 'fft'){
-    if(!is.null(post_processing_method) && post_processing_method %in% c('amplitude', 'amplitude_maxfreq', 'maxfreq')){
-      if(post_processing_method == 'amplitude')
+    if(!is.null(pp_method) && pp_method %in% c('amplitude', 'amplitude_maxfreq', 'maxfreq')){
+      if(pp_method == 'amplitude')
         trj_out <- matrix(NA, nrow = nrow(trj), ncol = ncol(trj))
-      else if(post_processing_method == 'maxfreq')
+      else if(pp_method == 'maxfreq')
         trj_out <- matrix(NA, nrow = nrow(trj), ncol = ncol(trj))
-      else if(post_processing_method == 'amplitude_maxfreq')
+      else if(pp_method == 'amplitude_maxfreq')
         trj_out <- matrix(NA, nrow = nrow(trj), ncol = 2*ncol(trj))
     }else{
       tester <- TSA::periodogram(trj[1:window, 1], plot = F)
       tester <- length(tester$spec)
       trj_out <- matrix(NA, nrow = nrow(trj), ncol = tester*ncol(trj))   
     }
-  }else if(is.null(post_processing_method) || (grepl(method, pattern = 'MI', fixed = T) && 
-                                               (!grepl(post_processing_method, pattern = 'path_', fixed = T) || 
-                                                !grepl(post_processing_method, pattern = 'svd', fixed = T)))){
+  }else if(is.null(pp_method) || (grepl(method, pattern = 'MI', fixed = T) && 
+                                               (!grepl(pp_method, pattern = 'path_', fixed = T) || 
+                                                !grepl(pp_method, pattern = 'svd', fixed = T)))){
     trj_out <- matrix(NA, nrow = nrow(trj), ncol = ((ncol(trj)-1)*ncol(trj)/2)) 
-  }else if(!is.null(post_processing_method) && grepl(post_processing_method, pattern = 'path_', fixed = T)){
+  }else if(!is.null(pp_method) && grepl(pp_method, pattern = 'path_', fixed = T)){
     net_test <- WGCNA::adjacency(trj[1:100,])
-    standard_path_length <- length(c(PairViz::find_path(net_test, path = function(xu) dist(xu, method = strsplit(post_processing_method, split = '_')[[1]][2]))))
+    standard_path_length <- length(c(PairViz::find_path(net_test, path = function(xu) dist(xu, method = strsplit(pp_method, split = '_')[[1]][2]))))
     trj_out <- matrix(NA, nrow = nrow(trj), ncol = standard_path_length) 
-  }else if(!is.null(post_processing_method) && grepl(post_processing_method, pattern = 'svd', fixed = T)){
+  }else if(!is.null(pp_method) && grepl(pp_method, pattern = 'svd', fixed = T)){
     trj_out <- matrix(NA, nrow = nrow(trj), ncol = ncol(trj))
-  }else if(!is.null(post_processing_method) && grepl(post_processing_method, pattern = 'tsne', fixed = T)){
+  }else if(!is.null(pp_method) && grepl(pp_method, pattern = 'tsne', fixed = T)){
     trj_out <- matrix(NA, nrow = nrow(trj), ncol = tsne_dimensions*window)
   }else{
     stop('impossible initilization of the variables. Please check the modes.')
   }
   # ============================================================================================================
   
-  
   # time keeping variables
-  if(nrow(trj)*ncol(trj) > 50000)
-    timing_it <- TRUE
-  else
-    timing_it <- FALSE
+  if(nrow(trj)*ncol(trj) > 50000) timing_it <- TRUE
+  else timing_it <- FALSE
   
   # Main transformation
   # ============================================================================================================
-  message('Network construction started (selected window: ', window, ').')
+  if(!silent) cat('Network construction started (selected window: ', window, ').\n')
   for(i in 1:dim(trj)[1]){
     # adding time if necessary
     if(i==1&&timing_it)
       time1 <- proc.time()
-    .print_consecutio(if(i==1) 0 else i, dim(trj)[1], 70, timeit=timing_it, time_first = time1)
+    if(!silent) .print_consecutio(if(i==1) 0 else i, dim(trj)[1], 70, timeit=timing_it, time_first = time1)
     
     if((i - window_l) <= 0) {
       tmp_trj <- trj[1:(i + window_r),]
@@ -253,14 +249,14 @@ c('path_euclidean', 'path_minkowski', 'path_manhattan', 'path_maximum', 'path_ca
       }else if(method == 'fft'){
         vec_freq <- c()
         for(fr in 1:ncol(trj)){
-          if(is.null(post_processing_method) || (!is.null(post_processing_method) && post_processing_method != 'amplitude')) # just to avoid further calc
+          if(is.null(pp_method) || (!is.null(pp_method) && pp_method != 'amplitude')) # just to avoid further calc
             freq_spectr <- periodogram(tmp_trj[,fr], plot = F)
-          if(!is.null(post_processing_method) && post_processing_method %in% c('amplitude', 'amplitude_maxfreq', 'maxfreq')){
-            if(post_processing_method == 'amplitude')
+          if(!is.null(pp_method) && pp_method %in% c('amplitude', 'amplitude_maxfreq', 'maxfreq')){
+            if(pp_method == 'amplitude')
               vec_freq <- c(vec_freq, diff(range(tmp_trj[,fr])))
-            else if(post_processing_method == 'maxfreq')
+            else if(pp_method == 'maxfreq')
               vec_freq <- c(vec_freq, freq_spectr$freq[which(freq_spectr$spec == max(freq_spectr$spec))])
-            else if(post_processing_method == 'amplitude_maxfreq')
+            else if(pp_method == 'amplitude_maxfreq')
               vec_freq <- c(vec_freq, diff(range(tmp_trj[,fr])), freq_spectr$freq[which(freq_spectr$spec == max(freq_spectr$spec))[1]])
           }else{
             vec_freq <- c(vec_freq, freq_spectr$spec)
@@ -285,7 +281,7 @@ c('path_euclidean', 'path_minkowski', 'path_manhattan', 'path_maximum', 'path_ca
     # -------------------------
     # special case: MI
     if(grepl(method, pattern = 'MI', fixed = T)){
-      if(!is.null(post_processing_method) && grepl(post_processing_method, pattern = 'SymmetricUncertainty', fixed = T))
+      if(!is.null(pp_method) && grepl(pp_method, pattern = 'SymmetricUncertainty', fixed = T))
         built_net_fin <- built_net$AdjacencySymmetricUncertainty
       else
         built_net_fin <- built_net$MutualInformation
@@ -295,14 +291,13 @@ c('path_euclidean', 'path_minkowski', 'path_manhattan', 'path_maximum', 'path_ca
     # other cases    
     if(method == 'fft'){
       trj_out[i,] <- vec_freq
-    }else if(!is.null(post_processing_method) && grepl(post_processing_method, pattern = 'path_', fixed = T)){
-      tmp_path <- c(PairViz::find_path(built_net_fin, path = function(xu) dist(xu, method = strsplit(post_processing_method, split = '_')[[1]][2])))
-      if(standard_path_length != length(tmp_path))
-        stop('the path length changed during the analysis. This is not possible.')
+    }else if(!is.null(pp_method) && grepl(pp_method, pattern = 'path_', fixed = T)){
+      tmp_path <- c(PairViz::find_path(built_net_fin, path = function(xu) dist(xu, method = strsplit(pp_method, split = '_')[[1]][2])))
+      if(standard_path_length != length(tmp_path)) stop('the path length changed during the analysis. This is not possible.')
       trj_out[i,] <- tmp_path
-    }else if(!is.null(post_processing_method) && grepl(post_processing_method, pattern = 'svd', fixed = T)){
+    }else if(!is.null(pp_method) && grepl(pp_method, pattern = 'svd', fixed = T)){
       trj_out[i,] <- svd(built_net_fin, nu = 0, nv = 0)$d
-    }else if(!is.null(post_processing_method) && grepl(post_processing_method, pattern = 'tsne', fixed = T)){
+    }else if(!is.null(pp_method) && grepl(pp_method, pattern = 'tsne', fixed = T)){
       tmp_to_expand <- c(Rtsne::Rtsne(X = built_net_fin, dims = tsne_dimensions, perplexity = tsne_perplexity, verbose = FALSE, max_iter = tsne_maxIter)$Y)
       if(length(tmp_to_expand) < ncol(trj_out))
         tmp_to_expand <- c(rep(tmp_to_expand, 3))[ncol(trj_out)]
@@ -319,13 +314,12 @@ c('path_euclidean', 'path_minkowski', 'path_manhattan', 'path_maximum', 'path_ca
   # -------------------------
   n_na_trj <- sum(is.na(trj_out))
   if(n_na_trj > 0){
-    warning('Attention: NA generated. Probably it is due to too short window of time used. Fraction of NA: ', 
-            (n_na_trj*100/(nrow(trj_out)*ncol(trj_out))), ' %')
-  if((n_na_trj*100/(nrow(trj_out)*ncol(trj_out))) > 5) 
-      warning('ATTENTION!!! The generated NA overcame the threshold of 5%. Please consider alternative methods and vars.')
-    else message('Assigning 0 to the generated NA.')
+    warning('Attention: NA generated. Maybe too short window of time used? Fraction of NA: ', (n_na_trj*100/(nrow(trj_out)*ncol(trj_out))), ' %')
+    if((n_na_trj*100/(nrow(trj_out)*ncol(trj_out))) > 5) 
+      stop('ATTENTION!!! The generated NA overcame the threshold of 5%. Please consider alternative methods and vars.')
+    if(!silent) cat('Assigning 0 to the generated NA.\n')
     trj_out[is.na(trj_out)] <- 0 
   }
-  message('Network construction completed.')
+  if(!silent) cat('Network construction completed.\n')
   invisible(list('trj_out' = trj_out, 'n_na_trj' = n_na_trj))
 }

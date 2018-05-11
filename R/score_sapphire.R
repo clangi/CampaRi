@@ -13,11 +13,11 @@
 #'            \item "\code{jaccard_index}" 
 #'            \item "\code{purity}" 
 #'       }
-#' @param basin_obj Output of \code{\link{basin_recognition}}. If you used \code{\link{basin_optimization}} to optimize the clusters please
+#' @param basin_obj Output of \code{\link{basins_recognition}}. If you used \code{\link{basin_optimization}} to optimize the clusters please
 #'  insert only the resulting bas object
 #' @param manual_barriers If an integer vector is inserted, it is used as the barrier locations.
 #' @param plot_pred_true_resume Defaults tp \code{FALSE}. If set to true it plots the predicted and true labels one along the other.
-#' @param merge_cluster Logical that allow clusters to be merged automatically if consecutives
+#' @param merge_clusters Logical that allow clusters to be merged automatically if consecutives
 #' @param silent A logical value indicating whether the function has to remain silent or not. Default value is \code{FALSE}.
 #' @param merge_clusters A logical value for indicating if merging consecutive clusters with same labels.
 #' @param ... Not yet in use.
@@ -56,14 +56,14 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
   manual_mode <- FALSE
   
   # Fundamental inputs: the_sap and optimizations 
-  # - basin_obj = bas: uses bas object from basin_recognition() or basin_optimization()
+  # - basin_obj = bas: uses bas object from basins_recognition() or basin_optimization()
   # - manual_barriers = c(1,2,3,4): insert manually the barriers [it creates a fake bas obj]
   if(!is.character(the_sap) && !is.data.frame(the_sap)) stop("the_sap must be a string or a data frame")
   if(is.character(the_sap) && (!grepl("PROGIDX", the_sap) && !grepl("REPIX", the_sap))) stop("Please provide a the_sap name starting with 'PROGIDX' or 'REPIX'" )
   
   if(!is.null(basin_obj) && !is.logical(basin_obj)){
     if(is.null(names(basin_obj)) || names(basin_obj)[1] != 'tab.st') 
-      stop('Use the basin_optimization (optimal_bas) or the basin_recognition output for basin_optimization var.
+      stop('Use the basin_optimization (optimal_bas) or the basins_recognition output for basin_optimization var.
            It must be of the shape tab.st nbins seq.st etc.. (or put it TRUE/FALSE).')
     if(!is.null(manual_barriers)) stop('Use either manual mode or bas mode')
     have_the_bas <- TRUE
@@ -106,7 +106,7 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
   #   n_fin_cl <- nrow(bas$tab.st)
     
   # Main switcher for the final output  
-  # - basin_obj = bas: uses bas object from basin_recognition() or basin_optimization()
+  # - basin_obj = bas: uses bas object from basins_recognition() or basin_optimization()
   # - manual_barriers = c(1,2,3,4): insert manually the barriers [it creates a fake bas obj]
   if(have_the_bas){
     if(!silent) cat('You inserted the bas object directly. No specific check of your wrong doing is applied. Therefore USE THE RIGHT ONE.\n')
