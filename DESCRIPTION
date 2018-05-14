@@ -17,7 +17,7 @@ Imports:
   bio3d, ggplot2, WGCNA, parallel, data.table, Rcpp,
   gplots, grDevices, graphics, outliers, pcaPP,
   prospectr, splus2R, stats, expm, Hmisc, utils, 
-  plotly, ggfortify, PairViz, Rtsne, TSA, ClusterR,
+  plotly, PairViz, Rtsne, TSA, ClusterR,
   RColorBrewer, TransferEntropy, infotheo, e1071, MESS, 
   minerva
 Suggests: knitr, rmarkdown, testthat, roxygen2

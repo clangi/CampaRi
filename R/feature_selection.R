@@ -18,6 +18,7 @@
 #' @param plot_legend plot the legend
 #' @param legend_title define a title for the legend
 #' @param legend_labels labels for the legend
+#' @param silent A logical value indicating whether the function has to remain silent or not. Default value is \code{FALSE}.
 #' @details This function is based primarly on the basic R function \code{pricomp} and on \code{PCAproj} from the package pcaPP. Insead, for more details on the SAPPHIRE anlysis, please refer to the main documentation
 #' of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
 #'
@@ -34,11 +35,11 @@
 #' @importFrom stats loadings
 #' @importFrom plotly ggplotly
 #' @import ggplot2
-#' @import ggfortify
+#@import ggfortify
 
 select_features <- function(trj, feature_selection = 'pca', n_princ_comp = floor(ncol(trj)/10), pca_method = 'R',
                             plotit = FALSE, frameit = FALSE, return_plot = FALSE, cluster_vector = NULL, plotly_it = FALSE,
-                            points_size = 1, specific_palette = NULL, plot_legend = FALSE, legend_title = NULL, legend_labels = NULL){
+                            points_size = 1, specific_palette = NULL, plot_legend = FALSE, legend_title = NULL, legend_labels = NULL, silent = FALSE){
 
   # Checking input variables (again - it is also a stand alone function)
   if(is.null(n_princ_comp) || (length(n_princ_comp) != 1 || !is.numeric(n_princ_comp) || n_princ_comp < 0 || n_princ_comp > ncol(trj)))
@@ -60,14 +61,11 @@ select_features <- function(trj, feature_selection = 'pca', n_princ_comp = floor
     stop('specific_palette must be of the type "#b47b00", "#D9E000" (7 characters starting with #')
   
   # Checking the logicals
-  if(!is.logical(plotit))
-    stop('plotit must be a logical value.')
-  if(!is.logical(frameit))
-    stop('frameit must be a logical value.')
-  if(!is.logical(return_plot))
-    stop('return_plot must be a logical value.')
-  if(!is.logical(plotly_it))
-    stop('plotly_it must be a logical value.')
+  if(!is.logical(plotit)) stop('plotit must be a logical value.')
+  if(!is.logical(frameit)) stop('frameit must be a logical value.')
+  if(!is.logical(return_plot)) stop('return_plot must be a logical value.')
+  if(!is.logical(plotly_it)) stop('plotly_it must be a logical value.')
+  if(!is.logical(silent)) stop('silent must be a logical value.')
   
   # adding the cross checks
   if(plotit){
@@ -150,7 +148,7 @@ select_features <- function(trj, feature_selection = 'pca', n_princ_comp = floor
   }
   
   # General messages
-  cat('Feature selection mode active.', feature_selection, 'dimensionality reduction will be performed.\n')
+  if(!silent) cat('Feature selection mode active.', feature_selection, 'dimensionality reduction will be performed.\n')
 
   # Long calculation warning
   if(dim(trj)[1] > 20000) warning('The dimensionality reduction can be really long.')
@@ -164,7 +162,7 @@ select_features <- function(trj, feature_selection = 'pca', n_princ_comp = floor
       pcahah <- pcaPP::PCAproj(trj, k = n_princ_comp, method = "mad", CalcMethod = "eachobs",
                                nmax = 1000, update = TRUE, scores = TRUE, maxit = 5, maxhalf = 5, scale = NULL, zero.tol = 1e-16)
     else pcahah <- princomp(x = trj)
-    if(pca_method == 'robust') cat('Robust method selected. The pca-selection will be using robust PCA by projection pursuit.\n')
+    if(pca_method == 'robust' && !silent) cat('Robust method selected. The pca-selection will be using robust PCA by projection pursuit.\n')
     selected_components <- array(0, n_princ_comp)
     for(i in seq(n_princ_comp)){
       selected_components[i] <- which.max(abs(loadings(pcahah)[,i]))
@@ -180,7 +178,7 @@ select_features <- function(trj, feature_selection = 'pca', n_princ_comp = floor
       data_to_plot <- as.data.frame(cbind(trj, cls = cluster_vector))
       data_to_plot[, ncol(data_to_plot)] <- as.factor(data_to_plot[, ncol(data_to_plot)])
       if(!is.null(col)) names(data_to_plot)[length(names(data_to_plot))] <- col 
-      appca <- autoplot(pcahah, data = data_to_plot, colour = col, size=0.1*points_size, frame=frameit, frame.type = 'norm', frame.colour = col) + theme_minimal()
+      appca <- ggplot2::autoplot(pcahah, data = data_to_plot, colour = col, size=0.1*points_size, frame=frameit, frame.type = 'norm', frame.colour = col) + theme_minimal()
       # plot the legend
       if(plot_legend){
         appca <- appca + scale_color_manual(name = leg_tit, values = specific_palette, labels = leg_lab) + 
@@ -199,18 +197,18 @@ select_features <- function(trj, feature_selection = 'pca', n_princ_comp = floor
         appca <- ggplotly(appca)
     }
     # Printing simple output and to file
-    cat('PCA performed successfully.\n')
-    cat('The most indipendent values selected are:', more_selected)
-    message('The details of the pca output will be oscurated but the selected values will be written in "selected_pca.out" ASCII file.')
-    fwrite(x = as.list(selected_components), file = "selected_pca.out", sep = '\t')
+    if(!silent) cat('PCA performed successfully.\n')
+    if(!silent) cat('The most indipendent values selected are:', more_selected, '\n')
+    if(!silent) cat('The details of the pca output will be oscurated but the selected values will be written in "selected_pca.out" ASCII file.\n')
+    data.table::fwrite(x = as.list(selected_components), file = "selected_pca.out", sep = '\t')
   }
   
   if(return_plot){
-    cat('Returning the plot object. No selected features will be returned with this mode active.\n')  
+    if(!silent) cat('Returning the plot object. No selected features will be returned with this mode active.\n')  
     invisible(appca)
   }else{
     if(plotit) print(appca)
-    cat('Returning the selected features...\n')
+    if(!silent) cat('Returning the selected features...\n')
     if(!plotit)
       return(trj[,selected_components])
     else

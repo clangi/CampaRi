@@ -21,7 +21,7 @@ insert only the resulting bas object}
 
 \item{scoring_method}{Precise scoring method (final comparison between cluster labels)
 \itemize{
-     \item "\code{mni}" 
+     \item "\code{nmi}" 
      \item "\code{adjusted_rand_index}" 
      \item "\code{jaccard_index}" 
      \item "\code{purity}" 

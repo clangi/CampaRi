@@ -57,10 +57,10 @@ biocLite(c("AnnotationDbi", "impute", "GO.db", "preprocessCore", "PairViz"))
 ```
 Note: the installation of biocgenerics is ultimately failing on ubuntu 17.10 and only R > 3.4.3 can patch it up. We advise to stick with the LTS version 16.04 of ubuntu.
 
-Finally install CampaRi package from github using devtools (note ggfortify just moved away from cran and must be installed from github):
+Finally install CampaRi package from github using devtools (note ggfortify just moved away from cran and must be installed from github). This package is not used now! You can avoid its installation
 ```R
 library(devtools)
-install_github("sinhrks/ggfortify")
+install_github("sinhrks/ggfortify") # no more needed
 
 # Final step:
 install_github("Melkiades/CampaRi")

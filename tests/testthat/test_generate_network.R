@@ -3,8 +3,9 @@ context('generate_network')
 test_that('pre-processing with network inference', {
   test_plotting <- F
   my_libs <- F
+  silent <- F
   if(my_libs) library(TSA)
-  trj <- data.frame(rnorm(1000), nrow = 100, ncol = 10)
+  trj <- as.data.frame(matrix(rnorm(1000), nrow = 100, ncol = 10))
   expect_true(!is.null(trj))
   
   # checking some (expected) errors
@@ -79,11 +80,155 @@ test_that('pre-processing with network inference', {
   
   # MINE FAMILY
   library(minerva)
-  trj <- cbind(trj, trj*2-1)
-  res <- minerva::mine(x = trj[1:12,]) # real exit values
+  lung <- 2000
+  trj <- as.data.frame(matrix(NA, nrow = lung, ncol = 4))
+  trj[,1] <- sin(1:lung) + tan(lung:1)*(1/100) + rnorm(lung, mean = 0, sd = 0.1)
+  trj[,3] <- sin(1:lung) + tan(lung:1)*(1/100) + rnorm(lung, mean = 0, sd = 0.5)
+  trj[,2] <- cos(1:lung) + tanh(lung:1)*(1/sin(lung:1))
+  trj[,4] <- cos(1:lung) + tanh(lung:1)*(1/sin(lung:1)) - rnorm(lung, mean = 1, sd = 0.5)
+  trj <- rbind(trj, as.data.frame(matrix(rnorm(4000), nrow = 1000, ncol = 4)))
+  res <- minerva::mine(x = trj[1:50,]) # real exit values
   a <- res$MIC[lower.tri(x = res$MIC, diag = FALSE)]
+  expect_error(b <- generate_network(trj = trj, window = 10, method = 'MIC', silent = silent), NA) # multithreading MIC is super bad
+  expect_equal(a, b$trj_out[1,])
   
-  
+  # microtest
+  if(F){
+    library(tictoc)
+    mobj <- microbenchmark::microbenchmark(
+      mink = generate_network(trj = trj, window = 100, method = 'minkowski', silent = T),
+      mink_threads = generate_network(trj = trj, window = 100, method = 'minkowski', silent = T, do_multithreads = T),
+      times = 10
+    ) # much faster without multithreads! the windows are too small
+    print(mobj)
+    autoplot(mobj)
+
+    # my problem: MIC is slow TOOO MUCH
+    mobj <- microbenchmark::microbenchmark(
+      mic = minerva::mine(x = trj[1:500,], n.cores = 1),
+      mic_threads = minerva::mine(x = trj[1:500,], n.cores = 7),
+      times = 10
+    ) # much worse with threads
+    mobj <- microbenchmark::microbenchmark(
+      mic = minerva::mine(x = trj[1:500,], n.cores = 1),
+      mic_less_alpha = minerva::mine(x = trj[1:500,], alpha = 0.4),
+      times = 10
+    )
+    print(mobj)
+    autoplot(mobj)
+    
+    # Analysing alpha factor in face of different number of rows in inference data
+    # ------------------------------------------------------------------------------------------------------------------
+    
+    # alpha seems a promising parameters to be reduced. Analysing how the mic changes with different alpha
+    alphass <- seq(0.1, 0.6, length.out = 30)
+    SIZES <- round(seq(10, 200, length.out = 20))
+    count <- 0; the_minerva_out <- list()
+    
+    # main loop
+    for(size in SIZES){
+      count <- count + 1
+      the_minerva_out[[count]] <- lapply(alphass, FUN = function(x) {
+        tic()
+        out <- minerva::mine(x = trj[1:size,], alpha = x)
+        out.t <- toc(quiet = T)
+        return(list('m.out' = out, 't.out' = out.t))
+        })
+    }
+    
+    mic.alph.times <- unlist(lapply(the_minerva_out, FUN = function(y) sapply(y, function(x) x$t.out$toc - x$t.out$tic)))
+    ref_mic <- the_minerva_out[[length(SIZES)]][[length(alphass)]]$m.out$MIC
+    mic.vals.diff <- unlist(lapply(the_minerva_out, FUN = function(y) sapply(y, function(x)
+      return(sum(abs(x$m.out$MIC-ref_mic))/ (nrow(ref_mic)^2)))))
+    
+    library(RColorBrewer); RColorBrewer::display.brewer.all()
+    pb <- round(df.pl[300, ], 3); pmy <- round(df.pl[290, ], 3)
+    df.pl <- cbind('mt' = unlist(mic.alph.times), 'mv' = unlist(mic.vals.diff), 'alpha' = rep(alphass, 20), 'sizes' = rep(SIZES, each = 30))
+    ggplot(data = df.pl, mapping = aes(x = mt, y = mv, group = as.factor(sizes))) + 
+      theme_classic() + geom_point(mapping = aes(fill = alpha), size = 4, shape=21) + geom_line(aes(col = sizes), size = 0.8) + 
+      geom_point(x = pmy[1], y = pmy[2], col = 'red') + 
+      geom_point(x = pb[1], y = pb[2], col = 'darkred') + 
+      annotate('text', x = max(mic.alph.times)/2, y = max(mic.vals.diff)*2/3, 
+               label = paste0('A: ', pmy[3], ' | tm-gain: ', pb[1] - pmy[1],
+                              '; vm: ', pmy[2]), col = 'red') + 
+      ggtitle(label = 'Difference in result with lower values of alpha vs time used', 
+            subtitle = 'INDIPENDENT on number of samples. Around 0.4 for best alpha') + 
+      xlab('Time (s)') + ylab('Average diff for each value in sim matrix') + 
+      scale_fill_gradientn(colors = brewer.pal(9, 'Greens')) + 
+      scale_color_gradientn(colors = brewer.pal(9, 'Blues')) 
+    
+    ggsave('diff_alpha_for_mic_times.png')
+    # ------------------------------------------------------------------------------------------------------------------
+    
+    # continuing la reserch with different parameters
+    mobj <- microbenchmark::microbenchmark(
+      mica04_approx = minerva::mine(x = trj[1:500,], alpha = 0.4, est = 'mic_approx'),
+      mica04 = minerva::mine(x = trj[1:500,], alpha = 0.4),
+      times = 100
+    ) # not so relevant the approximated proc.
+    print(mobj)
+    autoplot(mobj)
+    mobj <- microbenchmark::microbenchmark(
+      mica04_lessC = minerva::mine(x = trj[1:500,], alpha = 0.4, C = 10),
+      mica04 = minerva::mine(x = trj[1:500,], alpha = 0.4),
+      times = 100
+    ) # not so relevant the approximated proc.
+    print(mobj)
+    autoplot(mobj)
+    
+    # Analysing C factor in face of different number of rows in inference data
+    # ------------------------------------------------------------------------------------------------------------------
+    # C seems a promising parameters to be reduced. Analysing how the mic changes with different alpha
+    Css <- round(seq(2, 15, length.out = 14))
+    # Css <- c(2,2)
+    SIZES <- round(seq(10, 300, length.out = 40))
+    # SIZES <- c(100, 100)
+    count <- 0; the_minerva_out <- list()
+    
+    # main loop
+    for(size in SIZES){
+      count <- count + 1
+      the_minerva_out[[count]] <- lapply(Css, FUN = function(x) {
+        tic()
+        out <- minerva::mine(x = trj[1:size,], alpha = 0.6, C = x)
+        out.t <- toc(quiet = T)
+        return(list('m.out' = out, 't.out' = out.t))
+      })
+    }
+    
+    mic.Cs.times <- unlist(lapply(the_minerva_out, FUN = function(y) sapply(y, function(x) x$t.out$toc - x$t.out$tic)))
+    ref_mic <- the_minerva_out[[length(SIZES)]][[length(Css)]]$m.out$MIC
+    mic.vals.diff <- unlist(lapply(the_minerva_out, FUN = function(y) sapply(y, function(x)
+      return(sum(abs(x$m.out$MIC-ref_mic))/ (nrow(ref_mic)^2)))))
+    
+    library(RColorBrewer); RColorBrewer::display.brewer.all()
+    df.pl <- cbind('mt' = mic.Cs.times, 
+                   'mv' = mic.vals.diff, 
+                   'Css' = rep(Css, length(SIZES)), 
+                   'sizes' = rep(SIZES, each = length(Css)))
+    
+    gg <- ggplot(data = df.pl, mapping = aes(x = mt, y = mv, group = as.factor(sizes))) + 
+          theme_classic() + geom_point(mapping = aes(fill = Css), size = 4, shape=21) + geom_line(aes(col = sizes), size = 0.8) + 
+          ggtitle(label = 'Difference in result with lower values of Css vs time used', 
+                  subtitle = 'INDIPENDENT on number of samples. Around 3 for best Css. alpha at 0.6') + 
+          xlab('Time (s)') + ylab('Average diff for each value in sim matrix') + 
+          scale_fill_gradientn(colors = brewer.pal(9, 'Greens')) + 
+          scale_color_gradientn(colors = brewer.pal(9, 'Blues')) 
+    gg
+    
+    ggsave('diff_Css_for_mic_times.png')
+    # ------------------------------------------------------------------------------------------------------------------
+    
+    # final difference between two methods
+    mobj <- microbenchmark::microbenchmark(
+      mica04_lessC = minerva::mine(x = trj[1:100,], alpha = 0.4, C = 2),
+      mic_std = minerva::mine(x = trj[1:100,]),
+      times = 100
+    ) # not so relevant the approximated proc.
+    print(mobj)
+    autoplot(mobj)
+    ggsave('finaloptalpha04C2.png')
+  }
   
   # SPEED TESTS =====================================================================================================
   if(F){
@@ -102,8 +247,10 @@ test_that('pre-processing with network inference', {
     
     # microbenchmarking it
     mobj <- microbenchmark::microbenchmark(
-      forloop = struct1(test_data = ttrj, w = 100, m = 'minkowski'),
-      applyloop = struct2(test_data = ttrj, w = 100, m = 'minkowski'), 
+      forloop10 = struct1(test_data = ttrj, w = 10, m = 'minkowski'),
+      applyloop10 = struct2(test_data = ttrj, w = 10, m = 'minkowski'), 
+      forloop100 = struct1(test_data = ttrj, w = 100, m = 'minkowski'),
+      applyloop100 = struct2(test_data = ttrj, w = 100, m = 'minkowski'), 
       times = 10
     )
     autoplot(mobj)

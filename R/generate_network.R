@@ -29,11 +29,14 @@
 #' 
 #' @importFrom WGCNA adjacency
 #' @importFrom WGCNA mutualInfoAdjacency
+#' @importFrom WGCNA enableWGCNAThreads
+#' @importFrom WGCNA disableWGCNAThreads 
 #' @importFrom data.table transpose
 #' @importFrom PairViz find_path
 #' @importFrom Rtsne Rtsne
 #' @importFrom TSA periodogram
 #' @importFrom minerva mine
+#' @importFrom parallel detectCores
 #' 
 #' 
 #' @export generate_network
@@ -43,11 +46,12 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', pp_method = N
  
   # checking additional variable
   input_args <- list(...)
+  
   avail_extra_argoments <- c('wgcna_type', 'wgcna_power', 'wgcna_corOp',                 # correlation options (WGCNA)
                              'minkowski_p',                                              # power for minkowski
                              'cov_method',                                               # cov met
-                             'tsne_dimensions', 'tsne_perplexity', 'tsne_maxIter',        # tsne opts
-                             'dbg_gn')      
+                             'tsne_dimensions', 'tsne_perplexity', 'tsne_maxIter',       # tsne opts
+                             'dbg_gn', 'do_multithreads')      
   
   avail_methods <- c('none',                                                                                   # only post-proc
                      'wgcna',                                                                                  # cor
@@ -56,21 +60,24 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', pp_method = N
                      'MI', 'MI_MM', 'MI_ML', 'MI_shrink', 'MI_SG',                                             # MI based
                      'MIC', 'MAS', 'MEV', 'MCN', 'MICR2', 'GMIC', 'TIC',                                       # mine based measures (minerva)
                      'fft')                                                                                    # fft 
+  
   which_are_distances <- c('binary', 'euclidean', 'manhattan', 'maximum', 'canberra', 'minkowski')
   MIC_mets <- c('MIC', 'MAS', 'MEV', 'MCN', 'MICR2', 'GMIC', 'TIC')
+  wgcna_dep_mets <- c('wgcna', 'binary', 'euclidean', 'manhattan', 'maximum', 'canberra', 'minkowski', 'MI', 'MI_MM', 'MI_ML', 'MI_shrink', 'MI_SG')
   
   # default handling of extra inputs
   if(any(!(names(input_args) %in% avail_extra_argoments))) 
     stop('There is a probable mispelling in one of the inserted variables. Please check the available extra input arguments.')
   if(!('wgcna_type' %in% names(input_args))) wgcna_type <- 'unsigned' else wgcna_type <- input_args[['wgcna_type']]
   if(!('wgcna_power' %in% names(input_args))) wgcna_power <- 2 else wgcna_power <- input_args[['wgcna_power']]
-  if(!('wgcna_corOp' %in% names(input_args))) wgcna_corOp <- "use = 'p'" else wgcna_corOp <- input_args[['wgcna_corOp']]
+  if(!('wgcna_corOp' %in% names(input_args))) wgcna_corOp <- "pearson" else wgcna_corOp <- input_args[['wgcna_corOp']]
   if(!('minkowski_p' %in% names(input_args))) minkowski_p <- 3 else minkowski_p <- input_args[['minkowski_p']]
   if(!('cov_method' %in% names(input_args))) cov_method <- 'pearson' else cov_method <- input_args[['cov_method']]
   if(!('tsne_dimensions' %in% names(input_args))) tsne_dimensions <- 2 else tsne_dimensions <- input_args[['tsne_dimensions']]
   if(!('tsne_perplexity' %in% names(input_args))) tsne_perplexity <- 30 else tsne_perplexity <- input_args[['tsne_perplexity']]
   if(!('tsne_maxIter' %in% names(input_args))) tsne_maxIter <- 500 else tsne_maxIter <- input_args[['tsne_maxIter']]
   if(!('dbg_gn' %in% names(input_args))) dbg_gn <- F else dbg_gn <- input_args[['dbg_gn']]
+  if(!('do_multithreads' %in% names(input_args))) do_multithreads <- F else do_multithreads <- input_args[['do_multithreads']]
   
   # checks for fundamental variables: trj, window, method, (overlapping reduction)
   # trj checks ------------------------------------------------------------------------------------------------------------------------------
@@ -110,6 +117,10 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', pp_method = N
   
   # checking MI method
   if(method == 'MI') method <- 'MI_MM'
+  
+  # enabling the multi-threading if using wgcna
+  if(method %in% wgcna_dep_mets && do_multithreads) WGCNA::enableWGCNAThreads(nThreads = parallel::detectCores() - 1)
+  if(method %in% MIC_mets && do_multithreads) ncores <- parallel::detectCores() - 1 else ncores <- 1
   
   # checks for logicals: transpose_trj, silent
   if(!is.logical(transpose_trj)) stop('transpose_trj must be a logical value.')
@@ -157,13 +168,13 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', pp_method = N
   # wgcna specific inputs
   if(!.isSingleInteger(wgcna_power)) stop('wgcna_power must be a single integer.')
   if(!.isSingleChar(wgcna_type)) stop('wgcna_type must be a single string.')
-  if(!.isSingleChar(wgcna_corOp)) stop('wgcna_type must be a single string.')
+  if(!.isSingleChar(wgcna_corOp)) stop('wgcna_corOp must be a single string.')
   if(wgcna_corOp == 'pearson') wgcna_corOp <- "use = 'p'"
   else if(wgcna_corOp == 'spearman') wgcna_corOp <- "use = 'p', method = 'spearman'"
   else stop('Inserted wgcna_corOp not valid. choose between pearson and sperman.')
   
   # minkowski specific checks
-  if(.isSingleInteger(minkowski_p)) stop('minkowski_p must be a single integer.')
+  if(!.isSingleInteger(minkowski_p)) stop('minkowski_p must be a single integer.')
   else minkowski_p <- paste0(", p = '", minkowski_p, "'") 
   
   # specifiic checkings: the cov_method
@@ -306,7 +317,7 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', pp_method = N
       
       # eventual misunderstanding
       }else if(method %in% MIC_mets){
-        built_net <- minerva::mine(x = tmp_trj)
+        built_net <- minerva::mine(x = tmp_trj, n.cores = ncores, alpha = 0.4, C = 2)
         if(method == 'MIC') built_net <- built_net$MIC
         else if(method == 'MAS') built_net <- built_net$MAS
         else if(method == 'MEV') built_net <- built_net$MEV
@@ -354,6 +365,7 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', pp_method = N
   }
   # __ end loop ============================================================================================================
   #
+  if(method %in% wgcna_dep_mets && do_multithreads) WGCNA::disableWGCNAThreads()
   
   # Checking the creation of NAs in the inference
   # final output -------------------------

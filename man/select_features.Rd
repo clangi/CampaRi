@@ -8,7 +8,8 @@ select_features(trj, feature_selection = "pca",
   n_princ_comp = floor(ncol(trj)/10), pca_method = "R", plotit = FALSE,
   frameit = FALSE, return_plot = FALSE, cluster_vector = NULL,
   plotly_it = FALSE, points_size = 1, specific_palette = NULL,
-  plot_legend = FALSE, legend_title = NULL, legend_labels = NULL)
+  plot_legend = FALSE, legend_title = NULL, legend_labels = NULL,
+  silent = FALSE)
 }
 \arguments{
 \item{trj}{Input trajectory (variables on the columns and equal-time spaced snpashots on the row). It must be a \code{matrix} or a \code{data.frame} of numeric.}
@@ -39,6 +40,8 @@ Please set this option with the same dimensionality of the trj (n_snapshots) and
 \item{legend_title}{define a title for the legend}
 
 \item{legend_labels}{labels for the legend}
+
+\item{silent}{A logical value indicating whether the function has to remain silent or not. Default value is \code{FALSE}.}
 }
 \value{
 It will return a modified trajectory matrix and print the principal components vector.
