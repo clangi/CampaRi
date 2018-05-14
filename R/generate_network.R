@@ -46,7 +46,8 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', pp_method = N
   avail_extra_argoments <- c('wgcna_type', 'wgcna_power', 'wgcna_corOp',                 # correlation options (WGCNA)
                              'minkowski_p',                                              # power for minkowski
                              'cov_method',                                               # cov met
-                             'tsne_dimensions', 'tsne_perplexity', 'tsne_maxIter')       # tsne opts
+                             'tsne_dimensions', 'tsne_perplexity', 'tsne_maxIter',        # tsne opts
+                             'dbg_gn')      
   
   avail_methods <- c('none',                                                                                   # only post-proc
                      'wgcna',                                                                                  # cor
@@ -55,8 +56,8 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', pp_method = N
                      'MI', 'MI_MM', 'MI_ML', 'MI_shrink', 'MI_SG',                                             # MI based
                      'MIC', 'MAS', 'MEV', 'MCN', 'MICR2', 'GMIC', 'TIC',                                       # mine based measures (minerva)
                      'fft')                                                                                    # fft 
-  which_are_not_distances <- c('wgcna', 'covariance', 'MI_MM', 'MI_ML', 'MI_shrink', 'MI_SG', 'fft')
-  
+  which_are_distances <- c('binary', 'euclidean', 'manhattan', 'maximum', 'canberra', 'minkowski')
+  MIC_mets <- c('MIC', 'MAS', 'MEV', 'MCN', 'MICR2', 'GMIC', 'TIC')
   
   # default handling of extra inputs
   if(any(!(names(input_args) %in% avail_extra_argoments))) 
@@ -69,6 +70,7 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', pp_method = N
   if(!('tsne_dimensions' %in% names(input_args))) tsne_dimensions <- 2 else tsne_dimensions <- input_args[['tsne_dimensions']]
   if(!('tsne_perplexity' %in% names(input_args))) tsne_perplexity <- 30 else tsne_perplexity <- input_args[['tsne_perplexity']]
   if(!('tsne_maxIter' %in% names(input_args))) tsne_maxIter <- 500 else tsne_maxIter <- input_args[['tsne_maxIter']]
+  if(!('dbg_gn' %in% names(input_args))) dbg_gn <- F else dbg_gn <- input_args[['dbg_gn']]
   
   # checks for fundamental variables: trj, window, method, (overlapping reduction)
   # trj checks ------------------------------------------------------------------------------------------------------------------------------
@@ -133,7 +135,7 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', pp_method = N
     stop(paste0( "pp_method must be choosen between ", paste0(avail_post_proc_met, collapse = ' '))) 
   
   # post processing checks for MI
-  if(!is.null(pp_method) && grepl(pp_method, pattern = 'SymmetricUncertainty', fixed = T) && !grepl(method, pattern = 'MI', fixed = T)){
+  if(!is.null(pp_method) && grepl(pp_method, pattern = 'SymmetricUncertainty', fixed = T) && !grepl(method, pattern = 'MI_', fixed = T)){
     warning('You did not insert any Mutual Information method (MI) but you are trying to use SymmetricUncertainty. The method will be set to "MI".')
     method <- 'MI_MM'
   }
@@ -229,6 +231,8 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', pp_method = N
   if(nrow(trj)*ncol(trj) > 50000) timing_it <- TRUE
   else timing_it <- FALSE
   
+  if(dbg_gn) browser()
+  
   # main transformation
   # __ loop ============================================================================================================
   
@@ -273,7 +277,7 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', pp_method = N
       #   built_net <- stats::cov(tmp_trj, method = cov_method)
       
       # MI based
-      }else if(grepl(method, pattern = 'MI', fixed = T)){
+      }else if(grepl(method, pattern = 'MI_', fixed = T)){
         while(dim(tmp_trj)[1] < 4) tmp_trj <- rbind(tmp_trj, tmp_trj)
         built_net <- WGCNA::mutualInfoAdjacency(tmp_trj, entropyEstimationMethod = strsplit(method, split = '_')[[1]][2])
       
@@ -295,12 +299,21 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', pp_method = N
           }
         }
       # distance inverse (e.g. Minkowskij similarity)
-      }else if(!(method %in% which_are_not_distances)){
+      }else if(method %in% which_are_distances){
         distOptions_manual <- paste0("method = '", method, "'")
         if(method == 'minkowski') distOptions_manual <- paste0(distOptions_manual, minkowski_p)
         built_net <- WGCNA::adjacency(tmp_trj, type = "distance", distOptions = distOptions_manual)
       
       # eventual misunderstanding
+      }else if(method %in% MIC_mets){
+        built_net <- minerva::mine(x = tmp_trj)
+        if(method == 'MIC') built_net <- built_net$MIC
+        else if(method == 'MAS') built_net <- built_net$MAS
+        else if(method == 'MEV') built_net <- built_net$MEV
+        else if(method == 'MCN') built_net <- built_net$MCN
+        else if(method == 'MICR2') built_net <- built_net$MICR2
+        else if(method == 'GMIC') built_net <- built_net$GMIC
+        else if(method == 'TIC') built_net <- built_net$TIC
       }else{
         stop('Something in the method construction went wrong. Please refer to the developers.')
       }
@@ -312,7 +325,7 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', pp_method = N
     # Post-processing
     # pp_method -------------------------
     # special case: MI
-    if(grepl(method, pattern = 'MI', fixed = T)){
+    if(grepl(method, pattern = 'MI_', fixed = T)){
       if(!is.null(pp_method) && grepl(pp_method, pattern = 'SymmetricUncertainty', fixed = T))
         built_net_fin <- built_net$AdjacencySymmetricUncertainty
       else
