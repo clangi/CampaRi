@@ -8,7 +8,7 @@
 #' @param ann Annotation must be a single line with the true cluster labels.
 #' @param scoring_method Precise scoring method (final comparison between cluster labels)
 #'       \itemize{
-#'            \item "\code{mni}" 
+#'            \item "\code{nmi}" 
 #'            \item "\code{adjusted_rand_index}" 
 #'            \item "\code{jaccard_index}" 
 #'            \item "\code{purity}" 
@@ -46,7 +46,7 @@
 #' @import ggplot2
 #' @export score_sapphire
 
-score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NULL,                     # fundamental inputs
+score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NULL,                              # fundamental inputs
                            scoring_method = 'nmi', merge_clusters = FALSE,                                      # scoring details
                            plot_pred_true_resume = FALSE, silent = FALSE,                                       # it refers to this function
                            ...){                                                                                # to add

@@ -27,13 +27,16 @@
 #' \code{\link{adjl_from_progindex}}, \code{\link{gen_progindex}}, \code{\link{gen_annotation}}.
 # @examples
 #' 
-#' @export generate_network
 #' @importFrom WGCNA adjacency
 #' @importFrom WGCNA mutualInfoAdjacency
 #' @importFrom data.table transpose
 #' @importFrom PairViz find_path
 #' @importFrom Rtsne Rtsne
 #' @importFrom TSA periodogram
+#' @importFrom minerva mine
+#' 
+#' 
+#' @export generate_network
 
 generate_network <- function(trj, window = NULL, method = 'wgcna', pp_method = NULL, 
                              overlapping_reduction = NULL, transpose_trj = FALSE, silent = FALSE, ...){
@@ -50,6 +53,7 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', pp_method = N
                      'binary', 'euclidean', 'manhattan', 'maximum', 'canberra', 'minkowski', #'mahalanobis',   # distances
                      'covariance',                                                                             # cov
                      'MI', 'MI_MM', 'MI_ML', 'MI_shrink', 'MI_SG',                                             # MI based
+                     'MIC', 'MAS', 'MEV', 'MCN', 'MICR2', 'GMIC', 'TIC',                                       # mine based measures (minerva)
                      'fft')                                                                                    # fft 
   which_are_not_distances <- c('wgcna', 'covariance', 'MI_MM', 'MI_ML', 'MI_shrink', 'MI_SG', 'fft')
   
@@ -88,7 +92,7 @@ generate_network <- function(trj, window = NULL, method = 'wgcna', pp_method = N
     stop('The used window (distance 12) is too small or too big (must be less than half to have sense) or it is simply an erroneus insertion.')
   
   # setting standard window size
-  if(is.null(window)) window <- nrow(trj)/100
+  if(is.null(window)) window <- round(nrow(trj)/100)
 
   # setting window left and window right (if it is not divisible by 2)
   if(((window-1)/2)%%1 == 0) {
