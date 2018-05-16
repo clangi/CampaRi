@@ -243,16 +243,16 @@ test_that('pre-processing with network inference', {
     # simple it is working tests
     a <- struct1(test_data = ttrj, w = 100, m = 'minkowski'); dim(a)
     e <- struct2(test_data = ttrj, w = 100, m = 'minkowski'); dim(e)
+    f <- struct3(test_data = ttrj, w = 100, m = 'minkowski'); dim(f)
     a[1,] == e[1,]
+    a[1,] == f[1,]
     
     # microbenchmarking it
     mobj <- microbenchmark::microbenchmark(
       forloop10 = struct1(test_data = ttrj, w = 10, m = 'minkowski'),
-      applyloop10 = struct2(test_data = ttrj, w = 10, m = 'minkowski'), 
-      forloop100 = struct1(test_data = ttrj, w = 100, m = 'minkowski'),
-      applyloop100 = struct2(test_data = ttrj, w = 100, m = 'minkowski'), 
+      PARSapplyloop10 = struct3(test_data = ttrj, w = 10, m = 'minkowski'), 
       times = 10
-    )
+    ) # also the parsapply application is super slow
     autoplot(mobj)
     
     # comparing a bit of stuff to understand what it is really doing
@@ -288,9 +288,9 @@ test_that('pre-processing with network inference', {
         }else{                                     # usual center piece
           tmp_trj <- test_data[(i - window_l):(i + window_r),]
         } 
-        if(i == 1) print(tmp_trj) 
-        if(i == 1) print(window_r) 
-        if(i == 1) print(window_l) 
+        # if(i == 1) print(tmp_trj) 
+        # if(i == 1) print(window_r) 
+        # if(i == 1) print(window_l) 
         # built_net <- WGCNA::adjacency(tmp_trj, type = wgcna_type, corFnc = 'cor', power = wgcna_power, corOptions = wgcna_corOp)
         distOptions_manual <- paste0("method = '", m, "'")
         built_net <- WGCNA::adjacency(tmp_trj, type = "distance", distOptions = distOptions_manual, distFnc = 'dist') 
@@ -321,9 +321,9 @@ test_that('pre-processing with network inference', {
         }else{                                     # usual center piece
           tmp_trj <- test_data[(i - window_l):(i + window_r),]
         } 
-        if(i == 1) print(tmp_trj) 
-        if(i == 1) print(window_r) 
-        if(i == 1) print(window_l) 
+        # if(i == 1) print(tmp_trj) 
+        # if(i == 1) print(window_r) 
+        # if(i == 1) print(window_l) 
         # built_net <- WGCNA::adjacency(tmp_trj, type = wgcna_type, corFnc = 'cor', power = wgcna_power, corOptions = wgcna_corOp)
         distOptions_manual <- paste0("method = '", m, "'")
         built_net <- WGCNA::adjacency(tmp_trj, type = "distance", distOptions = distOptions_manual, distFnc = 'dist') 
@@ -332,6 +332,40 @@ test_that('pre-processing with network inference', {
         built_net_fin <- built_net
         return(built_net_fin[lower.tri(x = built_net_fin, diag = FALSE)])
       })
+      return(t(trj_out))
+    }
+    
+    # apply application of the same struct with threads
+    struct3 <- function(test_data, w=int(nrow(test_data)/100), m='minkowski'){
+      require(parallel)
+      cl <- makeCluster(getOption("cl.cores", 7)) # makeCluster(detectCores() - 1, type = "FORK")
+      if(((w-1)/2)%%1 == 0) {
+        window_r <- window_l <- (w-1)/2
+      }else{
+        window_r <- floor((w-1)/2)
+        window_l <- ceiling((w-1)/2)
+      } 
+      trj_out <- parSapply(cl = cl, X = 1:dim(test_data)[1], FUN = function(i){
+        # taking the piece of trj to transform
+        if((i - window_l) <= 0) {                  # left border collision
+          tmp_trj <- test_data[1:(i + window_r),]
+        }else if((window_r + i) > nrow(test_data)){      # right border collision
+          tmp_trj <- test_data[(i - window_l):dim(test_data)[1],]
+        }else{                                     # usual center piece
+          tmp_trj <- test_data[(i - window_l):(i + window_r),]
+        } 
+        # if(i == 1) print(tmp_trj) 
+        # if(i == 1) print(window_r) 
+        # if(i == 1) print(window_l) 
+        # built_net <- WGCNA::adjacency(tmp_trj, type = wgcna_type, corFnc = 'cor', power = wgcna_power, corOptions = wgcna_corOp)
+        distOptions_manual <- paste0("method = '", m, "'")
+        built_net <- WGCNA::adjacency(tmp_trj, type = "distance", distOptions = distOptions_manual, distFnc = 'dist') 
+        # type = "distance", adjacency = (1-(dist/max(dist))^2)^power.
+        
+        built_net_fin <- built_net
+        return(built_net_fin[lower.tri(x = built_net_fin, diag = FALSE)])
+      })
+      stopCluster(cl)
       return(t(trj_out))
     }
     

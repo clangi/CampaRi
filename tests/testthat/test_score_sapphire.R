@@ -38,4 +38,22 @@ test_that('scoring sapphire plots', {
                                   pk_span = 500, ny = 50, plot = T, 
                                   silent = silent, dbg_nSBR = F, return_plot = T), NA)
   expect_error(ahahscore <- CampaRi::score_sapphire(the_sap = file.pi, ann = ann, manual_barriers = a1$barriers[1:2], silent = silent), NA)
+  
+  # =====================================================================================================================================================
+  # Testing different metrics for multiclass interclustering similarity.
+  # --------------------------------------------------------------------
+  #
+  # Tests used:
+  # 1. Cross-similarity. Create n_cluing clusterings randomly using a number of growing clusters 2____Kmax and compute similarity between pairs
+  # 2. Similarity to Ktrue. Generate a random clustering with Ktrue = Kmax/2 clusters and run random clusterings from 2____Kmax (this is prob. redundant)
+  #
+  #
+  
+  if(F){
+    
+  }
+  
+  
+  
+  
 })
