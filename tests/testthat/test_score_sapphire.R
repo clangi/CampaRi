@@ -70,39 +70,40 @@ test_that('scoring sapphire plots', {
     # all(sapply(tcl, max) == ks) # check for effective correct construction - it can be commented
     v_combinations <- combn(1:n_cluing, 2, simplify = T) # no diag and only one tri
     
-    all_the_methods <- c('rand_index', 'adjusted_rand_index', 'jaccard_index', 'fowlkes_mallows_index', 'mirkin_metric', 'purity', 'entropy', 'nmi') # mirking and nmi not nec
-    all_the_methods2 <- c('tversky.index', 'cosine.similarity', 'overlap.coef', 'morisitas.index', 'horn.index')
+    all_the_methods <- c('overlap.coef', 'rand_index', 'adjusted_rand_index', 'jaccard_index', 'fowlkes_mallows_index', 'mirkin_metric', 'purity', 'entropy', 'nmi') 
+    # mirking and nmi not nec
     
+    #, 'morisitas.index', 'horn.index') # bugs ;  'cosine.similarity' is not normalized
     # tcR package
     # tcR::tversky.index(x, y, .a = 0.5, .b = 0.5)
     # tcR::cosine.similarity(.alpha, .beta, .do.norm = NA, .laplace = 0)
     # tcR::overlap.coef(.alpha, .beta)
     # tcR::morisitas.index(.alpha, .beta, .do.unique = T)
     # tcR::horn.index(.alpha, .beta, .do.unique = T)
+    # else if(which(i == all_the_methods2) == 2) tcR::cosine.similarity(.alpha = a, .beta = b, .do.norm = NA, .laplace = 0) # horrid warnings + not normalized
+    # else if(which(i == all_the_methods2) == 4) print('ohoh') #tcR::morisitas.index(.alpha = a, .beta = b, .do.unique = T) # bug
+    # else if(which(i == all_the_methods2) == 5) tcR::horn.index(.alpha = a, .beta = b, .do.unique = T) # bug
     out2 <- list()
-    for(i in all_the_methods2){
+    for(i in all_the_methods[1]){
       out2[[i]] <- lapply(1:length(tcl), FUN = function(x){
         cat('Doing', i,'part', x, 'out of', length(tcl), '\r')
         if(x == length(tcl)) cat('\n')
         sapply(1:ncol(v_combinations), function(y) {
           a <- tcl[[x]][,v_combinations[1,y]]
           b <- tcl[[x]][,v_combinations[2,y]]
-          if(which(i == all_the_methods2) == 1) tcR::tversky.index(x = a, y = b, .a = 0.5, .b = 0.5)
-          else if(which(i == all_the_methods2) == 2) tcR::cosine.similarity(.alpha, .beta, .do.norm = NA, .laplace = 0)
-          else if(which(i == all_the_methods2) == 2) tcR::cosine.similarity(.alpha, .beta, .do.norm = NA, .laplace = 0)
-          else if(which(i == all_the_methods2) == 2) tcR::cosine.similarity(.alpha, .beta, .do.norm = NA, .laplace = 0)
-          else if(which(i == all_the_methods2) == 2) tcR::cosine.similarity(.alpha, .beta, .do.norm = NA, .laplace = 0)
+          if(which(i == all_the_methods2) == 1) tcR::tversky.index(x = a, y = b, .a = 1, .b = 0)
+          else if(which(i == all_the_methods2) == 2) tcR::overlap.coef(.alpha = a, .beta = b)
           else ClusterR::external_validation(true_labels = a, clusters = b, method = i) 
         })
       })
     }
     # save(out, file = 'cluster_varlidation.Rdata')
-    
+    # load(file = 'cluster_varlidation.Rdata')
     sc.m <- lapply(out, function(x) sapply(x, mean))
     sc.sd <- lapply(out, function(x) sapply(x, sd))
     dfpl <- data.frame('msc' = NULL, 'sdsc' = NULL, 'ks' = NULL, 'method' = NULL)
     for(i in 1:length(all_the_methods)){
-      if(i==5) next
+      if(all_the_methods[i] == 'mirkin_metric') next
       dfpl <- rbind(dfpl, data.frame('msc' = sc.m[[i]], 'sdsc' = sc.sd[[i]], 'ks' = ks, 'method' = all_the_methods[[i]]))
     }
     ggplot(data = dfpl) + theme_classic() + 
