@@ -256,7 +256,7 @@ nSBR <- function(data, ny, local.cut = FALSE, n.cluster = NULL, comb_met = c('MI
   pkx <- pkx[where.pk]
   rank.pk <- order(wtp[where.pk], decreasing = T)
   rank.pk <- pkx[rank.pk]
-  df.pp <- cbind(pkx, pky)
+  df.pp <- data.frame(pkx, pky)
   
   # Setting the number of clusters to select first tot barriers
   if(is.null(n.cluster)) nclu <- 15
@@ -294,6 +294,7 @@ nSBR <- function(data, ny, local.cut = FALSE, n.cluster = NULL, comb_met = c('MI
   # if('diff' %in% comb_met) tpl <- tpl + geom_line(mapping = aes(y = diff), col = 'darkred') 
   # if('kin' %in% comb_met) tpl <- tpl + geom_line(mapping = aes(y = kin), col = 'darkred') 
   
+  if(dbg_nSBR) browser()
   # Final add of barriers and similaria
   tpl <- tpl + geom_point(data = df.pp, mapping = aes_string(y = 'pky', x = 'pkx')) +
                geom_vline(xintercept = rank.pk[1:nba], col = 'black', size = 1, linetype="dotted") +
@@ -309,7 +310,6 @@ nSBR <- function(data, ny, local.cut = FALSE, n.cluster = NULL, comb_met = c('MI
   #             axis.text.y.right = element_text(color = 'darkgray'))
   
   
-  if(dbg_nSBR) browser()
   
   # randomization procedure
   if(!is.null(random_picks)){
@@ -446,6 +446,9 @@ nSBR <- function(data, ny, local.cut = FALSE, n.cluster = NULL, comb_met = c('MI
   picked <- array(NA, n.picks)
   copy <- ar
   for (i in 1:n.picks) {
+    # if(length(copy) < 1) print(i)
+    # if(length(copy) < 1) print(length(copy))
+    # if(length(copy) < 1) print(copy)
     stopifnot(length(copy) > 0)  
     picked[i] <- sample(copy, 1)
     copy <- copy[ abs(copy - picked[i]) >= min.dist ]

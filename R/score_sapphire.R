@@ -46,7 +46,7 @@
 #' @export score_sapphire
 
 score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NULL,                              # fundamental inputs
-                           scoring_method = 'nmi', merge_clusters = FALSE,                                      # scoring details
+                           scoring_method = 'adjusted_rand_index', merge_clusters = FALSE,                      # scoring details
                            plot_pred_true_resume = FALSE, silent = FALSE,                                       # it refers to this function
                            ...){                                                                                # to add
   
@@ -59,12 +59,12 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
     if(!silent) cat('!!!!!!!!! We found the following variables without a father (not between our extra input arguments) !!!!!!!!!!\n')
     if(!silent) cat(names(input.args)[!(names(input.args) %in% avail.extra.arg)], '\n')
   }
-  if(!('vec1' %in% names(input_args))) vec1 <- NULL else vec1 <- input_args[['vec1']]
-  if(!('vec2' %in% names(input_args))) vec2 <- NULL else vec2 <- input_args[['vec2']]
-  if(!('dbg_score_sapphire' %in% names(input_args))) dbg_score_sapphire <- FALSE else dbg_score_sapphire <- input_args[['dbg_score_sapphire']]
+  if(!('vec1' %in% names(input.args))) vec1 <- NULL else vec1 <- input.args[['vec1']]
+  if(!('vec2' %in% names(input.args))) vec2 <- NULL else vec2 <- input.args[['vec2']]
+  if(!('dbg_score_sapphire' %in% names(input.args))) dbg_score_sapphire <- FALSE else dbg_score_sapphire <- input.args[['dbg_score_sapphire']]
   if(!is.logical(dbg_score_sapphire)) stop('dbg_score_sapphire must be a logical')
-  if(!is.numeric(vec1) || length(vec1) < 3) stop('vec1 must be a numerical vec')
-  if(!is.numeric(vec2) || length(vec2) < 3) stop('vec2 must be a numerical vec')
+  if(!is.null(vec1) && (!is.numeric(vec1) || .lt(vec1) < 3)) stop('vec1 must be a numerical vec')
+  if(!is.null(vec2) && (!is.numeric(vec2) || .lt(vec2) < 3)) stop('vec2 must be a numerical vec')
   if(!is.null(vec1) && is.null(vec2)) stop('Direct insertion of vectors needs two vecs (vec1 and vec2).')
   if(!is.null(vec2) && is.null(vec1)) stop('Direct insertion of vectors needs two vecs (vec1 and vec2).')
   
@@ -209,7 +209,7 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
     # label_freq_list
     
     # calculating the entropy
-    for(jk in 1:length(label_freq_list)){
+    for(jk in 1:.lt(label_freq_list)){
       it <- c()
       for(kj in 1:ncol(label_freq_list[[jk]])) {
         ulm <- label_freq_list[[jk]]['d', kj]
@@ -298,7 +298,7 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
     
     # loop on the barriers
     if(nrow(max_freq_table) > 1){
-      for(ini in 1:length(diff_vec)){
+      for(ini in 1:.lt(diff_vec)){
         
         # clusters have same lebels merging then
         if(diff_vec[ini] == 0){
@@ -321,7 +321,7 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
         }
         
         # final split
-        if(ini == length(diff_vec)){
+        if(ini == .lt(diff_vec)){
           res_label[ul] <- max_freq_table$label[ini + 1]
           res_bound[ul] <- lt_cl
         }
@@ -341,7 +341,7 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
     
     # creating the predicted vector
     predicted_div <- list()
-    for(i in 1:length(res_label)){
+    for(i in 1:.lt(res_label)){
       predicted_div[[i]] <- rep(res_label[i], res_bound[i])
     }
     predicted_div <- unlist(predicted_div)
@@ -364,8 +364,8 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
     max_freq_table <- NULL
     label_freq_list <- NULL
   }
-  if(length(fin_true_div) != length(predicted_div)) stop('Something went wrong. The pred and true vec have differenct lengths and respectively ', 
-                                                         length(fin_true_div),' and ', length(predicted_div))
+  if(.lt(fin_true_div) != .lt(predicted_div)) stop('Something went wrong. The pred and true vec have differenct lengths and respectively ', 
+                                                         .lt(fin_true_div),' and ', .lt(predicted_div))
   # ---------------------------------------------------------------------------------------------- Final scoring
   # scoring it with accuracy?
   score.out <- ClusterR::external_validation(true_labels = fin_true_div, clusters = predicted_div, method = scoring_method, summary_stats = FALSE)
@@ -379,7 +379,7 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
 # calculating the entropy of the new selection
 # label_freq_list <- list()
 # res_b <- 0
-# for(jk in 1:length(res_label)){
+# for(jk in 1:.lt(res_label)){
 #   label_freq_list[[jk]] <- sort(table(ann[c(st[,3])][(res_b+1):(res_b + res_bound[i])]), decreasing=TRUE)[1:4] * 1.0 / res_bound[i] 
 #   # (res_bound[i]-res_b)
 #   label_freq_list[[jk]] <- rbind(label_freq_list[[jk]], sort(table(ann[c(st[,3])][(res_b+1):(res_b + res_bound[i])]), decreasing=TRUE)[1:4])
@@ -388,7 +388,7 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
 # }
 # 
 # # label_freq_list
-# for(jk in 1:length(label_freq_list)){
+# for(jk in 1:.lt(label_freq_list)){
 #   it <- c()
 #   for(kj in 1:ncol(label_freq_list[[jk]])) {
 #     ulm <- label_freq_list[[jk]][2, kj]
@@ -400,7 +400,7 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
 # lab <- list()
 # size <- list()
 # sh_en <- list()
-# for(jk in 1:length(label_freq_list)){ # check label_freq
+# for(jk in 1:.lt(label_freq_list)){ # check label_freq
 #   lab[[jk]] <- as.integer(colnames(label_freq_list[[jk]])[1])
 #   size[[jk]] <- as.integer(label_freq_list[[jk]][2, 1])
 #   sh_en[[jk]] <- label_freq_list[[jk]][1,ncol(label_freq_list[[jk]])]

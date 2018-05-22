@@ -488,11 +488,13 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   
   # -----------------------
   # keyfile writer
+  # options('scipen' = 100)
   if(!silent) cat('writing of keyfile', key_f, 'completed. \n\n')
   args_names <- names(args_list)
-  cat(args_names[1],args_list[[1]],'\n', file = key_f)
+  cat(args_names[1], format(args_list[[1]], scientific = FALSE),'\n', file = key_f)
   for(i in 2:length(args_list))
-    cat(args_names[i],args_list[[i]],'\n', file = key_f, append = TRUE)
+    cat(args_names[i], format(args_list[[i]], scientific = FALSE),'\n', file = key_f, append = TRUE)
+  # options('scipen' = 0)
   
   
   # -----------------------
