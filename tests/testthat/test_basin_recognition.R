@@ -12,7 +12,6 @@ test_that('Test for basin recognition with ext files', {
   ## data.pi <- data.table::fread(paste0(dir.root, "inst/extdata/PROGIDX_000000000001_sbrtest.dat"), data.table=FALSE)[,c(1,3,4,6,7,5)]
   data.pi<- data.table::fread(file.pi, data.table=FALSE)[,c(1,3,4,6,7,5)]
   
-  
   ## basins_recognition(data.pi, nx=50, ny=50, match=F, plot=T, out.file=F, silent=F)
   nxb <- seq(10,80,by=20)
   nyb <- seq(10,80,by=20)

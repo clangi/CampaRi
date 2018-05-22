@@ -5,7 +5,7 @@
 \title{Scoring the SAPPHIRE-plot basin division}
 \usage{
 score_sapphire(the_sap, ann, manual_barriers = NULL, basin_obj = NULL,
-  scoring_method = "nmi", merge_clusters = FALSE,
+  scoring_method = "adjusted_rand_index", merge_clusters = FALSE,
   plot_pred_true_resume = FALSE, silent = FALSE, ...)
 }
 \arguments{
@@ -33,9 +33,7 @@ insert only the resulting bas object}
 
 \item{silent}{A logical value indicating whether the function has to remain silent or not. Default value is \code{FALSE}.}
 
-\item{...}{Not yet in use.}
-
-\item{merge_clusters}{A logical value for indicating if merging consecutive clusters with same labels.}
+\item{...}{\code{vec1} and \code{vec2} variables can be used for direct comparison of vectors.}
 }
 \value{
 A list containing

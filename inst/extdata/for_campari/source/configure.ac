@@ -1293,7 +1293,7 @@ if test -e "${CAMPARI_HOME}/source/DEPENDENCIES"; then
     AC_MSG_RESULT([yes])
     AC_MSG_WARN([To manually update dependencies please run ${make_dep_script} in the source directory.])
     AC_MSG_NOTICE([Running ${make_dep_script} using default bash in current directory (source).])
-    $BASH "${make_dep_script}"
+    "$(./${make_dep_script} .)"
   else
     AC_MSG_RESULT([no])
     AC_MSG_ERROR([${make_dep_script} file missing from source directory])

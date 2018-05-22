@@ -35,7 +35,6 @@
 #' @importFrom stats loadings
 #' @importFrom plotly ggplotly
 #' @import ggplot2
-#@import ggfortify
 
 select_features <- function(trj, feature_selection = 'pca', n_princ_comp = floor(ncol(trj)/10), pca_method = 'R',
                             plotit = FALSE, frameit = FALSE, return_plot = FALSE, cluster_vector = NULL, plotly_it = FALSE,
@@ -175,10 +174,12 @@ select_features <- function(trj, feature_selection = 'pca', n_princ_comp = floor
   
     # plotting it eventually
     if(plotit || return_plot){
-      data_to_plot <- as.data.frame(cbind(trj, cls = cluster_vector))
-      data_to_plot[, ncol(data_to_plot)] <- as.factor(data_to_plot[, ncol(data_to_plot)])
-      if(!is.null(col)) names(data_to_plot)[length(names(data_to_plot))] <- col 
-      appca <- ggplot2::autoplot(pcahah, data = data_to_plot, colour = col, size=0.1*points_size, frame=frameit, frame.type = 'norm', frame.colour = col) + theme_minimal()
+      
+      # creating the data frame
+      dtp <- data.frame('cls' = as.factor(cluster_vector), pcahah$scores[,1:2])
+      appca <- ggplot(data = dtp) + geom_point(aes_string(x = 'Comp.1', y = 'Comp.2', col = 'cls'), size=1*points_size) + labs(colour = col) + 
+        theme_minimal() #+ theme(panel.grid.minor = element_blank()) 
+      
       # plot the legend
       if(plot_legend){
         appca <- appca + scale_color_manual(name = leg_tit, values = specific_palette, labels = leg_lab) + 

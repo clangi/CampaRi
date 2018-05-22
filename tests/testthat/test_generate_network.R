@@ -3,32 +3,32 @@ context('generate_network')
 test_that('pre-processing with network inference', {
   test_plotting <- F
   my_libs <- F
-  silent <- F
+  silent <- T
   if(my_libs) library(TSA)
   trj <- as.data.frame(matrix(rnorm(1000), nrow = 100, ncol = 10))
   expect_true(!is.null(trj))
   
   # checking some (expected) errors
   # -----------------------------------
-  expect_error(a <- generate_network(trj, window = 20, method = "sadasd"))
-  expect_error(a <- generate_network(trj, window = 20, post_processing_method = "asdsads"))
+  expect_error(a <- generate_network(trj, window = 20, method = "sadasd", silent = silent))
+  expect_error(a <- generate_network(trj, window = 20, pp_method = "asdsads", silent = silent))
   # testing for distances and postprocessing
   # -----------------------------------
-  expect_error(net_joint_tr <- generate_network(trj, method = 'minkowski', post_processing_method = 'svd', window = 12), NA)
-  expect_error(net1 <- generate_network(trj, method = 'minkowski', window = 20), NA)
-  expect_error(path_net <- generate_network(trj, method = 'minkowski', post_processing_method = 'path_minkowski', window = 15), NA)
-  expect_error(SVD_net <- generate_network(trj, method = 'minkowski', post_processing_method = 'svd', window = 20), NA)
-  # expect_error(MI_net <- generate_network(trj, method = 'MI', post_processing_method = "SymmetricUncertainty", window = 7), NA)
+  expect_error(net_joint_tr <- generate_network(trj, method = 'minkowski', pp_method = 'svd', window = 12, silent = silent), NA)
+  expect_error(net1 <- generate_network(trj, method = 'minkowski', window = 20, silent = silent), NA)
+  expect_error(path_net <- generate_network(trj, method = 'minkowski', pp_method = 'path_minkowski', window = 15, silent = silent), NA)
+  expect_error(SVD_net <- generate_network(trj, method = 'minkowski', pp_method = 'svd', window = 20, silent = silent), NA)
+  # expect_error(MI_net <- generate_network(trj, method = 'MI', pp_method = "SymmetricUncertainty", window = 7), NA)
   
   # testing for tsne
   # -----------------------------------
-  expect_error(tsne_net <- generate_network(trj, method = 'minkowski', post_processing_method = 'tsne', window = 20, tsne_pearagd = 3))
-  # expect_error(tsne_net <- generate_network(trj, method = 'minkowski', post_processing_method = 'tsne', window = 20, tsne_perplexity = 3), NA)
-  expect_error(tsne_net <- generate_network(trj, method = 'none', post_processing_method = 'tsne', window = 20), NA)
+  expect_error(tsne_net <- generate_network(trj, method = 'minkowski', pp_method = 'tsne', window = 20, tsne_pearagd = 3, silent = silent))
+  # expect_error(tsne_net <- generate_network(trj, method = 'minkowski', pp_method = 'tsne', window = 20, tsne_perplexity = 3), NA)
+  expect_error(tsne_net <- generate_network(trj, method = 'none', pp_method = 'tsne', window = 20, silent = silent), NA)
   
   # testing multiplication
   # -----------------------------------
-  expect_error(a <- generate_network(trj, window = 20, method = "sadasd"))
+  expect_error(a <- generate_network(trj, window = 20, method = "sadasd", silent = silent))
   
   
   # testing for spectrum transformation
@@ -42,7 +42,7 @@ test_that('pre-processing with network inference', {
   if(my_libs) b <- periodogram(y = trj[ ,2], plot = test_plotting)
   if(test_plotting) plot(y = b$spec, x = b$freq,type = "h") # spec is what it was needed
 
-  expect_error(asd <- generate_network(trj, method = 'fft', window = 10), NA)
+  expect_error(asd <- generate_network(trj, method = 'fft', window = 10, silent = silent), NA)
   if(my_libs) c <- periodogram(y = c(trj[1:5, 1], trj[1:5, 1]), plot = test_plotting)
   if(my_libs) d <- periodogram(y = c(trj[1:5, 2], trj[1:5, 2]), plot = test_plotting)
   # final check of equality
@@ -56,15 +56,15 @@ test_that('pre-processing with network inference', {
   
   # more staff -> range & freq
   # amplitude (range)
-  expect_warning(asd <- generate_network(trj, post_processing_method = "amplitude", window = 10))
-  expect_error(asd <- generate_network(trj, post_processing_method = "amplitude", window = 10), NA)
+  expect_warning(asd <- generate_network(trj, pp_method = "amplitude", window = 10, silent = silent))
+  expect_error(asd <- generate_network(trj, pp_method = "amplitude", window = 10), silent = silent, NA)
   res <- c()
   for(i in 1:ncol(trj))
     res <- c(res, diff(range(c(trj[1:5, i], trj[1:5, i]))))
   expect_true(all(res == asd$trj_out[1, ]))
   # maxfreq
-  expect_warning(asd <- generate_network(trj, post_processing_method = "maxfreq", window = 10))
-  expect_error(asd <- generate_network(trj, post_processing_method = "maxfreq", window = 10), NA)
+  expect_warning(asd <- generate_network(trj, pp_method = "maxfreq", window = 10, silent = silent))
+  expect_error(asd <- generate_network(trj, pp_method = "maxfreq", window = 10, silent = silent), NA)
   res <- c()
   if(my_libs){
     for(i in 1:ncol(trj)){
@@ -74,23 +74,25 @@ test_that('pre-processing with network inference', {
     expect_true(all(res == asd[1, ]))
   }
   # both
-  expect_warning(asd <- generate_network(trj, post_processing_method = "amplitude_maxfreq", window = 10))
-  expect_error(asd <- generate_network(trj, post_processing_method = "amplitude_maxfreq", window = 10), NA)
+  expect_warning(asd <- generate_network(trj, pp_method = "amplitude_maxfreq", window = 10, silent = silent))
+  expect_error(asd <- generate_network(trj, pp_method = "amplitude_maxfreq", window = 10, silent = silent), NA)
   
+  expect_error(b <- generate_network(trj = trj, window = 10, method = 'MIC', silent = silent), NA) # multithreading MIC is super bad
   
   # MINE FAMILY
-  library(minerva)
-  lung <- 2000
-  trj <- as.data.frame(matrix(NA, nrow = lung, ncol = 4))
-  trj[,1] <- sin(1:lung) + tan(lung:1)*(1/100) + rnorm(lung, mean = 0, sd = 0.1)
-  trj[,3] <- sin(1:lung) + tan(lung:1)*(1/100) + rnorm(lung, mean = 0, sd = 0.5)
-  trj[,2] <- cos(1:lung) + tanh(lung:1)*(1/sin(lung:1))
-  trj[,4] <- cos(1:lung) + tanh(lung:1)*(1/sin(lung:1)) - rnorm(lung, mean = 1, sd = 0.5)
-  trj <- rbind(trj, as.data.frame(matrix(rnorm(4000), nrow = 1000, ncol = 4)))
-  res <- minerva::mine(x = trj[1:50,]) # real exit values
-  a <- res$MIC[lower.tri(x = res$MIC, diag = FALSE)]
-  expect_error(b <- generate_network(trj = trj, window = 10, method = 'MIC', silent = silent), NA) # multithreading MIC is super bad
-  expect_equal(a, b$trj_out[1,])
+  if(F){
+    library(minerva)
+    lung <- 2000
+    trj <- as.data.frame(matrix(NA, nrow = lung, ncol = 4))
+    trj[,1] <- sin(1:lung) + tan(lung:1)*(1/100) + rnorm(lung, mean = 0, sd = 0.1)
+    trj[,3] <- sin(1:lung) + tan(lung:1)*(1/100) + rnorm(lung, mean = 0, sd = 0.5)
+    trj[,2] <- cos(1:lung) + tanh(lung:1)*(1/sin(lung:1))
+    trj[,4] <- cos(1:lung) + tanh(lung:1)*(1/sin(lung:1)) - rnorm(lung, mean = 1, sd = 0.5)
+    trj <- rbind(trj, as.data.frame(matrix(rnorm(4000), nrow = 1000, ncol = 4)))
+    res <- minerva::mine(x = trj[1:50,]) # real exit values
+    a <- res$MIC[lower.tri(x = res$MIC, diag = FALSE)]
+    expect_equal(a, b$trj_out[1,]) # true
+  }
   
   # microtest
   if(F){
@@ -234,9 +236,9 @@ test_that('pre-processing with network inference', {
   if(F){
     
     # THE DATASET
-    silent <- F
+    silent <- T
     plt_stff <- !silent
-    if(!silent) {require(microbenchmark); require(testthat); require(CampaRi); library(RcppRoll); library(ggfortify)} 
+    if(!silent) {require(microbenchmark); require(testthat); require(CampaRi); library(RcppRoll)} 
     ttrj <- system.file("extdata", "NBU.fyc", package = "CampaRi")
     ttrj <- data.table::fread(ttrj, data.table = F)
     
@@ -399,5 +401,5 @@ test_that('pre-processing with network inference', {
     ## End(Not run)
   }
   # this test needs further packages. They should not be a forced installation
-  # expect_error(tsne_net <- generate_network(trj, method = 'MI', post_processing_method = 'tsne', window = 20), NA)
+  # expect_error(tsne_net <- generate_network(trj, method = 'MI', pp_method = 'tsne', window = 20), NA)
   })
