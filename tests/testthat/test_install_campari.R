@@ -19,4 +19,8 @@ test_that('Test campari original installation from inst directory', {
   if(dir.exists('to_delete_just_in_a_moment')) unlink('to_delete_just_in_a_moment', recursive = T)
   cat('install_campari tests finished successfully.\n')
   cat('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\n')
+  if(file.exists('Makefile')) file.remove('Makefile')
+  if(file.exists('VERSION')) file.remove('VERSION')
+  if(file.exists('config.log')) file.remove('config.log')
+  if(file.exists('config.status')) file.remove('config.status')
 })

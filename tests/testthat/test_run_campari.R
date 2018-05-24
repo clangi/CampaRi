@@ -75,6 +75,8 @@ test_that('Test run_campari from installation', {
   if(file.exists('NBU.key')) file.remove('NBU.key')
   if(file.exists('NBU.log')) file.remove('NBU.log')
   if(file.exists('nbu.in')) file.remove('nbu.in')
+  if(file.exists('config.log')) file.remove('config.log')
+  if(file.exists('config.status')) file.remove('config.status')
   if(file.exists('NBU_END.int')) file.remove('NBU_END.int')
   if(file.exists('NBU_END.pdb')) file.remove('NBU_END.pdb')
   if(file.exists('NBU_START.int')) file.remove('NBU_START.int')
