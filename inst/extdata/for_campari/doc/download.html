@@ -33,7 +33,7 @@
 ############################################################################
 #                                                                          #
 # MAIN AUTHOR:   Andreas Vitalis                                           #
-# CONTRIBUTIONS: Adam Steffen                                              #
+# CONTRIBUTIONS: Adam Steffen, Marco Bacci                                 #
 #                                                                          #
 ############################################################################
 -->
@@ -118,7 +118,28 @@ On Linux distributions, it will often be easier to obtain these through system p
 separately; there is ample documentation on the Web. We deliver an early version of the XDR library with CAMPARI, which will be compiled and linked
 automatically. There is also a set of features depending on the sparse matrix library <a href="http://www.hsl.rl.ac.uk/" target="_TOP">HSL</a>.
 Due to the licensing terms, we cannot distribute the source code for HSL. You will need to download the HSL library separately (obtaining
-your own license agreement). CAMPARI requires the following HSL sources (which is really only two routines):<br/>
+your own license agreement). CAMPARI requires the following HSL sources (which is really only two routines).
+The first HSL library to request is <a href="http://www.hsl.rl.ac.uk/catalogue/eb13.html" target="_TOP">EB13</a>.
+Once obtained and unpacked, this library can be compiled independently and then linked to CAMPARI, or can 
+be compiled automatically while making CAMPARI (which is the default, USE_INTERNAL_HSL set to 1 in the Makefile,
+see <a href="install.html">installation instructions</a>). 
+If it is this default scenario that you want to pursue, 
+please copy all the *.f files in eb13-1.1.1/src/ to the source/hsl folder within CAMPARI and rename the following files:
+<br/><br/>
+sdeps.f -&gt; eb13_sdeps.f<br/>
+ddeps.f -&gt; eb13_ddeps.f
+<br/><br/>
+The second required HSL library is the FORTRAN version of <a href="http://www.hsl.rl.ac.uk/catalogue/hsl_ma48.html" target="_TOP">HSL_MA48</a>.
+If you want CAMPARI to compile this library automatically, please copy all the *.f and *.f90 files in hsl_ma48-3.3.0/src/
+into the source/hsl folder within CAMPARI (due to conflicting names, you must have alredy performed the above 
+renaming step on the EB13 files before copying) and rename the following files:
+<br/><br/>
+ddeps90.f90 -&gt; ma48_ddeps90.f90<br/>
+ddeps.f -&gt; ma48_ddeps.f<br/>
+sdeps90.f90 -&gt; ma48_sdeps90.f90<br/>
+sdeps.f -&gt; ma48_sdeps.f
+<br/><br/>
+Accordingly, the CAMPARI subdirectory source/hsl should now contain the following list of files:<br/>
 <ul>
 <li>common90.f90</li>
 <li>eb13_ddeps.f</li>
@@ -134,8 +155,8 @@ your own license agreement). CAMPARI requires the following HSL sources (which i
 <li>ma48_sdeps90.f90</li>
 <li>ma48_sdeps.f</li>
 </ul>
-After obtaining them, you can just copy them into the hsl/ subdirectory in the source-directory and CAMPARI will (by default) compile them
-as needed. Note that all of the above libraries pertain to <b>optional</b> features and there is no dependency on them unless the 
+At this point, all HSL files are set for automatic compilation by CAMPARI.
+Note that all of the above libraries pertain to <b>optional</b> features and there is no dependency on them unless the 
 respective compiler flags are passed. This is all explained in detail <a href="install.html">elsewhere</a>.<br/>
 
 <h4> Other Files:</h4>

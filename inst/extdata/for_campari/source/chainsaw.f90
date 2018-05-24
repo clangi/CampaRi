@@ -667,6 +667,11 @@ program chainsaw
     call torsion_header()
   end if
 !
+! setup for distance set for alignment when there is no PDB ref 
+  if ((align%yes.EQV..true.).AND.(align%instrmsd.EQV..true.).AND.(align%refset.EQV..false.)) then
+    call init_aligndisset()
+  end if
+!
 #ifdef ENABLE_MPI
   if ((use_MPIAVG.EQV..true.).AND.(use_MPIMultiSeed.EQV..true.)) then
     call PIGS_sanitychecks()

@@ -99,7 +99,7 @@ For more details, please refer to the main documentation of the original [CAMPAR
 
 Please cite the SAPPHIRE algorithm paper: 
 
-* Blöchliger, N., Vitalis, A. & Caflisch, A. A scalable algorithm to order and annotate continuous observations reveals the metastable states visited by dynamical systems. Comput. Phys. Commun. 184, 2446–2453 (2013).
+* Bloechliger, N., Vitalis, A. & Caflisch, A. A scalable algorithm to order and annotate continuous observations reveals the metastable states visited by dynamical systems. Comput. Phys. Commun. 184, 2446–2453 (2013).
 <!---
 [![doi](https://img.shields.io/badge/doi-10.1093/nar/gkv1507-green.svg?style=flat)](http://dx.doi.org/10.1093/nar/gkv1507) [![citation](https://img.shields.io/badge/cited%20by-18-green.svg?style=flat)](https://scholar.google.com.hk/scholar?oi=bibs&hl=en&cites=6029790855238928406) [![Altmetric](https://img.shields.io/badge/Altmetric-27-green.svg?style=flat)](https://www.altmetric.com/details/4919535)
 -->

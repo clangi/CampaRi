@@ -188,29 +188,29 @@ ${MPITHREADOBJS} ${LIB_DIR}/${ARCH}/mpi_threads/chainsaw.o ${LIB_DIR}/${ARCH}/mp
 
 ${MODOBJS} :
 	${FF} ${FFLAGS2} -c ${COMPDEFAULTS} -I${LIB_DIR}/${ARCH} $(patsubst ${LIB_DIR}/${ARCH}/%.o,${SRC_DIR}/mod_%.f90,$@) -o $@
-	${MV} $(patsubst ${LIB_DIR}/${ARCH}/%.o,${SRC_DIR}/%.mod,$@) $(patsubst %.o,%.mod,$@)
+	${MV} $(patsubst ${LIB_DIR}/${ARCH}/%.o,%.mod,$@) $(patsubst %.o,%.mod,$@)
 
 ${MPIMODOBJS} :
 	${MPIFF} ${MPIFFLAGS2} -c ${COMPDEFAULTS} -I${LIB_DIR}/${ARCH}/mpi -DENABLE_MPI $(patsubst ${LIB_DIR}/${ARCH}/mpi/%.o,${SRC_DIR}/mod_%.f90,$@) -o $@
-	${MV} $(patsubst ${LIB_DIR}/${ARCH}/mpi/%.o,${SRC_DIR}/%.mod,$@) $(patsubst %.o,%.mod,$@)
+	${MV} $(patsubst ${LIB_DIR}/${ARCH}/mpi/%.o,%.mod,$@) $(patsubst %.o,%.mod,$@)
 
 ${THREADMODOBJS} :
 	${FF} ${FFLAGS2} -c ${COMPDEFAULTS} ${THREADFLAGS} -I${LIB_DIR}/${ARCH}/threads -DENABLE_THREADS $(patsubst ${LIB_DIR}/${ARCH}/threads/%.o,${SRC_DIR}/mod_%.f90,$@) -o $@
-	${MV} $(patsubst ${LIB_DIR}/${ARCH}/threads/%.o,${SRC_DIR}/%.mod,$@) $(patsubst %.o,%.mod,$@)
+	${MV} $(patsubst ${LIB_DIR}/${ARCH}/threads/%.o,%.mod,$@) $(patsubst %.o,%.mod,$@)
 
 ${MPITHREADMODOBJS} :
 	${MPIFF} ${MPIFFLAGS2} -c ${COMPDEFAULTS} ${THREADFLAGS} -I${LIB_DIR}/${ARCH}/mpi_threads -DENABLE_MPI -DENABLE_THREADS $(patsubst ${LIB_DIR}/${ARCH}/mpi_threads/%.o,${SRC_DIR}/mod_%.f90,$@) -o $@
-	${MV} $(patsubst ${LIB_DIR}/${ARCH}/mpi_threads/%.o,${SRC_DIR}/%.mod,$@) $(patsubst %.o,%.mod,$@)
+	${MV} $(patsubst ${LIB_DIR}/${ARCH}/mpi_threads/%.o,%.mod,$@) $(patsubst %.o,%.mod,$@)
 
 # targets for enclosed external libraries
 export
 ${LIB_DIR}/${ARCH}/libxdrf.a: ${SRC_DIR}/xdr/xdrf.h ${SRC_DIR}/xdr/libxdrf.m4 ${SRC_DIR}/xdr/ftocstr.c ${SRC_DIR}/xdr/ftest.f ${SRC_DIR}/xdr/ctest.c
-	$(MAKE) -C xdr ${LIB_DIR}/${ARCH}/libxdrf.a
+	$(MAKE) -C ${SRC_DIR}/xdr ${LIB_DIR}/${ARCH}/libxdrf.a
 
 ${LIB_DIR}/${ARCH}/libhsl.a: ${SRC_DIR}/hsl/eb13d.f ${SRC_DIR}/hsl/eb13s.f ${SRC_DIR}/hsl/eb13_sdeps.f ${SRC_DIR}/hsl/eb13_ddeps.f ${SRC_DIR}/hsl/common90.f90 \
                 ${SRC_DIR}/hsl/hsl_ma48d.f90 ${SRC_DIR}/hsl/hsl_ma48s.f90 ${SRC_DIR}/hsl/ma48_ddeps90.f90 ${SRC_DIR}/hsl/ma48_sdeps90.f90 \
                 ${SRC_DIR}/hsl/ma48_ddeps.f ${SRC_DIR}/hsl/ma48_sdeps.f ${SRC_DIR}/hsl/hsl_ma48d_ciface.f90 ${SRC_DIR}/hsl/hsl_ma48s_ciface.f90
-	$(MAKE) -C hsl ${LIB_DIR}/${ARCH}/libhsl.a
+	$(MAKE) -C ${SRC_DIR}/hsl ${LIB_DIR}/${ARCH}/libhsl.a
 
 # targets for spreading HSL module files
 $(patsubst %,${LIB_DIR}/${ARCH}/mpi/%.mod,$(HSLMODS)): ${LIB_DIR}/${ARCH}/libhsl.a

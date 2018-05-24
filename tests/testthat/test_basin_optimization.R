@@ -23,11 +23,13 @@ test_that('optimize sapphire plot clusters using SBR', {
   # optimal_bas$bas
   
   # now testing for internal optimization
-  expect_error(optimal_bas <- CampaRi::basin_optimization(the_sap = file.pi,  how_fine_search = 10, basin_optimization_method = "MI_barrier_weighting", force_matching = T, 
-                                                          plot_basin_identification = plt_stff, silent = silent), NA)
-  expect_error(optimal_bas <- CampaRi::basin_optimization(the_sap = file.pi,  how_fine_search = 10, basin_optimization_method = "MI_barrier_weighting",
+  expect_error(suppressWarnings(
+    optimal_bas <- CampaRi::basin_optimization(the_sap = file.pi,  how_fine_search = 10, basin_optimization_method = "MI_barrier_weighting", force_matching = T, 
+                                                          plot_basin_identification = plt_stff, silent = silent), NA))
+  expect_error(suppressWarnings(
+    optimal_bas <- CampaRi::basin_optimization(the_sap = file.pi,  how_fine_search = 10, basin_optimization_method = "MI_barrier_weighting",
                                                           number_of_clusters = 3, force_matching = T, 
-                                                          plot_basin_identification = plt_stff, silent = silent), NA)
+                                                          plot_basin_identification = plt_stff, silent = silent), NA))
   
   # ------------------------------------------------------- neuro tests
   # the following tests have been executed only 
@@ -35,9 +37,9 @@ test_that('optimize sapphire plot clusters using SBR', {
   # executed at all
   do_it <- FALSE
   
-  expect_error(optimal_bas <- CampaRi::basin_optimization(the_sap = file.pi,  how_fine_search = 10, basin_optimization_method = "MI_barrier_weighting",
+  expect_error(suppressWarnings(optimal_bas <- CampaRi::basin_optimization(the_sap = file.pi,  how_fine_search = 10, basin_optimization_method = "MI_barrier_weighting",
                                                           force_matching = T, number_of_clusters = 3, denat_opt = 'process_subtraction',
-                                                          plot_basin_identification = plt_stff, silent = silent), NA)
+                                                          plot_basin_identification = plt_stff, silent = silent), NA))
   
   if(do_it){
     ncl <- 4

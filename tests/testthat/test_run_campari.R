@@ -1,16 +1,18 @@
 context('run_campari')
 
 test_that('Test run_campari from installation', {
-  expect_error(CampaRi::install_campari(install_ncminer = T), NA) # to do it usually
+  if(F) setwd('projects/CampaR/garbage/')
+  expect_error(CampaRi::install_campari(install_ncminer = T, silent_built = T), NA) # to do it usually
   bin_dir <- system.file('extdata/for_campari/bin/', package = "CampaRi")
-  ca_exe <- paste0(bin_dir, dir(bin_dir)[1], '/', list.files(paste0(bin_dir, dir(bin_dir)[1]))[2])
+  ca_exe <- paste0(bin_dir, '/', dir(bin_dir)[1])
+  print(ca_exe)
   expect_true(is.character(ca_exe))
   expect_true(file.exists(ca_exe))
   expect_true(ca_exe != "")
   # system('printf "NBU\nEND" &> nbu.in')
   data.table::fwrite(list('NBU'), file = 'nbu.in', row.names = F, col.names = F)
   data.table::fwrite(list('END'), file = 'nbu.in', append = T, row.names = F, col.names = F)
-  expect_error(run_campari(FMCSC_SEQFILE="nbu.in", campari_exe = ca_exe, # you must have it defined according to CAMPARI's rules
+  expect_error(CampaRi::run_campari(FMCSC_SEQFILE="nbu.in", campari_exe = ca_exe, # you must have it defined according to CAMPARI's rules
                           # FMCSC_BASENAME="NBU", # lets try the base_name option
                           base_name = "NBU", print_status = T, # it will take 55 s in background ~
                           PARAMETERS="oplsaal.prm", # if this variable it is not supplied will be automatically assigned to <full path to folder>/campari/params/abs3.2_opls.prm
@@ -67,6 +69,8 @@ test_that('Test run_campari from installation', {
   
   
   
+  if(file.exists('Makefile')) file.remove('Makefile')
+  if(file.exists('VERSION')) file.remove('VERSION')
   if(file.exists('FYC.dat')) file.remove('FYC.dat')
   if(file.exists('NBU.key')) file.remove('NBU.key')
   if(file.exists('NBU.log')) file.remove('NBU.log')
@@ -82,4 +86,22 @@ test_that('Test run_campari from installation', {
   if(file.exists('ascii_based_analysis.log')) file.remove('ascii_based_analysis.log')
   if(file.exists('ascii_based_analysis.key')) file.remove('ascii_based_analysis.key')
   if(file.exists('PROGIDX_000000000021.dat')) file.remove('PROGIDX_000000000021.dat')
+  
+  
+  if(F){
+    # some extra tests
+    ddir <- '../CampaRi/'
+    a <- paste0(ddir, '/', list.files(ddir, recursive = T))
+    a <- a[!grepl(pattern = '/doc/', x = a)]; a
+    a <- a[!grepl(pattern = '/lib/', x = a)]; a  
+    a <- a[!grepl(pattern = '/bin/', x = a)]; a  
+    a <- a[!grepl(pattern = '/to_d/', x = a)]; a  
+    # a <- a[!grepl(pattern = '/src/', x = a)]  # to check the src!!
+    b <- lapply(a, function(x) capture.output(tools::showNonASCII(readLines(x)), type = "message"))
+    b <- lapply(a, function(x) grep(pattern = 'utf', x = readLines(x), fixed = T))
+    lb <- sapply(b, length)
+    findf <- data.frame('n.nonA' = lb[lb != 0], 'file.name' = a[lb != 0])
+    findf[order(findf$n.nonA),]
+  }
+  
 })

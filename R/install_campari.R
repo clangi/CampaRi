@@ -17,7 +17,7 @@
 install_campari <- function(installation_location = NULL, install_ncminer = FALSE, install_threads = FALSE, install_mpi = FALSE, silent_built = FALSE){
   
   # insertion checks
-  campari_source <- system.file('extdata/', "for_campari/", package = "CampaRi")
+  campari_source <- paste0(system.file('extdata/', "for_campari/", package = "CampaRi"), '/')
   if(!is.null(installation_location)){
     if(!dir.exists(installation_location))
       stop('Inserted directory does not exist. Please take care about the possibility to execute a makefile.')
@@ -60,10 +60,10 @@ install_campari <- function(installation_location = NULL, install_ncminer = FALS
   }
   if(!silent_built) cat('done\n')
   
-  ori_wd <- getwd()
-  
+  # specific installation handling
   if(!is.null(installation_location)){
     if(!silent_built) cat('Copying source files in installation directory...')
+    installation_location <- suppressWarnings(system(paste0('pwd ', installation_location), intern = T)) # check to unfold '..' which would break make
     suppressWarnings(system(paste0('cp -r ', campari_source, ' ', installation_location), ignore.stdout = silent_built))
     installing_place <- paste0(installation_location, '/for_campari/')
     if(!silent_built) cat('done\n')
@@ -71,88 +71,56 @@ install_campari <- function(installation_location = NULL, install_ncminer = FALS
     installing_place <- campari_source
   }
   
-  # if(!silent_built) cat('Changing directory...\n')
   cat(paste0('Specifing the directory: ', installing_place, ' ...\n'))
   confit <- paste0(installing_place, '/source/configure --with-campari-home=', installing_place)
   
-  # setwd(paste0(installing_place, 'source/'))
-  if(!silent_built) cat('\n\n############ installing classic campari executable ############\n')
-  # some notes on the following: cat is sending to console out the intern = T (needed for error catching). ignore.stderr = T is necessary for
-  # not showing the error in console.
-  tryCatch(cat(suppressWarnings(system(confit, ignore.stdout = silent_built, ignore.stderr = T, intern = T)), sep = '\n'), 
-           error = function(err) stop('Error during ./configure. Please check the logging.'))
-  if(!silent_built) cat('\n#\n')
-  tryCatch(cat(suppressWarnings(system('make campari', ignore.stdout = silent_built, ignore.stderr = T, intern = T)), sep = '\n'), 
-           error = function(err) stop('Error during make campari. Please check the logging.'))
-  if(!silent_built) cat('\n############ INSTALLED ############\n\n')
-  if(install_threads){
-    if(!silent_built) cat('\n\n############ installing campari_threads executable ############\n')
-    tryCatch(cat(suppressWarnings(system(paste0(confit, ' --enable-threads'), ignore.stdout = silent_built, ignore.stderr = T, intern = T)), sep = '\n'), 
-             error = function(err) stop('Error during ./configure --enable-threads. Please check the logging.'))
-    if(!silent_built) cat('\n#\n')
-    tryCatch(cat(suppressWarnings(system('make campari_threads', ignore.stdout = silent_built, ignore.stderr = T, intern = T)), sep = '\n'), 
-             error = function(err) stop('Error during make campari_threads. Please check the logging.'))
-    if(!silent_built) cat('\n############ INSTALLED ############\n\n')
-  }
-  if(install_mpi){
-    if(!silent_built) cat('\n\n############ installing campari_mpi executable ############\n')
-    tryCatch(cat(suppressWarnings(system(paste0(confit, ' --enable-mpi'), ignore.stdout = silent_built, ignore.stderr = T, intern = T)), sep = '\n'), 
-             error = function(err) stop('Error during ./configure --enable-mpi. Please check the logging.'))
-    if(!silent_built) cat('\n#\n')
-    tryCatch(cat(suppressWarnings(system('make campari_mpi', ignore.stdout = silent_built, ignore.stderr = T, intern = T)), sep = '\n'), 
-             error = function(err) stop('Error during make campari_mpi. Please check the logging.'))
-    if(!silent_built) cat('\n############ INSTALLED ############\n\n')
-  }
-  if(install_threads && install_mpi){
-    if(!silent_built) cat('\n\n############ installing campari_mpi_threads executable ############\n')
-    tryCatch(cat(suppressWarnings(system(paste0(confit, ' --enable-threads --enable-mpi'), ignore.stdout = silent_built, ignore.stderr = T, intern = T)), sep = '\n'), 
-             error = function(err) stop('Error during ./configure --enable-threads --enable-mpi. Please check the logging.'))
-    if(!silent_built) cat('\n#\n')
-    tryCatch(cat(suppressWarnings(system('make campari_mpi_threads', ignore.stdout = silent_built, ignore.stderr = T, intern = T)), sep = '\n'), 
-             error = function(err) stop('Error during make campari_mpi_threads. Please check the logging.'))
-    if(!silent_built) cat('\n############ INSTALLED ############\n\n')
-  }
+  # stanard installations
+  .installer_conf.make(make_name = 'campari', configure_base = confit, extra_directives = '', silent_built = silent_built)
+  if(install_threads)
+    .installer_conf.make(make_name = 'campari_threads', configure_base = confit, extra_directives = '--enable-threads', silent_built = silent_built)
+  if(install_mpi)
+    .installer_conf.make(make_name = 'campari_mpi', configure_base = confit, extra_directives = '--enable-mpi', silent_built = silent_built)
+  if(install_threads && install_mpi)
+    .installer_conf.make(make_name = 'campari_mpi_threads', configure_base = confit, extra_directives = '--enable-threads --enable-mpi', silent_built = silent_built)
   
-  # nc_minare
+  # ncminer installations
   if(install_ncminer){
-    if(!silent_built) cat('\n\n############ installing classic camp_ncminer executable ############\n')
-    tryCatch(cat(suppressWarnings(system(confit, ignore.stdout = silent_built, ignore.stderr = T, intern = T)), sep = '\n'), 
-             error = function(err) stop('Error during ./configure. Please check the logging.'))
-    if(!silent_built) cat('\n#\n')
-    tryCatch(cat(suppressWarnings(system('make camp_ncminer', ignore.stdout = silent_built, ignore.stderr = T, intern = T)), sep = '\n'), 
-             error = function(err) stop('Error during make camp_ncminer. Please check the logging.'))
-    if(!silent_built) cat('\n############ INSTALLED ############\n\n')
-    if(install_threads){
-      if(!silent_built) cat('\n\n############ installing camp_ncminer_threads executable ############\n')
-      tryCatch(cat(suppressWarnings(system(paste0(confit, ' --enable-threads'), ignore.stdout = silent_built, ignore.stderr = T, intern = T)), sep = '\n'), 
-               error = function(err) stop('Error during ./configure --enable-threads. Please check the logging.'))
-      if(!silent_built) cat('\n#\n')
-      tryCatch(cat(suppressWarnings(system('make camp_ncminer_threads', ignore.stdout = silent_built, ignore.stderr = T, intern = T)), sep = '\n'), 
-               error = function(err) stop('Error during make camp_ncminer_threads. Please check the logging.'))
-      if(!silent_built) cat('\n############ INSTALLED ############\n\n')
-    }
-    if(install_mpi){
-      stop('nc_miner with mpi is not ready.')
-      if(!silent_built) cat('\n\n############ installing camp_ncminer_mpi executable ############\n')
-      tryCatch(cat(suppressWarnings(system(paste0(confit, ' --enable-mpi'), ignore.stdout = silent_built, ignore.stderr = T, intern = T)), sep = '\n'), 
-               error = function(err) stop('Error during ./configure --enable-mpi. Please check the logging.'))
-      if(!silent_built) cat('\n#\n')
-      tryCatch(cat(suppressWarnings(system('make camp_ncminer_mpi', ignore.stdout = silent_built, ignore.stderr = T, intern = T)), sep = '\n'), 
-               error = function(err) stop('Error during make camp_ncminer_mpi. Please check the logging.'))
-      if(!silent_built) cat('\n############ INSTALLED ############\n\n')
-    }
-    if(install_threads && install_mpi){
-      stop('nc_miner with mpi is not ready.')
-      if(!silent_built) cat('\n\n############ installing camp_ncminer_mpi_threads executable ############\n')
-      tryCatch(cat(suppressWarnings(system(paste0(confit, ' --enable-threads --enable-mpi'), ignore.stdout = silent_built, ignore.stderr = T, intern = T)), sep = '\n'), 
-               error = function(err) stop('Error during ./configure --enable-threads --enable-mpi. Please check the logging.'))
-      if(!silent_built) cat('\n#\n')
-      tryCatch(cat(suppressWarnings(system('make camp_ncminer_mpi_threads', ignore.stdout = silent_built, ignore.stderr = T, intern = T)), sep = '\n'), 
-               error = function(err) stop('Error during make camp_ncminer_mpi_threads. Please check the logging.'))
-      if(!silent_built) cat('\n############ INSTALLED ############\n\n')
-    }
+    .installer_conf.make(make_name = 'camp_ncminer', configure_base = confit, extra_directives = '', silent_built = silent_built)
+    if(install_threads)
+      .installer_conf.make(make_name = 'camp_ncminer_threads', configure_base = confit, extra_directives = '--enable-threads', silent_built = silent_built)
+    if(install_mpi)
+      .installer_conf.make(make_name = 'camp_ncminer_mpi', configure_base = confit, extra_directives = '--enable-mpi', silent_built = silent_built)
+    if(install_threads && install_mpi)
+      .installer_conf.make(make_name = 'camp_ncminer_mpi_threads', configure_base = confit, extra_directives = '--enable-threads --enable-mpi', silent_built = silent_built)
   }
   if(!silent_built) cat('Installation completed.\n')
-  # if(!silent_built) cat('Going to the original directory...\n')
-  # setwd(ori_wd)
 }
+
+.installer_conf.make <- function(make_name, configure_base, extra_directives = '', silent_built = FALSE){
+  
+  # simple printing routine
+  seps.l <- .get_adjusted_separators(tit = paste0(' installing ', make_name,' executable '), length_it = 68)
+  
+  # definition and show of the commands
+  if(!silent_built) cat('\n\n', seps.l$sep1, '\n', sep = '')
+  conf_cmd <- paste(configure_base, extra_directives)
+  make_cmd <- paste('make', make_name)
+  if(!silent_built) cat('Running the following commands in sequence.\n')
+  if(!silent_built) cat('CONFIGURE:     ', conf_cmd, '\n')
+  if(!silent_built) cat('MAKE:          ', make_cmd, '\n')
+  if(!silent_built) cat(seps.l$sep2, '\n')   
+  
+  # configure
+  cmd.out <- suppressWarnings(system(conf_cmd, ignore.stdout = silent_built, ignore.stderr = silent_built, intern = silent_built)) 
+  if(.check_cmd.out(cmd.out, intern = silent_built)) stop('Error during ./configure. Please check the logging. Following command failed:\n', conf_cmd)
+  if(!silent_built) cat('\n\n')
+  
+  # make
+  cmd.out <- suppressWarnings(system(make_cmd, ignore.stdout = silent_built, ignore.stderr = silent_built, intern = silent_built))
+  if(.check_cmd.out(cmd.out, intern = silent_built)) stop('Error during make. Please check the logging. Following command failed:\n', make_cmd)
+  
+  # end
+  if(!silent_built) cat('\nInstallation ended successfully.\n')
+  if(!silent_built) cat(seps.l$sep2, '\n')   
+}
+

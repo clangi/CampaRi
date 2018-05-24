@@ -237,7 +237,7 @@ SRC_DIR=${CAMPARI_HOME}/source<br/>
 WARNFLAGS= -warn alignments -warn declarations -warn usage -warn general -warn ignore_loc -warn truncated_source -warn uncalled -warn unused<br/>
 FF =ifort<br/>
 LFLAGS =-O3<br/>
-EXTRA_LIBS=/software/NetCDF/Intel/lib/libnetcdff.a /software/NetCDF/Intel/lib/libnetcdf.a /software/fftw/lib/libfftw3.a -llapack<br/>
+EXTRA_LIBS=/software/NetCDF/Intel/lib/libnetcdff.a /software/NetCDF/Intel/lib/libnetcdf.a /software/fftw/lib/libfftw3.a  /software/fftw/lib/libfftw3_threads.a -llapack<br/>
 FFLAGS =-DLINK_NETCDF -DLINK_XDR -DLINK_LAPACK -DDISABLE_ERFTAB -DDISABLE_FLOAT -DLINK_FFTW -DLINK_HSL -I/software/fftw-3.2.2/include -I/software/NetCDF/netcdf-4.1.1/include ${WARNFLAGS} -axAVX -xAVX<br/>
 MPIFF =mpif90   # wrapper around ifort<br/>
 MPILFLAGS =-O3<br/>
@@ -262,7 +262,8 @@ Because "Makefile.local" is read and processed by "Makefile", it is possible to 
  architecture, <i>etc.</i>) from the same source tree by simply making copies of both files, <i>, e.g.</i>, to "Makefile_New" and "Makefile_New.local". 
 Then, in "Makefile_New" the include statement should be changed from "include Makefile.local" to "include Makefile_New.local". By now modifying both
 files according to the desired outcome, a completely independent installation is obtained
-when running "make -f Makefile_new &lt;target&gt;" where the various targets are explained below.<br/>
+when running "make -f Makefile_new &lt;target&gt;" where the various targets are explained below. When doing this, it is essential
+that all specifications for "ARCH" are unique of course.<br/>
 Further modifications to the global Makefile should be restricted to the lines controlling default compiler options. For the 
 Oracle, Cray, PGI, Gnu, and Intel compilers, the Makefile contains a fair amount
 of default settings (SUNDEFAULTS, CRAYDEFAULTS, PGIDEFAULTS, GNUDEFAULTS, INTELDEFAULTS) which on Linux systems can often be used "as is".
@@ -271,7 +272,7 @@ The variable COMPDEFAULTS holds the actual default compiler options and can be s
 These options are further appended by "FFLAGS" or "MPIFFLAGS" as specified in the localization file (see example above).
 Changes to default options can be required for a number reasons, for example, because of a change in software or hardware architecture.
 Also, files included from external libraries may occasionally clash with pedantic language standard options.
-The reason that only a few settings are left "Makefile.local" is that the others should not be changed from 
+The reason that only a few settings are left to "Makefile.local" is that the others should not be changed from 
 the behavior described above. Otherwise, the resultant code may fail or not produce correct results. Lastly, the
 variable "THREADFLAGS" should hold all options desired and required to enable OpenMP support for the compiler in use. Compilers
 have been lagging somewhat in supporting the OpenMP standard fully, and consequently options may continue to evolve
@@ -416,21 +417,35 @@ is found in the source subdirectory "xdr" and should be compiled automatically i
 in "Makefile.local" has been done (see above).<br/>
 Similarly, the required HSL routines are embedded in a source subdirectory called "hsl". Compilation will again be 
 automatic if "DLINK_HSL" is passed to the compiler. You should already have or independently obtain
-a license for using HSL.<br/> 
+a license for using HSL (see <a href="download.html">Download page</a>).<br/> 
 External libraries may have been compiled into thread-aware versions, but the only example where CAMPARI currently makes use of this
 is for the discrete Fourier transforms provided by FFTW. If "campari_threads" is built with FFTW support, it may
-thus be necessary to also supply the threads version of the FFTW library to "EXTRA_LIBS".<br/>
-When linking system-installed libraries (this is currently possible for FFTW, NetCDF, and LAPACK, see the example
-"Makefile.local" for GNU above), it is
-important to install all relevant packages. For FFTW, this usually means installing at least two packages
+thus be necessary to also supply the threads version of the FFTW library to "EXTRA_LIBS". This was already included in the above examples.<br/>
+When building custom versions of external libraries for linking, the NetCDF library tends to be the trickiest.
+One reason is that the structure changed considerably in recent years: The Fortran version of the library
+was split off, and the reliance on other libraries increased. Thus, if you build a custom NetCDF library and try to link
+it to CAMPARI, the linking step may fail. Following the Intel compiler example above, you
+may require something like this for linking static NetCDF libraries:<br/><br/>
+<code>
+EXTRA_LIBS=-L/software/NetCDF/Intel/lib /software/NetCDF/Intel/lib/libnetcdff.a /software/NetCDF/Intel/lib/libnetcdf.a -lhdf5_hl -lhdf5 -lz -lcurl -lm
+/software/fftw/lib/libfftw3.a  /software/fftw/lib/libfftw3_threads.a -llapack<br/>
+</code>
+<br/>This gets progrssively more complicated if you also want to use custom installations of "libhdf5" and so on.
+You can find more information on the UniData pages, <i>e.g.</i>
+<a href="https://www.unidata.ucar.edu/software/netcdf/docs/building_netcdf_fortran.html" target="_TOP">here</a>.
+Conversely, the linking of system-installed libraries (meaning those in default locations using default compilers), which is currently possible for
+FFTW, NetCDF, and LAPACK (see the example "Makefile.local" for GNU above), is simpler. Here, it is critical
+to just install all relevant packages. For FFTW, this usually means installing at least two packages
 (core and development, both in double precision). For NetCDF it can imply installing several packages
-(core and development for both standard C and Fortran interfaces). The compilation can fail if module or include files
+(core and development for both standard C and Fortran interfaces). The CAMPARI compilation can fail before the linking step if module or include files
 for NetCDF and/or FFTW are missing. In these cases, it is recommended to try to locate the files on your computer and add the include
 path to the compiler flags. If they are not found, the most common reason is that the corresponding development package was
-not installed. The linking fails if one or more symbols cannot be resolved. The internet is usually a good
+not installed. The linking fails if one or more symbols cannot be resolved. The internet is a good
 resource to at least pin down the origin of linking errors (for common libraries).
 If the problem persists, you are of course invited to
-post on <a href="http://sourceforge.net/projects/campari/support">the SourceForge page</a>.
+post on <a href="http://sourceforge.net/projects/campari/support">the SourceForge page</a>.<br/>
+<br/>
+
 <h3>Pure MPI Installation (Executable "campari_mpi"):</h3>
 The Message Passing Interface (MPI) is a standard for creating parallel software, <i>i.e.</i>, programs
 running simultaneously in multiple instances on different processors or processor cores. These instances

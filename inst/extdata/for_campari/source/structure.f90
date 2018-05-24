@@ -3048,6 +3048,7 @@ subroutine struct_align()
   use sequen
   use polyavg
   use mcsums
+  use system, ONLY: bnd_type
 !
   implicit none
 !
@@ -3106,12 +3107,12 @@ subroutine struct_align()
     return
   end if
 !
-! collect new PBC-corrected coordinates for alignment set
-  lmol = 0
-  tvec(:) = 0.0
-  do i=1,align%nr
-    imol = molofrs(atmres(align%set(i))) ! list is sorted
-    if (align%mmol.gt.0) then
+  if ((align%mmol.gt.0).AND.(nmol.gt.1).AND.(bnd_type.eq.1)) then
+!   bring all coordinates into reference frame prior to alignment if so desired
+    lmol = 0
+    tvec(:) = 0.0
+    do i=1,n
+      imol = molofrs(atmres(i)) ! list is sorted
       if (lmol.ne.imol) then
         call shift_bound3(align%mmol,imol,tvec)
         shcom(:) = tvec(:) ! conversion
@@ -3119,12 +3120,16 @@ subroutine struct_align()
         shcom(:) = tvec(:)
       end if
       lmol = imol
-    else
-      shcom(:) = 0.0
-    end if
-    align%curxyz(3*i-2) = x(align%set(i)) + shcom(1)
-    align%curxyz(3*i-1) = y(align%set(i)) + shcom(2)
-    align%curxyz(3*i) = z(align%set(i)) + shcom(3)
+      x(i) = x(i) + shcom(1)
+      y(i) = y(i) + shcom(2)
+      z(i) = z(i) + shcom(3)
+    end do
+  end if
+! collect new PBC-corrected coordinates for alignment set
+  do i=1,align%nr
+    align%curxyz(3*i-2) = x(align%set(i))
+    align%curxyz(3*i-1) = y(align%set(i))
+    align%curxyz(3*i) = z(align%set(i))
   end do
 !
   call align_3D(align%nr,align%curxyz,align%refxyz,tvec,qrot,cto,ctn)
@@ -3143,45 +3148,19 @@ subroutine struct_align()
 !
 ! compute and print RMSD - note that this destroys the coordinates prior to alignment that are still in align%curxyz
   if (align%instrmsd.EQV..true.) then
-    lmol = 0
-    tvec(:) = 0.0
     if (align%diffnr.gt.0) then
       rmsdv2 = 0.0
       do i=1,align%diffnr
-        imol = molofrs(atmres(align%diffset(i))) ! list is sorted
-        if (align%mmol.gt.0) then
-          if (lmol.ne.imol) then
-            call shift_bound3(align%mmol,imol,tvec)
-            shcom(:) = tvec(:) ! conversion
-          else
-            shcom(:) = tvec(:)
-          end if
-          lmol = imol
-        else
-          shcom(:) = 0.0
-        end if
-        rmsdv2 = rmsdv2 + (align%hlpxyz(3*i-2) - (x(align%diffset(i)) + shcom(1)))**2 + &
- &                        (align%hlpxyz(3*i-1) - (y(align%diffset(i)) + shcom(2)))**2 + &
- &                        (  align%hlpxyz(3*i) - (z(align%diffset(i)) + shcom(3)))**2
+        rmsdv2 = rmsdv2 + (align%hlpxyz(3*i-2) - (x(align%diffset(i))))**2 + &
+ &                        (align%hlpxyz(3*i-1) - (y(align%diffset(i))))**2 + &
+ &                        (  align%hlpxyz(3*i) - (z(align%diffset(i))))**2
       end do 
       rmsdv2 = sqrt(rmsdv2/(1.0*align%diffnr))
     end if
     do i=1,align%nr
-      imol = molofrs(atmres(align%set(i))) ! list is sorted
-      if (align%mmol.gt.0) then
-        if (lmol.ne.imol) then
-          call shift_bound3(align%mmol,imol,tvec)
-          shcom(:) = tvec(:) ! conversion
-        else
-          shcom(:) = tvec(:)
-        end if
-        lmol = imol
-      else
-        shcom(:) = 0.0
-      end if
-      align%curxyz(3*i-2) = x(align%set(i)) + shcom(1)
-      align%curxyz(3*i-1) = y(align%set(i)) + shcom(2)
-      align%curxyz(3*i) = z(align%set(i)) + shcom(3)
+      align%curxyz(3*i-2) = x(align%set(i))
+      align%curxyz(3*i-1) = y(align%set(i))
+      align%curxyz(3*i) = z(align%set(i))
     end do
     rmsdv = sqrt(sum((align%curxyz(1:3*align%nr)-align%refxyz(1:3*align%nr))**2)/(1.0*align%nr))
  546 format(f13.5,1x,f13.5)
@@ -3193,44 +3172,16 @@ subroutine struct_align()
   end if
 !
   if (align%refset.EQV..false.) then
-    lmol = 0
-    tvec(:) = 0.0
     do i=1,align%nr
-      imol = molofrs(atmres(align%set(i))) ! list is sorted
-      if (align%mmol.gt.0) then
-        if (lmol.ne.imol) then
-          call shift_bound3(align%mmol,imol,tvec)
-          shcom(:) = tvec(:) ! conversion
-        else
-          shcom(:) = tvec(:)
-        end if
-        lmol = imol
-      else
-        shcom(:) = 0.0
-      end if
-      align%refxyz(3*i-2) = x(align%set(i)) + shcom(1)
-      align%refxyz(3*i-1) = y(align%set(i)) + shcom(2)
-      align%refxyz(3*i) = z(align%set(i)) + shcom(3)
+      align%refxyz(3*i-2) = x(align%set(i))
+      align%refxyz(3*i-1) = y(align%set(i))
+      align%refxyz(3*i) = z(align%set(i))
     end do
     if (align%diffnr.gt.0) then
-      lmol = 0
-      tvec(:) = 0.0
       do i=1,align%diffnr
-        imol = molofrs(atmres(align%diffset(i))) ! list is sorted
-        if (align%mmol.gt.0) then
-          if (lmol.ne.imol) then
-            call shift_bound3(align%mmol,imol,tvec)
-            shcom(:) = tvec(:) ! conversion
-          else
-            shcom(:) = tvec(:)
-          end if
-          lmol = imol
-        else
-          shcom(:) = 0.0
-        end if
-        align%hlpxyz(3*i-2) = x(align%diffset(i)) + shcom(1)
-        align%hlpxyz(3*i-1) = y(align%diffset(i)) + shcom(2)
-        align%hlpxyz(3*i) = z(align%diffset(i)) + shcom(3)
+        align%hlpxyz(3*i-2) = x(align%diffset(i))
+        align%hlpxyz(3*i-1) = y(align%diffset(i))
+        align%hlpxyz(3*i) = z(align%diffset(i))
       end do
     end if
   end if
@@ -3252,30 +3203,23 @@ subroutine init_structalign()
 !
   integer imol,lmol,i,iu,t1,t2,freeunit,nlst
   integer, ALLOCATABLE:: tmplst(:)
-  RTYPE tvec(3),shcom(3),combu(3),comburef(3)
+  RTYPE tvec(3),shcom(3)
   logical exists,dum(2)
 !
+  do imol=1,nmol
+    com(imol,1) = sum(x(atmol(imol,1):atmol(imol,2)))
+    com(imol,2) = sum(y(atmol(imol,1):atmol(imol,2)))
+    com(imol,3) = sum(z(atmol(imol,1):atmol(imol,2)))
+    com(imol,:) = com(imol,:)/dble(atmol(imol,2)-atmol(imol,1)+1)
+  end do
   if (align%yes.EQV..true.) then
     lmol = 0
     tvec(:) = 0.0
-    if (align%mmol.gt.0) then
-      comburef(:) = com(align%mmol,1:3)
-      com(align%mmol,1) = sum(x(atmol(align%mmol,1):atmol(align%mmol,2)))
-      com(align%mmol,2) = sum(y(atmol(align%mmol,1):atmol(align%mmol,2)))
-      com(align%mmol,3) = sum(z(atmol(align%mmol,1):atmol(align%mmol,2)))
-      com(align%mmol,:) = com(align%mmol,:)/dble(atmol(align%mmol,2)-atmol(align%mmol,1)+1) ! com may not be up2date 
-    end if
     do i=1,align%nr
       imol = molofrs(atmres(align%set(i))) ! list is sorted
       if (align%mmol.gt.0) then
         if (lmol.ne.imol) then
-          combu = com(imol,1:3)
-          com(imol,1) = sum(x(atmol(imol,1):atmol(imol,2)))
-          com(imol,2) = sum(y(atmol(imol,1):atmol(imol,2)))
-          com(imol,3) = sum(z(atmol(imol,1):atmol(imol,2)))
-          com(imol,:) = com(imol,:)/dble(atmol(imol,2)-atmol(imol,1)+1) ! com may not be up2date but needed by shift_bound3
           call shift_bound3(align%mmol,imol,tvec)
-          com(imol,1:3) = combu
           shcom(:) = tvec(:) ! conversion
         else
           shcom(:) = tvec(:)
@@ -3288,9 +3232,6 @@ subroutine init_structalign()
       align%refxyz(3*i-1) = y(align%set(i)) + shcom(2)
       align%refxyz(3*i) = z(align%set(i)) + shcom(3)
     end do
-    if (align%mmol.gt.0) then
-      com(align%mmol,1:3) = comburef(:)
-     end if
     align%haveset = .true.
     align%refset = .true.
 !   do we have a separate distance set
@@ -3346,6 +3287,78 @@ subroutine init_structalign()
 end
 !
 !-------------------------------------------------------------------------
+!
+subroutine init_aligndisset()
+!
+  use molecule
+  use clusters, ONLY: align,cfilen
+  use atoms, ONLY: x,y,z,atmres,n
+  use sequen, ONLY: molofrs
+  use iounit
+!
+  implicit none
+!
+  integer imol,lmol,i,iu,t1,t2,freeunit,nlst
+  integer, ALLOCATABLE:: tmplst(:)
+  RTYPE tvec(3),shcom(3)
+  logical exists,dum(2)
+!
+  do imol=1,nmol
+    com(imol,1) = sum(x(atmol(imol,1):atmol(imol,2)))
+    com(imol,2) = sum(y(atmol(imol,1):atmol(imol,2)))
+    com(imol,3) = sum(z(atmol(imol,1):atmol(imol,2)))
+    com(imol,:) = com(imol,:)/dble(atmol(imol,2)-atmol(imol,1)+1)
+  end do
+!
+  call strlims(cfilen,t1,t2)
+  inquire(file=cfilen(t1:t2),exist=exists)
+  if (exists.EQV..false.) then
+    write(ilog,*) 'Using the same distance and alignments sets for RMSD calculation.'
+  else
+    write(ilog,*) 'CAMPARI will try to use the index information in ',cfilen(t1:t2),' as distance set.'
+    iu = freeunit()
+    allocate(tmplst(n))
+    open(unit=iu,file=cfilen(t1:t2),status='old')
+    lmol = n
+    nlst = 0
+    dum(:) = .true.
+    call read_atmidx(iu,nlst,tmplst,lmol,dum(1),dum(2))
+    close(unit=iu)
+!   sorted and nonredundant list -> just copy
+    if (nlst.gt.0) then
+      align%diffnr = nlst
+      allocate(align%diffset(nlst))
+      align%diffset(1:nlst) = tmplst(1:nlst)
+      allocate(align%hlpxyz(3*nlst))
+      deallocate(tmplst)
+!     if needed, store original coordinates in hlpxyz
+      lmol = 0
+      tvec(:) = 0.0
+      do i=1,align%diffnr
+        imol = molofrs(atmres(align%diffset(i))) ! list is sorted
+        if (align%mmol.gt.0) then
+          if (lmol.ne.imol) then
+            call shift_bound3(align%mmol,imol,tvec)
+            shcom(:) = tvec(:) ! conversion
+          else
+            shcom(:) = tvec(:)
+          end if
+          lmol = imol
+        else
+          shcom(:) = 0.0
+        end if
+        align%hlpxyz(3*i-2) = x(align%diffset(i)) + shcom(1)
+        align%hlpxyz(3*i-1) = y(align%diffset(i)) + shcom(2)
+        align%hlpxyz(3*i) = z(align%diffset(i)) + shcom(3)
+      end do
+    else
+      write(ilog,*) 'Warning. Index extraction for RMSD difference set from ',cfilen(t1:t2),' failed.'
+    end if
+  end if
+
+end
+!
+!---------------------------------------------------------------------------
 !
 ! #################################################
 ! ##                                             ##

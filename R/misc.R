@@ -157,3 +157,33 @@
   return(new_yyy)
 }
 
+# checking function for output command (intern or not, i.e. talkative or not)
+.check_cmd.out <- function(cmd.out, intern = FALSE){
+  if(intern) {
+    return(!is.null(attr(cmd.out, which = 'status')))
+  }else{
+    if(!.isSingleInteger(cmd.out)) stop('Something went wrong. The command output is not an integer even if intern is FALSE.')
+    return(cmd.out > 0)
+  } 
+}
+
+# simple double separator creator; something like the following.
+# > a <- .get_adjusted_separator(' a ', 11)
+# > cat(a$sep1, '\n', a$sep2, sep = '')
+# ~~~~ a ~~~~
+# ~~~~~~~~~~~
+.get_adjusted_separators <- function(tit, length_it = 68){
+  if(length_it%%2) length_it <- length_it + 1 # simple check on the lengths
+  if(.lt(tit) > length_it) stop('Please insert correctly the final length. It was too short in comparison to the title length.')
+  if(nchar(tit)%%2 != 0) nchar_sep <- length_it - 1
+  else nchar_sep <- length_it
+  half_it <- (nchar_sep - nchar(tit))/2
+  stp1 <- ""
+  for(u in 1:half_it) stp1 <- paste0(stp1, "~")
+  stp1 <- paste0(stp1, tit, stp1)
+  stp2 <- ""
+  for(u in 1:nchar_sep) stp2 <- paste0(stp2, "~")
+  stp2 <- paste0(stp2)
+  return(list('sep1' = stp1, 'sep2' = stp2))
+}
+

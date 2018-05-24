@@ -1180,12 +1180,7 @@ subroutine do_clustering(tpi)
     else
       call ncdm_set_cludatamasks(atrue,cdis_crit,ncdm_featvals_includata,clstsz)
     end if
-    if ((cdis_crit.eq.3).OR.(cdis_crit.eq.4)) then
-      call ncdm_write_ncfl(atwo,atrue)
-    else 
-      call ncdm_write_ncfl(aone,atrue)
-    end if
-    !call ncdm_write_ncfl(aone,atrue) !write down all the features (sin and cos are different and no extra dim for them in cdf)
+    call ncdm_write_ncfl(aone,atrue) !write down all the features (sin and cos are different and no extra dim for them in cdf)
 #ifdef ENABLE_THREADS
 !$OMP END SINGLE NOWAIT
 #endif
