@@ -141,15 +141,14 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
       if(found_exe) break 
     }
     bin_dir <- system.file('extdata/for_campari/bin/', package = "CampaRi")
-    camp_bin_internal_path <- paste0(bin_dir, dir(bin_dir)[1])
+    camp_bin_internal_path <- paste0(bin_dir, '/', dir(bin_dir)[1])
   } else {
     # Inserted one
     if(any(list.files(campari_exe) %in% must_be_exe)) camp_bin_path <- campari_exe
     else camp_bin_path <- dirname(campari_exe)
     
     bin_dir <- system.file('extdata/for_campari/bin/', package = "CampaRi")
-    camp_bin_internal_path <- paste0(bin_dir, dir(bin_dir)[1])
-    
+    camp_bin_internal_path <- paste0(bin_dir, '/', dir(bin_dir)[1])
     if(!any(list.files(camp_bin_path) %in% must_be_exe) || !any(list.files(camp_bin_internal_path) %in% must_be_exe))
       stop('The inserted or found directories have not any useful executable, i.e. starting with camp*. Check the insertion or use the PATH variable instead.')
   }

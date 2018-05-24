@@ -6,6 +6,7 @@ test_that('Test run_campari from installation', {
   bin_dir <- system.file('extdata/for_campari/bin/', package = "CampaRi")
   ca_exe <- paste0(bin_dir, '/', dir(bin_dir)[1])
   print(ca_exe)
+  print(list.files(ca_exe))
   expect_true(is.character(ca_exe))
   expect_true(file.exists(ca_exe))
   expect_true(ca_exe != "")

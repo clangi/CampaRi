@@ -6,7 +6,7 @@ test_that('Test campari original installation from inst directory', {
   if(!silent) require(testthat)
   cat('\n\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n')
   cat('Starting tests on install_campari...\n')
-  expect_error(install_campari(install_ncminer = T), NA)
+  # expect_error(install_campari(install_ncminer = T, silent_built = T), NA)
   # expect_error(install_campari(install_threads = T, silent_built = F), NA)
   # expect_error(install_campari(install_ncminer = T, silent_built = F), NA)
   # expect_error(install_campari(install_threads = T, install_mpi = T, silent_built = F), NA)

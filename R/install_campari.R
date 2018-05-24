@@ -9,12 +9,13 @@
 #' @param install_threads If this option is true and you have some multithreading fortran compiler (e.g. openmp) the campari_threads will be installed.
 #' @param install_mpi If this option is true and you have some MPI fortran compiler the campari_mpi will be installed.
 #' @param silent_built The configuration and make step will not print anything to console.
+#' @param no_optimization The configuration and make step will not print anything to console.
 #' @details For details, please refer to the main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
 #' 
 #' @export install_campari
 
 
-install_campari <- function(installation_location = NULL, install_ncminer = FALSE, install_threads = FALSE, install_mpi = FALSE, silent_built = FALSE){
+install_campari <- function(installation_location = NULL, install_ncminer = FALSE, install_threads = FALSE, install_mpi = FALSE, silent_built = FALSE, no_optimization = FALSE){
   
   # insertion checks
   campari_source <- paste0(system.file('extdata/', "for_campari/", package = "CampaRi"), '/')
@@ -22,16 +23,12 @@ install_campari <- function(installation_location = NULL, install_ncminer = FALS
     if(!dir.exists(installation_location))
       stop('Inserted directory does not exist. Please take care about the possibility to execute a makefile.')
   }
-  if(!is.logical(install_ncminer))
-    stop('install_ncminer must be a logical value.')
-  if(!is.logical(install_threads))
-    stop('install_threads must be a logical value.')
-  if(!is.logical(install_mpi))
-    stop('install_mpi must be a logical value.')
-  if(!is.logical(silent_built))
-    stop('silent_built must be a logical value.')
-  if(install_ncminer && install_mpi)
-    stop('ncminer option cannot be installed using mpi.')
+  if(!is.logical(install_ncminer)) stop('install_ncminer must be a logical value.')
+  if(!is.logical(install_threads)) stop('install_threads must be a logical value.')
+  if(!is.logical(install_mpi)) stop('install_mpi must be a logical value.')
+  if(!is.logical(silent_built)) stop('silent_built must be a logical value.')
+  if(!is.logical(no_optimization)) stop('silent_built must be a logical value.')
+  if(install_ncminer && install_mpi) stop('ncminer option cannot be installed using mpi.')
   
   
   # checking for install-sh config.sub config.guess and add them eventually
@@ -73,6 +70,7 @@ install_campari <- function(installation_location = NULL, install_ncminer = FALS
   
   cat(paste0('Specifing the directory: ', installing_place, ' ...\n'))
   confit <- paste0(installing_place, '/source/configure --with-campari-home=', installing_place)
+  if(no_optimization) confit <- paste(confit, '--enable-fast-compilation')
   
   # stanard installations
   .installer_conf.make(make_name = 'campari', configure_base = confit, extra_directives = '', silent_built = silent_built)
