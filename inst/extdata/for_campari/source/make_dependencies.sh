@@ -38,6 +38,12 @@
 
 SRC_DIR=$1
 
+
+if test "${SRC_DIR}" = "" -o -z "${SRC_DIR}"; then
+  SRC_DIR="."
+fi
+
+
 MODULES="accept aminos atoms clusters commline contacts cutoffs diffrac dipolavg distrest dssps ems energies ewalds forces fos fyoc grandensembles grids inter interfaces ionize iounit keys math mcgrid mcsums mini molecule movesets mpistuff ncdm paircorr params pdb polyavg polypep sequen shakeetal system tabpot threads torsn ujglobals units wl zmatrix"
 
 PRESOURCES="accsim allocate assignprm backup boundary cartld cartmd chainsaw clustering clustering_utils conrot constraint_solvers datasaw dssp emicroscopy energy energy_wrap ensemble ewald flow fmcscgrid fmsmcmpi force force_wrap fyczmat getkey graph_algorithms hacking holes initial inner_loops inner_loops_en inner_loops_imp intld intmd makeio makepept math_utils mcmove mcstat minimize ncdm_proc nucconrot parsefiles parsekey particlefluctuation polar polymer proteus prtpdb readfyc readgrid readpdb readprm restart rigidmoves sanity_checks sav sav_auxil setconf sidechain string_utils structure summary thread_utils titrate topology torconrot torsion ujconrot ujsugar_pucker unbond utilities wanglandau"
@@ -54,10 +60,15 @@ do
   MODOS=${MODOS}"mod_${i}.f90 "
 done
 
-
-if test -e "${SRC_DIR}/DEPENDENCIES"; then 
+if test -e "${SRC_DIR}/DEPENDENCIES"; then
   rm ${SRC_DIR}/DEPENDENCIES
 fi
+
+echo "DEPENDENCIES: Found the following source files in the specified directory
+${MODOS}"
+
+echo ' '
+echo 'DEPENDENCIES: loading modules relationships...'
 
 for i in $MODULES;
 do
@@ -76,15 +87,21 @@ do
   echo ${DEPS8} ${DEPS7}: \${LIB_DIR}/\${ARCH}/mpi_threads/${i}.o \${LIB_DIR}/\${ARCH}/mpi_threads/${i}.mod >> ${SRC_DIR}/DEPENDENCIES
 done
 
+echo "DEPENDENCIES: Found the following source files in the specified directory
+${SOURCES}"
+echo ' '
+echo 'DEPENDENCIES: loading sources relationships...'
 for i in $SOURCES;
 do
   echo \${LIB_DIR}/\${ARCH}/${i%.f90}.o \${LIB_DIR}/\${ARCH}/mpi/${i%.f90}.o \${LIB_DIR}/\${ARCH}/threads/${i%.f90}.o \${LIB_DIR}/\${ARCH}/mpi_threads/${i%.f90}.o: \${SRC_DIR}/${i} >> ${SRC_DIR}/DEPENDENCIES
 done
 
+echo 'DEPENDENCIES: loading macros.i relationships...'
 MDEPS=`grep -H -l1 "#include \"macros.i\"" ${SOURCES} | awk '{print "${LIB_DIR}/${ARCH}/" $1}' | sed -e "s/\.f90/.o/"`
 MDEPS2=`grep -H -l1 "#include \"macros.i\"" ${SOURCES} | awk '{print "${LIB_DIR}/${ARCH}/mpi/" $1}' | sed -e "s/\.f90/.o/"`
 MDEPS3=`grep -H -l1 "#include \"macros.i\"" ${SOURCES} | awk '{print "${LIB_DIR}/${ARCH}/threads/" $1}' | sed -e "s/\.f90/.o/"`
 MDEPS4=`grep -H -l1 "#include \"macros.i\"" ${SOURCES} | awk '{print "${LIB_DIR}/${ARCH}/mpi_threads/" $1}' | sed -e "s/\.f90/.o/"`
+
 echo ${MDEPS} ${MDEPS2} ${MDEPS3} ${MDEPS4}: \${SRC_DIR}/macros.i >> ${SRC_DIR}/DEPENDENCIES
 
 MDEPS=`grep -H -l1 "#include \"macros.i\"" ${MODOS} | awk '{print "${LIB_DIR}/${ARCH}/" $1}' | sed -e "s/\.f90/.o/"`
@@ -92,4 +109,3 @@ MDEPS2=`grep -H -l1 "#include \"macros.i\"" ${MODOS} | awk '{print "${LIB_DIR}/$
 MDEPS3=`grep -H -l1 "#include \"macros.i\"" ${MODOS} | awk '{print "${LIB_DIR}/${ARCH}/threads/" $1}' | sed -e "s/\.f90/.o/"`
 MDEPS4=`grep -H -l1 "#include \"macros.i\"" ${MODOS} | awk '{print "${LIB_DIR}/${ARCH}/mpi_threads/" $1}' | sed -e "s/\.f90/.o/"`
 echo ${MDEPS} ${MDEPS2} ${MDEPS3} ${MDEPS4}: \${SRC_DIR}/macros.i >> ${SRC_DIR}/DEPENDENCIES
-

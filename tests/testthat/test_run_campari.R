@@ -89,6 +89,7 @@ test_that('Test run_campari from installation', {
   if(file.exists('ascii_based_analysis.log')) file.remove('ascii_based_analysis.log')
   if(file.exists('ascii_based_analysis.key')) file.remove('ascii_based_analysis.key')
   if(file.exists('PROGIDX_000000000021.dat')) file.remove('PROGIDX_000000000021.dat')
+  if(file.exists('PROGIDX_000000000021.dat')) file.remove('PROGIDX_000000000021.dat')
   
   
   if(F){
