@@ -764,6 +764,7 @@ enable_option_checking
 with_campari_home
 enable_mpi
 enable_compiler
+enable_fast_compilation
 with_user_fcflags
 enable_warnflags
 enable_debug
@@ -1434,6 +1435,8 @@ Optional Features:
                           enable mpi compilation, default: no
   --enable-compiler=no/gnu/intel/(cray)/sun/pgi/<exe> 
                           enable specific compilation, default: no
+  --enable-fast-compilation=yes/no 
+                          enable fast compilation, default: no
   --enable-warnflags=yes/no 
                           enable warnflags, default: no. Use UFCFLAGS to
                           insert specific flags.
@@ -7011,14 +7014,15 @@ ABSOFTDEFAULTS="-N113 -ffree -en -TENV:simd_imask -TENV:simd_zmask"
 # autovectorization
 # AUTOVEC="-msse4.2"
 std_compiler="$FC"
-
+avail_compilers=('absoft' 'gnu' 'cray' 'sun' 'intel' 'pgi')
+STD_FCFLAGS='$FCFLAGS'
 
 # enable specific compilation
 # -------------------------------
 @%:@ Check whether --enable-compiler was given.
 if test "${enable_compiler+set}" = set; then :
   enableval=$enable_compiler; case "${enableval}" in
-        no)  compiler="no" ;;
+        no) compiler="no" ;;
         absoft|f95)  compiler="absoft" ;;
         gnu|gfortran) compiler="gnu" ;;
         cray) compiler="cray" ;;
@@ -7038,6 +7042,8 @@ $as_echo "$compiler" >&6; }
 
 # main flags settings
 if test "$compiler" != "no"; then
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $FCFLAGS" >&5
+$as_echo_n "checking whether $FCFLAGS... " >&6; }
   if test "${mpi}" = "no"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}:  specific compilers will have default flags set.
 To override specific flags please use the Makefile.local
@@ -7052,39 +7058,39 @@ file in the source directory or define the variable UFCFLAGS
     # Main compiler switch
     case "${compiler}" in
       gnu) FC="gfortran"
-      FCFLAGS="$FCFLAGS $GNUDEFAULTS"
+      FCFLAGS="$GNUDEFAULTS"
       AUTOVEC="-march=native"
       OPENLOOPS="-funroll-loops"
       PREPROCFLAGS_specific="-cpp"
       OPTIMIZATION_LEVEL="-O3";;
 
       absoft) FC="f95"
-      FCFLAGS="$FCFLAGS $ABSOFTDEFAULTS"
+      FCFLAGS="$ABSOFTDEFAULTS"
       PREPROCFLAGS_specific="-cpp"
       OPTIMIZATION_LEVEL="-O3"
       AUTOVEC="-march=host";;
 
       # todo
       cray) FC="cray"
-      FCFLAGS="$FCFLAGS $CRAYDEFAULTS";;
+      FCFLAGS="$CRAYDEFAULTS";;
       sun) FC="sun"
       FCFLAGS="$FCFLAGS $SUNDEFAULTS"
       OPTIMIZATION_LEVEL="-xO4";;
       # todo
 
       intel) FC="ifort"
-      FCFLAGS="$FCFLAGS $INTELDEFAULTS"
+      FCFLAGS="$INTELDEFAULTS"
       PREPROCFLAGS_specific="-fpp"
       OPTIMIZATION_LEVEL="-O3";;
 
       pgi) FC="pgfortran"
-      FCFLAGS="$FCFLAGS $PGIDEFAULTS"
+      FCFLAGS="$PGIDEFAULTS"
       PREPROCFLAGS_specific="-Mpreprocess"
       OPTIMIZATION_LEVEL="-O3";;
 
       *) FC="${compiler}"
       SP_COMPILER="$FC"
-      FCFLAGS="";;
+      FCFLAGS="$FCFLAGS";;
     esac
   else
     as_fn_error $? "
@@ -7313,14 +7319,14 @@ $as_echo_n "checking if inserted compiler corrisponds to default possibilities..
   if test "${compiler}" = "no"; then to_add_option=yes; fi
   case "${compiler_basename}" in
     ifort)
-      FCFLAGS="$FCFLAGS $INTELDEFAULTS"
+      FCFLAGS="$INTELDEFAULTS"
       PREPROCFLAGS_specific="-fpp"
       OPTIMIZATION_LEVEL="-O3"
       compiler="intel"
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $compiler" >&5
 $as_echo "$compiler" >&6; };;
     gfortran)
-      FCFLAGS="$FCFLAGS $GNUDEFAULTS"
+      FCFLAGS="$GNUDEFAULTS"
       AUTOVEC="-march=native"
       OPENLOOPS="-funroll-loops"
       PREPROCFLAGS_specific="-cpp"
@@ -7329,7 +7335,7 @@ $as_echo "$compiler" >&6; };;
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $compiler" >&5
 $as_echo "$compiler" >&6; };;
     pgf90|pgf95|pgfortran)
-      FCFLAGS="$FCFLAGS $PGIDEFAULTS"
+      FCFLAGS="$PGIDEFAULTS"
       compiler="pgi"
       PREPROCFLAGS_specific="-Mpreprocess"
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $compiler" >&5
@@ -7404,7 +7410,38 @@ $as_echo "yes" >&6; }
     fi
   fi
 fi
+echo $compiler
+# warning on the loss of standard FCFLAGS
+{ $as_echo "$as_me:${as_lineno-$LINENO}: if a specific compiler have been inserted, the standard FCFLAGS of the system will be lost" >&5
+$as_echo "$as_me: if a specific compiler have been inserted, the standard FCFLAGS of the system will be lost" >&6;}
+case $compiler in
+  absoft|gnu|cray|sun|intel|pgi)
+    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: the following standard FCFLAGS will be lost because you use a specific compiler (we defined best flags)" >&5
+$as_echo "$as_me: WARNING: the following standard FCFLAGS will be lost because you use a specific compiler (we defined best flags)" >&2;}
+    { $as_echo "$as_me:${as_lineno-$LINENO}: lost flags: $STD_FCFLAGS" >&5
+$as_echo "$as_me: lost flags: $STD_FCFLAGS" >&6;};;
+esac
 
+# enable fast computation!! i.e. strip of the extra flags and optimizaitons
+@%:@ Check whether --enable-fast-compilation was given.
+if test "${enable_fast_compilation+set}" = set; then :
+  enableval=$enable_fast_compilation; case "${enableval}" in
+        "" | yes)
+        fast_comp="yes";;
+        no) fast_comp="no" ;;
+        *) fast_comp="no" ;; esac
+else
+  fast_comp="no"
+fi
+
+if test "${fast_comp}" = "yes"; then
+  FCFLAGS=''
+  OPTIMIZATION_LEVEL=''
+  AUTOVEC=''
+  OPENLOOPS=''
+fi
+
+# mpi layer on top of the existing flags
 if test "${mpi}" != "no" -a -z "$mpifc_not_found"; then
   FLIBS=
   FCLIBS=
@@ -10362,9 +10399,11 @@ $as_echo_n "checking existance of file ${make_dep_script} in source... " >&6; }
 $as_echo "yes" >&6; }
     { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: To manually update dependencies please run ${make_dep_script} in the source directory." >&5
 $as_echo "$as_me: WARNING: To manually update dependencies please run ${make_dep_script} in the source directory." >&2;}
+    { $as_echo "$as_me:${as_lineno-$LINENO}: specific location of ${make_dep_script} is: ${CAMPARI_HOME}/source/${make_dep_script}" >&5
+$as_echo "$as_me: specific location of ${make_dep_script} is: ${CAMPARI_HOME}/source/${make_dep_script}" >&6;}
     { $as_echo "$as_me:${as_lineno-$LINENO}: Running ${make_dep_script} using default bash in current directory (source)." >&5
 $as_echo "$as_me: Running ${make_dep_script} using default bash in current directory (source)." >&6;}
-    "$(./${make_dep_script} .)"
+    $($BASH ${CAMPARI_HOME}/source/${make_dep_script} ${CAMPARI_HOME}/source/)
   else
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }

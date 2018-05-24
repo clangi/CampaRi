@@ -436,7 +436,8 @@ ABSOFTDEFAULTS="-N113 -ffree -en -TENV:simd_imask -TENV:simd_zmask"
 # autovectorization
 # AUTOVEC="-msse4.2"
 std_compiler="$FC"
-
+avail_compilers=('absoft' 'gnu' 'cray' 'sun' 'intel' 'pgi')
+STD_FCFLAGS='$FCFLAGS'
 
 # enable specific compilation
 # -------------------------------
@@ -444,7 +445,7 @@ AC_ARG_ENABLE(compiler,
 AS_HELP_STRING([--enable-compiler=no/gnu/intel/(cray)/sun/pgi/<exe>],
                [enable specific compilation, default: no]),
 [case "${enableval}" in
-        no)  compiler="no" ;;
+        no) compiler="no" ;;
         absoft|f95)  compiler="absoft" ;;
         gnu|gfortran) compiler="gnu" ;;
         cray) compiler="cray" ;;
@@ -459,6 +460,7 @@ AC_MSG_RESULT([$compiler])
 
 # main flags settings
 if test "$compiler" != "no"; then
+AC_MSG_CHECKING([whether $FCFLAGS])
   if test "${mpi}" = "no"; then
     AC_MSG_NOTICE([ specific compilers will have default flags set.
 To override specific flags please use the Makefile.local
@@ -469,39 +471,39 @@ file in the source directory or define the variable UFCFLAGS
     # Main compiler switch
     case "${compiler}" in
       gnu) FC="gfortran"
-      FCFLAGS="$FCFLAGS $GNUDEFAULTS"
+      FCFLAGS="$GNUDEFAULTS"
       AUTOVEC="-march=native"
       OPENLOOPS="-funroll-loops"
       PREPROCFLAGS_specific="-cpp"
       OPTIMIZATION_LEVEL="-O3";;
 
       absoft) FC="f95"
-      FCFLAGS="$FCFLAGS $ABSOFTDEFAULTS"
+      FCFLAGS="$ABSOFTDEFAULTS"
       PREPROCFLAGS_specific="-cpp"
       OPTIMIZATION_LEVEL="-O3"
       AUTOVEC="-march=host";;
 
       # todo
       cray) FC="cray"
-      FCFLAGS="$FCFLAGS $CRAYDEFAULTS";;
+      FCFLAGS="$CRAYDEFAULTS";;
       sun) FC="sun"
       FCFLAGS="$FCFLAGS $SUNDEFAULTS"
       OPTIMIZATION_LEVEL="-xO4";;
       # todo
 
       intel) FC="ifort"
-      FCFLAGS="$FCFLAGS $INTELDEFAULTS"
+      FCFLAGS="$INTELDEFAULTS"
       PREPROCFLAGS_specific="-fpp"
       OPTIMIZATION_LEVEL="-O3";;
 
       pgi) FC="pgfortran"
-      FCFLAGS="$FCFLAGS $PGIDEFAULTS"
+      FCFLAGS="$PGIDEFAULTS"
       PREPROCFLAGS_specific="-Mpreprocess"
       OPTIMIZATION_LEVEL="-O3";;
 
       *) FC="${compiler}"
       SP_COMPILER="$FC"
-      FCFLAGS="";;
+      FCFLAGS="$FCFLAGS";;
     esac
   else
     AC_MSG_ERROR([
@@ -620,13 +622,13 @@ if test -n "${compiler_basename}"; then
   if test "${compiler}" = "no"; then to_add_option=yes; fi
   case "${compiler_basename}" in
     ifort)
-      FCFLAGS="$FCFLAGS $INTELDEFAULTS"
+      FCFLAGS="$INTELDEFAULTS"
       PREPROCFLAGS_specific="-fpp"
       OPTIMIZATION_LEVEL="-O3"
       compiler="intel"
       AC_MSG_RESULT([$compiler]);;
     gfortran)
-      FCFLAGS="$FCFLAGS $GNUDEFAULTS"
+      FCFLAGS="$GNUDEFAULTS"
       AUTOVEC="-march=native"
       OPENLOOPS="-funroll-loops"
       PREPROCFLAGS_specific="-cpp"
@@ -634,7 +636,7 @@ if test -n "${compiler_basename}"; then
       compiler="gnu"
       AC_MSG_RESULT([$compiler]);;
     pgf90|pgf95|pgfortran)
-      FCFLAGS="$FCFLAGS $PGIDEFAULTS"
+      FCFLAGS="$PGIDEFAULTS"
       compiler="pgi"
       PREPROCFLAGS_specific="-Mpreprocess"
       AC_MSG_RESULT([$compiler]);;
@@ -687,7 +689,33 @@ $wrapper_flags])
     fi
   fi
 fi
+echo $compiler
+# warning on the loss of standard FCFLAGS
+AC_MSG_NOTICE([if a specific compiler have been inserted, the standard FCFLAGS of the system will be lost])
+case $compiler in
+  absoft|gnu|cray|sun|intel|pgi)
+    AC_MSG_WARN([the following standard FCFLAGS will be lost because you use a specific compiler (we defined best flags)])
+    AC_MSG_NOTICE([lost flags: $STD_FCFLAGS]);;
+esac
 
+# enable fast computation!! i.e. strip of the extra flags and optimizaitons
+AC_ARG_ENABLE(fast-compilation,
+AS_HELP_STRING([--enable-fast-compilation=yes/no],
+               [enable fast compilation, default: no]),
+[case "${enableval}" in
+        "" | yes)
+        fast_comp="yes";;
+        no) fast_comp="no" ;;
+        *) fast_comp="no" ;; esac],
+[fast_comp="no"])
+if test "${fast_comp}" = "yes"; then
+  FCFLAGS=''
+  OPTIMIZATION_LEVEL=''
+  AUTOVEC=''
+  OPENLOOPS=''
+fi
+
+# mpi layer on top of the existing flags
 if test "${mpi}" != "no" -a -z "$mpifc_not_found"; then
   FLIBS=
   FCLIBS=
@@ -1292,8 +1320,9 @@ if test -e "${CAMPARI_HOME}/source/DEPENDENCIES"; then
   if test -e "${CAMPARI_HOME}/source/${make_dep_script}"; then
     AC_MSG_RESULT([yes])
     AC_MSG_WARN([To manually update dependencies please run ${make_dep_script} in the source directory.])
+    AC_MSG_NOTICE([specific location of ${make_dep_script} is: ${CAMPARI_HOME}/source/${make_dep_script}])
     AC_MSG_NOTICE([Running ${make_dep_script} using default bash in current directory (source).])
-    "$(./${make_dep_script} .)"
+    $($BASH ${CAMPARI_HOME}/source/${make_dep_script} ${CAMPARI_HOME}/source/)
   else
     AC_MSG_RESULT([no])
     AC_MSG_ERROR([${make_dep_script} file missing from source directory])
