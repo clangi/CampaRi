@@ -5,6 +5,7 @@ variables:
   CODECOV_TOKEN: "266db23c-b9d1-405f-9aef-c5889ea5227d"
 stages:
 #  - libs
+  - test
   - check
   - codecov
 
@@ -34,6 +35,13 @@ before_script:
 #    - R -e 'devtools::test()'
 
 
+pkg_test:
+    stage: test
+    script: 
+    - pwd
+    - ls
+    - Rscript -e 'devtools::test()'
+    
 pkg_check:
     stage: check
     script: Rscript -e 'devtools::check()'
