@@ -15,7 +15,7 @@ stages:
 #  environment:      
 #    name: pkgenv
 before_script:
-  - apt-get install -y libfftw3-3 libfftw3-dev libfftw3-bin 
+#  - apt-get install -y libfftw3-3 libfftw3-dev libfftw3-bin # not necessary
   - export _R_CHECK_CRAN_INCOMING_=FALSE
   - export _R_CHECK_FORCE_SUGGESTS_=TRUE
   - Rscript -e 'install.packages("MESS", repos = "http://cran.us.r-project.org")'
