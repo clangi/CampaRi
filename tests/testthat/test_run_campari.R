@@ -2,7 +2,7 @@ context('run_campari')
 
 test_that('Test run_campari from installation', {
   if(F) setwd('projects/CampaR/garbage/')
-  expect_error(CampaRi::install_campari(install_ncminer = T, silent_built = F), NA) # to do it usually
+  expect_error(CampaRi::install_campari(install_ncminer = T, silent_built = T, no_optimization = T), NA) # to do it usually
   bin_dir <- system.file('extdata/for_campari/bin/', package = "CampaRi")
   ca_exe <- paste0(bin_dir, '/', dir(bin_dir)[1])
   print(ca_exe)
