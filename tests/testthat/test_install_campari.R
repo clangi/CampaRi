@@ -7,7 +7,7 @@ test_that('Test campari original installation from inst directory', {
   cat('\n\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n')
   cat('Starting tests on install_campari...\n')
   # expect_error(CampaRi::install_campari(install_threads = T, install_mpi = T, silent_built = T, no_optimization = T), NA) # to do it usually
-  # expect_error(install_campari(install_threads = T, silent_built = F), NA)
+  expect_error(install_campari(install_threads = T, silent_built = F, no_optimization = T), NA)
   # expect_error(install_campari(install_ncminer = T, silent_built = F), NA)
   # expect_error(install_campari(install_threads = T, install_mpi = T, silent_built = F), NA)
   # expect_error(install_campari(install_threads = T, install_mpi = T, silent_built = F), NA)
