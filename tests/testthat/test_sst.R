@@ -18,6 +18,6 @@ test_that('Building a short spanning tree', {
   expect_error(ret2 <- gen_annotation(ret, snap_start = 21, local_cut_width = 20), NA)
   # plottt <- sapphire_plot(sap_file = 'REPIX_000000000021.dat', title = "CAMPARI WRAPPER - MST", return_plot = TRUE)
 
-    if(file.exists('MST_DUMPLING.nc')) file.remove('MST_DUMPLING.nc')
+  if(file.exists('MST_DUMPLING.nc')) file.remove('MST_DUMPLING.nc')
   if(file.exists('REPIX_000000000021.dat')) file.remove('REPIX_000000000021.dat')
 })

@@ -300,8 +300,10 @@ nSBR <- function(data, ny, local.cut = FALSE, n.cluster = NULL, comb_met = c('MI
                geom_vline(xintercept = rank.pk[1:nba], col = 'black', size = 1, linetype="dotted") +
                geom_point(data = data.frame(a = rnk_ts, b = wtp[rnk_ts]), mapping = aes_string(x = 'a', y = 'b'),
                           shape = 3, col = 'darkblue', size = 5, stroke = 2.5) + 
-               xlab('Progress Index') + ylab(paste0('I', comb_met[1])) + 
-               theme(axis.title.y.left = element_text(colour = col_vec[1]))
+               xlab('Progress Index') + ylab(paste0('I', comb_met[1])) 
+  # + theme(axis.title.y.left = element_text(colour = col_vec[1])) # coloring can be made afterwards
+  
+  
   # tpl + scale_colour_manual(name="Statistic", values=c("MIC"= 'darkred',"MI"="lightgreen")) # does not work with this setting
   # tpl <- tpl + scale_y_continuous(sec.axis = sec_axis(~ . *3000 , name = "Temporal progress"), limits = c(0, 1))
   # tpl + theme(axis.title.y.right = element_text(color = 'darkgray'),
@@ -397,12 +399,13 @@ nSBR <- function(data, ny, local.cut = FALSE, n.cluster = NULL, comb_met = c('MI
   # add layers to the plot
   gtemp1 <- ref_nSBR$plot + geom_point(data = df_pl, aes_string(x = 'barr', y = 'scr'), col = 'green4', size = 0.65) +
     geom_point(data = dhe_point, aes_string(x = 'xm', y = 'ym'), col = 'red', size = 2.5) + 
-    geom_hline(aes_string(yintercept = ref_sc$score.out), size = 1, col = 'darkblue') + 
-    scale_y_continuous(sec.axis = sec_axis(~ . , name = "NMI"), limits = c(0, 1)) +
-    theme(axis.title.y.right = element_text(color = 'green4', margin = margin(l = 5)),
-          axis.line.y.right = element_blank(),
-          axis.ticks.y.right = element_blank(),
-          axis.text.y.right = element_text(color = 'green4', margin = margin(l = -16)))
+    geom_hline(aes_string(yintercept = ref_sc$score.out), size = 1, col = 'darkblue') 
+  # + scale_y_continuous(sec.axis = sec_axis(~ . , name = "NMI"), limits = c(0, 1)) +
+  #   theme(axis.title.y.right = element_text(color = 'green4', margin = margin(l = 5)),
+  #         axis.line.y.right = element_blank(),
+  #         axis.ticks.y.right = element_blank(),
+  #         axis.text.y.right = element_text(color = 'green4', margin = margin(l = -16)))
+  # MUST BE ADDED AFTERWARDS
   #+ ylab('') #+ 
   # annotate('text', x = -10000, y = 0.25, label = TeX('\text{IMIC / } {\\color{DarkGreen} \text{NMI}}'), angle = 90) # fail
   max_rnd_nmi <- CampaRi::score_sapphire(the_sap = pi.tab, ann = ann, manual_barriers = dhe_point$xm, silent = T)
