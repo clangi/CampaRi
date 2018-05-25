@@ -437,7 +437,7 @@ ABSOFTDEFAULTS="-N113 -ffree -en -TENV:simd_imask -TENV:simd_zmask"
 # AUTOVEC="-msse4.2"
 std_compiler="$FC"
 avail_compilers=('absoft' 'gnu' 'cray' 'sun' 'intel' 'pgi')
-STD_FCFLAGS='$FCFLAGS'
+STD_FCFLAGS="$FCFLAGS"
 
 # enable specific compilation
 # -------------------------------
@@ -689,7 +689,7 @@ $wrapper_flags])
     fi
   fi
 fi
-echo $compiler
+
 # warning on the loss of standard FCFLAGS
 AC_MSG_NOTICE([if a specific compiler have been inserted, the standard FCFLAGS of the system will be lost])
 case $compiler in
@@ -709,7 +709,8 @@ AS_HELP_STRING([--enable-fast-compilation=yes/no],
         *) fast_comp="no" ;; esac],
 [fast_comp="no"])
 if test "${fast_comp}" = "yes"; then
-  FCFLAGS=''
+  # FCFLAGS=''
+  AC_MSG_WARN([for faster computation we sink the following FCFLAGS: $OPTIMIZATION_LEVEL $AUTOVEC $OPENLOOPS])
   OPTIMIZATION_LEVEL=''
   AUTOVEC=''
   OPENLOOPS=''
@@ -1321,8 +1322,9 @@ if test -e "${CAMPARI_HOME}/source/DEPENDENCIES"; then
     AC_MSG_RESULT([yes])
     AC_MSG_WARN([To manually update dependencies please run ${make_dep_script} in the source directory.])
     AC_MSG_NOTICE([specific location of ${make_dep_script} is: ${CAMPARI_HOME}/source/${make_dep_script}])
-    AC_MSG_NOTICE([Running ${make_dep_script} using default bash in current directory (source).])
-    $($BASH ${CAMPARI_HOME}/source/${make_dep_script} ${CAMPARI_HOME}/source/)
+    AC_MSG_NOTICE([Running ${make_dep_script} using following command:])
+    AC_MSG_NOTICE([$BASH ${CAMPARI_HOME}/source/${make_dep_script} ${CAMPARI_HOME}/source/])
+    $BASH ${CAMPARI_HOME}/source/${make_dep_script} ${CAMPARI_HOME}/source/
   else
     AC_MSG_RESULT([no])
     AC_MSG_ERROR([${make_dep_script} file missing from source directory])
@@ -2129,18 +2131,53 @@ if test "${with_fftw3}" != "no"; then
   fi
 
   # checking the include directory
+  fftw3_h_found=no
+  fftw3_f03_found=no
   AC_ARG_VAR(fftw3_includedir, [include directory of fftw3 library])
   if test -z "${fftw3_includedir}"; then
     fftw3_includedir="`$ECHO "${FFTW3_LIB_PATH_ABS}" | $SED 's|lib.*||'`/include/"
   fi
-  AC_MSG_CHECKING([whether the include directory is correctly set. Looking for fftw3.h])
-  if test -e "${fftw3_includedir}/fftw3.h"; then
-    AC_MSG_RESULT([found])
-    FFTW3_CFLAGS="${FFTW3_CFLAGS} -I${fftw3_includedir}"
-  else
-    AC_MSG_RESULT([not found])
-    AC_MSG_ERROR([Please specify the include directory of the fftw3 library])
+
+  # checking presence of fftw3.h
+  AC_MSG_NOTICE([whether the include directory is correctly set. Looking for fftw3.h])
+  for FFTW3_INC_PATH in ${fftw3_includedir} /usr/include/; do
+    AC_MSG_CHECKING([if fftw3.h is in ${FFTW3_INC_PATH}])
+    if test -e "${FFTW3_INC_PATH}/fftw3.h"; then
+      AC_MSG_RESULT([found])
+      fftw3_h_found=yes
+      FFTW3_CFLAGS="${FFTW3_CFLAGS} -I${FFTW3_INC_PATH}"
+      fftw3_includedir="${FFTW3_INC_PATH}"
+      break
+    else
+      AC_MSG_RESULT([not found])
+    fi
+  done
+
+  # warn if fftw3.h not detected
+  if test "${fftw3_h_found}" != 'yes'; then
+    AC_MSG_WARN([Please specify the include directory of the fftw3 library (define fftw3_includedir)])
   fi
+
+  # checking presence of fftw3.f03
+  AC_MSG_NOTICE([whether the include directory is correctly set. Looking for fftw3.f03])
+  for FFTW3_INC_PATH in ${fftw3_includedir} /usr/include/; do
+    AC_MSG_CHECKING([if fftw3.f03 is in ${FFTW3_INC_PATH}])
+    if test -e "${FFTW3_INC_PATH}/fftw3.f03"; then
+      AC_MSG_RESULT([found])
+      fftw3_f03_found=yes
+      FFTW3_CFLAGS="${FFTW3_CFLAGS} -I${FFTW3_INC_PATH}"
+      fftw3_includedir="${FFTW3_INC_PATH}"
+      break
+    else
+      AC_MSG_RESULT([not found])
+    fi
+  done
+
+  # break if fftw3.f03 not detected
+  if test "${fftw3_f03_found}" != 'yes'; then
+    AC_MSG_ERROR([Please specify the include directory of the fftw3 library (define fftw3_includedir)])
+  fi
+
 
   #fail to detect FFTW3_library, use the standard system path (which can be ommited)
   if test -z "${FFTW3_LIBS}"; then

@@ -7015,7 +7015,7 @@ ABSOFTDEFAULTS="-N113 -ffree -en -TENV:simd_imask -TENV:simd_zmask"
 # AUTOVEC="-msse4.2"
 std_compiler="$FC"
 avail_compilers=('absoft' 'gnu' 'cray' 'sun' 'intel' 'pgi')
-STD_FCFLAGS='$FCFLAGS'
+STD_FCFLAGS="$FCFLAGS"
 
 # enable specific compilation
 # -------------------------------
@@ -7410,7 +7410,7 @@ $as_echo "yes" >&6; }
     fi
   fi
 fi
-echo $compiler
+
 # warning on the loss of standard FCFLAGS
 { $as_echo "$as_me:${as_lineno-$LINENO}: if a specific compiler have been inserted, the standard FCFLAGS of the system will be lost" >&5
 $as_echo "$as_me: if a specific compiler have been inserted, the standard FCFLAGS of the system will be lost" >&6;}
@@ -7435,7 +7435,9 @@ else
 fi
 
 if test "${fast_comp}" = "yes"; then
-  FCFLAGS=''
+  # FCFLAGS=''
+  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: for faster computation we sink the following FCFLAGS: $OPTIMIZATION_LEVEL $AUTOVEC $OPENLOOPS" >&5
+$as_echo "$as_me: WARNING: for faster computation we sink the following FCFLAGS: $OPTIMIZATION_LEVEL $AUTOVEC $OPENLOOPS" >&2;}
   OPTIMIZATION_LEVEL=''
   AUTOVEC=''
   OPENLOOPS=''
@@ -10401,9 +10403,11 @@ $as_echo "yes" >&6; }
 $as_echo "$as_me: WARNING: To manually update dependencies please run ${make_dep_script} in the source directory." >&2;}
     { $as_echo "$as_me:${as_lineno-$LINENO}: specific location of ${make_dep_script} is: ${CAMPARI_HOME}/source/${make_dep_script}" >&5
 $as_echo "$as_me: specific location of ${make_dep_script} is: ${CAMPARI_HOME}/source/${make_dep_script}" >&6;}
-    { $as_echo "$as_me:${as_lineno-$LINENO}: Running ${make_dep_script} using default bash in current directory (source)." >&5
-$as_echo "$as_me: Running ${make_dep_script} using default bash in current directory (source)." >&6;}
-    $($BASH ${CAMPARI_HOME}/source/${make_dep_script} ${CAMPARI_HOME}/source/)
+    { $as_echo "$as_me:${as_lineno-$LINENO}: Running ${make_dep_script} using following command:" >&5
+$as_echo "$as_me: Running ${make_dep_script} using following command:" >&6;}
+    { $as_echo "$as_me:${as_lineno-$LINENO}: $BASH ${CAMPARI_HOME}/source/${make_dep_script} ${CAMPARI_HOME}/source/" >&5
+$as_echo "$as_me: $BASH ${CAMPARI_HOME}/source/${make_dep_script} ${CAMPARI_HOME}/source/" >&6;}
+    $BASH ${CAMPARI_HOME}/source/${make_dep_script} ${CAMPARI_HOME}/source/
   else
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
@@ -15063,21 +15067,62 @@ $as_echo "$as_me: found ${FFTW3_LIB_TOTEST} file in: ${FFTW3_LIB_PATH_ABS}" >&6;
   fi
 
   # checking the include directory
+  fftw3_h_found=no
+  fftw3_f03_found=no
 
   if test -z "${fftw3_includedir}"; then
     fftw3_includedir="`$ECHO "${FFTW3_LIB_PATH_ABS}" | $SED 's|lib.*||'`/include/"
   fi
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether the include directory is correctly set. Looking for fftw3.h" >&5
-$as_echo_n "checking whether the include directory is correctly set. Looking for fftw3.h... " >&6; }
-  if test -e "${fftw3_includedir}/fftw3.h"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: found" >&5
+
+  # checking presence of fftw3.h
+  { $as_echo "$as_me:${as_lineno-$LINENO}: whether the include directory is correctly set. Looking for fftw3.h" >&5
+$as_echo "$as_me: whether the include directory is correctly set. Looking for fftw3.h" >&6;}
+  for FFTW3_INC_PATH in ${fftw3_includedir} /usr/include/; do
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking if fftw3.h is in ${FFTW3_INC_PATH}" >&5
+$as_echo_n "checking if fftw3.h is in ${FFTW3_INC_PATH}... " >&6; }
+    if test -e "${FFTW3_INC_PATH}/fftw3.h"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: found" >&5
 $as_echo "found" >&6; }
-    FFTW3_CFLAGS="${FFTW3_CFLAGS} -I${fftw3_includedir}"
-  else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: not found" >&5
+      fftw3_h_found=yes
+      FFTW3_CFLAGS="${FFTW3_CFLAGS} -I${FFTW3_INC_PATH}"
+      fftw3_includedir="${FFTW3_INC_PATH}"
+      break
+    else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: not found" >&5
 $as_echo "not found" >&6; }
-    as_fn_error $? "Please specify the include directory of the fftw3 library" "$LINENO" 5
+    fi
+  done
+
+  # warn if fftw3.h not detected
+  if test "${fftw3_h_found}" != 'yes'; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Please specify the include directory of the fftw3 library (define fftw3_includedir)" >&5
+$as_echo "$as_me: WARNING: Please specify the include directory of the fftw3 library (define fftw3_includedir)" >&2;}
   fi
+
+  # checking presence of fftw3.f03
+  { $as_echo "$as_me:${as_lineno-$LINENO}: whether the include directory is correctly set. Looking for fftw3.f03" >&5
+$as_echo "$as_me: whether the include directory is correctly set. Looking for fftw3.f03" >&6;}
+  for FFTW3_INC_PATH in ${fftw3_includedir} /usr/include/; do
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking if fftw3.f03 is in ${FFTW3_INC_PATH}" >&5
+$as_echo_n "checking if fftw3.f03 is in ${FFTW3_INC_PATH}... " >&6; }
+    if test -e "${FFTW3_INC_PATH}/fftw3.f03"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: found" >&5
+$as_echo "found" >&6; }
+      fftw3_f03_found=yes
+      FFTW3_CFLAGS="${FFTW3_CFLAGS} -I${FFTW3_INC_PATH}"
+      fftw3_includedir="${FFTW3_INC_PATH}"
+      break
+    else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: not found" >&5
+$as_echo "not found" >&6; }
+    fi
+  done
+
+  # break if fftw3.f03 not detected
+  if test "${fftw3_f03_found}" != 'yes'; then
+    as_fn_error $? "Please specify the include directory of the fftw3 library (define fftw3_includedir)" "$LINENO" 5
+  fi
+
 
   #fail to detect FFTW3_library, use the standard system path (which can be ommited)
   if test -z "${FFTW3_LIBS}"; then

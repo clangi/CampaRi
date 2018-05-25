@@ -214,11 +214,11 @@ ${LIB_DIR}/${ARCH}/libhsl.a: ${SRC_DIR}/hsl/eb13d.f ${SRC_DIR}/hsl/eb13s.f ${SRC
 
 # targets for spreading HSL module files
 $(patsubst %,${LIB_DIR}/${ARCH}/mpi/%.mod,$(HSLMODS)): ${LIB_DIR}/${ARCH}/libhsl.a
-	${CP} $(patsubst ${LIB_DIR}/${ARCH}/mpi/%.mod,${LIB_DIR}/${ARCH}/%.mod,$@) $@
+	${MV} $(patsubst ${LIB_DIR}/${ARCH}/mpi/%.mod,${LIB_DIR}/${ARCH}/%.mod,$@) $@
 $(patsubst %,${LIB_DIR}/${ARCH}/threads/%.mod,$(HSLMODS)): ${LIB_DIR}/${ARCH}/libhsl.a
-	${CP} $(patsubst ${LIB_DIR}/${ARCH}/threads/%.mod,${LIB_DIR}/${ARCH}/%.mod,$@) $@
+	${MV} $(patsubst ${LIB_DIR}/${ARCH}/threads/%.mod,${LIB_DIR}/${ARCH}/%.mod,$@) $@
 $(patsubst %,${LIB_DIR}/${ARCH}/mpi_threads/%.mod,$(HSLMODS)): ${LIB_DIR}/${ARCH}/libhsl.a
-	${CP} $(patsubst ${LIB_DIR}/${ARCH}/mpi_threads/%.mod,${LIB_DIR}/${ARCH}/%.mod,$@) $@
+	${MV} $(patsubst ${LIB_DIR}/${ARCH}/mpi_threads/%.mod,${LIB_DIR}/${ARCH}/%.mod,$@) $@
 
 
 
