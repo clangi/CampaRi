@@ -28,6 +28,7 @@
 #' @param pk_span Integer. The spanning window that should be the minimum size of the basin. It defines the peak finding step.
 #' @param return_plot Logical. This can return the plot object in the return list.
 #' @param silent A logical value indicating whether the function has to remain silent or not. Default value is \code{FALSE}.
+#' @param shuffles A logical value indicating whether the data must be shuffled before analysis (both data and ann). Default value is \code{FALSE}.
 #' @param random_picks Insert the number of times the barriers should be randomly recalculated for having a random baseline.
 #' @param ann If random_picks is inserted you need to score the the random barriers against an annotation!!
 #' @param ...
@@ -46,7 +47,7 @@
 #'                 \item "\code{ggp.dist.rnd.bar}"  ggplot containing the estimate (in z-scores) of the distance from random distribution (showed in light blue).
 #'                 \item "\code{rnd.scores.nas}" Number of NAs in the randomly picked scores.
 #'                 \item "\code{rnd.scores}" data.frame with all the scores found.
-#'                 \item "\code{max.rnd.nmi}" score_sapphire obj on the best random pick.
+#'                 \item "\code{max.rnd.scor}" score_sapphire obj on the best random pick.
 #'                 \item "\code{max.rnd.bar}" data.frame with the best parriers found randomly and their score (xm = barrier points, ym = score).
 #'                 \item "\code{ref.score}" score_sapphire obj with the standard best score optimization procedure.
 #'                 \item "\code{z.scores}" Found zscore between optimal barrier and random picks distribution.
@@ -64,6 +65,7 @@
 #' @importFrom minerva mine
 #' @importFrom gplots hist2d
 #' @importFrom infotheo mutinformation
+#' @importFrom splus2R peaks
 #' @import ggplot2
 # @importFrom TransferEntropy computeTE
 # @importFrom RcppRoll roll_mean
@@ -73,7 +75,7 @@
 nSBR <- function(data, ny, local.cut = FALSE, n.cluster = NULL, comb_met = c('MIC'),                        # fundamental vars
                  unif.splits = NULL, pk_span = NULL,                                                        # algorithm details
                  plot = FALSE, silent = FALSE, return_plot = FALSE,                                         # plots and prints
-                 random_picks = NULL, ann = NULL,                                                           # randomization of the barriers and comparison
+                 random_picks = NULL, ann = NULL, shuffles = FALSE,                                         # randomization of the barriers and comparison
                  ...) { 
   
   # Standard input checks  
@@ -92,7 +94,8 @@ nSBR <- function(data, ny, local.cut = FALSE, n.cluster = NULL, comb_met = c('MI
   if(!is.logical(local.cut)) stop("local.cut must be a logical value")
   if(!is.logical(return_plot)) stop("return_plot must be a logical value")
   if(!is.logical(plot)) stop("plot must be a logical value")
-  if(!is.logical(silent)) stop("plot must be a logical value")
+  if(!is.logical(silent)) stop("silent must be a logical value")
+  if(!is.logical(shuffles)) stop("shuffles must be a logical value")
   if(!is.null(unif.splits)) stopifnot(all(sapply(unif.splits, function(x) x%%1) == 0))
   
   # Extra arguments checks
@@ -246,11 +249,12 @@ nSBR <- function(data, ny, local.cut = FALSE, n.cluster = NULL, comb_met = c('MI
   
   if(is.null(pk_span)) span <- round(lpi/50) # number of snapshots in which only one peak
   else span <- pk_span
-  stopifnot(span > 3, span < lpi/2)
+  stopifnot(span > 3, span < (lpi/2-3))
   
   # finding peaks and ordering 
   pky <- array(0, lpi)
-  where.pk <- peaks(wtp, span = span)
+  if(span%%2 == 0) span <- span + 1 # just to eliminate the note
+  where.pk <- splus2R::peaks(wtp, span = span)
   pky <- as.numeric(where.pk)[where.pk]
   pkx <- 1:lpi
   pkx <- pkx[where.pk]
@@ -326,6 +330,22 @@ nSBR <- function(data, ny, local.cut = FALSE, n.cluster = NULL, comb_met = c('MI
                                    silent = silent)
   }
   
+  if(shuffles){
+    if(!silent) cat('Annotation random shuffleing procedure started...\n')
+    
+    if(!is.data.frame(data)) data <- data.frame(fread(data, showProgress=FALSE))
+    ann2 <- sample(ann)
+    shffl.obj1 <- nSBR(data = data, ny = ny, local.cut = local.cut, n.cluster = nclu, comb_met = comb_met, 
+                       unif.splits = n_unif, pk_span = pk_span, plot = F, silent = T, return_plot = T, 
+                       random_picks = random_picks, ann = ann2, shuffles = F, ...)
+    if(!silent) cat('Found the following score with ann shuffle:', max(shffl.obj1$rnd.picks$ref.score$score.out, shffl.obj1$rnd.picks$max.rnd.scor$score.out), '\n')
+    if(!silent) cat('Progress Index random shuffleing procedure started...\n')
+    data[,3] <- sample(data[,3]) # shuffleing the PI
+    shffl.obj2 <- nSBR(data = data, ny = ny, local.cut = local.cut, n.cluster = nclu, comb_met = comb_met, 
+                       unif.splits = n_unif, pk_span = pk_span, plot = F, silent = T, return_plot = T, 
+                       random_picks = random_picks, ann = ann, shuffles = F, ...)
+    if(!silent) cat('Found the following score with PI shuffle:', max(shffl.obj2$rnd.picks$ref.score$score.out, shffl.obj2$rnd.picks$max.rnd.scor$score.out), '\n')
+  } 
   # microbenchmarking MIC MI
   # if(F){
   #   mbm <- microbenchmark::microbenchmark(
@@ -340,9 +360,10 @@ nSBR <- function(data, ny, local.cut = FALSE, n.cluster = NULL, comb_met = c('MI
   if(plot && is.null(random_picks)) print(tpl)
   if(plot && !is.null(random_picks)) print(rnd.obj$ggp.bar)
   returning_list <- list('nbins' = c(ny, ny), 'barriers' = rank.pk)
-  if(return_plot) returning_list <- list('nbins' = c(ny, ny), 'barriers' = rank.pk, 'plot' = tpl)
-  else if(return_plot && !is.null(random_picks)) returning_list <- list('nbins' = c(ny, ny), 'barriers' = rank.pk, 'plot' = tpl, 'rnd.picks' = rnd.obj)
-  else if(!is.null(random_picks)) returning_list <- list('nbins' = c(ny, ny), 'barriers' = rank.pk, 'rnd.picks' = rnd.obj)
+  if(return_plot) returning_list[['plot']] <- tpl
+  if(!is.null(random_picks)) returning_list[['rnd.picks']] <- rnd.obj
+  if(shuffles) returning_list[['ann_shuffle']] <- shffl.obj1
+  if(shuffles) returning_list[['pi_shuffle']] <- shffl.obj2
   invisible(returning_list)
 }
 
@@ -372,7 +393,9 @@ nSBR <- function(data, ny, local.cut = FALSE, n.cluster = NULL, comb_met = c('MI
   
   # calculating the repetition 
   repe <- lapply(X = 1:random_trials, FUN = function(x){ 
-    if(random_trials > 99 && x%%round(random_trials/100) == 0) cat(round(x*100.0/random_trials,2),'%\r')
+    if(random_trials > 99 && x%%round(random_trials/100) == 0){
+      if(!silent) cat(round(x*100.0/random_trials,2),'%\r')
+    } 
     ba <- .rand_pick_min(ar = seq(2, length(ann) - 2), min.dist = span, n.picks = nba)
     # ba <- round(runif(nba, 2, length(ann) - 2))
     l1 <- CampaRi::score_sapphire(the_sap = pi.tab, ann = ann, manual_barriers = ba, silent = T)
@@ -400,16 +423,16 @@ nSBR <- function(data, ny, local.cut = FALSE, n.cluster = NULL, comb_met = c('MI
   gtemp1 <- ref_nSBR$plot + geom_point(data = df_pl, aes_string(x = 'barr', y = 'scr'), col = 'green4', size = 0.65) +
     geom_point(data = dhe_point, aes_string(x = 'xm', y = 'ym'), col = 'red', size = 2.5) + 
     geom_hline(aes_string(yintercept = ref_sc$score.out), size = 1, col = 'darkblue') 
-  # + scale_y_continuous(sec.axis = sec_axis(~ . , name = "NMI"), limits = c(0, 1)) +
+  # + scale_y_continuous(sec.axis = sec_axis(~ . , name = "scor"), limits = c(0, 1)) +
   #   theme(axis.title.y.right = element_text(color = 'green4', margin = margin(l = 5)),
   #         axis.line.y.right = element_blank(),
   #         axis.ticks.y.right = element_blank(),
   #         axis.text.y.right = element_text(color = 'green4', margin = margin(l = -16)))
   # MUST BE ADDED AFTERWARDS
   #+ ylab('') #+ 
-  # annotate('text', x = -10000, y = 0.25, label = TeX('\text{IMIC / } {\\color{DarkGreen} \text{NMI}}'), angle = 90) # fail
-  max_rnd_nmi <- CampaRi::score_sapphire(the_sap = pi.tab, ann = ann, manual_barriers = dhe_point$xm, silent = T)
-  if(!silent) cat('Found the following score using random procedure:', max_rnd_nmi$score.out, '\n')
+  # annotate('text', x = -10000, y = 0.25, label = TeX('\text{IMIC / } {\\color{DarkGreen} \text{scor}}'), angle = 90) # fail
+  max_rnd_scor <- CampaRi::score_sapphire(the_sap = pi.tab, ann = ann, manual_barriers = dhe_point$xm, silent = T)
+  if(!silent) cat('Found the following score using random procedure:', max_rnd_scor$score.out, '\n')
   
   # showing how many are better!
   df_pl_better <- df_pl[df_pl[, 'scr'] > ref_sc$score.out,]
@@ -434,7 +457,7 @@ nSBR <- function(data, ny, local.cut = FALSE, n.cluster = NULL, comb_met = c('MI
   
   # final return
   invisible(list('ggp.bar' = gtemp1, 'ggp.dist.rnd.bar' = gtemp2, 'rnd.scores.nas' = sco.nas, 
-                 'rnd.scores' = df_pl, 'max.rnd.nmi' = max_rnd_nmi, 'max.rnd.bar' = dhe_point,
+                 'rnd.scores' = df_pl, 'max.rnd.scor' = max_rnd_scor, 'max.rnd.bar' = dhe_point,
                  'ref.score' = ref_sc, 'z.scores' = zcs, 'pval_zsc' = pval_zsc, 'pval_95per' = pval_95per,
                  'std.n.bar' = length(babar)))
 }

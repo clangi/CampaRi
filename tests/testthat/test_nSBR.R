@@ -3,7 +3,7 @@ context('nSBR')
 test_that('new trials for SBR', {
   
   # CREATION OF THE DATASET
-  silent <- F
+  silent <- T
   plt_stff <- !silent
   if(!silent) {require(testthat); require(CampaRi)} 
   stdd <- 3; n_dim <- 10; n_snap <- 3000; n_tot <- n_dim*n_snap/3; if(!silent) print(n_tot)
@@ -36,6 +36,13 @@ test_that('new trials for SBR', {
                                    unif.splits = seq(5, 100, 8),  
                                    pk_span = 500, ny = 50, plot = T, random_picks = 100, ann = ann,
                                    silent = silent, dbg_nSBR = F, return_plot = F), NA)
+  # ------------------------------------------------------- shuffles test
+  expect_error(a1 <- CampaRi::nSBR(data = file.pi, n.cluster = 3, shuffles = T, 
+                                   comb_met = c('MIC'),
+                                   unif.splits = seq(5, 100, 8),  
+                                   pk_span = 500, ny = 20, plot = T, random_picks = 100, ann = ann,
+                                   silent = silent, dbg_nSBR = F, return_plot = F), NA)
+  
   
   ######################### evaluating the fluctuation and randomicity of the score ##########################
   do_it <- FALSE
