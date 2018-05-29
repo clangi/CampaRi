@@ -33,15 +33,17 @@ test_that('scoring sapphire plots', {
   
   # new tests using the nSBR function
   # ---------------------------------------------- nSBR manual_barriers option
-  expect_error(a1 <- CampaRi::nSBR(data = file.pi, n.cluster = 3, 
+  expect_error(a1 <- CampaRi::nSBR(data = file.pi, n.cluster = 4, 
                                   comb_met = c('MIC'),
-                                  unif.splits = seq(5, 100, 8),  
-                                  pk_span = 500, ny = 50, plot = T, 
+                                  unif.splits = seq(5, 80, 4),  
+                                  pk_span = 500, ny = 30, plot = T, 
                                   silent = silent, dbg_nSBR = F, return_plot = T), NA)
   expect_error(ahahscore <- CampaRi::score_sapphire(the_sap = file.pi, ann = ann, manual_barriers = a1$barriers[1:2], silent = silent), NA)
   
   
   # test if the number of barriers != ncl (firstly > and secondly <)
+  expect_error(ahahscore <- CampaRi::score_sapphire(the_sap = file.pi, ann = ann, manual_barriers = c(a1$barriers,1000), silent = silent), NA)
+  
   
   # =====================================================================================================================================================
   # Testing different metrics for multiclass interclustering similarity.
