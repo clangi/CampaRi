@@ -22,6 +22,8 @@
 #' vector of integer and the resulting value is an average of these expanded results. Standard is \code{c(5,10,15,20,25,30,40,50,60)} generally.
 #' @param n.cluster Integer. If this value is inserted only the first \code{n.cluster - 1} barriers are shown with dotted lines on the plot. Note that no
 #' preselection of the barriers is done in the final output and this must be done again in a second instance. The output contains all the possible barriers (ordered).
+#' @param force_correct_ncl A logical value indicating whether the correct number of clusters (in a minimum sense) must be respected. In practice it returns the truncated
+#' list with a considerable number of warnings. Default value is \code{FALSE}.
 #' @param plot A logical value indicating whether to display the SAPPHIRE plot with the resulting partitions or not. The dark red curve indicates the MIC interpolation
 #' while black dots indicate the peaks found. Here it is possible to see the effect of the spanning variable. Grey dots in the background are the temporal annotation as
 #' it has been ordere by the progress index.
@@ -72,7 +74,8 @@
 #' 
 #' @export nSBR
 
-nSBR <- function(data, ny, local.cut = FALSE, n.cluster = NULL, comb_met = c('MIC'),                        # fundamental vars
+nSBR <- function(data, ny, local.cut = FALSE, comb_met = c('MIC'),                                          # fundamental vars
+                 n.cluster = NULL, force_correct_ncl = FALSE,                                               # cluster related vars
                  unif.splits = NULL, pk_span = NULL,                                                        # algorithm details
                  plot = FALSE, silent = FALSE, return_plot = FALSE,                                         # plots and prints
                  random_picks = NULL, ann = NULL, shuffles = FALSE,                                         # randomization of the barriers and comparison
@@ -96,6 +99,7 @@ nSBR <- function(data, ny, local.cut = FALSE, n.cluster = NULL, comb_met = c('MI
   if(!is.logical(plot)) stop("plot must be a logical value")
   if(!is.logical(silent)) stop("silent must be a logical value")
   if(!is.logical(shuffles)) stop("shuffles must be a logical value")
+  if(!is.logical(force_correct_ncl)) stop("force_correct_ncl must be a logical value")
   if(!is.null(unif.splits)) stopifnot(all(sapply(unif.splits, function(x) x%%1) == 0))
   
   # Extra arguments checks
@@ -269,9 +273,19 @@ nSBR <- function(data, ny, local.cut = FALSE, n.cluster = NULL, comb_met = c('MI
   if(nbar.selected < 2) stop('Found less than 2 clusters (i.e. less than 1 barrier). Try to decrease the peak span.')
   nba <- nclu - 1 # cluster and barrier number 
   rnk_ts <- rank.pk[1:nbar.selected] # rank to show (number of peaks to show)
-  if(!is.null(n.cluster) && nbar.selected != nba && !silent) #
-    warning('Attention, we selected only ', nbar.selected, ' instead of ', nba, '. Enhance the vars.')
   
+  # less cluster than expected -> warnings and fun
+  if(!is.null(n.cluster) && nbar.selected < nba) {
+    if(force_correct_ncl){
+      if(!silent) warning('Attention, we selected only ', nbar.selected, ' barriers instead of ', nba, '. Enhance the vars.')
+      if(!silent) warning('ATTENTION: the number of barriers selected is less than wanted. 
+                          Having inserted force_correc_ncl the function will stop here returning the actual number of barriers found.')
+      return(list('WARNING', 'barriers' = rnk_ts))
+      
+    }else{
+      if(!silent) warning('Attention, we selected only ', nbar.selected, ' barriers instead of ', nba, '. Enhance the vars.')
+    }
+  }
   if(F){ # entropy consideration for heuristic future
     dhc <- .dens_histCounts(progind, breaks = rank.pk, nx = ny, ny = ny) # breaks are the barriers points on x
     dens <- dhc$density
