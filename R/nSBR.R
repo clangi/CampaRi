@@ -269,6 +269,8 @@ nSBR <- function(data, ny, local.cut = FALSE, n.cluster = NULL, comb_met = c('MI
   if(nbar.selected < 2) stop('Found less than 2 clusters (i.e. less than 1 barrier). Try to decrease the peak span.')
   nba <- nclu - 1 # cluster and barrier number 
   rnk_ts <- rank.pk[1:nbar.selected] # rank to show (number of peaks to show)
+  if(!is.null(n.cluster) && nbar.selected != nba && !silent) #
+    warning('Attention, we selected only ', nbar.selected, ' instead of ', nba, '. Enhance the vars.')
   
   if(F){ # entropy consideration for heuristic future
     dhc <- .dens_histCounts(progind, breaks = rank.pk, nx = ny, ny = ny) # breaks are the barriers points on x
@@ -325,9 +327,14 @@ nSBR <- function(data, ny, local.cut = FALSE, n.cluster = NULL, comb_met = c('MI
     if(random_picks < 10 ) stop('Use more than 10 random_picks to have some interesting result. Please.')
 
     # main random pick function
-    rnd.obj <- .rnd_bar_estimation(pi.tab = data, ann = ann, ncl = nclu, span = span, ny = ny, 
-                                   unifsplits = n_unif, random_trials = random_picks, comb_met = comb_met,
-                                   silent = silent)
+    # if(nbar.selected != n.cluster) {
+      # if(!silent) warning('IMPOSSIBLE to determine the right number of clusters. Truncated the randomization')
+      # rnd.obj <- NULL
+    # }else{
+      rnd.obj <- .rnd_bar_estimation(pi.tab = data, ann = ann, ncl = nclu, span = span, ny = ny, 
+                                     unifsplits = n_unif, random_trials = random_picks, comb_met = comb_met,
+                                     silent = silent)
+    # }
   }
   
   if(shuffles){
@@ -403,7 +410,7 @@ nSBR <- function(data, ny, local.cut = FALSE, n.cluster = NULL, comb_met = c('MI
   })
   
   # split the results accordingly
-  sco <- sapply(repe, function(x) return(x$sc))
+  sco <- unique(sapply(repe, function(x) return(x$sc)))
   sco.nas <- sum(is.na(sco))
   # sco[is.na(sco)] <- 0 # no more needed
   best_ba <- sapply(repe, function(x) return(x$ba))
@@ -411,8 +418,10 @@ nSBR <- function(data, ny, local.cut = FALSE, n.cluster = NULL, comb_met = c('MI
   # calculating rough zscore
   zcs <- (ref_sc$score.out - mean(sco)) / sd(sco)
   pval_zsc <- 2*stats::pnorm(-abs(zcs))
-  pval_95per <- stats::quantile(c(sco),  probs = 0.95)
-
+  inv_quantile <- stats::ecdf(c(sco))
+  pval_95per <- 1 - inv_quantile(ref_sc$score.out)
+  the_95per <- stats::quantile(c(sco),  probs = 0.95)
+  
   # use the classic plot to see the points (barrier points) which exceded the combination found.
   df_pl <- data.frame('barr' = c(best_ba), 'scr' = rep(sco, each=nba))
   # find the two maxima (red points)
@@ -458,7 +467,7 @@ nSBR <- function(data, ny, local.cut = FALSE, n.cluster = NULL, comb_met = c('MI
   # final return
   invisible(list('ggp.bar' = gtemp1, 'ggp.dist.rnd.bar' = gtemp2, 'rnd.scores.nas' = sco.nas, 
                  'rnd.scores' = df_pl, 'max.rnd.scor' = max_rnd_scor, 'max.rnd.bar' = dhe_point,
-                 'ref.score' = ref_sc, 'z.scores' = zcs, 'pval_zsc' = pval_zsc, 'pval_95per' = pval_95per,
+                 'ref.score' = ref_sc, 'z.scores' = zcs, 'pval_zsc' = pval_zsc, 'pval_95per' = pval_95per, 'the_95per' = the_95per,
                  'std.n.bar' = length(babar)))
 }
 
