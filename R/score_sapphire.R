@@ -17,15 +17,22 @@
 #'  insert only the resulting bas object
 #' @param manual_barriers If an integer vector is inserted, it is used as the barrier locations.
 #' @param plot_pred_true_resume Defaults tp \code{FALSE}. If set to true it plots the predicted and true labels one along the other.
-#' @param merge_clusters Logical that allow clusters to be merged automatically if consecutives
+#' @param multi_cluster_policy This string decides how the clusters must be handled in the case of more clusters found in comparison to the annotation 
+#' inserted. The default is \code{'popup'}. The available values are:
+#'      \itemize{
+#'         \item "\code{popup}" Creates new clusters (ordered by shannon weight).
+#'         \item "\code{keep}" Keeps the duplications and so on. This is a bias feature.
+#'         \item "\code{merge_previous}" Takes in account the last label inserted in the shannon weigthed table.
+#'       }   
+#'       
 #' @param silent A logical value indicating whether the function has to remain silent or not. Default value is \code{FALSE}.
 #' @param ... \code{vec1} and \code{vec2} variables can be used for direct comparison of vectors.
 #' 
 #' @return A list containing
 #'       \itemize{
 #'         \item "\code{score.out}" Resulting score between 0 and 1 (good).
-#'         \item "\code{max_freq_table}" Matrix with a description of the labels selected and their cluster characteristics
-#'         \item "\code{label_freq_list}" Total representation of the clusters
+#'         \item "\code{label_freq_list}" Total representation of the clusters along with the single shannon entropies.
+#'         \item "\code{miss_perc}" Percentage of not correctly defined divisions.
 #'       }   
 #'       
 #'       
@@ -46,13 +53,14 @@
 #' @export score_sapphire
 
 score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NULL,                              # fundamental inputs
-                           scoring_method = 'adjusted_rand_index', merge_clusters = FALSE,                      # scoring details
+                           scoring_method = 'adjusted_rand_index', multi_cluster_policy = 'popup',              # scoring  and merging details
                            plot_pred_true_resume = FALSE, silent = FALSE,                                       # it refers to this function
                            ...){                                                                                # to add
   
   # ----------------------------------------------------------------------------------------------- general input checking
   input.args <- list(...)
   avail.extra.arg <- c("vec1", "vec2", 'dbg_score_sapphire')
+  avail.policies <- c('popup', 'keep', 'merge_previous')
   
   if(!is.null(names(input.args)) && any(!(names(input.args) %in% avail.extra.arg))){
     if(!silent) warning('There is a probable mispelling in one of the inserted variables. Please check the available extra input arguments.')
@@ -71,7 +79,7 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
   # methods input check
   scoring_method.opt <- c("adjusted_rand_index", "jaccard_index", "purity", "nmi")
   if(!(scoring_method[1] %in% scoring_method.opt)) stop("Scoring method option not valid")
-  
+
   ###
   
   if(is.null(vec1)){
@@ -106,9 +114,12 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
     
     # Other input checks
     if(!is.numeric(ann) && (!is.null(dim(ann)))) stop('Please provide an integer vector for ann')
-    if(!is.logical(merge_clusters)) stop('merge_clusters must be a logical')
     if(!is.logical(plot_pred_true_resume)) stop('plot_pred_true_resume must be a logical')
     if(!is.logical(silent)) stop('silent must be a logical')
+    
+    # check over the merging or popping policy
+    if(!.isSingleChar(multi_cluster_policy)) stop('multi_cluster_policy must be a logical')
+    if(!(multi_cluster_policy %in% avail.policies)) stop(paste0('multi_cluster_policy must be between the following: ', paste(avail.policies, collapse = " ")))
     
     # sapphire table loading
     if(!is.null(the_sap) && !is.data.frame(the_sap)){
@@ -243,7 +254,6 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
     
     # ---------------------------------------------------------------------------------------------- Creation of the Entropy levels
     # collecting the various elected labels - selection policy: unique labels!
-    multi_cluster_policy <- 'popup'  # merge_consecutive # select_non_conflict # select_non_conflict_spawn
       
     # looking for collisions and candidates
     possible_coll <- sapply(label_freq_list, function(x) x['lab', 1])
@@ -293,9 +303,9 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
             }else if(multi_cluster_policy == 'keep'){
               res_label <- c(res_label, candida)
               
-            # merge previous on the ordered main_desc (i.e. in res_label)
+            # merge previous on the ordered main_desc
             }else if(multi_cluster_policy == 'merge_previous'){
-              res_label <- c(res_label, res_label[.lt(res_label)])
+              res_label <- c(res_label, main_desc[ncl.i-1, 2])
             }
             break # we must exit somehow
           }
@@ -388,7 +398,7 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
       
       for(gg.i in unique(res_label)) gg <- gg + geom_line(aes_string(y = gg.i, x = 'pi'), size = 0.1, alpha = 0.5)
       gg <- gg + geom_segment(aes_string(y = 0, yend = 0.3, x = 'pi', xend = 'pi', col = 'misass')) + 
-            scale_color_manual(name = "", labels = c("Predicted", "True", "Correct", "Miss"), values = c('green4', 'red3', "black", "lightblue")) +
+            scale_color_manual(name = "", labels = c("Correct", "Miss", "Predicted", "True"), values = c('green4', 'red3', "black", "lightblue")) +
             guides(color = guide_legend(override.aes = list(size=5))) + 
             theme(panel.grid = element_blank()) 
       gg <- gg + annotate('text', x = lpiann/7.5, y = 0.4, label = paste0('Misses: ', miss_perc, '%'))
