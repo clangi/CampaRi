@@ -55,7 +55,7 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
   avail.extra.arg <- c("vec1", "vec2", 'dbg_score_sapphire')
   
   if(!is.null(names(input.args)) && any(!(names(input.args) %in% avail.extra.arg))){
-    warning('There is a probable mispelling in one of the inserted variables. Please check the available extra input arguments.')
+    if(!silent) warning('There is a probable mispelling in one of the inserted variables. Please check the available extra input arguments.')
     if(!silent) cat('!!!!!!!!! We found the following variables without a father (not between our extra input arguments) !!!!!!!!!!\n')
     if(!silent) cat(names(input.args)[!(names(input.args) %in% avail.extra.arg)], '\n')
   }
@@ -144,20 +144,20 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
     # Using the prog. idx for reordering and lpi
     if(!silent) cat('Having inserted the_sap we reorder the ann using it.\n')
     if(.lt(ann) != nrow(st)) stop('Annotation and progress index must have same length. ')
-    piann <- ann[c(st[,3])]
-    lpiann <- .lt(piann)
-    uni_ann <- unique(piann)
-    if(anyNA(piann)) stop('We can not handle NAs in the annotation. Check it!')
+    piann_true_v <- ann[c(st[,3])]
+    lpiann <- .lt(piann_true_v)
+    uni_ann <- unique(piann_true_v)
+    if(anyNA(piann_true_v)) stop('We can not handle NAs in the annotation. Check it!')
     
     # min of ann correction
     if(min(uni_ann) < 1){
       if(!silent) cat('Found negative or 0 values in the annotation. Correcting by sum of the abs of the min +1 per each annotation value. \n')
-      piann <- piann + abs(min(uni_ann)) + 1
-      uni_ann <- unique(piann)
+      piann_true_v <- piann_true_v + abs(min(uni_ann)) + 1
+      uni_ann <- unique(piann_true_v)
     }else if(min(uni_ann) > 1){
       if(!silent) cat('Found minimum values > 1 in the annotation. Correcting it automatically. \n')
-      piann <- piann - min(uni_ann) + 1
-      uni_ann <- unique(piann)
+      piann_true_v <- piann_true_v - min(uni_ann) + 1
+      uni_ann <- unique(piann_true_v)
     }
     
     # check for gaps in the annotation
@@ -166,12 +166,15 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
     # Checks for the number of labels VS number of clusters
     n_labels <- .lt(uni_ann)
     
+    do_cl_spawn <- FALSE
     if(n_labels < n_fin_cl){
       if(!silent) cat('ATTENTION: found', n_fin_cl, 'clusters using basin recognition while the inserted annotation has only', n_labels, 'number of labels.',
-                      'It would be the case to reduce the number of barriers. To do so, please consider reducing the number of bins (nbinsxy).\n')
-    } else {
+                      '\nIt would be the case to reduce the number of barriers. To do so, please consider reducing the number of bins (nbinsxy).\n')
+      if(!silent) cat('Spawning procedure (if merging is not TRUE) will be applied. This will create new cluster labels for the less populated or more hetereogenic clusters.\n')
+      do_cl_spawn <- TRUE
+    } else if(n_labels > n_fin_cl){
       if(!silent) cat('ATTENTION: found', n_fin_cl, 'clusters while in ann we have', n_labels, 'number of labels.',
-                      'This is not problematic but it will lead to a possible overestimation of the error. Please consider more bins (nbinsxy).\n')
+                      '\nThis is not problematic but it will lead to a possible overestimation of the error. Please consider more bins (nbinsxy).\n')
     }
   
     # creating a fake bas to fit the following analysis
@@ -186,13 +189,15 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
       bastbl <- cbind('n_cl' = n_cl.b, 'start' = start.b, 'end' = end.b, '.lt' = lt.b)
       bas <- list('tab.st' = bastbl)
     }
-    
-    
+    if(dbg_score_sapphire) browser()
+        
     # ---------------------------------------------------------------------------------------------- Creation of the Entropy levels
     # we choose the representative label
     label_freq_list <- list() # each element of this list is a cluster
     for(jk in 1:n_fin_cl){
-      maj_selected <- sort(table(piann[bas$tab.st[jk,2]:bas$tab.st[jk,3]]), decreasing=TRUE) # count and sort for each cluster found.
+      if(jk != 1) tarts <- bas$tab.st[jk,2] + 1
+      else tarts <- bas$tab.st[jk,2]
+      maj_selected <- sort(table(piann_true_v[tarts:bas$tab.st[jk,3]]), decreasing=TRUE) # count and sort for each cluster found.
       maj_sel_filtered <- maj_selected[1:n_labels]  # select only first n_labels!
       label_freq_list[[jk]] <- (maj_sel_filtered*1.0)/bas$tab.st[jk,4] # calculating the density of major label
       label_freq_list[[jk]] <- rbind('d' = label_freq_list[[jk]], 'n' = as.integer(maj_sel_filtered))
@@ -220,157 +225,180 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
     }
     # label_freq_list
     
+    if(F) {
+      ltest <- 500
+      n_tcl <- 4
+      tvec <- sample(1:n_tcl, size = ltest, replace = T)
+      tvec2 <- rep(1,10)
+      entr <- .myShEn(tvec); entr
+      entr <- .myShEn(tvec2); entr
+      
+      .myShEn <- function(tvec){
+        x2 <- sapply(1:max(tvec), FUN = function(x) sum(tvec == x))
+        x2 <- x2 / .lt(tvec)
+        return(-sum(x2*log(x2)))
+      }
+    }
+    
+    
+    # ---------------------------------------------------------------------------------------------- Creation of the Entropy levels
     # collecting the various elected labels - selection policy: unique labels!
-    # selection_policy <- 'unique' # this is like saying do not merge clusters
-    if(!merge_clusters){ # TO DO BETTER - spawning policy
-      # now I construct the grouping for afterwards selection
-      # group_lab_b_cl <- rep(list(NULL), n_fin_cl)
-      # for(jk in 1:n_fin_cl){
-      #   for(ul in 1:n_fin_cl){
-      #     whc <- (label_freq_list[[jk]][1,]*1.0 == ul*1.0)
-      #     group_lab_b_cl[[ul]] <- cbind(group_lab_b_cl[[ul]], label_freq_list[[jk]][, whc])
-      #   }
-      # }
-      # group_lab_b_cl <- lapply(X = group_lab_b_cl, FUN = function(x) rbind('cl' = 1:n_fin_cl, x, 'weight' = (1-x[2,])*x[4,]))
-      # group_lab_b_cl
+    multi_cluster_policy <- 'popup'  # merge_consecutive # select_non_conflict # select_non_conflict_spawn
+      
+    # looking for collisions and candidates
+    possible_coll <- sapply(label_freq_list, function(x) x['lab', 1])
+    tot_dim <- sapply(label_freq_list, function(x) sum(x['n',]))
+    tot_shen <- sapply(label_freq_list, function(x) sum(x['sh_en',]))
+    n_cl.b <- 1:n_fin_cl
+    main_desc <- data.frame('pos' = n_cl.b, 'poss_coll' = possible_coll, 'tot_dim' =  tot_dim, 'tot_shen' = tot_shen, 
+                            'shen_frac_dim' = tot_shen / tot_dim, 'dim_frac_shen' = tot_dim / tot_shen)
+    
+    # ordering policy - weighted SH EN 
+    main_desc <- main_desc[order(main_desc$shen_frac_dim),]
+    
+    # loop for choosing the label - using the number of clusters defined
+    res_label <- c()
+    n_cl_popped <- n_labels
+    for(ncl.i in n_cl.b){
+      
+      # select first candidate
+      candida <- main_desc[ncl.i, 2]
+      h_diply <- 1
+      
+      # repeat untill res_label is set
+      repeat{
+        h_diply <- h_diply + 1 # search level (it starts from two because first is in the init)
+        if(!(candida %in% res_label)){
+          res_label <- c(res_label, candida)
+          break
+        } else {
+          if(h_diply <=  n_labels){
+            candida <- label_freq_list[[ncl.i]]['lab', h_diply]
+          }else{
+            n_cl_popped <- n_cl_popped + 1 # it is valid also for the merge (just for the check)
+            if(multi_cluster_policy == 'popup'){
+              res_label <- c(res_label, n_cl_popped)
+            }else if(multi_cluster_policy == 'keep'){
+              res_label <- c(res_label, candida)
+            }else if(multi_cluster_policy == 'merge_next'){
+              stop('todo')
+              res_label <- c(res_label, candida)
+            }
+            break
+          }
+        }
+      }
+    }
+    stopifnot(n_cl_popped == n_fin_cl)
+    
+    main_desc <- cbind(res_label, main_desc)
+    main_desc <- main_desc[order(main_desc$pos),]
+    
+    res_bound <- bas$tab.st[,4]
+    res_label <- main_desc$res_label
+    
+    # DEPRECATED -------------------------------------------------------------------------------------------------------
+    # ftab_for_coll <- data.frame('labs' = 1:n_labels, 'freq' = sapply(1:n_labels, function(x) sum(x == possible_coll)))
+    # 
+    # not_to_consider <- ftab_for_coll$labs[which(ftab_for_coll$freq == 1)]
+    # ftab_for_coll <- ftab_for_coll[ftab_for_coll$labs[-not_to_consider],]
+    
+    if(F){
+      if(multi_cluster_policy == 'select_non_conflict' || multi_cluster_policy == 'select_non_conflict_spawn'){
+        
+        # init - broken
+        lab <- list()
+        slct <- array(1, dim = .lt(label_freq_list))
+        
+        for(jk in 1:.lt(label_freq_list)){
+          lab[[jk]] <- as.integer(colnames(label_freq_list[[jk]])[slct[jk]])
+          if(jk != 1){
+            while(lab[[jk]] %in% c(lab[1:(jk-1)])){
+              slct[jk] <- slct[jk] + 1
+              # label_freq_list[r]; unlist(lab[r]); slct[r]
+              if(slct[jk] > n_labels || label_freq_list[[jk]]['n', slct[jk]] == 0){
+                if(!silent) cat('Unfortunately we found that all the labels in cluster', jk,
+                            'are colliding with others (we did not count empty buckets). Kept the duplication.\n')
+                if(multi_cluster_policy == 'select_non_conflict') slct[jk] <- 1
+                else if(multi_cluster_policy == 'select_non_conflict_spawn') slct[jk] <- 'pop'
+                print_new_lab <- FALSE
+                break
+              }else{
+                print_new_lab <- TRUE
+                lab[[jk]] <- as.integer(colnames(label_freq_list[[jk]])[slct[jk]])
+              }
+              if(!silent && print_new_lab) cat('Label', lab[[jk]], 'has been found already in another cluster. We will automatically',
+                                               'select the second most present value in this cluster.\n')
+            }
+          }
+        }
+      } else if(multi_cluster_policy == 'merge_consecutive'){
+        if(!silent) cat('Merging policy applied. For the moment only consecutive identically labeled clusters are merged. \n')
+        slct <- array(1, dim = .lt(label_freq_list))
+      } 
+      
+      # main constructor loop for the selected (slct) labels
       lab <- list()
-      slct <- array(1, dim = .lt(label_freq_list))
+      size <- list()
+      sh_en <- list()
       for(jk in 1:.lt(label_freq_list)){
         lab[[jk]] <- as.integer(colnames(label_freq_list[[jk]])[slct[jk]])
-        if(jk != 1){
-          while(lab[[jk]] %in% c(lab[1:(jk-1)])){
-            slct[jk] <- slct[jk] + 1
-            # label_freq_list[r]; unlist(lab[r]); slct[r]
-            if(slct[jk] > n_labels || label_freq_list[[jk]]['n', slct[jk]] == 0){
-              if(!silent) cat('Unfortunately we found that all the labels in cluster', jk,
-                          'are colliding with others (we did not count empty buckets). Kept the duplication.\n')
-              slct[jk] <- 1
-              print_new_lab <- FALSE
-              break
-            }else{
-              print_new_lab <- TRUE
-              lab[[jk]] <- as.integer(colnames(label_freq_list[[jk]])[slct[jk]])
-            }
-            if(!silent && print_new_lab) cat('Label', lab[[jk]], 'has been found already in another cluster. We will automatically',
-                                             'select the second most present value in this cluster.\n')
-          }
-        }
-      }
-      # df_lab_freq <- data.frame(label_freq_list)
-      # df_lab_freq[2,] <- 1 - df_lab_freq[2,]
-      # sort policy: density of elements and entropy
-      # df_lab_freq[,order(df_lab_freq[4,], decreasing = T)]
-      # df_lab_freq
-    } else {
-      slct <- array(1, dim = .lt(label_freq_list))
-    } 
+        size[[jk]] <- as.integer(label_freq_list[[jk]]['n', slct[jk]])
+        sh_en[[jk]] <- label_freq_list[[jk]]['sh_en', slct[jk]]
+      }  
+      # fin def
+      res_bound <- bas$tab.st[,4]
+      res_label <- unlist(lab)
+    }
     
     # ---------------------------------------------------------------------------------------------- Creation of Predicted vector
-    # main constructor loop for the selected (slct) labels
-    lab <- list()
-    size <- list()
-    sh_en <- list()
-    for(jk in 1:.lt(label_freq_list)){
-      lab[[jk]] <- as.integer(colnames(label_freq_list[[jk]])[slct[jk]])
-      size[[jk]] <- as.integer(label_freq_list[[jk]]['n', slct[jk]])
-      sh_en[[jk]] <- label_freq_list[[jk]]['sh_en', slct[jk]]
-    }  
-    
-    max_freq_table <- data.frame(cbind(label = unlist(lab), size = unlist(size), sh_en = unlist(sh_en)))
-    if(!silent) cat('We found the following splits, accounting for', sum(unlist(size)),'of the elemnts. This means there are roughly', 
-                    round((lpiann - sum(unlist(size))) * 100 / lpiann, digits = 1), '% missassignment.\n\n')
-    # now attaching it to the bas output
-    max_freq_table <- cbind(max_freq_table, bas$tab.st)
-    if(!silent) {print(max_freq_table); cat('\n')}
-    # max_freq_table[order(max_freq_table$sh_en),] # ordering based on internal entropy
-    
-    # merging policy - inputs: (label, size, sh_en) from major_freq_table
-    if(merge_clusters && !silent) cat('Merging policy applied. For the moment only consecutive identically labeled clusters are merged. \n')
-    
-    # init
-    res_bound <- list()
-    res_label <- list()
-    diff_vec <- diff(unlist(max_freq_table$label)) # barriers
-    lt_sec <- bas$tab.st[,'.lt'] # length of the cl
-    ul <- 1 # hlp loop
-    res_bound[1] <- lt_cl <- lt_sec[1]
-    res_label[1] <- max_freq_table$label[1]
-    
-    # loop on the barriers
-    if(nrow(max_freq_table) > 1){
-      for(ini in 1:.lt(diff_vec)){
-        
-        # clusters have same lebels merging then
-        if(diff_vec[ini] == 0){
-          if(merge_clusters) {
-            lt_cl <- lt_cl + lt_sec[ini + 1]
-          } else{ # standard run diff = 0
-            res_label[ul] <- max_freq_table$label[ini]
-            res_bound[ul] <- lt_cl
-            lt_cl <- lt_sec[ini + 1]
-            ul <- ul + 1
-          }
-        }
-        
-        # standard run
-        if(diff_vec[ini] != 0){
-          res_label[ul] <- max_freq_table$label[ini]
-          res_bound[ul] <- lt_cl
-          lt_cl <- lt_sec[ini + 1]
-          ul <- ul + 1
-        }
-        
-        # final split
-        if(ini == .lt(diff_vec)){
-          res_label[ul] <- max_freq_table$label[ini + 1]
-          res_bound[ul] <- lt_cl
-        }
-      }
-      res_bound <- unlist(res_bound)
-      res_label <- unlist(res_label)
-    } else{
-      if(merge_clusters && !silent) cat('Only one cluster found. Nothing to be merged really. \n')
-      res_bound <- lt_cl[1]
-      res_label <- max_freq_table$label[1]
-    }
-    # res_bound
-    # unlist(res_bound); max_freq_table$.lt; diff_vec; unlist(lab)
-    # sum(res_bound)
-    # lt_sec
-    # res_label
-    
     # creating the predicted vector
-    predicted_div <- list()
-    for(i in 1:.lt(res_label)){
-      predicted_div[[i]] <- rep(res_label[i], res_bound[i])
-    }
-    predicted_div <- unlist(predicted_div)
+    predicted_div <- unlist(sapply(1:.lt(res_label), function(x) rep(res_label[x], res_bound[x])))
+    # piann_true_v <- ann[st[,3]] # defined before
+    missass <- as.numeric(predicted_div != piann_true_v)
+    miss_perc <- round(sum(missass)*100/lpiann, 2)
+    
+    # printing number of missass
+    if(!silent) cat('We found roughly', miss_perc, '% missassignment.\n\n')
+    
+    # plotting
     if(plot_pred_true_resume){
-      plot_df <- data.frame('predicted' = as.factor(predicted_div), 'true' = ann[st[,3]]-0.05)
+      plot_df <- data.frame('pi' = 1:lpiann, 'predicted' = as.factor(predicted_div), 'true' = as.factor(piann_true_v), 
+                            'misass' = as.factor(missass))
       gg <- ggplot(data = plot_df) + 
-            geom_point(aes(y = 'predicted', x = 1:lpiann, colour = 'red'), size = 0.3) + 
-            geom_point(aes(y = 'true', x = 1:lpiann, colour = 'blue'), size = 0.3) + 
-            theme_minimal() + xlab('Progress Index') + ylab('Cluster') + 
-            scale_color_manual(name = "Labels", labels = c("True", "Predicted"), values = c("red", "blue")) +
-            guides(color = guide_legend(override.aes = list(size=5)))
+            geom_point(aes_string(y = 'true', x = 'pi', col = shQuote("lightblue")), size = 5, shape = 108) + 
+            geom_point(aes_string(y = 'predicted', x = 'pi', col = shQuote("black")), size = 2, shape = 108) + 
+            theme_minimal() + xlab('Progress Index') + ylab('Cluster') 
+      # scale_color_manual(name = "", labels = c("Predicted", "True"), values = c("black", "lightblue")) +
+      #   guides(color = guide_legend(override.aes = list(size=5))) + 
+      #   theme(panel.grid = element_blank())
+      
+      for(gg.i in unique(res_label)) gg <- gg + geom_line(aes_string(y = gg.i, x = 'pi'), size = 0.1, alpha = 0.5)
+      gg <- gg + geom_segment(aes_string(y = 0, yend = 0.3, x = 'pi', xend = 'pi', col = 'misass')) + 
+            scale_color_manual(name = "", labels = c("Predicted", "True", "Correct", "Miss"), values = c('green4', 'red3', "black", "lightblue")) +
+            guides(color = guide_legend(override.aes = list(size=5))) + 
+            theme(panel.grid = element_blank()) 
+      gg <- gg + annotate('text', x = lpiann/7.5, y = 0.4, label = paste0('Misses: ', miss_perc, '%'))
+      gg <- gg + geom_vline(xintercept = bas$tab.st[,2][-1], size = 0.1, linetype = 'dashed')  
+      # gg + geom_ribbon(aes_string(ymin = -0.1, ymax = 0.1, x = 'pi', fill = 'misass')) + 
+      #   scale_fill_manual(name = "", labels = c("Correct", "Miss"), values = c("darkgreen", "darkred"))
       print(gg)
     }
-    fin_true_div <- ann[st[,3]]
   }else{
-    if(!silent) cat('SELECT DIRECT INSERTION OF VECTORS\n')
+    if(!silent) cat('SELECTED DIRECT INSERTION OF VECTORS\n')
     if(!silent) cat('Using vec1 as true and vec2 as pred...\n')
-    fin_true_div <- vec1
+    piann_true_v <- vec1
     predicted_div <- vec2
     max_freq_table <- NULL
     label_freq_list <- NULL
   }
-  if(.lt(fin_true_div) != .lt(predicted_div)) stop('Something went wrong. The pred and true vec have differenct lengths and respectively ', 
-                                                         .lt(fin_true_div),' and ', .lt(predicted_div))
+  if(.lt(piann_true_v) != .lt(predicted_div)) stop('Something went wrong. The pred and true vec have differenct lengths and respectively ', 
+                                                         .lt(piann_true_v),' and ', .lt(predicted_div))
   # ---------------------------------------------------------------------------------------------- Final scoring
   # scoring it with accuracy?
-  score.out <- ClusterR::external_validation(true_labels = fin_true_div, clusters = predicted_div, method = scoring_method, summary_stats = FALSE)
+  score.out <- ClusterR::external_validation(true_labels = piann_true_v, clusters = predicted_div, method = scoring_method, summary_stats = FALSE)
   if(!silent) cat('Using', scoring_method,'we obtained a final score of', score.out, '\n')
-  invisible(list('score.out' = score.out, 'max_freq_table' = max_freq_table, 'label_freq_list' = label_freq_list))
+  invisible(list('score.out' = score.out, 'label_freq_list' = label_freq_list, 'perc_miss' = miss_perc))
 }
 
 

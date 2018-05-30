@@ -184,7 +184,7 @@ test_that('new trials for SBR', {
       geom_freqpoly(mapping = aes(b), binwidth = 0.4, col = 'darkblue') +
       geom_freqpoly(mapping = aes(c), binwidth = 0.4) 
     
-    .SHEN.hist(df.test$a, 100)
+    .SHEN.hist(df.test$a, 100); .SHEN.hist(df.test$b, 100)
     .SHEN.hist(df.test$a, 100) + .SHEN.hist(df.test$b, 100)
     .SHEN.hist(df.test$a, 100) + .SHEN.hist(df.test$c, 100)
     .SHEN.hist(c(df.test$a, df.test$b), 200)

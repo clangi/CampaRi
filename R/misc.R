@@ -187,3 +187,20 @@
   return(list('sep1' = stp1, 'sep2' = stp2))
 }
 
+# create annotation vector from barrier vector # not used at the moment
+.vec_from_barriers <- function(bar.vec, label.vec = NULL, end.point = NULL){
+  
+  stopifnot(all(end.point > bar.vec))
+  if(is.null(label.vec)) label.vec <- 1:length(bar.vec)
+  
+  if(sum(bar.vec) != end.point) {
+    stopifnot(!is.null(end.point))
+    bar.vec <- sort(c(bar.vec, end.point))
+  }
+  bar.vec <- c(bar.vec[1], diff(bar.vec))
+  
+  stopifnot(sum(bar.vec) == end.point)
+  stopifnot(.lt(label.vec) == .lt(bar.vec))
+  
+  return(c(unlist(sapply(label.vec, function(x) rep(x, bar.vec[x])))))
+}

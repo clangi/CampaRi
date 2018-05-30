@@ -4,10 +4,10 @@
 \alias{nSBR}
 \title{New identifying basins in the SAPPHIRE plot}
 \usage{
-nSBR(data, ny, local.cut = FALSE, n.cluster = NULL, comb_met = c("MIC"),
-  unif.splits = NULL, pk_span = NULL, plot = FALSE, silent = FALSE,
-  return_plot = FALSE, random_picks = NULL, ann = NULL,
-  shuffles = FALSE, ...)
+nSBR(data, ny, local.cut = FALSE, comb_met = c("MIC"), n.cluster = NULL,
+  force_correct_ncl = FALSE, unif.splits = NULL, pk_span = NULL,
+  plot = FALSE, silent = FALSE, return_plot = FALSE,
+  random_picks = NULL, ann = NULL, shuffles = FALSE, ...)
 }
 \arguments{
 \item{data}{Name of the PROGIDX_<...>.dat file or Data frame with three columns containing, in order, the (sorted) progress index, the relative time 
@@ -18,9 +18,6 @@ are sparse.}
 
 \item{local.cut}{Logical value indicating whether the localized cut function has to be used (see references). Default value is \code{FALSE}.}
 
-\item{n.cluster}{Integer. If this value is inserted only the first \code{n.cluster - 1} barriers are shown with dotted lines on the plot. Note that no
-preselection of the barriers is done in the final output and this must be done again in a second instance. The output contains all the possible barriers (ordered).}
-
 \item{comb_met}{Method to weight the barriers. One of the following:
 \itemize{
       \item "\code{MIC}" Use this to weight the barriers with the Maximal Information Coefficient.
@@ -29,6 +26,12 @@ preselection of the barriers is done in the final output and this must be done a
       \item "\code{diff_kin}" Better not to use.
       \item "\code{diff}" Better not to use.
     }}
+
+\item{n.cluster}{Integer. If this value is inserted only the first \code{n.cluster - 1} barriers are shown with dotted lines on the plot. Note that no
+preselection of the barriers is done in the final output and this must be done again in a second instance. The output contains all the possible barriers (ordered).}
+
+\item{force_correct_ncl}{A logical value indicating whether the correct number of clusters (in a minimum sense) must be respected. In practice it returns the truncated
+list with a considerable number of warnings. Default value is \code{FALSE}.}
 
 \item{unif.splits}{Integer. This variable defines the number of splits for the uniform sampling. Using only one number, e.g. 40 divisions, 
 could not be optimal for clogged data. Generally speaking, this value is useful for the MI - ratio weighting of the barriers. It is also possible to insert a 
@@ -66,7 +69,7 @@ A list containing
                 \item "\code{ggp.dist.rnd.bar}"  ggplot containing the estimate (in z-scores) of the distance from random distribution (showed in light blue).
                 \item "\code{rnd.scores.nas}" Number of NAs in the randomly picked scores.
                 \item "\code{rnd.scores}" data.frame with all the scores found.
-                \item "\code{max.rnd.nmi}" score_sapphire obj on the best random pick.
+                \item "\code{max.rnd.scor}" score_sapphire obj on the best random pick.
                 \item "\code{max.rnd.bar}" data.frame with the best parriers found randomly and their score (xm = barrier points, ym = score).
                 \item "\code{ref.score}" score_sapphire obj with the standard best score optimization procedure.
                 \item "\code{z.scores}" Found zscore between optimal barrier and random picks distribution.

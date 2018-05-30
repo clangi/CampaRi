@@ -42,7 +42,8 @@ test_that('scoring sapphire plots', {
   
   
   # test if the number of barriers != ncl (firstly > and secondly <)
-  expect_error(ahahscore <- CampaRi::score_sapphire(the_sap = file.pi, ann = ann, manual_barriers = c(a1$barriers,1000), silent = silent), NA)
+  expect_error(ahahscore <- CampaRi::score_sapphire(the_sap = file.pi, ann = ann, dbg_score_sapphire = T,
+                                                    manual_barriers = c(a1$barriers, 1000), silent = silent), NA)
   
   
   # =====================================================================================================================================================
