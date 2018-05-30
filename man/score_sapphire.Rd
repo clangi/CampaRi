@@ -5,7 +5,7 @@
 \title{Scoring the SAPPHIRE-plot basin division}
 \usage{
 score_sapphire(the_sap, ann, manual_barriers = NULL, basin_obj = NULL,
-  scoring_method = "adjusted_rand_index", merge_clusters = FALSE,
+  scoring_method = "adjusted_rand_index", multi_cluster_policy = "popup",
   plot_pred_true_resume = FALSE, silent = FALSE, ...)
 }
 \arguments{
@@ -27,7 +27,13 @@ insert only the resulting bas object}
      \item "\code{purity}" 
 }}
 
-\item{merge_clusters}{Logical that allow clusters to be merged automatically if consecutives}
+\item{multi_cluster_policy}{This string decides how the clusters must be handled in the case of more clusters found in comparison to the annotation 
+inserted. The default is \code{'popup'}. The available values are:
+     \itemize{
+        \item "\code{popup}" Creates new clusters (ordered by shannon weight).
+        \item "\code{keep}" Keeps the duplications and so on. This is a bias feature.
+        \item "\code{merge_previous}" Takes in account the last label inserted in the shannon weigthed table.
+      }}
 
 \item{plot_pred_true_resume}{Defaults tp \code{FALSE}. If set to true it plots the predicted and true labels one along the other.}
 
@@ -39,8 +45,8 @@ insert only the resulting bas object}
 A list containing
       \itemize{
         \item "\code{score.out}" Resulting score between 0 and 1 (good).
-        \item "\code{max_freq_table}" Matrix with a description of the labels selected and their cluster characteristics
-        \item "\code{label_freq_list}" Total representation of the clusters
+        \item "\code{label_freq_list}" Total representation of the clusters along with the single shannon entropies.
+        \item "\code{miss_perc}" Percentage of not correctly defined divisions.
       }
 }
 \description{
