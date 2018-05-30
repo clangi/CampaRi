@@ -268,23 +268,36 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
       # repeat untill res_label is set
       repeat{
         h_diply <- h_diply + 1 # search level (it starts from two because first is in the init)
+        
+        # candidate not yet picked
         if(!(candida %in% res_label)){
           res_label <- c(res_label, candida)
           break
+        
+        # candidate already present
         } else {
+          
+          # redefining a candidate if the selection was not optimal of the first label
           if(h_diply <=  n_labels){
             candida <- label_freq_list[[ncl.i]]['lab', h_diply]
+          
+          # we finished the available labels and we have to define new clusters!
           }else{
             n_cl_popped <- n_cl_popped + 1 # it is valid also for the merge (just for the check)
+            
+            # define new clusters 
             if(multi_cluster_policy == 'popup'){
               res_label <- c(res_label, n_cl_popped)
+              
+            # keep the most freq - bias
             }else if(multi_cluster_policy == 'keep'){
               res_label <- c(res_label, candida)
-            }else if(multi_cluster_policy == 'merge_next'){
-              stop('todo')
-              res_label <- c(res_label, candida)
+              
+            # merge previous on the ordered main_desc (i.e. in res_label)
+            }else if(multi_cluster_policy == 'merge_previous'){
+              res_label <- c(res_label, res_label[.lt(res_label)])
             }
-            break
+            break # we must exit somehow
           }
         }
       }
