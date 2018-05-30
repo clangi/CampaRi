@@ -301,7 +301,7 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
               
             # keep the most freq - bias
             }else if(multi_cluster_policy == 'keep'){
-              res_label <- c(res_label, candida)
+              res_label <- c(res_label, main_desc[ncl.i, 2]) # candida is different here
               
             # merge previous on the ordered main_desc
             }else if(multi_cluster_policy == 'merge_previous'){

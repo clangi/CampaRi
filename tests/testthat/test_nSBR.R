@@ -48,11 +48,11 @@ test_that('new trials for SBR', {
                                    unif.splits = seq(5, 100, 8),  
                                    pk_span = 500, ny = 20, plot = T, random_picks = 100, ann = ann,
                                    silent = F, dbg_nSBR = F, return_plot = F))
-  expect_warning(a1 <- CampaRi::nSBR(data = file.pi, n.cluster = 15, shuffles = T, 
-                                     comb_met = c('MIC'), force_correct_ncl = F,
-                                     unif.splits = seq(5, 100, 8),  
-                                     pk_span = 500, ny = 20, plot = T, random_picks = 100, ann = ann,
-                                     silent = F, dbg_nSBR = F, return_plot = F))
+  # expect_warning(a1 <- CampaRi::nSBR(data = file.pi, n.cluster = 15, shuffles = T, 
+  #                                    comb_met = c('MIC'), force_correct_ncl = F,
+  #                                    unif.splits = seq(5, 100, 8),  
+  #                                    pk_span = 500, ny = 20, plot = T, random_picks = 100, ann = ann,
+  #                                    silent = F, dbg_nSBR = F, return_plot = F))
   
   do_it <- FALSE
   if(do_it){
@@ -100,10 +100,10 @@ test_that('new trials for SBR', {
                                           manual_barriers = temp2$tmp$barriers[1:(ncl.j-1)], silent = T)
         
         # final assignment
-        h.split.mat[paste0('ncl.', ncl.i), paste0('ncl.', ncl.j)] <- temp2$h.splits.t
-        span.mat[paste0('ncl.', ncl.i), paste0('ncl.', ncl.j)] <- temp2$span.t
-        ny.mat[paste0('ncl.', ncl.i), paste0('ncl.', ncl.j)] <- temp2$ny.t
-        sco.mat[paste0('ncl.', ncl.i), paste0('ncl.', ncl.j)] <- ref_sc$score.out
+        h.split.mat[paste0('ncl.', ncl.i, '.i'), paste0('ncl.', ncl.j, '.j')] <- temp2$h.splits.t
+        span.mat[paste0('ncl.', ncl.i, '.i'), paste0('ncl.', ncl.j, '.j')] <- temp2$span.t
+        ny.mat[paste0('ncl.', ncl.i, '.i'), paste0('ncl.', ncl.j, '.j')] <- temp2$ny.t
+        sco.mat[paste0('ncl.', ncl.i, '.i'), paste0('ncl.', ncl.j, '.j')] <- ref_sc$score.out
         # sco.rnd.mat[paste0('ncl.', ncl.i), paste0('ncl.', ncl.j)] <- res2
       }
     }
@@ -111,10 +111,17 @@ test_that('new trials for SBR', {
     # apply(sco.mat, 1, mean) 
     
     # Plotting results for visual inspection
-    ggplot_tiles(mat = sco.mat, labx = 'Clusters', laby = 'Clusters', legtit = 'ARI')
-    ggplot_tiles(mat = h.split.mat, labx = 'Clusters', laby = 'Clusters', legtit = 'ARI')
-    ggplot_tiles(mat = span.mat, labx = 'Clusters', laby = 'Clusters', legtit = 'ARI')
-    ggplot_tiles(mat = ny.mat, labx = 'Clusters', laby = 'Clusters', legtit = 'ARI')
+    ggplot_tiles(mat = sco.mat, labx = 'Clusters', laby = 'Clusters', legtit = 'ARI') + geom_text(label = round(unlist(c(sco.mat)),2), col = 'white')
+    ggplot_tiles(mat = h.split.mat, labx = 'Clusters', laby = 'Clusters', legtit = 'ARI') + geom_text(label = round(unlist(c(h.split.mat)),2), col = 'white')
+    ggplot_tiles(mat = span.mat, labx = 'Clusters', laby = 'Clusters', legtit = 'ARI') + geom_text(label = round(unlist(c(span.mat)),2), col = 'white')
+    ggplot_tiles(mat = ny.mat, labx = 'Clusters', laby = 'Clusters', legtit = 'ARI') + geom_text(label = round(unlist(c(ny.mat)),2), col = 'white')
+    
+    # best scenario / selection of the number of clusters
+    CampaRi::nSBR(data = file.pi, n.cluster = 5,
+                  comb_met = c('MIC'),
+                  unif.splits = unique(round(seq(5, 100, length.out = 40))),  
+                  pk_span = 350, ny = 60, plot = T,
+                  silent = F, dbg_nSBR = F, return_plot = F)
     
     # --------------------------- functions ---------------------------------
     
