@@ -200,7 +200,6 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
       bastbl <- cbind('n_cl' = n_cl.b, 'start' = start.b, 'end' = end.b, '.lt' = lt.b)
       bas <- list('tab.st' = bastbl)
     }
-    if(dbg_score_sapphire) browser()
         
     # ---------------------------------------------------------------------------------------------- Creation of the Entropy levels
     # we choose the representative label
@@ -312,7 +311,7 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
         }
       }
     }
-    stopifnot(n_cl_popped == n_fin_cl)
+    # stopifnot(n_cl_popped == n_fin_cl) # crashing if n_labels > n_fin_cl
     
     main_desc <- cbind(res_label, main_desc)
     main_desc <- main_desc[order(main_desc$pos),]
@@ -374,6 +373,7 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
       res_label <- unlist(lab)
     }
     
+    if(dbg_score_sapphire) browser()
     # ---------------------------------------------------------------------------------------------- Creation of Predicted vector
     # creating the predicted vector
     predicted_div <- unlist(sapply(1:.lt(res_label), function(x) rep(res_label[x], res_bound[x])))

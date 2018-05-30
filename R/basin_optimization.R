@@ -94,17 +94,17 @@ basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fi
     nbins_x_max <- nbins_y <- max(nbins_x_max, nbins_y)
   }
   # Extra arguments checks
-  input.args <- list(...)
-  avail.extra.arg <- c('dbg_basin_optimization')
+  # input.args <- list(...)
+  # avail.extra.arg <- c('dbg_basin_optimization')
   
   # if(!is.null(names(input.args)) && any(!(names(input.args) %in% avail.extra.arg))) 
-  #   warning('There is a probable mispelling in one of the inserted variables. Please check the available extra input arguments.')
+  #   if(!silent) warning('There is a probable mispelling in one of the inserted variables. Please check the available extra input arguments.')
   
   # dbg_basins_recognition for stats - dgarol
-  if("dbg_basin_optimization" %in% names(input.args)) { # dgarol
-    dbg_basin_optimization <- input.args$dbg_basin_optimization
-    stopifnot(is.logical(dbg_basin_optimization))
-  } else dbg_basin_optimization <- FALSE
+  # if("dbg_basin_optimization" %in% names(input.args)) { # dgarol
+  #   dbg_basin_optimization <- input.args$dbg_basin_optimization
+  #   stopifnot(is.logical(dbg_basin_optimization))
+  # } else dbg_basin_optimization <- FALSE
   
   
   # -------------------------------------------------------------------------------------------------------- number of clusters
@@ -184,7 +184,6 @@ basin_optimization <- function(the_sap, basin_optimization_method = NULL, how_fi
       nbb <- sort(unlist(lapply(basFin, FUN = function(x) return(x$nbins)))[which_to_keep])            # extracting the number of bins
       if(!silent) cat('We found', .lt(which_to_keep), 'possible values from the following bins (i.e. partitions with the desired # of clu): \n', nbb,'\n')
       
-      if(dbg_basin_optimization) browser()
       # collapsing the results
       bw_ini <- cbind('bins' = nbb, 'bweights' = unlist(lapply(bw, mean)), 
                            'nbarr' = unlist(lapply(bw, .lt)), 

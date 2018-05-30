@@ -1,7 +1,7 @@
 context('score_sapphire')
 
 test_that('scoring sapphire plots', {
-  silent <- T
+  silent <- F
   plt_stff <- !silent
   if(!silent) {require(testthat); require(CampaRi)} 
   
@@ -22,28 +22,43 @@ test_that('scoring sapphire plots', {
                                              denat_opt = 'poly_interpolation',                     # kin ann is corrected for parabolic artefacts
                                              cl.stat.denat.MI = 7,                                 # if a number also the MI curve is corrected
                                              plot_basin_identification = plt_stff,                 # final plot?
-                                             dbg_basin_optimization = F,                           # debug?
+                                             # dbg_basin_optimization = F,                           # debug?
                                              silent = silent)                                      # silent?  
   
   
   expect_error(qres <- score_sapphire(the_sap = file.pi, ann = ann, 
-                                      basin_obj = optimal_bas$bas,
+                                      basin_obj = optimal_bas$bas, plot_pred_true_resume = T,
                                       silent = silent), NA)
 
   
   # new tests using the nSBR function
   # ---------------------------------------------- nSBR manual_barriers option
-  expect_error(a1 <- CampaRi::nSBR(data = file.pi, n.cluster = 4, 
+  expect_error(a1 <- CampaRi::nSBR(data = file.pi, n.cluster = 3, 
                                   comb_met = c('MIC'),
                                   unif.splits = seq(5, 80, 4),  
-                                  pk_span = 500, ny = 30, plot = T, 
+                                  pk_span = 500, ny = 40, plot = T, 
                                   silent = silent, dbg_nSBR = F, return_plot = T), NA)
-  expect_error(ahahscore <- CampaRi::score_sapphire(the_sap = file.pi, ann = ann, manual_barriers = a1$barriers[1:2], silent = silent), NA)
+  expect_error(ahahscore <- CampaRi::score_sapphire(the_sap = file.pi, ann = ann, plot_pred_true_resume = plt_stff, multi_cluster_policy = 'popup',
+                                                    manual_barriers = a1$barriers[1:2], silent = silent), NA)
   
   
-  # test if the number of barriers != ncl (firstly > and secondly <)
-  expect_error(ahahscore <- CampaRi::score_sapphire(the_sap = file.pi, ann = ann, dbg_score_sapphire = T,
-                                                    manual_barriers = c(a1$barriers, 1000), silent = silent), NA)
+  
+  
+  # test if the number of barriers != ncl (firstly < and secondly >)
+  expect_error(ahahscore <- CampaRi::score_sapphire(the_sap = file.pi, ann = ann, plot_pred_true_resume = plt_stff,
+                                                    multi_cluster_policy = 'popup', # not relevant for this case
+                                                    manual_barriers = a1$barriers[1], silent = silent), NA)
+  
+  # more cluster than annotation
+  expect_error(a1 <- CampaRi::nSBR(data = file.pi, n.cluster = 10, 
+                                   comb_met = c('MIC'),
+                                   unif.splits = seq(5, 80, 2),  
+                                   pk_span = 100, ny = 40, plot = T, 
+                                   silent = silent, dbg_nSBR = F, return_plot = T), NA)
+  
+  expect_error(ahahscore <- CampaRi::score_sapphire(the_sap = file.pi, ann = ann,  plot_pred_true_resume = plt_stff, dbg_score_sapphire = F, 
+                                                    multi_cluster_policy = 'popup',
+                                                    manual_barriers = a1$barriers[1:9], silent = silent), NA)
   
   
   # =====================================================================================================================================================

@@ -46,7 +46,7 @@
 
 # check for single integer value
 .isSingleInteger <- function(x) {
-  if(!is.numeric(x) || x%%1 != 0 || .isSingleElement(x))
+  if(!is.numeric(x) || x%%1 != 0 || (is.null(dim(x)) && length(x) != 1) || (!is.null(dim(x))))
     return(FALSE)
   else 
     return(TRUE)
