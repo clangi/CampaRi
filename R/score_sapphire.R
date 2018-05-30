@@ -251,6 +251,7 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
     }
     
     
+    if(dbg_score_sapphire) browser()
     # ---------------------------------------------------------------------------------------------- Creation of the Entropy levels
     # collecting the various elected labels - selection policy: unique labels!
       
@@ -373,7 +374,6 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
       res_label <- unlist(lab)
     }
     
-    if(dbg_score_sapphire) browser()
     # ---------------------------------------------------------------------------------------------- Creation of Predicted vector
     # creating the predicted vector
     predicted_div <- unlist(sapply(1:.lt(res_label), function(x) rep(res_label[x], res_bound[x])))
@@ -388,20 +388,21 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
     if(plot_pred_true_resume){
       plot_df <- data.frame('pi' = 1:lpiann, 'predicted' = as.factor(predicted_div), 'true' = as.factor(piann_true_v), 
                             'misass' = as.factor(missass))
+      
       gg <- ggplot(data = plot_df) + 
             geom_point(aes_string(y = 'true', x = 'pi', col = shQuote("lightblue")), size = 5, shape = 108) + 
             geom_point(aes_string(y = 'predicted', x = 'pi', col = shQuote("black")), size = 2, shape = 108) + 
-            theme_minimal() + xlab('Progress Index') + ylab('Cluster') 
+            theme_minimal() + xlab('Progress Index') + ylab('Cluster') + scale_y_discrete(limits = sort(unique(res_label)))
       # scale_color_manual(name = "", labels = c("Predicted", "True"), values = c("black", "lightblue")) +
       #   guides(color = guide_legend(override.aes = list(size=5))) + 
       #   theme(panel.grid = element_blank())
       
       for(gg.i in unique(res_label)) gg <- gg + geom_line(aes_string(y = gg.i, x = 'pi'), size = 0.1, alpha = 0.5)
-      gg <- gg + geom_segment(aes_string(y = 0, yend = 0.3, x = 'pi', xend = 'pi', col = 'misass')) + 
+      gg <- gg + geom_segment(aes_string(y = 0, yend = 0.5, x = 'pi', xend = 'pi', col = 'misass')) + 
             scale_color_manual(name = "", labels = c("Correct", "Miss", "Predicted", "True"), values = c('green4', 'red3', "black", "lightblue")) +
             guides(color = guide_legend(override.aes = list(size=5))) + 
             theme(panel.grid = element_blank()) 
-      gg <- gg + annotate('text', x = lpiann/7.5, y = 0.4, label = paste0('Misses: ', miss_perc, '%'))
+      gg <- gg + annotate('text', x = lpiann/7.5, y = 0.25, label = paste0('Misses: ', miss_perc, '%'), col = 'white')
       gg <- gg + geom_vline(xintercept = bas$tab.st[,2][-1], size = 0.1, linetype = 'dashed')  
       # gg + geom_ribbon(aes_string(ymin = -0.1, ymax = 0.1, x = 'pi', fill = 'misass')) + 
       #   scale_fill_manual(name = "", labels = c("Correct", "Miss"), values = c("darkgreen", "darkred"))

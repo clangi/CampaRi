@@ -59,6 +59,12 @@ test_that('scoring sapphire plots', {
   expect_error(ahahscore <- CampaRi::score_sapphire(the_sap = file.pi, ann = ann,  plot_pred_true_resume = plt_stff, dbg_score_sapphire = F, 
                                                     multi_cluster_policy = 'popup',
                                                     manual_barriers = a1$barriers[1:9], silent = silent), NA)
+  expect_error(ahahscore <- CampaRi::score_sapphire(the_sap = file.pi, ann = ann,  plot_pred_true_resume = plt_stff, dbg_score_sapphire = F, 
+                                                    multi_cluster_policy = 'keep',
+                                                    manual_barriers = a1$barriers[1:9], silent = silent), NA)
+  expect_error(ahahscore <- CampaRi::score_sapphire(the_sap = file.pi, ann = ann,  plot_pred_true_resume = plt_stff, dbg_score_sapphire = F, 
+                                                    multi_cluster_policy = 'merge_previous',
+                                                    manual_barriers = a1$barriers[1:9], silent = silent), NA)
   
   
   # =====================================================================================================================================================
