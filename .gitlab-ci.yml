@@ -1,8 +1,8 @@
 # Specify the docker image to use (only used if using docker runners)
 # See: http://doc.gitlab.com/ee/ci/docker/using_docker_images.html
 image: itzlacoliuhque/con-campari:latest
-variables:
-  CODECOV_TOKEN: "266db23c-b9d1-405f-9aef-c5889ea5227d"
+# variables:
+#  CODECOV_TOKEN: "266db23c-b9d1-405f-9aef-c5889ea5227d"
 stages:
 #  - libs
   - test
@@ -50,7 +50,7 @@ pkg_check:
 # buggy
 pkg_codecov:
     stage: codecov
-    script: Rscript -e 'covr::package_coverage(type="all", quiet = FALSE)'
+    script: Rscript -e "covr::codecov(quiet = F, token = '266db23c-b9d1-405f-9aef-c5889ea5227d')"
 
 #r-devel:
 #  stage: test
