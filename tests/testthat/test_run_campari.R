@@ -54,6 +54,18 @@ test_that('Test run_campari from installation', {
                            FMCSC_CRADIUS=10880,
                            FMCSC_CCUTOFF=10880,
                            FMCSC_CPROGINDWIDTH=1000), NA) #local cut is automatically adjusted to 1/10 if it is too big (as here)
+  xpect_error(run_campari(trj = trj, base_name = "ascii_based_analysis", campari_exe = ca_exe,
+                          FMCSC_CPROGINDMODE=1, #mst
+                          FMCSC_CCOLLECT=1, print_status = T,
+                          FMCSC_CMODE=4,
+                          FMCSC_CDISTANCE=7, #rmsd without alignment 7 - dihedral distances need a complete analysis (pdb_format dcd pdb etc...) 
+                          FMCSC_CPROGINDSTART=21, #starting snapshot 
+                          # FMCSC_CPROGINDRMAX=1000, #search att
+                          # FMCSC_BIRCHHEIGHT=2, #birch height
+                          FMCSC_CMAXRAD=10880, #clustering
+                          FMCSC_CRADIUS=10880,
+                          FMCSC_CCUTOFF=10880,
+                          FMCSC_CPROGINDWIDTH=1000), NA) 
   # debugonce(run_campari)
   expect_error(run_campari(data_file = 'ascii_based_analysis.tsv', base_name = "ascii_based_analysis", campari_exe = ca_exe,
                            FMCSC_CPROGINDMODE=1, #mst
@@ -106,6 +118,20 @@ test_that('Test run_campari from installation', {
     lb <- sapply(b, length)
     findf <- data.frame('n.nonA' = lb[lb != 0], 'file.name' = a[lb != 0])
     findf[order(findf$n.nonA),]
+    
+    
+    # remove the mod etc...
+    a[grepl(pattern = '/bin/', x = a)]
+    a[grepl(pattern = '/lib/', x = a)]
+    system('rm -rf inst/extdata/for_campari/bin')
+    system('rm -rf inst/extdata/for_campari/lib')
+    a <- list.files('inst/extdata/for_campari', recursive = T)
+    a[grepl(pattern = '.mod$', x = a)]
+    file.remove(paste0('inst/extdata/for_campari/', a[grepl(pattern = '.mod$', x = a)]))
+    file.remove(paste0('inst/extdata/for_campari/source/DEPENDENCIES'))
+    file.remove(paste0('inst/extdata/for_campari/source/config.guess'))
+    file.remove(paste0('inst/extdata/for_campari/source/config.sub'))
+    file.remove(paste0('inst/extdata/for_campari/source/install-sh'))
   }
   
 })
