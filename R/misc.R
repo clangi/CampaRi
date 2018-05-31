@@ -188,19 +188,28 @@
 }
 
 # create annotation vector from barrier vector # not used at the moment
-.vec_from_barriers <- function(bar.vec, label.vec = NULL, end.point = NULL){
+.vec_from_barriers <- function(bar.vec, label.vec = NULL, reorder.index = FALSE){ # , end.point = NULL (I can put it inside the bar.vec)
   
-  stopifnot(all(end.point > bar.vec))
-  if(is.null(label.vec)) label.vec <- 1:length(bar.vec)
+  # bar.vec must be the position on the PI!!! not the lengths of stretches
+  stopifnot(all(bar.vec > 1))
   
-  if(sum(bar.vec) != end.point) {
-    stopifnot(!is.null(end.point))
-    bar.vec <- sort(c(bar.vec, end.point))
+  # sorting
+  sorted.bar.vec <- sort(bar.vec, index.return=TRUE) # should I consider also the indexing? I don't think so
+  bar.vec <- sorted.bar.vec$x 
+  if(reorder.index){
+    if(!is.null(label.vec)) label.vec <- label.vec[sorted.bar.vec$ix]
+    else label.vec <- sorted.bar.vec$ix
   }
-  bar.vec <- c(bar.vec[1], diff(bar.vec))
   
-  stopifnot(sum(bar.vec) == end.point)
-  stopifnot(.lt(label.vec) == .lt(bar.vec))
+  # if not defined define the label vector
+  if(is.null(label.vec)) label.vec <- 1:length(bar.vec)
+  stopifnot(all(1:length(label.vec) == sort(label.vec))) # no gaps allowed
+  stopifnot(length(label.vec) == length(bar.vec))
   
-  return(c(unlist(sapply(label.vec, function(x) rep(x, bar.vec[x])))))
+  # generate the diff bector
+  bar.vec.diff <- c(bar.vec[1], diff(bar.vec))
+  stopifnot(sum(bar.vec.diff) == bar.vec[length(bar.vec)]) # check the right summing up!
+  
+  # final loop
+  return(unlist(sapply(1:length(label.vec), function(x) rep(label.vec[x], bar.vec.diff[x]))))
 }

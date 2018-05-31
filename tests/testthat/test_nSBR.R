@@ -57,66 +57,50 @@ test_that('new trials for SBR', {
   do_it <- FALSE
   if(do_it){
     require(ggplot2)
-  ######################### evaluating an automatic way to select the number of cluster -> grid search ##########################
-    
+    ######################### evaluating an automatic way to select the number of cluster -> grid search ##########################
     
     # initialization of the vars 
-    ncl.vec <- 2:6
     sco.mat <- data.frame(array(NA, dim = c(length(ncl.vec), length(ncl.vec))))
     sco.rnd.mat <- data.frame(array(NA, dim = c(length(ncl.vec), length(ncl.vec))))
-    h.split.mat <- data.frame(array(NA, dim = c(length(ncl.vec), length(ncl.vec))))
-    span.mat <- data.frame(array(NA, dim = c(length(ncl.vec), length(ncl.vec))))
-    ny.mat <- data.frame(array(NA, dim = c(length(ncl.vec), length(ncl.vec))))
-    rownames(sco.mat) <- rownames(span.mat) <- rownames(sco.rnd.mat) <- rownames(h.split.mat) <- rownames(ny.mat) <- paste0('ncl.', ncl.vec, '.i')
-    colnames(sco.mat) <- colnames(span.mat) <- colnames(sco.rnd.mat) <- colnames(ny.mat) <- colnames(h.split.mat) <- paste0('ncl.', ncl.vec, '.j')
+    rownames(sco.mat) <- rownames(sco.rnd.mat) <- paste0('ncl.', ncl.vec, '.i')
+    colnames(sco.mat) <- colnames(sco.rnd.mat) <- paste0('ncl.', ncl.vec, '.j')
+    
+    # call for barriers -> more than needed (it will be cross scored)
+    tmp <- CampaRi::nSBR(data = file.pi, n.cluster = 15,
+                                       comb_met = c('MIC'),
+                                       unif.splits = unique(round(seq(5, 100, length.out = 40))),  
+                                       pk_span = 150, ny = 60, plot = T,
+                                       silent = F, dbg_nSBR = F, return_plot = F)
+    ncl.vec <- 2:(length(tmp$barriers) + 1)
     
     # main loop over clusters I ----------------------------------------------------------------------------------
     for(ncl.i in ncl.vec){
-      cat('NCI: Doing', ncl.i, '(', which(ncl.vec == ncl.i), '/', length(ncl.vec), ')\n')
+      lnclv <- length(ncl.vec)
+      pwa <- which(ncl.vec == ncl.i)
+      cat('NCI: Doing cluster', ncl.i, '(', (pwa - 1)*lnclv + 1 , '-', pwa*lnclv, '/', lnclv^2, ')\n')
       
-      # first call for barriers
-      temp1 <- repeat.until.cl(ncl.x = ncl.i,  max_rounds = 15, plot = F,
-                               h.splits.t = 10, span.t = 500, ny.t = 30, silent = T)
-      
-      if(temp1$found) cat('Found the following barriers:', temp1$tmp$barriers, '\n')
-      else stop('No correct number!!')
       
       # extraction of the annotation from barriers (numbering not relevant)
-      ref.vec <- vec.from.barriers(bar.vec = temp1$tmp$barriers[1:(ncl.i-1)])
+      ref.vec <- .vec_from_barriers(bar.vec = c(tmp$barriers[1:(ncl.i-1)], 3000))
       
       # internal loop over clusters J ---------------------------------------------------------------------------
       for(ncl.j in ncl.vec){
-        cat('NCJ: Doing', ncl.j, '(', which(ncl.vec == ncl.j), '/', length(ncl.vec), ')\n')
-        
-        # second call for barriers
-        temp2 <- repeat.until.cl(ncl.x = ncl.j,  max_rounds = 15, plot = F,
-                                 h.splits.t = 10, span.t = 500, ny.t = 30, silent = T)
-        
-        if(temp2$found) cat('Found the following barriers:', temp2$tmp$barriers, '\n')
-        else stop('No correct number!!')
+        cat('NCJ: Doing cluster', ncl.j, '(', which(ncl.vec == ncl.j), '/', lnclv, ')\n')
         
         # scoring
         ref_sc <- CampaRi::score_sapphire(the_sap = file.pi, ann = ref.vec, 
-                                          manual_barriers = temp2$tmp$barriers[1:(ncl.j-1)], silent = T)
+                                          manual_barriers = tmp$barriers[1:(ncl.j-1)], silent = T)
         
         # final assignment
-        h.split.mat[paste0('ncl.', ncl.i, '.i'), paste0('ncl.', ncl.j, '.j')] <- temp2$h.splits.t
-        span.mat[paste0('ncl.', ncl.i, '.i'), paste0('ncl.', ncl.j, '.j')] <- temp2$span.t
-        ny.mat[paste0('ncl.', ncl.i, '.i'), paste0('ncl.', ncl.j, '.j')] <- temp2$ny.t
         sco.mat[paste0('ncl.', ncl.i, '.i'), paste0('ncl.', ncl.j, '.j')] <- ref_sc$score.out
         # sco.rnd.mat[paste0('ncl.', ncl.i), paste0('ncl.', ncl.j)] <- res2
       }
     }
-    # apply(sco.mat, 2, mean) 
-    # apply(sco.mat, 1, mean) 
     
     # Plotting results for visual inspection
     ggplot_tiles(mat = sco.mat, labx = 'Clusters', laby = 'Clusters', legtit = 'ARI') + geom_text(label = round(unlist(c(sco.mat)),2), col = 'white')
-    ggplot_tiles(mat = h.split.mat, labx = 'Clusters', laby = 'Clusters', legtit = 'ARI') + geom_text(label = round(unlist(c(h.split.mat)),2), col = 'white')
-    ggplot_tiles(mat = span.mat, labx = 'Clusters', laby = 'Clusters', legtit = 'ARI') + geom_text(label = round(unlist(c(span.mat)),2), col = 'white')
-    ggplot_tiles(mat = ny.mat, labx = 'Clusters', laby = 'Clusters', legtit = 'ARI') + geom_text(label = round(unlist(c(ny.mat)),2), col = 'white')
     
-    # best scenario / selection of the number of clusters
+    # best scenario / selection of the number of clusters - using the parameter search (below)
     CampaRi::nSBR(data = file.pi, n.cluster = 5,
                   comb_met = c('MIC'),
                   unif.splits = unique(round(seq(5, 100, length.out = 40))),  
@@ -143,15 +127,32 @@ test_that('new trials for SBR', {
       else print(itplots)
     }
     
-    # create annotation vector from barrier vector
-    vec.from.barriers <- function(bar.vec, end.point = 3000){
+    
+    # create annotation vector from barrier vector # not used at the moment
+    .vec_from_barriers <- function(bar.vec, label.vec = NULL, reorder.index = FALSE){ # , end.point = NULL (I can put it inside the bar.vec)
       
-      stopifnot(all(end.point > bar.vec))
+      # bar.vec must be the position on the PI!!! not the lengths of stretches
+      stopifnot(all(bar.vec > 1))
       
-      bar.vec <- sort(c(bar.vec, end.point))
-      bar.vec <- c(bar.vec[1], diff(bar.vec))
+      # sorting
+      sorted.bar.vec <- sort(bar.vec, index.return=TRUE) # should I consider also the indexing? I don't think so
+      bar.vec <- sorted.bar.vec$x 
+      if(reorder.index){
+        if(!is.null(label.vec)) label.vec <- label.vec[sorted.bar.vec$ix]
+        else label.vec <- sorted.bar.vec$ix
+      }
       
-      return(c(unlist(sapply(1:length(bar.vec), function(x) rep(x, bar.vec[x])))))
+      # if not defined define the label vector
+      if(is.null(label.vec)) label.vec <- 1:length(bar.vec)
+      stopifnot(all(1:length(label.vec) == sort(label.vec))) # no gaps allowed
+      stopifnot(length(label.vec) == length(bar.vec))
+      
+      # generate the diff bector
+      bar.vec.diff <- c(bar.vec[1], diff(bar.vec))
+      stopifnot(sum(bar.vec.diff) == bar.vec[length(bar.vec)]) # check the right summing up!
+      
+      # final loop
+      return(unlist(sapply(1:length(label.vec), function(x) rep(label.vec[x], bar.vec.diff[x]))))
     }
     
     # repear until the right number of clusters is found
@@ -183,6 +184,65 @@ test_that('new trials for SBR', {
       }
       return(list('found' = fnd, 'tmp' = tmp, 'h.splits.t' = h.splits.t, 'span.t' = span.t, 'ny.t' = ny.t, 'round' = round))
     }
+    
+    # --------------------------- end functions ---------------------------------
+    
+    # This method is looking for the barriers changing the data. Is it necessary?
+    # initialization of the vars 
+    ncl.vec <- 2:6
+    sco.mat <- data.frame(array(NA, dim = c(length(ncl.vec), length(ncl.vec))))
+    sco.rnd.mat <- data.frame(array(NA, dim = c(length(ncl.vec), length(ncl.vec))))
+    h.split.mat <- data.frame(array(NA, dim = c(length(ncl.vec), length(ncl.vec))))
+    span.mat <- data.frame(array(NA, dim = c(length(ncl.vec), length(ncl.vec))))
+    ny.mat <- data.frame(array(NA, dim = c(length(ncl.vec), length(ncl.vec))))
+    rownames(sco.mat) <- rownames(span.mat) <- rownames(sco.rnd.mat) <- rownames(h.split.mat) <- rownames(ny.mat) <- paste0('ncl.', ncl.vec, '.i')
+    colnames(sco.mat) <- colnames(span.mat) <- colnames(sco.rnd.mat) <- colnames(ny.mat) <- colnames(h.split.mat) <- paste0('ncl.', ncl.vec, '.j')
+    # main loop over clusters I ----------------------------------------------------------------------------------
+    for(ncl.i in ncl.vec){
+      cat('NCI: Doing', ncl.i, '(', which(ncl.vec == ncl.i), '/', length(ncl.vec), ')\n')
+      
+      # first call for barriers
+      temp1 <- repeat.until.cl(ncl.x = ncl.i,  max_rounds = 15, plot = F,
+                               h.splits.t = 10, span.t = 500, ny.t = 30, silent = T)
+
+      if(temp1$found) cat('Found the following barriers:', temp1$tmp$barriers, '\n')
+      else stop('No correct number!!')
+      
+      # extraction of the annotation from barriers (numbering not relevant)
+      ref.vec <- vec.from.barriers(bar.vec = temp1$tmp$barriers[1:(ncl.i-1)])
+      
+      # internal loop over clusters J ---------------------------------------------------------------------------
+      for(ncl.j in ncl.vec){
+        cat('NCJ: Doing', ncl.j, '(', which(ncl.vec == ncl.j), '/', length(ncl.vec), ')\n')
+        
+        # second call for barriers
+        temp2 <- repeat.until.cl(ncl.x = ncl.j,  max_rounds = 15, plot = F,
+                                 h.splits.t = 10, span.t = 500, ny.t = 30, silent = T)
+        
+        if(temp2$found) cat('Found the following barriers:', temp2$tmp$barriers, '\n')
+        else stop('No correct number!!')
+        
+        # scoring
+        ref_sc <- CampaRi::score_sapphire(the_sap = file.pi, ann = ref.vec, 
+                                          manual_barriers = temp2$tmp$barriers[1:(ncl.j-1)], silent = T)
+        
+        # final assignment
+        h.split.mat[paste0('ncl.', ncl.i, '.i'), paste0('ncl.', ncl.j, '.j')] <- temp2$h.splits.t
+        span.mat[paste0('ncl.', ncl.i, '.i'), paste0('ncl.', ncl.j, '.j')] <- temp2$span.t
+        ny.mat[paste0('ncl.', ncl.i, '.i'), paste0('ncl.', ncl.j, '.j')] <- temp2$ny.t
+        sco.mat[paste0('ncl.', ncl.i, '.i'), paste0('ncl.', ncl.j, '.j')] <- ref_sc$score.out
+        sco.rnd.mat[paste0('ncl.', ncl.i), paste0('ncl.', ncl.j)] <- res2
+      }
+    }
+    # apply(sco.mat, 2, mean) 
+    # apply(sco.mat, 1, mean) 
+    
+    
+    ggplot_tiles(mat = h.split.mat, labx = 'Clusters', laby = 'Clusters', legtit = 'ARI') + geom_text(label = round(unlist(c(h.split.mat)),2), col = 'white')
+    ggplot_tiles(mat = span.mat, labx = 'Clusters', laby = 'Clusters', legtit = 'ARI') + geom_text(label = round(unlist(c(span.mat)),2), col = 'white')
+    ggplot_tiles(mat = ny.mat, labx = 'Clusters', laby = 'Clusters', legtit = 'ARI') + geom_text(label = round(unlist(c(ny.mat)),2), col = 'white')
+    
+    
   ######################### evaluating the fluctuation and randomicity of the score ##########################
     # just curiosity - entropy considerations
     df.test <- data.frame(a = rnorm(n = 1000, mean = 0, sd = 1), b = rnorm(n = 1000, mean = 0, sd = 1), c = rnorm(n = 1000, mean = 6, sd = 1))
