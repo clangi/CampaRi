@@ -213,13 +213,12 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
     if('FMCSC_PDBANALYZE' %in% args_names){
       if(as.numeric(args_list[['FMCSC_PDBANALYZE']]) == 1){
         if(!silent) cat('PDBANALYZE option set TRUE. The analysis variables will be checked.')
+        analysis_mode <- TRUE
       } else if(as.numeric(args_list[['FMCSC_PDBANALYZE']]) == 0){
         if(!silent) cat('PDBANALYZE option set FALSE. The analysis variables will not be checked. Simulation mode active')
         simulation_mode <- TRUE
         warning('SIMULATION RUN: using PDBANALYZE == 0 no check on the FILES will be done.\n')
       }
-    }else{
-      simulation_mode <-  TRUE # TO CHECK
     }
     if(!simulation_mode && any(c('FMCSC_XTCFILE', 'FMCSC_DCDFILE', 'FMCSC_PDBFILE', 'FMCSC_NETCDFFILE', 'FMCSC_NCDM_ASFILE', 'FMCSC_NCDM_NCFILE') %in% args_names)){
       if(any(c('FMCSC_XTCFILE', 'FMCSC_DCDFILE', 'FMCSC_PDBFILE', 'FMCSC_NETCDFFILE') %in% args_names)){
@@ -233,21 +232,21 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
           stop('Please use only one file mode (following FMCSC_*FILE described in FMCSC_PDB_FORMAT).')
         if('FMCSC_PDBFILE' %in% args_names){
           data_file <- args_list[['FMCSC_PDBFILE']]
-          if(!args_list[['FMCSC_PDB_FORMAT']] %in% c(1, 2)){
+          if(is.null(args_list[['FMCSC_PDB_FORMAT']]) || !args_list[['FMCSC_PDB_FORMAT']] %in% c(1, 2)){
             warning('Even if FMCSC_PDB_FORMAT was used for FMCSC_PDBFILE no standard (1 or 2) was selected. It will be defaulted to 1.\n')
             args_list <- c(args_list, FMCSC_PDB_FORMAT=1)
           }
         }
         if('FMCSC_XTCFILE' %in% args_names){
           data_file <- args_list[['FMCSC_XTCFILE']]
-          if(!args_list[['FMCSC_PDB_FORMAT']] != 3){
+          if(is.null(args_list[['FMCSC_PDB_FORMAT']]) || !args_list[['FMCSC_PDB_FORMAT']] != 3){
             warning('Even if FMCSC_PDB_FORMAT was used for FMCSC_XTCFILE no standard (3) was selected. It will be defaulted to 3.\n')
             args_list <- c(args_list, FMCSC_PDB_FORMAT=3)
           }
         }
         if('FMCSC_DCDFILE' %in% args_names){
           data_file <- args_list[['FMCSC_DCDFILE']]
-          if(!args_list[['FMCSC_PDB_FORMAT']] != 4){
+          if(is.null(args_list[['FMCSC_PDB_FORMAT']]) || !args_list[['FMCSC_PDB_FORMAT']] != 4){
             warning('Even if FMCSC_PDB_FORMAT was used for FMCSC_DCDFILE no standard (4) was selected. It will be defaulted to 4.\n')
             args_list <- c(args_list, FMCSC_PDB_FORMAT=4)
           }
@@ -255,7 +254,7 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
         if('FMCSC_NETCDFFILE' %in% args_names){
           data_file <- args_list[['FMCSC_NETCDFFILE']]
           netcdf_mode_amber <- TRUE
-          if(!args_list[['FMCSC_PDB_FORMAT']] != 5){
+          if(is.null(args_list[['FMCSC_PDB_FORMAT']]) || !args_list[['FMCSC_PDB_FORMAT']] != 5){
             warning('Even if FMCSC_PDB_FORMAT was used for FMCSC_NETCDFFILE no standard (5) was selected. It will be defaulted to 5.\n')
             args_list <- c(args_list, FMCSC_PDB_FORMAT=5)
           }

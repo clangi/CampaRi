@@ -24,8 +24,8 @@ test_that('Test run_campari from installation', {
   expect_error(CampaRi::run_campari(FMCSC_SEQFILE="nbu.in", campari_exe = ca_exe, # you must have it defined according to CAMPARI's rules
                           # FMCSC_BASENAME="NBU", # lets try the base_name option
                           base_name = "NBU", print_status = T, # it will take 55 s in background ~
-                          PARAMETERS="oplsaal.prm", # if this variable it is not supplied will be automatically assigned to <full path to folder>/campari/params/abs3.2_opls.prm
-                          FMCSC_SC_IPP=0.0,
+                          PARAMETERS="oplsaal.prm", # if this variable it is not supplied will be assigned to <full path to folder>/campari/params/abs3.2_opls.prm
+                          FMCSC_SC_IPP=0.0,  FMCSC_PDBANALYZE = 0,
                           FMCSC_SC_BONDED_T=1.0,
                           FMCSC_DYNAMICS=3,
                           FMCSC_FRICTION=3.0,
@@ -78,6 +78,18 @@ test_that('Test run_campari from installation', {
                            FMCSC_CMAXRAD=10880, #clustering
                            FMCSC_CRADIUS=10880,
                            FMCSC_CCUTOFF=10880,
+                           FMCSC_CPROGINDWIDTH=1000), NA) 
+  expect_error(run_campari(base_name = "ascii_based_analysis", campari_exe = ca_exe, FMCSC_NCDM_ASFILE = 'ascii_based_analysis.tsv', 
+                           FMCSC_CPROGINDMODE=1, #mst
+                           FMCSC_CCOLLECT=1, print_status = T,
+                           FMCSC_CMODE=4,
+                           FMCSC_CDISTANCE=7, #rmsd without alignment 7 - dihedral distances need a complete analysis (pdb_format dcd pdb etc...) 
+                           FMCSC_CPROGINDSTART=21, #starting snapshot 
+                           # FMCSC_CPROGINDRMAX=1000, #search att
+                           # FMCSC_BIRCHHEIGHT=2, #birch height
+                           FMCSC_CMAXRAD=10880, #clustering
+                           FMCSC_CRADIUS=10880,
+                           FMCSC_CCUTOFF=10880,
                            FMCSC_CPROGINDWIDTH=1000), NA)
   
   # --------------------------------------------------------------------------- dcd file
@@ -114,7 +126,38 @@ test_that('Test run_campari from installation', {
                            FMCSC_CRADIUS=1,
                            FMCSC_CPROGINDRMAX=10, #search att
                            FMCSC_CCUTOFF=1,
+                           FMCSC_CPROGINDWIDTH=1000), NA) 
+  expect_error(run_campari(base_name = "ascii_based_analysis", seq_in = 'nbu.in',
+                           campari_exe = ca_exe, FMCSC_DCDFILE = 'NBU_traj.dcd', FMCSC_PDBANALYZE = 1,
+                           FMCSC_CPROGINDMODE=2, #mst
+                           FMCSC_NRSTEPS = 1000,
+                           FMCSC_CCOLLECT=1, print_status = T,
+                           FMCSC_CMODE=4,
+                           FMCSC_CDISTANCE=5, #rmsd without alignment 7 - dihedral distances need a complete analysis (pdb_format dcd pdb etc...) 
+                           FMCSC_CPROGINDSTART=21, #starting snapshot 
+                           FMCSC_CMAXRAD=10880, #clustering
+                           FMCSC_CRADIUS=1,
+                           FMCSC_CPROGINDRMAX=10, #search att
+                           FMCSC_CCUTOFF=1,
                            FMCSC_CPROGINDWIDTH=1000), NA)
+  
+  # --------------------------------------------------------------------------- bash_rc append for further search of ca_exe
+  expect_error(if(!file.copy(from = '~/.bashrc', to = '~/.bashrc_tmp', overwrite = T)) stop('error'), NA)
+  system(paste0('echo "export PATH=$PATH:', ca_exe, '" >> ~/.bashrc')) # just not to mess up with my bashrc
+  expect_error(run_campari(trj = trj, base_name = "ascii_based_analysis", 
+                           FMCSC_CPROGINDMODE=1, #mst
+                           FMCSC_CCOLLECT=1, print_status = T,
+                           FMCSC_CMODE=4,
+                           FMCSC_CDISTANCE=7, #rmsd without alignment 7 - dihedral distances need a complete analysis (pdb_format dcd pdb etc...) 
+                           FMCSC_CPROGINDSTART=21, #starting snapshot 
+                           # FMCSC_CPROGINDRMAX=1000, #search att
+                           # FMCSC_BIRCHHEIGHT=2, #birch height
+                           FMCSC_CMAXRAD=10880, #clustering
+                           FMCSC_CRADIUS=10880,
+                           FMCSC_CCUTOFF=10880,
+                           FMCSC_CPROGINDWIDTH=1000), NA) 
+  expect_error(if(!file.copy(from = '~/.bashrc_tmp', to = '~/.bashrc', overwrite = T)) stop('error'), NA)
+  file.copy(from = '~/.bashrc_tmp', to = '~/.bashrc', overwrite = T)
   
   
   
