@@ -1,8 +1,13 @@
 context('run_campari')
 
 test_that('Test run_campari from installation', {
-  if(F) setwd('projects/CampaR/garbage/')
+  
+  # if(F) setwd('projects/CampaR/garbage/')
+  
+  # installing (fastly) campari SOMEWHERE
   expect_error(CampaRi::install_campari(install_ncminer = T, silent_built = T, no_optimization = T), NA) # to do it usually
+  
+  # setting the binary exe
   bin_dir <- system.file('extdata/for_campari/bin/', package = "CampaRi")
   ca_exe <- paste0(bin_dir, '/', dir(bin_dir)[1])
   print(ca_exe)
@@ -10,9 +15,12 @@ test_that('Test run_campari from installation', {
   expect_true(is.character(ca_exe))
   expect_true(file.exists(ca_exe))
   expect_true(ca_exe != "")
-  # system('printf "NBU\nEND" &> nbu.in')
+  
+  # NBU.IN definition
   data.table::fwrite(list('NBU'), file = 'nbu.in', row.names = F, col.names = F)
   data.table::fwrite(list('END'), file = 'nbu.in', append = T, row.names = F, col.names = F)
+  
+  # --------------------------------------------------------------------------- nbu simulation
   expect_error(CampaRi::run_campari(FMCSC_SEQFILE="nbu.in", campari_exe = ca_exe, # you must have it defined according to CAMPARI's rules
                           # FMCSC_BASENAME="NBU", # lets try the base_name option
                           base_name = "NBU", print_status = T, # it will take 55 s in background ~
@@ -39,22 +47,13 @@ test_that('Test run_campari from installation', {
                           FMCSC_RSTOUT=20000000
   ), NA)
   
+  # taking the dihedral angles
   trj <- data.table::fread("FYC.dat", header = F, skip = 1, data.table = FALSE)[,-1]
   trj <- sapply(trj, as.numeric) # always be sure that it is numeric!
   trj <- matrix(trj, nrow = 1000, ncol =3) # always be sure that it is numeric!
+  
+  # --------------------------------------------------------------------------- direct trj insertion
   expect_error(run_campari(trj = trj, base_name = "ascii_based_analysis", campari_exe = ca_exe,
-                           FMCSC_CPROGINDMODE=1, #mst
-                           FMCSC_CCOLLECT=1, print_status = T,
-                           FMCSC_CMODE=4,
-                           FMCSC_CDISTANCE=7, #rmsd without alignment 7 - dihedral distances need a complete analysis (pdb_format dcd pdb etc...) 
-                           FMCSC_CPROGINDSTART=21, #starting snapshot 
-                           # FMCSC_CPROGINDRMAX=1000, #search att
-                           # FMCSC_BIRCHHEIGHT=2, #birch height
-                           FMCSC_CMAXRAD=10880, #clustering
-                           FMCSC_CRADIUS=10880,
-                           FMCSC_CCUTOFF=10880,
-                           FMCSC_CPROGINDWIDTH=1000), NA) #local cut is automatically adjusted to 1/10 if it is too big (as here)
-  xpect_error(run_campari(trj = trj, base_name = "ascii_based_analysis", campari_exe = ca_exe,
                           FMCSC_CPROGINDMODE=1, #mst
                           FMCSC_CCOLLECT=1, print_status = T,
                           FMCSC_CMODE=4,
@@ -66,7 +65,8 @@ test_that('Test run_campari from installation', {
                           FMCSC_CRADIUS=10880,
                           FMCSC_CCUTOFF=10880,
                           FMCSC_CPROGINDWIDTH=1000), NA) 
-  # debugonce(run_campari)
+  
+  # --------------------------------------------------------------------------- tsv file
   expect_error(run_campari(data_file = 'ascii_based_analysis.tsv', base_name = "ascii_based_analysis", campari_exe = ca_exe,
                            FMCSC_CPROGINDMODE=1, #mst
                            FMCSC_CCOLLECT=1, print_status = T,
@@ -80,29 +80,54 @@ test_that('Test run_campari from installation', {
                            FMCSC_CCUTOFF=10880,
                            FMCSC_CPROGINDWIDTH=1000), NA)
   
+  # --------------------------------------------------------------------------- dcd file
+  expect_error(run_campari(data_file = 'NBU_traj.dcd', base_name = "ascii_based_analysis", campari_exe = ca_exe,
+                           FMCSC_CPROGINDMODE=1, #mst
+                           FMCSC_CCOLLECT=1, print_status = T,
+                           FMCSC_CMODE=4,
+                           FMCSC_CDISTANCE=5, #rmsd without alignment 7 - dihedral distances need a complete analysis (pdb_format dcd pdb etc...) 
+                           FMCSC_CPROGINDSTART=21, #starting snapshot 
+                           FMCSC_CMAXRAD=10880, #clustering
+                           FMCSC_CRADIUS=10880,
+                           FMCSC_CCUTOFF=10880,
+                           FMCSC_CPROGINDWIDTH=1000))  
+  expect_error(run_campari(data_file = 'NBU_traj.dcd', base_name = "ascii_based_analysis", campari_exe = ca_exe,
+                           FMCSC_CPROGINDMODE=1, #mst
+                           FMCSC_NCDM_NRFRMS= 14,
+                           FMCSC_CCOLLECT=1, print_status = T,
+                           FMCSC_CMODE=4,
+                           FMCSC_CDISTANCE=5, #rmsd without alignment 7 - dihedral distances need a complete analysis (pdb_format dcd pdb etc...) 
+                           FMCSC_CPROGINDSTART=21, #starting snapshot 
+                           FMCSC_CMAXRAD=10880, #clustering
+                           FMCSC_CRADIUS=10880,
+                           FMCSC_CCUTOFF=10880,
+                           FMCSC_CPROGINDWIDTH=1000))  
+  expect_error(run_campari(data_file = 'NBU_traj.dcd', base_name = "ascii_based_analysis", seq_in = 'nbu.in',
+                           campari_exe = ca_exe,
+                           FMCSC_CPROGINDMODE=2, #mst
+                           FMCSC_NRSTEPS = 1000,
+                           FMCSC_CCOLLECT=1, print_status = T,
+                           FMCSC_CMODE=4,
+                           FMCSC_CDISTANCE=5, #rmsd without alignment 7 - dihedral distances need a complete analysis (pdb_format dcd pdb etc...) 
+                           FMCSC_CPROGINDSTART=21, #starting snapshot 
+                           FMCSC_CMAXRAD=10880, #clustering
+                           FMCSC_CRADIUS=1,
+                           FMCSC_CPROGINDRMAX=10, #search att
+                           FMCSC_CCUTOFF=1,
+                           FMCSC_CPROGINDWIDTH=1000), NA)
+  
   
   
   if(file.exists('Makefile')) file.remove('Makefile')
   if(file.exists('VERSION')) file.remove('VERSION')
   if(file.exists('FYC.dat')) file.remove('FYC.dat')
-  if(file.exists('NBU.key')) file.remove('NBU.key')
-  if(file.exists('NBU.log')) file.remove('NBU.log')
   if(file.exists('nbu.in')) file.remove('nbu.in')
   if(file.exists('config.log')) file.remove('config.log')
   if(file.exists('config.status')) file.remove('config.status')
-  if(file.exists('NBU_END.int')) file.remove('NBU_END.int')
-  if(file.exists('NBU_END.pdb')) file.remove('NBU_END.pdb')
-  if(file.exists('NBU_START.int')) file.remove('NBU_START.int')
-  if(file.exists('NBU_START.pdb')) file.remove('NBU_START.pdb')
-  if(file.exists('NBU_VIS.vmd')) file.remove('NBU_VIS.vmd')
-  if(file.exists('NBU_traj.dcd')) file.remove('NBU_traj.dcd')
   if(file.exists('FRAMES_NBL.nc')) file.remove('FRAMES_NBL.nc')
-  if(file.exists('ascii_based_analysis.tsv')) file.remove('ascii_based_analysis.tsv')
-  if(file.exists('ascii_based_analysis.log')) file.remove('ascii_based_analysis.log')
-  if(file.exists('ascii_based_analysis.key')) file.remove('ascii_based_analysis.key')
   if(file.exists('PROGIDX_000000000021.dat')) file.remove('PROGIDX_000000000021.dat')
-  if(file.exists('PROGIDX_000000000021.dat')) file.remove('PROGIDX_000000000021.dat')
-  
+  file_to_d <- c(list.files(pattern = 'STRUCT_CLUSTERING*'), list.files(pattern = 'ascii_based_analysis.*'), list.files(pattern = 'NBU.*'))
+  for(i in file_to_d) {if(file.exists(i)) file.remove(i)}
   
   if(F){
     # some extra tests
