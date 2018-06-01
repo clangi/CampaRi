@@ -34,8 +34,8 @@ test_that('new trials for SBR', {
   expect_error(a1 <- CampaRi::nSBR(data = file.pi, n.cluster = 3, 
                                    comb_met = c('MIC_kin'),
                                    unif.splits = seq(5, 100, 8),  
-                                   pk_span = 500, ny = 50, plot = T, random_picks = 100, ann = ann,
-                                   silent = silent, dbg_nSBR = F, return_plot = F), NA)
+                                   pk_span = 500, ny = 50, plot = F, random_picks = 100, ann = ann,
+                                   silent = silent, dbg_nSBR = F, return_plot = T), NA)
   # ------------------------------------------------------- shuffles test
   expect_error(a1 <- CampaRi::nSBR(data = file.pi, n.cluster = 3, shuffles = T, 
                                    comb_met = c('MIC'),
