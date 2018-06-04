@@ -5,12 +5,11 @@ Version: 0.9.1
 Date: 2018-04-25
 Author: Garolini Davide, Cocina Francesco
 Maintainer: Garolini Davide <d.garolini@bioc.uzh.ch>
-Description: Analysis algorithms extracted from the original 'campari' software package.
-  They consists in a kinetic annotation of the trajectory based on the minimum spanning tree
-  constructed on the distances between snapshots. The fast algorithm is implemented on
-  the basis of a modified version of the birch algorithm, while the slow one is based on a
-  simple leader clustering. For more information please visit the original documentation
-  on <http://campari.sourceforge.net/index.html>.
+Description: Analysis algorithms for time series data. The principal objective of this work
+  is to provide automatic tools for pre-processing and visualization of the raw data, keeping 
+  in mind the size of it. The package comprises also a model dedicated section (markov state models).
+  Moreover, we also extracted original algorithms from the main core 'campari' software. For more 
+  information please visit the original documentation on <http://campari.sourceforge.net/index.html>.
 License: GPL (>= 3)
 Depends: R (>= 3.1.0)
 Imports:
