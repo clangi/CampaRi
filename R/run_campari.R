@@ -53,8 +53,6 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   simulation_mode <- FALSE
   nvars <- NULL
   
-  
-  
   # -----------------------
   # base input checks
   if(!is.logical(multi_threading))
