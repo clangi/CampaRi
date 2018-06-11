@@ -27,7 +27,9 @@ install_campari <- function(campari_source = NULL, installation_location = NULL,
     if(!file.exists(paste0(campari_source, '/source/chainsaw.f90'))) stop('campari_source must have the original software structure (i.e. /source/chainsaw.f90)')
     camp_src <- campari_source
   }else{
-    camp_src <- paste0(system.file('extdata/', "for_campari/", package = "CampaRi"), '/')
+    camp_src <- paste0(system.file('extdata/', package = "CampaRi"), '/')
+    camp_src <- paste0(camp_src, '/for_campari/')
+    if(!dir.exists(camp_src)) dir.create(camp_src)
     if(!file.exists(paste0(camp_src, '/source/chainsaw.f90'))) {
       if(!silent_built) cat('The CAMPARI software is not in the standard inst/extdata/for_campari folder. We will try to download it from repository. \n')
       utils::download.file(url = 'https://gitlab.com/CaflischLab/debcampari/-/archive/master/debcampari-master.zip', destfile = paste0(camp_src, "debcampari-master.zip"))
