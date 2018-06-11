@@ -147,7 +147,23 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
     
     bin_dir <- system.file('extdata/for_campari/bin/', package = "CampaRi")
     camp_bin_internal_path <- paste0(bin_dir, '/', dir(bin_dir)[1])
-    if(!any(list.files(camp_bin_path) %in% must_be_exe) || !any(list.files(camp_bin_internal_path) %in% must_be_exe))
+  }
+  
+  # standard looking in the PATH directories if there is something:
+  existing_dirs <- NULL
+  for(whichi in must_be_exe){
+    existing_dirs <- c(existing_dirs, suppressWarnings(system(paste0('which ', whichi), intern = T)))
+  }
+  if(length(existing_dirs) != 0 && !silent) cat('We found using which the following exe location. Be sure they are correct!\n')
+  if(length(existing_dirs) != 0 && !silent) cat(existing_dirs, '\n')
+  
+  # mega check on every method (1. inserted; 2. from alias; 3. from PATH; 4. from internal path (for_campari/bin (deprecated)); 5. directly from which)
+  if(!any(list.files(camp_bin_path) %in% must_be_exe) && 
+     !any(list.files(camp_bin_alias) %in% must_be_exe) && 
+     !any(list.files(camp_bin_internal_path) %in% must_be_exe)){
+    if(!silent) 
+      cat('Attention. We did not found anything in campari_exe, in home files (e.g. ~/.bashrc as alias or as PATH). If neither using the which none was found it will stop.\n')
+    if(length(existing_dirs) == 0) 
       stop('The inserted or found directories have not any useful executable, i.e. starting with camp*. Check the insertion or use the PATH variable instead.')
   }
   

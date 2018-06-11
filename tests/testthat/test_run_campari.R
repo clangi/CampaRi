@@ -2,13 +2,16 @@ context('run_campari')
 
 test_that('Test run_campari from installation', {
   
+  silent <- F
+  if(!silent) {require(testthat); require(CampaRi)} 
   # if(F) setwd('projects/CampaR/garbage/')
   
   # installing (fastly) campari SOMEWHERE
-  expect_error(CampaRi::install_campari(install_ncminer = T, silent_built = T, no_optimization = T), NA) # to do it usually
+  expect_error(CampaRi::install_campari(install_ncminer = T, silent_built = F, no_optimization = T), NA) # to do it usually
   
   # setting the binary exe
-  bin_dir <- system.file('extdata/for_campari/bin/', package = "CampaRi")
+  main_dir <- system.file('extdata/for_campari/', package = "CampaRi")
+  bin_dir <- paste0(main_dir, '/', dir(main_dir)[1], '/bin/')
   ca_exe <- paste0(bin_dir, '/', dir(bin_dir)[1])
   print(ca_exe)
   print(list.files(ca_exe))
@@ -21,7 +24,7 @@ test_that('Test run_campari from installation', {
   data.table::fwrite(list('END'), file = 'nbu.in', append = T, row.names = F, col.names = F)
   
   # --------------------------------------------------------------------------- nbu simulation
-  expect_error(CampaRi::run_campari(FMCSC_SEQFILE="nbu.in", campari_exe = ca_exe, # you must have it defined according to CAMPARI's rules
+  expect_error(CampaRi::run_campari(FMCSC_SEQFILE="nbu.in", campari_exe = paste0(ca_exe, '/campari'), # you must have it defined according to CAMPARI's rules
                           # FMCSC_BASENAME="NBU", # lets try the base_name option
                           base_name = "NBU", print_status = T, # it will take 55 s in background ~
                           PARAMETERS="oplsaal.prm", # if this variable it is not supplied will be assigned to <full path to folder>/campari/params/abs3.2_opls.prm

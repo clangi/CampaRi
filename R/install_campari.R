@@ -3,6 +3,8 @@
 #'      \code{install_campari} is able to install the original campari Fortran code in the default directory (package/inst) or in a specified one. 
 #'      Please remember that make and configure are two fundamental steps in this process.
 #'
+#' @param campari_source Location string of the CAMPARI structure (it will test for the presence of source/chainsaw.f90). If not provided it will try the standard 
+#' inst/extdata/for_campari or the main repository.
 #' @param installation_location It defaults to the package installation path (package/inst/campari) but this can be copied in another directory and installed from there.
 #' NB: it will contain a source directory with its configure file and therefore must be executable.
 #' @param install_ncminer If true the executable for netcdf and ascii (tsv, csv) file handling will be installed on the top of normal installation.
@@ -15,10 +17,27 @@
 #' @export install_campari
 
 
-install_campari <- function(installation_location = NULL, install_ncminer = FALSE, install_threads = FALSE, install_mpi = FALSE, silent_built = FALSE, no_optimization = FALSE){
+install_campari <- function(campari_source = NULL, installation_location = NULL, install_ncminer = FALSE, install_threads = FALSE, 
+                            install_mpi = FALSE, silent_built = FALSE, no_optimization = FALSE){
   
   # insertion checks
-  campari_source <- paste0(system.file('extdata/', "for_campari/", package = "CampaRi"), '/')
+  camp_src <- NULL
+  if(!is.null(campari_source)){
+    if(!.isSingleChar(campari_source)) stop('campari_source must be a string.')
+    if(!file.exists(paste0(campari_source, '/source/chainsaw.f90'))) stop('campari_source must have the original software structure (i.e. /source/chainsaw.f90)')
+    camp_src <- campari_source
+  }else{
+    camp_src <- paste0(system.file('extdata/', "for_campari/", package = "CampaRi"), '/')
+    if(!file.exists(paste0(camp_src, '/source/chainsaw.f90'))) {
+      if(!silent_built) cat('The CAMPARI software is not in the standard inst/extdata/for_campari folder. We will try to download it from repository. \n')
+      utils::download.file(url = 'https://gitlab.com/CaflischLab/debcampari/-/archive/master/debcampari-master.zip', destfile = paste0(camp_src, "debcampari-master.zip"))
+      system(paste0('unzip -o -d', camp_src, ' ', camp_src, "/debcampari-master.zip "))
+      # system(paste0('chmod 755 ', camp_src, "/debcampari-master/source/"))
+      camp_src <- paste0(camp_src, '/debcampari-master')
+    }    
+    if(!file.exists(paste0(camp_src, '/source/chainsaw.f90'))) stop('campari_source must have the original software structure (i.e. /source/chainsaw.f90)')
+  }
+  
   if(!is.null(installation_location)){
     if(!dir.exists(installation_location))
       stop('Inserted directory does not exist. Please take care about the possibility to execute a makefile.')
@@ -40,20 +59,20 @@ install_campari <- function(installation_location = NULL, install_ncminer = FALS
     automake_name <- dir(automake_path, pattern = '[0-9].[0.9]*')[1]
   }
   if(!silent_built) cat('Checking for the presence of install-sh, config.guess and config.sub ....')
-  if(!file.exists(paste0(campari_source, 'source/install-sh'))){
+  if(!file.exists(paste0(camp_src, 'source/install-sh'))){
     if(!file.exists(paste0(automake_path, automake_name, '/install-sh')))
       stop('Please install automake on your computer (e.g. apt install automake) and be sure that there is this file: /usr/share/automake-*/install-sh .')
-    file.copy(from = paste0(automake_path, automake_name, '/install-sh'), to = paste0(campari_source, 'source/'), overwrite = TRUE)
+    file.copy(from = paste0(automake_path, automake_name, '/install-sh'), to = paste0(camp_src, 'source/'), overwrite = TRUE)
   }
-  if(!file.exists(paste0(campari_source, 'source/config.sub'))){
+  if(!file.exists(paste0(camp_src, 'source/config.sub'))){
     if(!file.exists(paste0(automake_path, automake_name, '/config.sub')))
       stop('Please install automake on your computer (e.g. apt install automake) and be sure that there is this file: /usr/share/automake-*/config.sub .')
-    file.copy(from = paste0(automake_path, automake_name, '/config.sub'), to = paste0(campari_source, 'source/'), overwrite = TRUE)
+    file.copy(from = paste0(automake_path, automake_name, '/config.sub'), to = paste0(camp_src, 'source/'), overwrite = TRUE)
   }
-  if(!file.exists(paste0(campari_source, 'source/config.guess'))){
+  if(!file.exists(paste0(camp_src, 'source/config.guess'))){
     if(!file.exists(paste0(automake_path, automake_name, '/config.guess')))
       stop('Please install automake on your computer (e.g. apt install automake) and be sure that there is this file: /usr/share/automake-*/config.guess .')
-    file.copy(from = paste0(automake_path, automake_name, '/config.guess'), to = paste0(campari_source, 'source/'), overwrite = TRUE)
+    file.copy(from = paste0(automake_path, automake_name, '/config.guess'), to = paste0(camp_src, 'source/'), overwrite = TRUE)
   }
   if(!silent_built) cat('done\n')
   
@@ -61,11 +80,11 @@ install_campari <- function(installation_location = NULL, install_ncminer = FALS
   if(!is.null(installation_location)){
     if(!silent_built) cat('Copying source files in installation directory...')
     installation_location <- suppressWarnings(system(paste0('pwd ', installation_location), intern = T)) # check to unfold '..' which would break make
-    suppressWarnings(system(paste0('cp -r ', campari_source, ' ', installation_location), ignore.stdout = silent_built))
+    suppressWarnings(system(paste0('cp -r ', camp_src, ' ', installation_location), ignore.stdout = silent_built))
     installing_place <- paste0(installation_location, '/for_campari/')
     if(!silent_built) cat('done\n')
   }else{
-    installing_place <- campari_source
+    installing_place <- camp_src
   }
   
   cat(paste0('Specifing the directory: ', installing_place, ' ...\n'))
