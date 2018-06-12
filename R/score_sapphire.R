@@ -80,7 +80,7 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
   scoring_method.opt <- c("adjusted_rand_index", "jaccard_index", "purity", "nmi")
   if(!(scoring_method[1] %in% scoring_method.opt)) stop("Scoring method option not valid")
 
-  ### 
+  ###
   
   if(is.null(vec1)){
     have_the_bas <- FALSE

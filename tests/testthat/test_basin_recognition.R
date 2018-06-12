@@ -13,8 +13,8 @@ test_that('Test for basin recognition with ext files', {
   data.pi<- data.table::fread(file.pi, data.table=FALSE)[,c(1,3,4,6,7,5)]
   
   ## basins_recognition(data.pi, nx=50, ny=50, match=F, plot=T, out.file=F, silent=F)
-  nxb <- seq(10,80,by=20)
-  nyb <- seq(10,80,by=20)
+  nxb <- 50
+  nyb <- 50
   lcs <- c(F,T)
   mat <- c(T,F)
   avg <- c('movav', 'SG')
@@ -23,7 +23,7 @@ test_that('Test for basin recognition with ext files', {
   colnames(parspace) <- c("nxbb", "nybb", "lcsb", "matb", "avgb")
   
   set.seed(342)
-  cat("Testing", nrow(parspace), "parameter combinations on basins_recognition")
+  if(!silent) cat("Testing", nrow(parspace), "parameter combinations on basins_recognition\n")
   attach(parspace)
   for(ii in seq(nrow(parspace))) {
     expect_error(tmp <- basins_recognition(data=file.pi, nx=nxbb[ii], ny=nybb[ii], ny.aut=F, local.cut=lcsb[ii], 
@@ -36,8 +36,12 @@ test_that('Test for basin recognition with ext files', {
   detach(parspace)
   
   ## Testing other less relevant parameter
-  expect_error(tmp <- basins_recognition(data=file.pi, nx=parspace$nxbb[1], ny=parspace$nybb[1], 
-                                         ny.aut=T, local.cut=F, match=T, dyn.check=2, avg.opt="SG", plot=T, out.file=F, silent=F, pol.degree=3), NA)
+  expect_error(tmp <- basins_recognition(data=file.pi, nx=10, ny=10, 
+                                         ny.aut=T, local.cut=F, match=T, dyn.check=2, avg.opt="SG", plot=T, out.file=T, silent=F, pol.degree=3), NA)
+  
+  expect_error(tmp <- basins_recognition(data=file.pi, nx=2, ny=2, ny.aut=T, local.cut=F, match=T))
+  expect_error(tmp <- basins_recognition(data=data.table::fread(file.pi)[1:100,], nx=7, ny=7, out.file = T, plot = T), NA)
+  if(file.exists("./BASINS_21.dat")) file.remove("./BASINS_21.dat")
   # list.files()
   expect_error(out <- data.table::fread("./BASINS_000000000001_sbrtest.dat", data.table=FALSE), NA)
   if(file.exists("./BASINS_000000000001_sbrtest.dat")) file.remove("./BASINS_000000000001_sbrtest.dat")
@@ -61,8 +65,10 @@ test_that('Test for basin recognition with ext files', {
                                          cl.stat.KL = T,
                                          cl.stat.TE = T,
                                          cl.stat.wMI = T,
-                                         cl.stat.entropy = T, cl.stat.denat = 'process_subtraction',
+                                         cl.stat.stft = T,
+                                         cl.stat.entropy = T, cl.stat.denat = 'process_subtraction', dbg_basins_recognition = F,
                                          plot.cl.stat = T), NA)
+  
   expect_error(bas <- basins_recognition(data = file.pi, nx = 7, match = F, plot = plt_stff, out.file = F, plot.cl.stat = plt_stff,
                                          new.dev = F, cl.stat.weight.barriers = T), NA)
   
