@@ -1179,8 +1179,9 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
       
       # short time Fourier Transform
       if(cl.stat.stft){
+        # if(!cl.stat.wMI) stop('To do FT you need wMI.')
         if(!silent) cat('Calculating the short time Fourier Transform using a window of 30 and an increment of 1. \n')
-        short_time_FT <- e1071::stft(sl_MI, win = 30, inc = 1)
+        short_time_FT <- e1071::stft(miuni, win = 30, inc = 1)
         histOfStft <- apply(short_time_FT$values, 1, sum)
         histOfStft <- .normalize(histOfStft)
         if(plot.cl.stat){
@@ -1224,7 +1225,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
       ini_points <- c(1, tobrk); end_points <- c(1, tobrk) + diff(c(1, tobrk, lpi))
       
       # Plotting the barriers, breaks and statistics on the breaks 
-      if(plot.cl.stat && F){ # I will put it back in a moment
+      if(plot.cl.stat){ # I will put it back in a moment
         gg <- ggplot() + theme_classic() + xlab('Progress Index') + ylab('Barrier score') +
               geom_line(aes(tobrk, distHell, col = as.factor(1)), size = 0.5) +
               geom_segment(aes(x = ini_points, xend = end_points, y = ent, yend = ent, col = as.factor(2)), size = 4) +
@@ -1311,7 +1312,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
         if(cl.stat.TE) { statistics[[ele]] <- distSymTE; names(ele)[ele] <- 'symTE'; ele <- ele + 1 }
       }
       if(cl.stat.wMI) { statistics[[ele]] <- sl_MI; names(ele)[ele] <- 'winMI'; ele <- ele + 1 }
-      if(cl.stat.stft) { statistics[[ele]] <- xpeaks; names(ele)[ele] <- 'stFT'; ele <- ele + 1 }
+      # if(cl.stat.stft) { statistics[[ele]] <- xpeaks; names(ele)[ele] <- 'stFT'; ele <- ele + 1 }
       if(cl.stat.weight.barriers) {
       if(!silent) cat('Keeping only the barriers which are reasonably far from borders.\n')
         select_non_border <- breaks > lpi/n_unif[.lt(n_unif)] & breaks < lpi - lpi/n_unif[.lt(n_unif)]
