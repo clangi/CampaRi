@@ -10,7 +10,6 @@
 [![pipeline status](https://gitlab.com/CaflischLab/CampaRi/badges/master/pipeline.svg)](https://gitlab.com/CaflischLab/CampaRi/commits/master)
 [![coverage report](https://gitlab.com/CaflischLab/CampaRi/badges/master/coverage.svg)](https://gitlab.com/CaflischLab/CampaRi/commits/master)
 [![DOI](https://zenodo.org/badge/68593949.svg)](https://zenodo.org/badge/latestdoi/68593949)
-[![Gitter](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/CampaRi_chatroom/)
 
 
 ------------------------------------------------------------------------
