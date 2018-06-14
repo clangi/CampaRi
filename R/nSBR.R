@@ -100,6 +100,7 @@ nSBR <- function(data, ny, local.cut = FALSE, comb_met = c('MIC'),              
   if(!is.logical(silent)) stop("silent must be a logical value")
   if(!is.logical(shuffles)) stop("shuffles must be a logical value")
   if(!is.logical(force_correct_ncl)) stop("force_correct_ncl must be a logical value")
+  if(!is.null(unif.splits)) unif.splits <- unique(round(unif.splits))
   if(!is.null(unif.splits)) stopifnot(all(sapply(unif.splits, function(x) x%%1) == 0))
   
   # Extra arguments checks

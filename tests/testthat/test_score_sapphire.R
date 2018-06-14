@@ -217,6 +217,11 @@ test_that('scoring sapphire plots', {
     file.pi <- '/disk2a/dgarolini/neuro/simulated_data/analysis/ISI_networks_end17/MANY_patterns/PROGIDX_000000012001.dat'
     clu_vec <- npyLoad('/disk2a/dgarolini/neuro/simulated_data/sim_datasets/clu_vec_20pats_80splits_200s_2500meanLsplits.npy', type = 'integer') # annotation
     
+    ba_test <- CampaRi::nSBR(data = file.pi, n.cluster = 35, comb_met = c('MIC'), local.cut = T,
+                             unif.splits = unique(round(seq(5, 270, length.out = 50))), pk_span = 3000, 
+                             ny = 2500, plot = T, silent = F, dbg_nSBR = F, return_plot = T) 
+    
+    
     ba1 <- c(112371, 122389, 95745, 164706, 145652, 107477, 16668, 74227, 84536, 28736, 155556, 179348, 56323, 135870, 24326, 6384, 69566, 48052, 190323, 38319, 43284)
     CampaRi::sapphire_plot(sap_file = file.pi, ann_trace = clu_vec, timeline = T, sub_sampling_factor = 100, vertical_barriers_points = ba1,
                            specific_palette_annotation = NULL, annotate_snap_dist = T, timeline_proportion = 0.7, ann_height = 0.2, size_points_on_timeline = 0.2) 
