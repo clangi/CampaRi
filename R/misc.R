@@ -131,7 +131,7 @@
 }
 
 # normalize
-.normalize <- function(x, xmax = NULL, xmin = NULL) {
+.normalize <- function(x, xmax = NULL, xmin = NULL) { # equivalent of scale(x, center = F)
   # if(.isSingleElement(x)) return(1)
   if(is.null(xmax)) xmax <- max(x)
   if(is.null(xmin)) xmin <- min(x)

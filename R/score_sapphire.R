@@ -26,7 +26,8 @@
 #'       }   
 #'       
 #' @param silent A logical value indicating whether the function has to remain silent or not. Default value is \code{FALSE}.
-#' @param ... \code{vec1} and \code{vec2} variables can be used for direct comparison of vectors.
+#' @param ... \code{vec1} and \code{vec2} variables can be used for direct comparison of vectors. Also \code{max_number_of_elements} for plotting can
+#' be supplied. It defaults to 20k.
 #' 
 #' @return A list containing
 #'       \itemize{
@@ -59,7 +60,7 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
   
   # ----------------------------------------------------------------------------------------------- general input checking
   input.args <- list(...)
-  avail.extra.arg <- c("vec1", "vec2", 'dbg_score_sapphire')
+  avail.extra.arg <- c("vec1", "vec2", 'dbg_score_sapphire', 'max_number_of_elements')
   avail.policies <- c('popup', 'keep', 'merge_previous')
   
   if(!is.null(names(input.args)) && any(!(names(input.args) %in% avail.extra.arg))){
@@ -70,12 +71,14 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
   if(!('vec1' %in% names(input.args))) vec1 <- NULL else vec1 <- input.args[['vec1']]
   if(!('vec2' %in% names(input.args))) vec2 <- NULL else vec2 <- input.args[['vec2']]
   if(!('dbg_score_sapphire' %in% names(input.args))) dbg_score_sapphire <- FALSE else dbg_score_sapphire <- input.args[['dbg_score_sapphire']]
+  if(!('max_number_of_elements' %in% names(input.args))) max_number_of_elements <- NULL else max_number_of_elements <- input.args[['max_number_of_elements']]
   if(!is.logical(dbg_score_sapphire)) stop('dbg_score_sapphire must be a logical')
   if(!is.null(vec1) && (!is.numeric(vec1) || .lt(vec1) < 3)) stop('vec1 must be a numerical vec')
   if(!is.null(vec2) && (!is.numeric(vec2) || .lt(vec2) < 3)) stop('vec2 must be a numerical vec')
   if(!is.null(vec1) && is.null(vec2)) stop('Direct insertion of vectors needs two vecs (vec1 and vec2).')
   if(!is.null(vec2) && is.null(vec1)) stop('Direct insertion of vectors needs two vecs (vec1 and vec2).')
-  
+  if(is.null(max_number_of_elements)) max_number_of_elements <- 20000
+  if(!.isSingleInteger(max_number_of_elements)) stop('max_number_of_elements must be a single integer')
   # methods input check
   scoring_method.opt <- c("adjusted_rand_index", "jaccard_index", "purity", "nmi")
   if(!(scoring_method[1] %in% scoring_method.opt)) stop("Scoring method option not valid")
@@ -256,18 +259,27 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
     # collecting the various elected labels - selection policy: unique labels!
       
     # looking for collisions and candidates
-    possible_coll <- sapply(label_freq_list, function(x) x['lab', 1])
+    top_label <- sapply(label_freq_list, function(x) x['lab', 1])
+    top_lab_n <- sapply(label_freq_list, function(x) x['n', 1])
+    top_lab_sh <- sapply(label_freq_list, function(x) x['sh_en', 1])
+    n_labels_in_cl <- sapply(label_freq_list, function(x) sum(x['n',] != 0))
     tot_dim <- sapply(label_freq_list, function(x) sum(x['n',]))
     tot_shen <- sapply(label_freq_list, function(x) sum(x['sh_en',]))
     n_cl.b <- 1:n_fin_cl
-    main_desc <- data.frame('pos' = n_cl.b, 'poss_coll' = possible_coll, 'tot_dim' =  tot_dim, 'tot_shen' = tot_shen, 
-                            'shen_frac_dim' = tot_shen / tot_dim, 'dim_frac_shen' = tot_dim / tot_shen)
+    main_desc <- data.frame('pos' = n_cl.b, 
+                            'top_label' = top_label, 'top_lab_sh' = top_lab_sh, 'top_lab_n' = top_lab_n, 
+                            'top_lap_shen_frac_tot_dim' = (top_lab_sh + 1) / tot_dim, 
+                            'tot_dim' =  tot_dim, 'tot_shen' = tot_shen,
+                            'shen_frac_dim' = (tot_shen + 1) / tot_dim, 'dim_frac_shen' = tot_dim / (tot_shen + 1), 
+                            'freq_pos' = rep(1, n_fin_cl), 'n_labels_in_cl' = n_labels_in_cl, 
+                            'res_label' = rep(NA, n_fin_cl))
     
     # ordering policy - weighted SH EN 
-    main_desc <- main_desc[order(main_desc$shen_frac_dim),]
+    # main_desc1 <- main_desc[order(main_desc$shen_frac_dim),]
+    main_desc <- main_desc[order(main_desc$top_lap_shen_frac_tot_dim),]
+    # main_desc <- main_desc[order(main_desc$shen_frac_dim),]
     
     # loop for choosing the label - using the number of clusters defined
-    res_label <- c()
     n_cl_popped <- n_labels
     for(ncl.i in n_cl.b){
       
@@ -281,7 +293,8 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
         
         # candidate not yet picked
         if(!(candida %in% res_label)){
-          res_label <- c(res_label, candida)
+          main_desc$res_label[ncl.i] <- candida
+          main_desc$freq_pos[ncl.i] <- h_diply - 1
           break
         
         # candidate already present
@@ -297,15 +310,18 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
             
             # define new clusters 
             if(multi_cluster_policy == 'popup'){
-              res_label <- c(res_label, n_cl_popped)
+              main_desc$res_label[ncl.i] <- n_cl_popped
+              main_desc$freq_pos[ncl.i] <- n_cl_popped
               
             # keep the most freq - bias
             }else if(multi_cluster_policy == 'keep'){
-              res_label <- c(res_label, main_desc[ncl.i, 2]) # candida is different here
+              main_desc$res_label[ncl.i] <- main_desc[ncl.i, 2] # candida is different here
+              main_desc$freq_pos[ncl.i] <- 1 
               
             # merge previous on the ordered main_desc
             }else if(multi_cluster_policy == 'merge_previous'){
-              res_label <- c(res_label, main_desc[ncl.i-1, 2])
+              main_desc$res_label[ncl.i] <- main_desc[ncl.i-1, 2] 
+              main_desc$freq_pos[ncl.i] <- -1 
             }
             break # we must exit somehow
           }
@@ -313,8 +329,6 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
       }
     }
     # stopifnot(n_cl_popped == n_fin_cl) # crashing if n_labels > n_fin_cl
-    
-    main_desc <- cbind(res_label, main_desc)
     main_desc <- main_desc[order(main_desc$pos),]
     
     res_bound <- bas$tab.st[,4]
@@ -326,57 +340,58 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
     # not_to_consider <- ftab_for_coll$labs[which(ftab_for_coll$freq == 1)]
     # ftab_for_coll <- ftab_for_coll[ftab_for_coll$labs[-not_to_consider],]
     
-    if(F){
-      if(multi_cluster_policy == 'select_non_conflict' || multi_cluster_policy == 'select_non_conflict_spawn'){
-        
-        # init - broken
-        lab <- list()
-        slct <- array(1, dim = .lt(label_freq_list))
-        
-        for(jk in 1:.lt(label_freq_list)){
-          lab[[jk]] <- as.integer(colnames(label_freq_list[[jk]])[slct[jk]])
-          if(jk != 1){
-            while(lab[[jk]] %in% c(lab[1:(jk-1)])){
-              slct[jk] <- slct[jk] + 1
-              # label_freq_list[r]; unlist(lab[r]); slct[r]
-              if(slct[jk] > n_labels || label_freq_list[[jk]]['n', slct[jk]] == 0){
-                if(!silent) cat('Unfortunately we found that all the labels in cluster', jk,
-                            'are colliding with others (we did not count empty buckets). Kept the duplication.\n')
-                if(multi_cluster_policy == 'select_non_conflict') slct[jk] <- 1
-                else if(multi_cluster_policy == 'select_non_conflict_spawn') slct[jk] <- 'pop'
-                print_new_lab <- FALSE
-                break
-              }else{
-                print_new_lab <- TRUE
-                lab[[jk]] <- as.integer(colnames(label_freq_list[[jk]])[slct[jk]])
-              }
-              if(!silent && print_new_lab) cat('Label', lab[[jk]], 'has been found already in another cluster. We will automatically',
-                                               'select the second most present value in this cluster.\n')
-            }
-          }
-        }
-      } else if(multi_cluster_policy == 'merge_consecutive'){
-        if(!silent) cat('Merging policy applied. For the moment only consecutive identically labeled clusters are merged. \n')
-        slct <- array(1, dim = .lt(label_freq_list))
-      } 
-      
-      # main constructor loop for the selected (slct) labels
-      lab <- list()
-      size <- list()
-      sh_en <- list()
-      for(jk in 1:.lt(label_freq_list)){
-        lab[[jk]] <- as.integer(colnames(label_freq_list[[jk]])[slct[jk]])
-        size[[jk]] <- as.integer(label_freq_list[[jk]]['n', slct[jk]])
-        sh_en[[jk]] <- label_freq_list[[jk]]['sh_en', slct[jk]]
-      }  
-      # fin def
-      res_bound <- bas$tab.st[,4]
-      res_label <- unlist(lab)
-    }
+    # if(F){
+    #   if(multi_cluster_policy == 'select_non_conflict' || multi_cluster_policy == 'select_non_conflict_spawn'){
+    #     
+    #     # init - broken
+    #     lab <- list()
+    #     slct <- array(1, dim = .lt(label_freq_list))
+    #     
+    #     for(jk in 1:.lt(label_freq_list)){
+    #       lab[[jk]] <- as.integer(colnames(label_freq_list[[jk]])[slct[jk]])
+    #       if(jk != 1){
+    #         while(lab[[jk]] %in% c(lab[1:(jk-1)])){
+    #           slct[jk] <- slct[jk] + 1
+    #           # label_freq_list[r]; unlist(lab[r]); slct[r]
+    #           if(slct[jk] > n_labels || label_freq_list[[jk]]['n', slct[jk]] == 0){
+    #             if(!silent) cat('Unfortunately we found that all the labels in cluster', jk,
+    #                         'are colliding with others (we did not count empty buckets). Kept the duplication.\n')
+    #             if(multi_cluster_policy == 'select_non_conflict') slct[jk] <- 1
+    #             else if(multi_cluster_policy == 'select_non_conflict_spawn') slct[jk] <- 'pop'
+    #             print_new_lab <- FALSE
+    #             break
+    #           }else{
+    #             print_new_lab <- TRUE
+    #             lab[[jk]] <- as.integer(colnames(label_freq_list[[jk]])[slct[jk]])
+    #           }
+    #           if(!silent && print_new_lab) cat('Label', lab[[jk]], 'has been found already in another cluster. We will automatically',
+    #                                            'select the second most present value in this cluster.\n')
+    #         }
+    #       }
+    #     }
+    #   } else if(multi_cluster_policy == 'merge_consecutive'){
+    #     if(!silent) cat('Merging policy applied. For the moment only consecutive identically labeled clusters are merged. \n')
+    #     slct <- array(1, dim = .lt(label_freq_list))
+    #   } 
+    #   
+    #   # main constructor loop for the selected (slct) labels
+    #   lab <- list()
+    #   size <- list()
+    #   sh_en <- list()
+    #   for(jk in 1:.lt(label_freq_list)){
+    #     lab[[jk]] <- as.integer(colnames(label_freq_list[[jk]])[slct[jk]])
+    #     size[[jk]] <- as.integer(label_freq_list[[jk]]['n', slct[jk]])
+    #     sh_en[[jk]] <- label_freq_list[[jk]]['sh_en', slct[jk]]
+    #   }  
+    #   # fin def
+    #   res_bound <- bas$tab.st[,4]
+    #   res_label <- unlist(lab)
+    # }
     
     # ---------------------------------------------------------------------------------------------- Creation of Predicted vector
     # creating the predicted vector
     predicted_div <- unlist(sapply(1:.lt(res_label), function(x) rep(res_label[x], res_bound[x])))
+    # pred_test <- .vec_from_barriers(bar.vec = res_bound, label.vec = res_label)
     # piann_true_v <- ann[st[,3]] # defined before
     missass <- as.numeric(predicted_div != piann_true_v)
     miss_perc <- round(sum(missass)*100/lpiann, 2)
@@ -386,8 +401,15 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
     
     # plotting
     if(plot_pred_true_resume){
-      plot_df <- data.frame('pi' = 1:lpiann, 'predicted' = as.factor(predicted_div), 'true' = as.factor(piann_true_v), 
-                            'misass' = as.factor(missass))
+      if(lpiann > max_number_of_elements) {
+        s_pi <- round(seq(1, lpiann, length.out = max_number_of_elements))
+        fac <- round(lpiann/max_number_of_elements)
+        if(!silent) cat('Reducing plotting size by a factor of', fac, '\n')
+      } else {
+        s_pi <- 1:lpiann
+      }
+      plot_df <- data.frame('pi' = s_pi, 'predicted' = as.factor(predicted_div[s_pi]), 'true' = as.factor(piann_true_v[s_pi]), 
+                            'misass' = as.factor(missass[s_pi]))
       
       gg <- ggplot(data = plot_df) + 
             geom_point(aes_string(y = 'true', x = 'pi', col = shQuote("lightblue")), size = 5, shape = 108) + 
@@ -407,6 +429,10 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
       # gg + geom_ribbon(aes_string(ymin = -0.1, ymax = 0.1, x = 'pi', fill = 'misass')) + 
       #   scale_fill_manual(name = "", labels = c("Correct", "Miss"), values = c("darkgreen", "darkred"))
       print(gg)
+      
+      # cp <- cowplot::plot_grid(gg_popup + theme(legend.position="none") + ggtitle('popup'), 
+      #                          gg_merge + theme(legend.position="none") + ggtitle('merge'), gg_keep + ggtitle('keep'), nrow = 1)
+      # ggsave('test_diff_policies.png', plot = cp, width = 25, height = 9)
     }
   }else{
     if(!silent) cat('SELECTED DIRECT INSERTION OF VECTORS\n')
@@ -416,8 +442,9 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
     max_freq_table <- NULL
     label_freq_list <- NULL
   }
-  if(.lt(piann_true_v) != .lt(predicted_div)) stop('Something went wrong. The pred and true vec have differenct lengths and respectively ', 
-                                                         .lt(piann_true_v),' and ', .lt(predicted_div))
+  if(.lt(piann_true_v) != .lt(predicted_div)) 
+    stop('Something went wrong. The pred and true vec have differenct lengths and respectively ', .lt(piann_true_v),' and ', .lt(predicted_div))
+  
   # ---------------------------------------------------------------------------------------------- Final scoring
   # scoring it with accuracy?
   score.out <- ClusterR::external_validation(true_labels = piann_true_v, clusters = predicted_div, method = scoring_method, summary_stats = FALSE)
