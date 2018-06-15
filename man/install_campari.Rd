@@ -4,11 +4,14 @@
 \alias{install_campari}
 \title{Installing the original Fortran code}
 \usage{
-install_campari(installation_location = NULL, install_ncminer = FALSE,
-  install_threads = FALSE, install_mpi = FALSE, silent_built = FALSE,
-  no_optimization = FALSE)
+install_campari(campari_source = NULL, installation_location = NULL,
+  install_ncminer = FALSE, install_threads = FALSE, install_mpi = FALSE,
+  silent_built = FALSE, no_optimization = FALSE)
 }
 \arguments{
+\item{campari_source}{Location string of the CAMPARI structure (it will test for the presence of source/chainsaw.f90). If not provided it will try the standard 
+inst/extdata/for_campari or the main repository.}
+
 \item{installation_location}{It defaults to the package installation path (package/inst/campari) but this can be copied in another directory and installed from there.
 NB: it will contain a source directory with its configure file and therefore must be executable.}
 

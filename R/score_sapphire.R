@@ -33,6 +33,7 @@
 #'       \itemize{
 #'         \item "\code{score.out}" Resulting score between 0 and 1 (good).
 #'         \item "\code{label_freq_list}" Total representation of the clusters along with the single shannon entropies.
+#'         \item "\code{main_desc}" Description of the main clusters found.
 #'         \item "\code{miss_perc}" Percentage of not correctly defined divisions.
 #'       }   
 #'       
@@ -267,33 +268,47 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
     tot_shen <- sapply(label_freq_list, function(x) sum(x['sh_en',]))
     n_cl.b <- 1:n_fin_cl
     main_desc <- data.frame('pos' = n_cl.b, 
-                            'top_label' = top_label, 'top_lab_sh' = top_lab_sh, 'top_lab_n' = top_lab_n, 
-                            'top_lap_shen_frac_tot_dim' = (top_lab_sh + 1) / tot_dim, 
-                            'tot_dim' =  tot_dim, 'tot_shen' = tot_shen,
-                            'shen_frac_dim' = (tot_shen + 1) / tot_dim, 'dim_frac_shen' = tot_dim / (tot_shen + 1), 
-                            'freq_pos' = rep(1, n_fin_cl), 'n_labels_in_cl' = n_labels_in_cl, 
-                            'res_label' = rep(NA, n_fin_cl))
+                            'top_lab' = top_label, 'tl_sh' = top_lab_sh, 'tl_n' = top_lab_n, 
+                            'freq_pos' = rep(1, n_fin_cl), 
+                            'res_lab' = rep(NA, n_fin_cl), #'res_sh' = top_lab_sh, 'res_n' = top_lab_n,
+                            'n_lab_in_cl' = n_labels_in_cl, 
+                            'tl_shen_o_tot_n' = (top_lab_sh + 1) / tot_dim, 
+                            'tl_shen_o_tl_n' = (top_lab_sh + 1) / top_lab_n, 
+                            'tot_d' =  tot_dim, 'tot_shen' = tot_shen,
+                            'shen_frac_d' = (tot_shen + 1) / tot_dim, 'd_frac_shen' = tot_dim / (tot_shen + 1))
     
     # ordering policy - weighted SH EN 
-    # main_desc1 <- main_desc[order(main_desc$shen_frac_dim),]
-    main_desc <- main_desc[order(main_desc$top_lap_shen_frac_tot_dim),]
-    # main_desc <- main_desc[order(main_desc$shen_frac_dim),]
+    # ordering_principle <- 'tl_shen_o_tot_n'
+    # ordering_principle <- 'ori_ord'
+    ordering_principle <- 'tl_shen_o_tl_n'
+    # ordering_principle <- 'shen_frac_d'
+    main_desc <- main_desc[order(main_desc[, ordering_principle]),]
+    main_desc <- cbind(main_desc, 'ori_ord' = n_cl.b)
+
+    # main_desc <- cbind(main_desc, 'problematic' = rep(FALSE, n_fin_cl))
+    # main_desc[main_desc$res_label %in% c(6, 19, 22, 23, 25, 3), 'problematic'] <- TRUE
     
     # loop for choosing the label - using the number of clusters defined
-    n_cl_popped <- n_labels
-    for(ncl.i in n_cl.b){
+    ncl.i <- 0
+    extreme_search <- F
+    
+    while(ncl.i < n_fin_cl){
+      
+      if(ncl.i == 0) n_cl_popped <- n_labels
+      ncl.i <- ncl.i + 1
       
       # select first candidate
-      candida <- main_desc[ncl.i, 2]
-      h_diply <- 1
+      candida <- main_desc[ncl.i, 'top_lab']
+      cl_pos <- main_desc$pos[ncl.i]
+      h_diply <- main_desc$freq_pos[ncl.i]
       
       # repeat untill res_label is set
-      repeat{
+      while (TRUE) {
         h_diply <- h_diply + 1 # search level (it starts from two because first is in the init)
         
         # candidate not yet picked
-        if(!(candida %in% res_label)){
-          main_desc$res_label[ncl.i] <- candida
+        if(!(candida %in% main_desc$res_lab)){
+          main_desc$res_lab[ncl.i] <- candida
           main_desc$freq_pos[ncl.i] <- h_diply - 1
           break
         
@@ -301,27 +316,44 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
         } else {
           
           # redefining a candidate if the selection was not optimal of the first label
-          if(h_diply <=  n_labels){
-            candida <- label_freq_list[[ncl.i]]['lab', h_diply]
-          
+          if(h_diply <=  main_desc$n_lab_in_cl[ncl.i]){
+            candida <- label_freq_list[[cl_pos]]['lab', h_diply]
+            
+            if(extreme_search){
+              tls <- label_freq_list[[cl_pos]]['sh_en', h_diply]
+              tln <- label_freq_list[[cl_pos]]['n', h_diply]
+              main_desc[ncl.i, 'top_lab'] <- candida
+              main_desc[ncl.i, 'tl_sh'] <- tls
+              main_desc[ncl.i, 'tl_n'] <- tln
+              main_desc[ncl.i, 'tl_shen_o_tot_n'] <- (tls + 1) / main_desc[ncl.i, 'tot_d']
+              main_desc[ncl.i, 'tl_shen_o_tl_n'] <- (tls + 1) / tln
+              main_desc$freq_pos[ncl.i] <- h_diply 
+              main_desc <- main_desc[order(main_desc[, 'tl_shen_o_tot_n']),]
+              main_desc$res_lab <- rep(NA, n_fin_cl)
+              ncl.i <- 0
+              break
+            }
+            
           # we finished the available labels and we have to define new clusters!
           }else{
+            
             n_cl_popped <- n_cl_popped + 1 # it is valid also for the merge (just for the check)
             
             # define new clusters 
             if(multi_cluster_policy == 'popup'){
-              main_desc$res_label[ncl.i] <- n_cl_popped
+              main_desc$res_lab[ncl.i] <- n_cl_popped
               main_desc$freq_pos[ncl.i] <- n_cl_popped
+              # cat(n_cl_popped, '\n')
               
             # keep the most freq - bias
             }else if(multi_cluster_policy == 'keep'){
-              main_desc$res_label[ncl.i] <- main_desc[ncl.i, 2] # candida is different here
-              main_desc$freq_pos[ncl.i] <- 1 
+              main_desc$res_lab[ncl.i] <- main_desc[ncl.i, 'top_lab'] # candida is different here
+              # main_desc$freq_pos[ncl.i] <- 1
               
             # merge previous on the ordered main_desc
             }else if(multi_cluster_policy == 'merge_previous'){
-              main_desc$res_label[ncl.i] <- main_desc[ncl.i-1, 2] 
-              main_desc$freq_pos[ncl.i] <- -1 
+              main_desc$res_lab[ncl.i] <- main_desc[ncl.i-1, 'top_lab'] 
+              main_desc$freq_pos[ncl.i] <- main_desc$freq_pos[ncl.i-1] 
             }
             break # we must exit somehow
           }
@@ -332,7 +364,7 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
     main_desc <- main_desc[order(main_desc$pos),]
     
     res_bound <- bas$tab.st[,4]
-    res_label <- main_desc$res_label
+    res_label <- main_desc$res_lab
     
     # DEPRECATED -------------------------------------------------------------------------------------------------------
     # ftab_for_coll <- data.frame('labs' = 1:n_labels, 'freq' = sapply(1:n_labels, function(x) sum(x == possible_coll)))
@@ -449,7 +481,7 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
   # scoring it with accuracy?
   score.out <- ClusterR::external_validation(true_labels = piann_true_v, clusters = predicted_div, method = scoring_method, summary_stats = FALSE)
   if(!silent) cat('Using', scoring_method,'we obtained a final score of', score.out, '\n')
-  invisible(list('score.out' = score.out, 'label_freq_list' = label_freq_list, 'perc_miss' = miss_perc))
+  invisible(list('score.out' = score.out, 'label_freq_list' = label_freq_list, 'main_desc' = main_desc, 'perc_miss' = miss_perc))
 }
 
 

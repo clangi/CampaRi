@@ -39,13 +39,15 @@ inserted. The default is \code{'popup'}. The available values are:
 
 \item{silent}{A logical value indicating whether the function has to remain silent or not. Default value is \code{FALSE}.}
 
-\item{...}{\code{vec1} and \code{vec2} variables can be used for direct comparison of vectors.}
+\item{...}{\code{vec1} and \code{vec2} variables can be used for direct comparison of vectors. Also \code{max_number_of_elements} for plotting can
+be supplied. It defaults to 20k.}
 }
 \value{
 A list containing
       \itemize{
         \item "\code{score.out}" Resulting score between 0 and 1 (good).
         \item "\code{label_freq_list}" Total representation of the clusters along with the single shannon entropies.
+        \item "\code{main_desc}" Description of the main clusters found.
         \item "\code{miss_perc}" Percentage of not correctly defined divisions.
       }
 }

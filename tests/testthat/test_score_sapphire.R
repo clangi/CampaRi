@@ -221,12 +221,13 @@ test_that('scoring sapphire plots', {
                              unif.splits = unique(round(seq(5, 270, length.out = 50))), pk_span = 3000, 
                              ny = 2500, plot = T, silent = F, dbg_nSBR = F, return_plot = T) 
     
-    
-    ba1 <- c(112371, 122389, 95745, 164706, 145652, 107477, 16668, 74227, 84536, 28736, 155556, 179348, 56323, 135870, 24326, 6384, 69566, 48052, 190323, 38319, 43284)
+    ba1 <- ba_test$barriers
+    # ba1 <- c(112371, 122389, 95745, 164706, 145652, 107477, 16668, 74227, 84536, 28736, 155556, 179348, 56323, 135870, 24326, 6384, 69566, 48052, 190323, 38319, 43284)
     CampaRi::sapphire_plot(sap_file = file.pi, ann_trace = clu_vec, timeline = T, sub_sampling_factor = 100, vertical_barriers_points = ba1,
-                           specific_palette_annotation = NULL, annotate_snap_dist = T, timeline_proportion = 0.7, ann_height = 0.2, size_points_on_timeline = 0.2) 
+                           specific_palette_annotation = NULL, annotate_snap_dist = T, timeline_proportion = 0.7, ann_height = 0.2, 
+                           size_points_on_timeline = 0.2) 
     
     score_sapphire(the_sap = file.pi, ann = clu_vec, manual_barriers = ba1, plot_pred_true_resume = T, dbg_score_sapphire = T,
-                   multi_cluster_policy = "merge_previous")
+                   multi_cluster_policy = "popup")
   }
 })
