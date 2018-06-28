@@ -9,8 +9,8 @@ coverage:
 
   status:
     project: off
-    patch: no
-    changes: no
+    patch: off
+    changes: off
 
 parsers:
   gcov:
