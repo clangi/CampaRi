@@ -438,6 +438,11 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   # -----------------------
   # set the default directory
   camp_home <- strsplit(campari_main_exe, split = "bin")[[1]][1]
+  if(!file.exists(paste0(camp_home,'/source/chainsaw.f90'))){
+    if(!silent) warning('The home folder', camp_home, 'has not the usual structure (we test for the presence of /source/chainsaw.f90. Setting it automatically to /usr/share/campari.')
+    camp_home <- '/usr/share/campari/'
+  }
+  
   # -----------------------
   # defining number of cores
   if(multi_threading){
