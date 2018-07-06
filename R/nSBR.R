@@ -28,7 +28,9 @@
 #' while black dots indicate the peaks found. Here it is possible to see the effect of the spanning variable. Grey dots in the background are the temporal annotation as
 #' it has been ordere by the progress index.
 #' @param pk_span Integer. The spanning window that should be the minimum size of the basin. It defines the peak finding step.
+#' @param scoring_method See \code{\link{score_sapphire}} for details. This feature is used only by randomization procedures
 #' @param return_plot Logical. This can return the plot object in the return list.
+#' @param hist_exploration Logical. This can show details of the first 4 splits and their histograms.
 #' @param silent A logical value indicating whether the function has to remain silent or not. Default value is \code{FALSE}.
 #' @param shuffles A logical value indicating whether the data must be shuffled before analysis (both data and ann). Default value is \code{FALSE}.
 #' @param random_picks Insert the number of times the barriers should be randomly recalculated for having a random baseline.
@@ -74,14 +76,14 @@
 #' 
 #' @export nSBR
 
-nSBR <- function(data, ny, local.cut = FALSE, comb_met = c('MIC'),                                          # fundamental vars
-                 n.cluster = NULL, force_correct_ncl = FALSE,                                               # cluster related vars
-                 unif.splits = NULL, pk_span = NULL,                                                        # algorithm details
-                 plot = FALSE, silent = FALSE, return_plot = FALSE,                                         # plots and prints
-                 random_picks = NULL, ann = NULL, shuffles = FALSE,                                         # randomization of the barriers and comparison
+nSBR <- function(data, ny, local.cut = FALSE, comb_met = c('MIC'),                                            # fundamental vars
+                 n.cluster = NULL, force_correct_ncl = FALSE,                                                 # cluster related vars
+                 unif.splits = NULL, pk_span = NULL,                                                          # algorithm details
+                 plot = FALSE, silent = FALSE, return_plot = FALSE, hist_exploration = FALSE,                 # plots and prints
+                 random_picks = NULL, ann = NULL, shuffles = FALSE, scoring_method = "adjusted_rand_index",   # randomization of the barriers and comparison
                  ...) { 
   
-  # Standard input checks  
+  # Standard input checks 
   allowed_mets <- c('MI', 'MIC', 'MAS', 'MEV', 'MCN', 'MICR2', 'MIC_kin', 'kin', 'diff', 'convDiff', 'conv')
   if(!is.character(data) && !is.data.frame(data)) stop("data must be a string or a data frame")
   if(is.character(data) && (!all(grepl("PROGIDX", data)) && !all(grepl("REPIX", data)))) stop("Please provide a data name starting with 'PROGIDX' or 'REPIX'" )
@@ -97,11 +99,17 @@ nSBR <- function(data, ny, local.cut = FALSE, comb_met = c('MIC'),              
   if(!is.logical(local.cut)) stop("local.cut must be a logical value")
   if(!is.logical(return_plot)) stop("return_plot must be a logical value")
   if(!is.logical(plot)) stop("plot must be a logical value")
+  if(!is.logical(hist_exploration)) stop("hist_exploration must be a logical value")
   if(!is.logical(silent)) stop("silent must be a logical value")
   if(!is.logical(shuffles)) stop("shuffles must be a logical value")
   if(!is.logical(force_correct_ncl)) stop("force_correct_ncl must be a logical value")
   if(!is.null(unif.splits)) unif.splits <- unique(round(unif.splits))
   if(!is.null(unif.splits)) stopifnot(all(sapply(unif.splits, function(x) x%%1) == 0))
+  if(hist_exploration && !plot){
+    if(!return_plot) return_plot <- TRUE
+  }
+  
+  if(hist_exploration && comb_met[1] != "MIC") stop("to use hist_exploration you must use the MIC comb_met.")
   
   # Extra arguments checks
   input.args <- list(...)
@@ -164,12 +172,15 @@ nSBR <- function(data, ny, local.cut = FALSE, comb_met = c('MIC'),              
   if(is.null(unif.splits)) n_unif <- c(5,10,15,20,25,30,40,50,60)
   else n_unif <- unif.splits
   stopifnot(n_unif > 0, n_unif < lpi/ 2)
-
+  
   # Calculating the curves
   if(!silent) cat('Calculating the barrier statistics using ') 
   if('MI' %in% comb_met) e_MI_uni <- array(0, dim = lpi)
   if(any(comb_met %in% allowed_mets)){
     e_MIC_uni <- array(0, dim = lpi)
+    if(hist_exploration) e_MIC_l <- list()
+    if(hist_exploration) e_MIC_brks_l <- list()
+    if(hist_exploration) uni_cnts_l <- list()
     e_MAS_uni <- array(0, dim = lpi)
     e_MEV_uni <- array(0, dim = lpi)
     e_MCN_uni <- array(0, dim = lpi)
@@ -184,6 +195,8 @@ nSBR <- function(data, ny, local.cut = FALSE, comb_met = c('MIC'),              
     brks_uni <- floor(seq(1, lpi, length.out = nun))[-c(1,nun)]
     dhc_uni <- .dens_histCounts(progind, breaks = brks_uni, nx = ny, ny = ny) # breaks are the barriers points on x
     uni_cnts <- dhc_uni$counts
+    if(hist_exploration) uni_cnts_l[as.character(nun)] <- list(uni_cnts)
+
     
     if('MI' %in% comb_met) MI_uni <- sapply(seq(nun-2), function(j) infotheo::mutinformation(uni_cnts[, j], uni_cnts[, j+1]))
     if(any(comb_met %in% allowed_mets)) minerva.out <- sapply(seq(nun-2), function(j) minerva::mine(x = uni_cnts[, j], y = uni_cnts[, j+1]))
@@ -202,6 +215,10 @@ nSBR <- function(data, ny, local.cut = FALSE, comb_met = c('MIC'),              
       e_MEV_uni <- e_MEV_uni + stats::approx(seq(nun), c(0, 1 - MEV_uni, 0), n = lpi)$y
       e_MCN_uni <- e_MCN_uni + stats::approx(seq(nun), c(0, 1 - MCN_uni, 0), n = lpi)$y
       e_MICR2_uni <- e_MICR2_uni + stats::approx(seq(nun), c(0, MICR2_uni, 0), n = lpi)$y
+      if(hist_exploration){
+        e_MIC_l[as.character(nun)] <- list(1 - MIC_uni)
+        e_MIC_brks_l[as.character(nun)] <- list(brks_uni)
+      }
     }
   }
   if(!silent) cat('divisions for the MI ratio. \n')
@@ -293,17 +310,116 @@ nSBR <- function(data, ny, local.cut = FALSE, comb_met = c('MIC'),              
     ent <- .normalize(apply(dens, 2, .myShEn))
   }
   
+  # ---------------------
+  #        Plots
+  # ---------------------
   if(plot || return_plot){
     # Color handling for curves
     col_vec <- c('darkred', RColorBrewer::brewer.pal(max(.lt(comb_met), 3), name = 'Set1')[-1]) # first color is a red-violet for which I prefer darkred
       
     # if(nrow(df.main) > 50000) df.main <- df.main[unique(round(seq(1, lpi, length.out = 50000))),] # it is not clear for the barriers and not nec (it is fast)
-    tpl <- ggplot(data = df.main, mapping = aes_string(x = 'PI')) + theme_classic() + ylab('UniDiv score') +
+    tpl <- ggplot(data = df.main, mapping = aes_string(x = 'PI')) + theme_classic() + ylab('IMIC') + xlab('Progress Index') +
            geom_point(mapping = aes_string(x = 'PI_points_x', y = 'PI_points_y'), size = 0.8, col = 'grey') 
     
     # Adding the specific curves
-    for(met.i in 1:.lt(comb_met)) tpl <- tpl + geom_line(mapping = aes_string(y = comb_met[met.i]), col = col_vec[met.i])
+    for(met.i in 1:.lt(comb_met)) tpl <- tpl + geom_line(mapping = aes_string(y = comb_met[met.i]), col = col_vec[met.i], size = 1.5)
     
+    if(dbg_nSBR) browser()
+    # Final add of barriers and similaria
+    tpl <- tpl + geom_point(data = df.pp, mapping = aes_string(y = 'pky', x = 'pkx')) +
+      geom_vline(xintercept = rank.pk[1:nba], col = 'black', size = 1, linetype="dotted") +
+      geom_point(data = data.frame(a = rnk_ts, b = wtp[rnk_ts]), mapping = aes_string(x = 'a', y = 'b'),
+                 shape = 3, col = 'darkblue', size = 5, stroke = 2.5) + 
+      xlab('Progress Index') + ylab(paste0('I', comb_met[1])) 
+    
+    
+    # hist_exploration 
+    # ---------------------
+    if(hist_exploration){
+      
+      # tpl2 - plot of first n_pnt uniform divisions
+      # ----
+      
+      # number of uniform divisions to show
+      n_pnt <- 4
+      
+      # colors vectors
+      clr_v <- rev(RColorBrewer::brewer.pal(2 + n_pnt, 'Reds')[c(-1, -2)])
+      # clr_v <- RColorBrewer::brewer.pal(4, 'Spectral')
+      clr_v2 <- RColorBrewer::brewer.pal(3, 'Set1'); al <- 0.5; sz = 0.2; al2 <- 0.25
+      clr_found <- RColorBrewer::brewer.pal(9, 'Blues')[8]
+      clr_cnt <- 1
+      
+      # initialization split plot
+      tpl2 <- ggplot(data = df.main, mapping = aes_string(x = 'PI')) + theme_classic() + xlab('Progress Index') +
+        geom_point(mapping = aes_string(x = 'PI_points_x', y = 'PI_points_y'), size = 0.8, col = 'grey') +
+        geom_line(mapping = aes_string(y = comb_met[1]), col = 'black', size = 1.5)
+      
+      # adding final evaluations on IMIC curve (e.g. peaks)
+      tpl2 <- tpl2 + #geom_point(data = df.pp, mapping = aes_string(y = 'pky', x = 'pkx'), size = 2.5) +
+        geom_vline(xintercept = rank.pk[1:nba], col = clr_found, size = 0.9) +
+        # geom_point(data = data.frame(a = rnk_ts[1:nba], b = wtp[rnk_ts[1:nba]]), mapping = aes_string(x = 'a', y = 'b'),
+                   # shape = 3, col = clr_found, size = 3, stroke = 2.5) + 
+        xlab('Progress Index') + ylab(paste0('I', comb_met[1])) 
+      
+      # adding the points with different number of divisions and specific IMIC height
+      for(pnt.i in n_unif[1:min(n_pnt, .lt(n_unif))]){
+        to_p <- data.frame(x = e_MIC_brks_l[[as.character(pnt.i)]], y = e_MIC_l[[as.character(pnt.i)]])
+        tpl2 <- tpl2 + geom_point(data = to_p, aes(x = x, y = y), col = clr_v[clr_cnt], size = 2.5)
+        if(pnt.i %in% n_unif[1]) tpl2 <- tpl2 + geom_vline(data = to_p, aes(xintercept = x), col = clr_v[clr_cnt], size = 0.8, linetype = 'dashed')
+        # if(pnt.i %in% n_unif[2]) tpl2 <- tpl2 + geom_vline(data = to_p, aes(xintercept = x), col = clr_v[clr_cnt], size = 0.3, linetype = 'dashed')
+        clr_cnt <- clr_cnt + 1
+      }
+      
+      # control on the number of divisions (would break if the first n_unif < 5)
+      if(n_unif[1] < 5) stop('for the first uniform division use an higher number than 4. It is necessary for appreciating the histograms.')
+      
+      # rectangles for tpl3 areas
+      tpl2 <- tpl2 + 
+        annotate("rect", xmin = e_MIC_brks_l[[1]][1] , xmax = e_MIC_brks_l[[1]][2], ymin = 0, ymax = 1, alpha = al2, col = 'black', fill = clr_v2[1], size = 0.2) +
+        annotate("rect", xmin = e_MIC_brks_l[[1]][2] , xmax = e_MIC_brks_l[[1]][3], ymin = 0, ymax = 1, alpha = al2, col = 'black', fill = clr_v2[2], size = 0.2) +
+        annotate("rect", xmin = e_MIC_brks_l[[1]][3] , xmax = e_MIC_brks_l[[1]][4], ymin = 0, ymax = 1, alpha = al2, col = 'black', fill = clr_v2[3], size = 0.2)
+      
+      # plot if you must
+      if(plot) print(tpl2)
+      
+      # tpl3 - plot of 3 histograms
+      # ----
+      
+      # initial plot focus
+      tpl3 <- ggplot(data = df.main, mapping = aes_string(x = 'PI')) + theme_classic() + ylab('IMIC') + xlab('Progress Index') +
+        geom_point(mapping = aes_string(x = 'PI_points_x', y = 'PI_points_y'), size = 0.8, col = 'grey') +
+        geom_line(mapping = aes_string(y = comb_met[1]), col = 'black', size = 1.2) + 
+        coord_cartesian(xlim = c(e_MIC_brks_l[[1]][1] ,e_MIC_brks_l[[1]][4])) # select to show certain area
+      
+      # take the histogram of counts and pairwise normalize it
+      the_hist <- uni_cnts_l[[1]]
+      the_hist[,2:3] <- .normalize(x = the_hist[,2:3], xmin = 0)*e_MIC_brks_l[[1]][1]/2
+      the_hist[,3:4] <- .normalize(x = the_hist[,3:4], xmin = 0)*e_MIC_brks_l[[1]][1]/2
+      
+      # add the horizontal plots
+      tpl3 <- tpl3 + # geom_vline(xintercept = rank.pk[1:nba], col = clr_found, size = 1.1) +
+        annotate("rect", xmin = rep(e_MIC_brks_l[[1]][2], ny) , xmax = rep(e_MIC_brks_l[[1]][2], ny) - the_hist[,2], 
+                 ymin = seq(0, ny-1)/ny, ymax = seq(1, ny)/ny, alpha = al, col = "black", fill = clr_v2[1], size = sz) +
+        annotate("rect", xmin = rep(e_MIC_brks_l[[1]][2], ny) , xmax = rep(e_MIC_brks_l[[1]][2], ny) + the_hist[,3], 
+                 ymin = seq(0, ny-1)/ny, ymax = seq(1, ny)/ny, alpha = al, col = "black", fill = clr_v2[2], size = sz) +
+        annotate("rect", xmin = rep(e_MIC_brks_l[[1]][3], ny) , xmax = rep(e_MIC_brks_l[[1]][3], ny) - the_hist[,3], 
+                 ymin = seq(0, ny-1)/ny, ymax = seq(1, ny)/ny, alpha = al, col = "black", fill = clr_v2[2], size = sz) +
+        annotate("rect", xmin = rep(e_MIC_brks_l[[1]][3], ny) , xmax = rep(e_MIC_brks_l[[1]][3], ny) + the_hist[,4], 
+                 ymin = seq(0, ny-1)/ny, ymax = seq(1, ny)/ny, alpha = al, col = "black", fill = clr_v2[3], size = sz)
+      
+      # add the vertical line and points
+      tpl3 <- tpl3 + 
+        geom_vline(aes(xintercept = e_MIC_brks_l[[1]][1]), col = clr_v[1], size = 0.8, linetype = 'dashed') +
+        geom_vline(aes(xintercept = e_MIC_brks_l[[1]][2]), col = clr_v[1], size = 0.8, linetype = 'dashed') +
+        geom_vline(aes(xintercept = e_MIC_brks_l[[1]][3]), col = clr_v[1], size = 0.8, linetype = 'dashed') +
+        geom_vline(aes(xintercept = e_MIC_brks_l[[1]][4]), col = clr_v[1], size = 0.8, linetype = 'dashed')
+      df_points <- data.frame(x = e_MIC_brks_l[[1]][1:4], y = e_MIC_l[[1]][1:4])
+      tpl3 <- tpl3 + geom_point(data = df_points, mapping = aes(x = x, y = y), col = clr_v[1], size = 3)
+      
+      # plot it if you desire
+      if(plot) print(tpl3)
+    }
     # if('MI' %in% comb_met) tpl <- tpl + geom_line(mapping = aes(y = MI), col = 'darkred') 
     # if('MIC' %in% comb_met) tpl <- tpl + geom_line(mapping = aes(y = MIC), col = 'darkred') 
     # if('MAS' %in% comb_met) tpl <- tpl + geom_line(mapping = aes(y = MAS), col = 'darkred') 
@@ -316,13 +432,7 @@ nSBR <- function(data, ny, local.cut = FALSE, comb_met = c('MIC'),              
     # if('diff' %in% comb_met) tpl <- tpl + geom_line(mapping = aes(y = diff), col = 'darkred') 
     # if('kin' %in% comb_met) tpl <- tpl + geom_line(mapping = aes(y = kin), col = 'darkred') 
     
-    if(dbg_nSBR) browser()
-    # Final add of barriers and similaria
-    tpl <- tpl + geom_point(data = df.pp, mapping = aes_string(y = 'pky', x = 'pkx')) +
-                 geom_vline(xintercept = rank.pk[1:nba], col = 'black', size = 1, linetype="dotted") +
-                 geom_point(data = data.frame(a = rnk_ts, b = wtp[rnk_ts]), mapping = aes_string(x = 'a', y = 'b'),
-                            shape = 3, col = 'darkblue', size = 5, stroke = 2.5) + 
-                 xlab('Progress Index') + ylab(paste0('I', comb_met[1])) 
+    
     # + theme(axis.title.y.left = element_text(colour = col_vec[1])) # coloring can be made afterwards
     
     
@@ -333,7 +443,12 @@ nSBR <- function(data, ny, local.cut = FALSE, comb_met = c('MIC'),              
     #             axis.ticks.y.right = element_line(color = 'darkgray'),
     #             axis.text.y.right = element_text(color = 'darkgray'))
   }
-  # randomization procedure
+  # ---------------------
+  #      End Plots
+  # ---------------------
+  
+  # randomization - random_picks
+  # ---------------------
   if(!is.null(random_picks)){
     if(!silent) cat('Random barrier picks started. Calculation made with the following number of uniformly random picks:', random_picks, '\n')
     
@@ -346,11 +461,14 @@ nSBR <- function(data, ny, local.cut = FALSE, comb_met = c('MIC'),              
       # rnd.obj <- NULL
     # }else{
       rnd.obj <- .rnd_bar_estimation(pi.tab = data, ann = ann, ncl = nclu, span = span, ny = ny, 
-                                     unifsplits = n_unif, random_trials = random_picks, comb_met = comb_met,
+                                     unifsplits = n_unif, random_trials = random_picks, comb_met = comb_met, 
+                                     scoring_method = scoring_method,
                                      silent = silent, plot = (plot || return_plot))
     # }
   }
   
+  # randomization - shuffles of the_sap and ann 
+  # ---------------------
   if(shuffles){
     if(!silent) cat('Annotation random shuffleing procedure started...\n')
     
@@ -378,10 +496,15 @@ nSBR <- function(data, ny, local.cut = FALSE, comb_met = c('MIC'),              
   # }
 
   # FINAL OUTPUT
+  # ---------------------
   if(plot && is.null(random_picks)) print(tpl)
   if(plot && !is.null(random_picks)) print(rnd.obj$ggp.bar)
   returning_list <- list('nbins' = c(ny, ny), 'barriers' = rank.pk)
-  if(return_plot) returning_list[['plot']] <- tpl
+  if(return_plot) {
+    returning_list[['plot']] <- tpl
+    if(hist_exploration) returning_list[['plot_splits']] <- tpl2
+    if(hist_exploration) returning_list[['plot_hists']] <- tpl3
+  }
   if(!is.null(random_picks)) returning_list[['rnd.picks']] <- rnd.obj
   if(shuffles) returning_list[['ann_shuffle']] <- shffl.obj1
   if(shuffles) returning_list[['pi_shuffle']] <- shffl.obj2
@@ -394,7 +517,7 @@ nSBR <- function(data, ny, local.cut = FALSE, comb_met = c('MIC'),              
 #########################################################
 # major function to estimate random barrier variability
 .rnd_bar_estimation <- function(pi.tab, ann, ncl = 4, span = 1000, ny = 50, 
-                                unifsplits = seq(5, 100, 8), random_trials = 500, comb_met = c('MIC'),
+                                unifsplits = seq(5, 100, 8), random_trials = 500, comb_met = c('MIC'), scoring_method = "adjusted_rand_index",
                                 silent = F, plot = F){
   # small init
   nba <- ncl - 1
@@ -407,7 +530,7 @@ nSBR <- function(data, ny, local.cut = FALSE, comb_met = c('MIC'),              
                             silent = T, return_plot = plot)
   babar <- ref_nSBR$barriers
   if(!silent) cat('Number of barriers found with optimization:', length(babar), '\n')
-  ref_sc <- CampaRi::score_sapphire(the_sap = pi.tab, ann = ann, manual_barriers = babar[1:nba], silent = T)
+  ref_sc <- CampaRi::score_sapphire(the_sap = pi.tab, ann = ann, scoring_method = scoring_method, manual_barriers = babar[1:nba], silent = T)
   if(!silent) cat('Found the following score with optimization:', ref_sc$score.out, '\n')
   if(is.na(ref_sc$score.out)) stop('Found NA in the score.')
   if(is.na(ref_sc$score.out)) ref_sc$score.out <- 0 # no more necessary
@@ -419,7 +542,7 @@ nSBR <- function(data, ny, local.cut = FALSE, comb_met = c('MIC'),              
     } 
     ba <- .rand_pick_min(ar = seq(2, length(ann) - 2), min.dist = span, n.picks = nba)
     # ba <- round(runif(nba, 2, length(ann) - 2))
-    l1 <- CampaRi::score_sapphire(the_sap = pi.tab, ann = ann, manual_barriers = ba, silent = T)
+    l1 <- CampaRi::score_sapphire(the_sap = pi.tab, ann = ann, scoring_method = scoring_method, manual_barriers = ba, silent = T)
     return(list('sc' = l1$score.out, 'ba' = ba))
   })
   
@@ -438,6 +561,14 @@ nSBR <- function(data, ny, local.cut = FALSE, comb_met = c('MIC'),              
   
   # use the classic plot to see the points (barrier points) which exceded the combination found.
   df_pl <- data.frame('barr' = c(best_ba), 'scr' = rep(sco, each=nba))
+  
+  if(nrow(df_pl) > 500){
+    if(!silent) warning('Dumping lower scores for visual appreciations. ')
+    if(nba > 250) stop('This plotting procedure is not appreciable with more than 250 barriers because there would be too many points. ')
+    df_pl <- df_pl[order(df_pl$scr),][1:500,]
+    
+  }
+  
   # find the two maxima (red points)
   dhe_point <- data.frame('xm' = df_pl[df_pl[, 'scr'] == max(df_pl[, 'scr']), 1], 
                           'ym' = df_pl[df_pl[, 'scr'] == max(df_pl[, 'scr']), 2])
@@ -456,7 +587,7 @@ nSBR <- function(data, ny, local.cut = FALSE, comb_met = c('MIC'),              
   # MUST BE ADDED AFTERWARDS
   #+ ylab('') #+ 
   # annotate('text', x = -10000, y = 0.25, label = TeX('\text{IMIC / } {\\color{DarkGreen} \text{scor}}'), angle = 90) # fail
-  max_rnd_scor <- CampaRi::score_sapphire(the_sap = pi.tab, ann = ann, manual_barriers = dhe_point$xm, silent = T)
+  max_rnd_scor <- CampaRi::score_sapphire(the_sap = pi.tab, ann = ann, scoring_method = scoring_method, manual_barriers = dhe_point$xm, silent = T)
   if(!silent) cat('Found the following score using random procedure:', max_rnd_scor$score.out, '\n')
   
   # showing how many are better!
