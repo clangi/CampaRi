@@ -7,7 +7,8 @@
 nSBR(data, ny, local.cut = FALSE, comb_met = c("MIC"), n.cluster = NULL,
   force_correct_ncl = FALSE, unif.splits = NULL, pk_span = NULL,
   plot = FALSE, silent = FALSE, return_plot = FALSE,
-  random_picks = NULL, ann = NULL, shuffles = FALSE, ...)
+  hist_exploration = FALSE, random_picks = NULL, ann = NULL,
+  shuffles = FALSE, scoring_method = "adjusted_rand_index", ...)
 }
 \arguments{
 \item{data}{Name of the PROGIDX_<...>.dat file or Data frame with three columns containing, in order, the (sorted) progress index, the relative time 
@@ -47,14 +48,19 @@ it has been ordere by the progress index.}
 
 \item{return_plot}{Logical. This can return the plot object in the return list.}
 
+\item{hist_exploration}{Logical. This can show details of the first 4 splits and their histograms.}
+
 \item{random_picks}{Insert the number of times the barriers should be randomly recalculated for having a random baseline.}
 
 \item{ann}{If random_picks is inserted you need to score the the random barriers against an annotation!!}
 
 \item{shuffles}{A logical value indicating whether the data must be shuffled before analysis (both data and ann). Default value is \code{FALSE}.}
 
+\item{scoring_method}{See \code{\link{score_sapphire}} for details. This feature is used only by randomization procedures}
+
 \item{...}{\itemize{
     \item "\code{time.series}" File name. If specified, it substitutes the time series of the PROGIDX_<..> file with the one provided by the file.
+    \item "\code{max.random.points.plot}" Integer indicating how many points to show in the randomization procedure
 }}
 }
 \value{

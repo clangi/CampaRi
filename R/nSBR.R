@@ -38,6 +38,7 @@
 #' @param ...
 #'      \itemize{
 #'          \item "\code{time.series}" File name. If specified, it substitutes the time series of the PROGIDX_<..> file with the one provided by the file.
+#'          \item "\code{max.random.points.plot}" Integer indicating how many points to show in the randomization procedure
 #'      }
 #'      
 #' @return A list containing
@@ -113,7 +114,7 @@ nSBR <- function(data, ny, local.cut = FALSE, comb_met = c('MIC'),              
   
   # Extra arguments checks
   input.args <- list(...)
-  avail.extra.arg <- c("time.series", 'dbg_nSBR')
+  avail.extra.arg <- c("time.series", 'dbg_nSBR', "max.random.points.plot")
   
   if(!is.null(names(input.args)) && any(!(names(input.args) %in% avail.extra.arg))){
     warning('There is a probable mispelling in one of the inserted variables. Please check the available extra input arguments.')
@@ -121,11 +122,11 @@ nSBR <- function(data, ny, local.cut = FALSE, comb_met = c('MIC'),              
     if(!silent) cat(names(input.args)[!(names(input.args) %in% avail.extra.arg)], '\n')
   }
   
-  # dbg_nSBR for stats - dgarol
-  if("dbg_nSBR" %in% names(input.args)) { # dgarol
-    dbg_nSBR <- input.args$dbg_nSBR
-    stopifnot(is.logical(dbg_nSBR))
-  } else dbg_nSBR <- FALSE
+  # Extra arguments defaults and set
+  if("dbg_nSBR" %in% names(input.args)) dbg_nSBR <- input.args$dbg_nSBR else dbg_nSBR <- FALSE
+  if("max.random.points.plot" %in% names(input.args)) max.random.points.plot <- input.args$max.random.points.plot else max.random.points.plot <- 1500
+  stopifnot(is.logical(dbg_nSBR))
+  stopifnot(.isSingleInteger(max.random.points.plot))
   
   
   ## INPUT FILE 
@@ -462,7 +463,7 @@ nSBR <- function(data, ny, local.cut = FALSE, comb_met = c('MIC'),              
     # }else{
       rnd.obj <- .rnd_bar_estimation(pi.tab = data, ann = ann, ncl = nclu, span = span, ny = ny, 
                                      unifsplits = n_unif, random_trials = random_picks, comb_met = comb_met, 
-                                     scoring_method = scoring_method,
+                                     scoring_method = scoring_method, max.random.points.plot = max.random.points.plot,
                                      silent = silent, plot = (plot || return_plot))
     # }
   }
@@ -517,7 +518,8 @@ nSBR <- function(data, ny, local.cut = FALSE, comb_met = c('MIC'),              
 #########################################################
 # major function to estimate random barrier variability
 .rnd_bar_estimation <- function(pi.tab, ann, ncl = 4, span = 1000, ny = 50, 
-                                unifsplits = seq(5, 100, 8), random_trials = 500, comb_met = c('MIC'), scoring_method = "adjusted_rand_index",
+                                unifsplits = seq(5, 100, 8), random_trials = 500, comb_met = c('MIC'), 
+                                scoring_method = "adjusted_rand_index", max.random.points.plot = 1500,
                                 silent = F, plot = F){
   # small init
   nba <- ncl - 1
@@ -562,10 +564,10 @@ nSBR <- function(data, ny, local.cut = FALSE, comb_met = c('MIC'),              
   # use the classic plot to see the points (barrier points) which exceded the combination found.
   df_pl <- data.frame('barr' = c(best_ba), 'scr' = rep(sco, each=nba))
   
-  if(nrow(df_pl) > 500){
-    if(!silent) warning('Dumping lower scores for visual appreciations. ')
-    if(nba > 250) stop('This plotting procedure is not appreciable with more than 250 barriers because there would be too many points. ')
-    df_pl <- df_pl[order(df_pl$scr),][1:500,]
+  if(nrow(df_pl) > max.random.points.plot){
+    if(!silent) warning('Dumping lower scores for visual appreciation. Using', max.random.points.plot, 'instead of', nrow(df_pl), 'points.')
+    if(nba > max.random.points.plot/2) stop('This plotting procedure is not appreciable with more than 250 barriers because there would be too many points. ')
+    df_pl <- df_pl[order(df_pl$scr, decreasing = T),][1:max.random.points.plot,]
     
   }
   

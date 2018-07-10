@@ -224,8 +224,5 @@ test_that('scoring sapphire plots', {
     
     score_sapphire(the_sap = file.pi, ann = clu_vec, manual_barriers = ba1, plot_pred_true_resume = T, dbg_score_sapphire = T,
                    multi_cluster_policy = "popup")
-    
-    
-
   }
 })

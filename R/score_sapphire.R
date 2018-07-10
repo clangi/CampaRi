@@ -17,6 +17,7 @@
 #'  insert only the resulting bas object
 #' @param manual_barriers If an integer vector is inserted, it is used as the barrier locations.
 #' @param plot_pred_true_resume Defaults tp \code{FALSE}. If set to true it plots the predicted and true labels one along the other.
+#' @param return_predicted If true return the predicted vector.
 #' @param multi_cluster_policy This string decides how the clusters must be handled in the case of more clusters found in comparison to the annotation 
 #' inserted. The default is \code{'popup'}. The available values are:
 #'      \itemize{
@@ -55,7 +56,8 @@
 
 score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NULL,                              # fundamental inputs
                            scoring_method = 'adjusted_rand_index', multi_cluster_policy = 'popup',              # scoring  and merging details
-                           plot_pred_true_resume = FALSE, silent = FALSE, return_plot = FALSE,                   # it refers to this function
+                           plot_pred_true_resume = FALSE, silent = FALSE, return_plot = FALSE,                  # it refers to this function
+                           return_vectors = FALSE,                                                              # return the prediction and true vector
                            ...){                                                                                # to add
   
   # ----------------------------------------------------------------------------------------------- general input checking
@@ -112,7 +114,7 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
   if(!is.logical(plot_pred_true_resume)) stop('plot_pred_true_resume must be a logical')
   if(!is.logical(return_plot)) stop('return_plot must be a logical')
   if(!is.logical(silent)) stop('silent must be a logical')
-  if(return_plot) plot_pred_true_resume <- TRUE
+  if(!is.logical(return_vectors)) stop("return_vectors must be a logical value")
   
   # check over the merging or popping policy
   if(!.isSingleChar(multi_cluster_policy)) stop('multi_cluster_policy must be a logical')
@@ -421,10 +423,10 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
   miss_perc <- round(sum(missass)*100/lpiann, 2)
   
   # printing number of missass
-  if(!silent) cat('We found roughly', miss_perc, '% missassignment.\n\n')
+  if(!silent) cat('We found roughly', miss_perc, '% missassignment.\n')
   
   # plotting
-  if(plot_pred_true_resume){
+  if(plot_pred_true_resume || return_plot){
     if(lpiann > max_number_of_elements) {
       s_pi <- round(seq(1, lpiann, length.out = max_number_of_elements))
       fac <- round(lpiann/max_number_of_elements)
@@ -453,7 +455,6 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
     gg <- gg + geom_vline(xintercept = bas$tab.st[,2][-1], size = 0.1, linetype = 'dashed')  
     # gg + geom_ribbon(aes_string(ymin = -0.1, ymax = 0.1, x = 'pi', fill = 'misass')) + 
     #   scale_fill_manual(name = "", labels = c("Correct", "Miss"), values = c("darkgreen", "darkred"))
-    print(gg)
     
     # cp <- cowplot::plot_grid(gg_popup + theme(legend.position="none") + ggtitle('popup'), 
     #                          gg_merge + theme(legend.position="none") + ggtitle('merge'), gg_keep + ggtitle('keep'), nrow = 1)
@@ -466,8 +467,14 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
   # scoring it with accuracy?
   score.out <- ClusterR::external_validation(true_labels = piann_true_v, clusters = predicted_div, method = scoring_method, summary_stats = FALSE)
   if(!silent) cat('Using', scoring_method,'we obtained a final score of', score.out, '\n')
-  if(return_plot) invisible(list('score.out' = score.out, 'label_freq_list' = label_freq_list, 'main_desc' = main_desc, 'perc_miss' = miss_perc, 'plot' = gg))
-  else invisible(list('score.out' = score.out, 'label_freq_list' = label_freq_list, 'main_desc' = main_desc, 'perc_miss' = miss_perc))
+  
+  
+  # final output
+  return_list <- list('score.out' = score.out, 'label_freq_list' = label_freq_list, 'main_desc' = main_desc, 'perc_miss' = miss_perc)
+  if(plot_pred_true_resume) print(gg)
+  if(return_predicted) returning_list[['pi_shuffle']] <- predicted
+  if(return_plot) return_list[['plot']] <- gg
+  invisible(return_list)
 }
 
 
