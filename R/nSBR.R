@@ -277,12 +277,12 @@ nSBR <- function(data, ny, local.cut = FALSE, comb_met = c('MIC'),              
   # finding peaks and ordering 
   pky <- array(0, lpi)
   if(span%%2 == 0) span <- span + 1 # just to eliminate the note
-  where.pk <- splus2R::peaks(wtp, span = span)
-  pky <- as.numeric(where.pk)[where.pk]
+  where.pk <- splus2R::peaks(wtp, span = span) # generate a mask of TRUE FALSE
+  pky <- as.numeric(where.pk)[where.pk] # if peak is found the value is 1 for pky (for black dots on top)
   pkx <- 1:lpi
   pkx <- pkx[where.pk]
-  rank.pk <- order(wtp[where.pk], decreasing = T)
-  rank.pk <- pkx[rank.pk]
+  rank.pk <- order(wtp[where.pk], decreasing = T) # order gives the indexes!
+  rank.pk <- pkx[rank.pk] # find the ranked positions
   df.pp <- data.frame(pkx, pky)
   
   # Setting the number of clusters to select first tot barriers
@@ -500,7 +500,7 @@ nSBR <- function(data, ny, local.cut = FALSE, comb_met = c('MIC'),              
   # ---------------------
   if(plot && is.null(random_picks)) print(tpl)
   if(plot && !is.null(random_picks)) print(rnd.obj$ggp.bar)
-  returning_list <- list('nbins' = c(ny, ny), 'barriers' = rank.pk)
+  returning_list <- list('nbins' = ny, 'barriers' = rank.pk, 'height' = wtp[rnk_ts])
   if(return_plot) {
     returning_list[['plot']] <- tpl
     if(hist_exploration) returning_list[['plot_splits']] <- tpl2

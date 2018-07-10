@@ -57,7 +57,7 @@
 score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NULL,                              # fundamental inputs
                            scoring_method = 'adjusted_rand_index', multi_cluster_policy = 'popup',              # scoring  and merging details
                            plot_pred_true_resume = FALSE, silent = FALSE, return_plot = FALSE,                  # it refers to this function
-                           return_vectors = FALSE,                                                              # return the prediction and true vector
+                           return_predicted = FALSE,                                                              # return the prediction and true vector
                            ...){                                                                                # to add
   
   # ----------------------------------------------------------------------------------------------- general input checking
@@ -114,7 +114,7 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
   if(!is.logical(plot_pred_true_resume)) stop('plot_pred_true_resume must be a logical')
   if(!is.logical(return_plot)) stop('return_plot must be a logical')
   if(!is.logical(silent)) stop('silent must be a logical')
-  if(!is.logical(return_vectors)) stop("return_vectors must be a logical value")
+  if(!is.logical(return_predicted)) stop("return_predicted must be a logical value")
   
   # check over the merging or popping policy
   if(!.isSingleChar(multi_cluster_policy)) stop('multi_cluster_policy must be a logical')
@@ -472,11 +472,10 @@ score_sapphire <- function(the_sap, ann, manual_barriers = NULL, basin_obj = NUL
   # final output
   return_list <- list('score.out' = score.out, 'label_freq_list' = label_freq_list, 'main_desc' = main_desc, 'perc_miss' = miss_perc)
   if(plot_pred_true_resume) print(gg)
-  if(return_predicted) returning_list[['pi_shuffle']] <- predicted
+  if(return_predicted) return_list[['predicted_div']] <- predicted_div
   if(return_plot) return_list[['plot']] <- gg
   invisible(return_list)
 }
-
 
 # deprecated
 # ----------------------------------------------------------------------------------------
