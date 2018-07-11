@@ -7,7 +7,7 @@
 score_sapphire(the_sap, ann, manual_barriers = NULL, basin_obj = NULL,
   scoring_method = "adjusted_rand_index", multi_cluster_policy = "popup",
   plot_pred_true_resume = FALSE, silent = FALSE, return_plot = FALSE,
-  return_vectors = FALSE, ...)
+  return_predicted = FALSE, ...)
 }
 \arguments{
 \item{the_sap}{Name of the PROGIDX_<...>.dat or REPIX_<...>.dat file or Data frame with three columns containing, in order, the (sorted) progress index,
@@ -40,9 +40,9 @@ inserted. The default is \code{'popup'}. The available values are:
 
 \item{silent}{A logical value indicating whether the function has to remain silent or not. Default value is \code{FALSE}.}
 
-\item{...}{\code{max_number_of_elements} for plotting can be supplied. It defaults to 20k.}
-
 \item{return_predicted}{If true return the predicted vector.}
+
+\item{...}{\code{max_number_of_elements} for plotting can be supplied. It defaults to 20k.}
 }
 \value{
 A list containing

@@ -17,7 +17,7 @@ Imports:
   gplots, grDevices, graphics, outliers, pcaPP,
   prospectr, splus2R, stats, expm, Hmisc, utils, 
   plotly, PairViz, Rtsne, TSA, ClusterR,
-  RColorBrewer, TransferEntropy, infotheo, e1071, MESS, 
+  RColorBrewer, TransferEntropy, infotheo, e1071, MESS, MASS,
   minerva
 Suggests: knitr, rmarkdown, testthat, roxygen2
 VignetteBuilder: knitr
