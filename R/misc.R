@@ -213,3 +213,9 @@
   # final loop
   return(unlist(sapply(1:length(label.vec), function(x) rep(label.vec[x], bar.vec.diff[x]))))
 }
+
+# symmetrize matrix - fcocina
+.symm <- function(x) return((x+t(x))/2)
+
+# trace of a matrix
+.tr <- function(x) return(sum(diag(x)))

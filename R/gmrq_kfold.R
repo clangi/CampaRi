@@ -11,6 +11,8 @@
 #' different set of them in the rows (it loops on the rows)
 #' @param chunks if \code{TRUE} it splits consecutive chunks of data. It is needed for time-series data.
 #' @param dir.out directory for files
+#' @param plot if \code{TRUE} plots.
+#' @param return_plot if \code{TRUE} return the plot.
 #' @param silent if \code{TRUE} print less strings.
 #' @return A list containing tot
 #' @details For details regarding the SAPPHIRE plot, please refer to the relative publications \url{http://www.nature.com/articles/srep06264}. 
@@ -25,16 +27,16 @@
 #' 
 #' @export gmrq.kfold
 gmrq.kfold <- function(traj, gmrq=c(2:6), lag=1, kfolds=5, clust.method=c("kmeans", "sbr", "tbc", "dbscan"), 
-                       clust.param=NULL, chunks=FALSE, dir.out=FALSE, silent=FALSE) {
+                       clust.param=NULL, chunks=FALSE, dir.out=FALSE, plot = FALSE, return_plot = FALSE, silent=FALSE) {
   ###################################################################################
   ## Function to calculate the GMRQ score. Input are the multidim trajectory,     ###
   ## vector of GMRQ values, an ATOMICS lag,                                       ###
-  ###################################################################################
-  # clust.param are t
-  
+  ##################################################################################
+  #
+  stopifnot(is.logical(chunks), is.logical(plot), is.logical(return_plot), is.logical(dir.out), is.logical(silent))
   if(is.null(clust.param)) stop("Provide the clusters parameters")
   if(is.character(dir.out)) if(!grepl(clust.method, dir.out)) stop("Out file names and directory doesn't coincide")
-  tot <- rep(list(data.frame(matrix(NaN, ncol=1+3*kfolds, nrow=nrow(clust.param)))), lt(gmrq))
+  tot <- rep(list(data.frame(matrix(NaN, ncol=1+3*kfolds, nrow=nrow(clust.param)))), .lt(gmrq))
   names(tot) <- paste0("gmrq = ", gmrq)
   for(ii in seq_along(tot)) colnames(tot[[ii]]) <- c(rep("nstates", kfolds), rep("train_score", kfolds), rep("test_score", kfolds))
   
@@ -47,7 +49,7 @@ gmrq.kfold <- function(traj, gmrq=c(2:6), lag=1, kfolds=5, clust.method=c("kmean
   for(ll in seq(nrow(clust.param))) {
     if(chunks) folds <- cut(seq(nrow(traj)), breaks=kfolds, labels=FALSE)
     else folds <- cut(sample(nrow(traj)), breaks=kfolds, labels=FALSE)
-    ## scores <- rep(list(data.frame(matrix(-1, nrow=kfolds, ncol=2))), lt(gmrq))
+    ## scores <- rep(list(data.frame(matrix(-1, nrow=kfolds, ncol=2))), .lt(gmrq))
     ## names(scores) <- gmrq
     for(i in seq(kfolds)) {
       sets <- list(train=NaN, test=NaN)
@@ -97,12 +99,12 @@ gmrq.kfold <- function(traj, gmrq=c(2:6), lag=1, kfolds=5, clust.method=c("kmean
         # db <- dbscan::dbscan(traj[which(folds!=i),], eps=clust.param$eps[ll], minPts=clust.param$minpts[ll], borderPoints=TRUE) 
         # sets$train <- db$cluster + 1
         # sets$test <- as.numeric(predict(db, traj[which(folds!=i),], newdata=traj[which(folds==i),])) + 1
-        # if(lt(unique(sets$test)) == 1) warning("most likely test set of noise..")
+        # if(.lt(unique(sets$test)) == 1) warning("most likely test set of noise..")
       } else stop("Method not valid for clustering")
       
       # test clustering output
       if(any(is.na(sets))) stop("Clustering assignement of training and test set failed")
-      ns <- max(sets$train)
+      ns <- max(sets$train) # -1 ?
       cat("\n  ns", ns)
       # if(check) train.msm <- .create.trans(sets$train, ns, n.eigen=gmrq, lag=lag, tm.opt="mle")[c(1,2,3,4)]
       # else {
@@ -113,13 +115,14 @@ gmrq.kfold <- function(traj, gmrq=c(2:6), lag=1, kfolds=5, clust.method=c("kmean
       s <- test.msm$stat
       for(nn in seq_along(gmrq)) {
         if(gmrq[nn] > ns) {
-          tot[[nn]][ll, seq(i, by=kfolds, length.out=3)] <- rep(-1, 3)                 
+          tot[[nn]][ll, seq(i, by=kfolds, length.out=3)] <- rep(-1, 3)  
+          # stop('Number of states is less than number of gmrq!!!')
         } else {
           train.score <- sum(train.msm$eig[seq(gmrq[nn])])
           a <- train.msm$right.vec[,seq(gmrq[nn])]
-          test.score <- trace(t(a) %*% diag(s) %*% test.msm$tm %*% a %*% MASS::ginv(t(a) %*% diag(s) %*% a))
+          test.score <- .tr(t(a) %*% diag(s) %*% test.msm$tm %*% a %*% MASS::ginv(t(a) %*% diag(s) %*% a))
           # if(check) {
-          #   cck <- trace(t(a) %*% diag(train.msm$stat) %*% train.msm$tm %*% a %*% MASS::ginv(t(a) %*% diag(train.msm$stat) %*% a))
+          #   cck <- .tr(t(a) %*% diag(train.msm$stat) %*% train.msm$tm %*% a %*% MASS::ginv(t(a) %*% diag(train.msm$stat) %*% a))
           #   if(abs(cck-train.score)> 10^(-10)) {
           #     stop(paste("Score problem::: Nstates", ns, "Fold and gmrq ", i, gmrq[nn], ", Check is  ", cck-train.score))
           #   }
@@ -142,7 +145,37 @@ gmrq.kfold <- function(traj, gmrq=c(2:6), lag=1, kfolds=5, clust.method=c("kmean
     }
   }
   ## Output
-  invisible(tot)
+  if(plot | return_plot) {
+    dt_fin <- data.frame()
+    for(i in 1:.lt(gmrq)) {
+      if(any(tot[[i]]==-1, na.rm = T)) next
+      nst <- tot[[i]][,1]
+      train <- tot[[i]][(kfold+1):(2*kfold)]
+      test <- tot[[i]][(2*kfold+1):(3*kfold)]
+      dark <- 0.8
+      xl <- range(nst)
+      yl <- range(cbind(train, test))
+      dt <- cbind(rowMeans(train), apply(train, 1, sd), rowMeans(test), apply(test, 1, sd))
+      # if(order.nst)
+      dt <- dt[order(nst),]
+      nst <- sort(nst)
+      dt <- cbind(nst, as.data.frame(dt),  rep(gmrq[i], length(nst)))
+      colnames(dt) <- c('n_states', 'train_m', 'train_sd', 'test_m', 'test_sd', 'gmrq')
+      dt_fin <- rbind(dt_fin, dt)
+    }
+    dt_fin$gmrq <- as.factor(dt_fin$gmrq)
+    pd <- position_dodge(0.5) # move them .05 to the left and right # so the error bars dont overlap
+    gg <- ggplot(dt_fin, aes(x=n_states)) + theme_classic() + 
+      geom_errorbar(aes(ymin=train_m - train_sd, ymax=train_m + train_sd), width=.1, position=pd, col = 'blue') +
+      geom_line(aes(y = train_m, col = gmrq), position=pd) +
+      geom_point(aes(y = train_m), position=pd, size=2, col = 'blue') +
+      geom_errorbar(aes(ymin=test_m - test_sd, ymax=test_m + test_sd), width=.1, position=pd, col = 'red') +
+      geom_line(aes(y = test_m, col = gmrq), position=pd) +
+      geom_point(aes(y = test_m), position=pd, size=2, col = 'red') + xlab('State') + ylab('GMRQ')
+  }
+  if(plot) print(gg) 
+  if(return_plot) invisible(list('plot' = gg, 'tot' = tot))
+  else invisible(list('tot' = tot))
 }
 
 # -------------------------------------------------------------------------------------------- internal functions
@@ -151,7 +184,7 @@ gmrq.kfold <- function(traj, gmrq=c(2:6), lag=1, kfolds=5, clust.method=c("kmean
   ## Count Matrices each one for a different lag time
   cnt <- matrix(0, nrow=n.st, ncol=n.st)
   ## browser()
-  for (i in 1:(lt(seq.st)-lag)) {
+  for (i in 1:(.lt(seq.st)-lag)) {
     row <- seq.st[i]
     col <- seq.st[i+lag]
     cnt[row,col] <- cnt[row,col]+1
@@ -160,12 +193,12 @@ gmrq.kfold <- function(traj, gmrq=c(2:6), lag=1, kfolds=5, clust.method=c("kmean
   if(!all(is.finite(cnt))) stop("ERROR in Window Count Matrices")
   ## Naive Transition Matrix (Simple)
   if(tm.opt=="symm") {
-    tm <- t(apply(symm(cnt), 1, function(x) x/sum(x) ))
+    tm <- t(apply(.symm(cnt), 1, function(x) x/sum(x) ))
     ## ADDITION
     if(any(is.na(t))) tm[which(is.na(tm), arr.ind=TRUE)] <- 
         if(!all(is.finite(tm))) stop("ERROR in simple TM")
   } else if (tm.opt=="mle") {
-    xcnt <- 2*symm(cnt)
+    xcnt <- 2*.symm(cnt)
     xcnt.v <- rowSums(xcnt)
     ## (2) Main Algorithm
     tm <- matrix(NaN, nrow=n.st, ncol=n.st)
@@ -218,6 +251,10 @@ gmrq.kfold <- function(traj, gmrq=c(2:6), lag=1, kfolds=5, clust.method=c("kmean
   return(list(tm=tm, stat=stat, right.vec=R, eig=eig.val[c(1:max(n.eigen))], bella=R.tmp))
 }
 
+.plot.gmrq <- function(gg = NULL, nst, train, test, gmrq = 1, order.nst=FALSE) {
+
+  return(gg)
+}
 
 .extract.centers <- function(log, nst) {
   ## print.cluster.summary(log[1])

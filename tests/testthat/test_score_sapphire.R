@@ -1,7 +1,7 @@
 context('score_sapphire')
 
 test_that('scoring sapphire plots', {
-  silent <- F
+  silent <- T
   plt_stff <- !silent
   if(!silent) {require(testthat); require(CampaRi)} 
   

@@ -6,7 +6,8 @@
 \usage{
 gmrq.kfold(traj, gmrq = c(2:6), lag = 1, kfolds = 5,
   clust.method = c("kmeans", "sbr", "tbc", "dbscan"), clust.param = NULL,
-  chunks = FALSE, dir.out = FALSE, silent = FALSE)
+  chunks = FALSE, dir.out = FALSE, plot = FALSE, return_plot = FALSE,
+  silent = FALSE)
 }
 \arguments{
 \item{traj}{trajectory matrix.}
@@ -20,6 +21,10 @@ gmrq.kfold(traj, gmrq = c(2:6), lag = 1, kfolds = 5,
 \item{chunks}{if \code{TRUE} it splits consecutive chunks of data. It is needed for time-series data.}
 
 \item{dir.out}{directory for files}
+
+\item{plot}{if \code{TRUE} plots.}
+
+\item{return_plot}{if \code{TRUE} return the plot.}
 
 \item{silent}{if \code{TRUE} print less strings.}
 

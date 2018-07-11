@@ -59,18 +59,12 @@ msm <-  function(seq, lag=1, tm.opt=c("symm", "mle"), eig.plot=FALSE, CK.test=FA
     call <- match.call()
     cnt.mode <- FALSE
     
-    lt <- function(x) {
-        return(length(x))
-    }
-    symm <- function(x) {
-        return((x+t(x))/2)
-    }
     tscale <- function(x) {
         return(-lag/log(x))
     }
 
     if(!is.numeric(lag)) stop("Please provide an integer value of lag")
-    if(lt(tm.opt)==2 || !(tm.opt %in% c("symm", "mle"))) {
+    if(.lt(tm.opt)==2 || !(tm.opt %in% c("symm", "mle"))) {
         warning("tm.opt value absent or ill-defined, set to default value \"symm\"", immediate.=T)
         tm.opt <- "symm"
     }
@@ -97,8 +91,8 @@ msm <-  function(seq, lag=1, tm.opt=c("symm", "mle"), eig.plot=FALSE, CK.test=FA
     } else stop("Input \"seq\" not recognized")
 
     if(!cnt.mode) {
-        n.st <- lt(unique(seq.st))
-        cstored <- lt(seq.st)
+        n.st <- .lt(unique(seq.st))
+        cstored <- .lt(seq.st)
         tmp <- rle(sort(seq.st))
         tab.st <- data.frame(n=tmp$values, length=tmp$lengths)
         if(CK.test) {
@@ -138,7 +132,7 @@ msm <-  function(seq, lag=1, tm.opt=c("symm", "mle"), eig.plot=FALSE, CK.test=FA
 
         ## Cleaning of the cnt; very rare, only if a state appear solely in the last lag snaps
         st.del <- which(cnt.v==0)
-        if(lt(st.del)!=0) {
+        if(.lt(st.del)!=0) {
             warning(paste("State", st.del, "empty in the count matrix"), immediate.=T)
             cnt <- cnt[-st.del,-st.del]
             n.st <- nrow(cnt)
@@ -149,10 +143,10 @@ msm <-  function(seq, lag=1, tm.opt=c("symm", "mle"), eig.plot=FALSE, CK.test=FA
 #######################################################################
     ## Naive Transition Matrix (Simple)
     if(tm.opt=="symm") {
-        tm <- t(apply(symm(cnt), 1, function(x) x/sum(x) ))
+        tm <- t(apply(.symm(cnt), 1, function(x) x/sum(x) ))
         if(!all(is.finite(tm))) stop("ERROR in simple TM")
     } else if (tm.opt=="mle") {
-        xcnt <- 2*symm(cnt)
+        xcnt <- 2*.symm(cnt)
         xcnt.v <- rowSums(xcnt)
 
         ## (2) Main Algorithm
@@ -268,12 +262,12 @@ msm <-  function(seq, lag=1, tm.opt=c("symm", "mle"), eig.plot=FALSE, CK.test=FA
         }
 
         ## Additional cnts
-        cnt.CK <- rep(list(), lt(CK.lags))
+        cnt.CK <- rep(list(), .lt(CK.lags))
         if(!silent) cat("Computing the count matrices for the CK test...\n")
         for (ll in seq_along(CK.lags)) {  
             set <- c(1:(cstored-CK.lags[ll])) 
             cnt.CK[[ll]] <- matrix(0, nrow=n.st, ncol=n.st)
-            for (i in 1:lt(set)) {
+            for (i in 1:.lt(set)) {
                 row <- seq.st[set[i]]
                 col <- seq.st[set[i] + CK.lags[ll]]
                 cnt.CK[[ll]][row,col] <- cnt.CK[[ll]][row,col] + 1
@@ -283,7 +277,7 @@ msm <-  function(seq, lag=1, tm.opt=c("symm", "mle"), eig.plot=FALSE, CK.test=FA
         if(!all(sapply(cnt.CK, function(x) all(is.finite(x))))) stop("ERROR in Window Count Matrices")
         ## Cleaning
         st.del <- unique(sort(unlist(lapply(cnt.v, function(x) which(x==0)))))
-        if(lt(st.del)!=0) {
+        if(.lt(st.del)!=0) {
             warning(paste("State", st.del, "empty in the count matrix during CK test"), immediate.=T)
             for(ll in seq_along(CK.lags)) cnt.CK[[ll]] <- cnt.CK[[ll]][-st.del,-st.del]
             n.st <- unique(sapply(cnt.CK, nrow))
@@ -293,7 +287,7 @@ msm <-  function(seq, lag=1, tm.opt=c("symm", "mle"), eig.plot=FALSE, CK.test=FA
         ## Calculating p_MD(A,A), and eps_MD(A,A)
         pMD <- NULL    
         for (ll in seq_along(CK.lags)) {
-            if (lt(setA)>1) pi <- rowSums(cnt.CK[[ll]][,setA])/rowSums(cnt.CK[[ll]])
+            if (.lt(setA)>1) pi <- rowSums(cnt.CK[[ll]][,setA])/rowSums(cnt.CK[[ll]])
             else pi <- cnt.CK[[ll]][,setA]/rowSums(cnt.CK[[ll]])
             pMD[ll] <- sum(wA[setA]*pi[setA])  ## Which wA should I use?
         }
@@ -304,7 +298,7 @@ msm <-  function(seq, lag=1, tm.opt=c("symm", "mle"), eig.plot=FALSE, CK.test=FA
         CK.data <- data.frame(lag= CK.lags, pMSM = pMSM, pMD = pMD, epsMD = epsMD)
         
         ## Calculating chi2 deviations
-        CK.chi <- sum(((pMD-pMSM)/epsMD)^2)/lt(CK.lags) 
+        CK.chi <- sum(((pMD-pMSM)/epsMD)^2)/.lt(CK.lags) 
     }
 
     #############################################################################
@@ -316,7 +310,7 @@ msm <-  function(seq, lag=1, tm.opt=c("symm", "mle"), eig.plot=FALSE, CK.test=FA
         yr <- c(0,max(eig))
         plot(ng, eig[ng], main="Eigenvalues", xlim=xr, ylim=yr, xlab="", ylab="Eigenvalues", axes=TRUE, col="blue", pch=19)
         for(i in ng) lines(rep(i,2), c(0, eig[i]))
-        mtext(text=paste("First", lt(ng), "eigenvalues out of", lt(eig)), side=1, line=2)
+        mtext(text=paste("First", .lt(ng), "eigenvalues out of", .lt(eig)), side=1, line=2)
     }
 
     ## #############################################################################
