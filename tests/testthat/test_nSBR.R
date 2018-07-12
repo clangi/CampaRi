@@ -54,8 +54,13 @@ test_that('new trials for SBR', {
   #                                    pk_span = 500, ny = 20, plot = T, random_picks = 100, ann = ann,
   #                                    silent = F, dbg_nSBR = F, return_plot = F))
   
-  do_it <- FALSE
-  if(do_it){
+  # ------------------------------------------------------- plotting histograms
+  expect_error(a1 <- CampaRi::nSBR(data = file.pi, n.cluster = 3, shuffles = T, 
+                                   comb_met = c('MIC'),
+                                   unif.splits = seq(5, 100, 8),  
+                                   pk_span = 500, ny = 20, plot = T, random_picks = 100, ann = ann,
+                                   silent = silent, dbg_nSBR = T, return_plot = F, return_ordered_predicted = T, hist_exploration = T), NA)
+  if(F){
     require(ggplot2)
     ######################### evaluating an automatic way to select the number of cluster -> grid search ##########################
     

@@ -79,8 +79,8 @@ gmrq.kfold <- function(traj, gmrq=c(2:6), lag=1, kfolds=5, clust.method=c("kmean
         if(ll==1) {
           .pi_profile(traj[which(folds!=i),], preproc = preproc)
         }
-        pi.file <- grep(list.files(), pattern = "PIX_", value = T)[1] # taking only the first one!!
-        stopifnot(length(pi.file) > 0)
+        pi.file <- grep(list.files(), pattern = "PROGIDX_", value = T)[1] # taking only the first one!!
+        stopifnot(!is.na(pi.file))
         tmp <- CampaRi::basins_recognition(pi.file, nx=clust.param$nx[ll], ny=clust.param$nx[ll],
                                                   match=FALSE, dyn.check=2, avg.opt="SG", out.file=F, silent=T)
         sets$train <- tmp$seq.st
@@ -105,6 +105,7 @@ gmrq.kfold <- function(traj, gmrq=c(2:6), lag=1, kfolds=5, clust.method=c("kmean
       } else if(clust.method=="dbscan")  {
         #########################################################################
         stop('dbscan not available')
+        
         # if(ll==1 && i==1) cat("DBSCAN clustering\n")
         # if(!identical(names(clust.param), c("eps", "minpts"))) stop("Provide the right parameters for the chosen method")
         # browser()
@@ -114,19 +115,37 @@ gmrq.kfold <- function(traj, gmrq=c(2:6), lag=1, kfolds=5, clust.method=c("kmean
         # if(.lt(unique(sets$test)) == 1) warning("most likely test set of noise..")
       } else if(clust.method=="nsbr")  {
         #########################################################################
-
+        if(dbg_gmrq.kfold) browser()
+        if(ll==1) {
+          .pi_profile(traj[which(folds!=i),], preproc = preproc)
+        }
+        pi.file <- grep(list.files(), pattern = "PROGIDX_", value = T)[1] # taking only the first one!!
+        stopifnot(!is.na(pi.file))
+        if(is.list(clust.param$unif.splits[ll])) uspli <- clust.param$unif.splits[[ll]] # if I use the param as I(rep(list(c(1,2))), 5)
+        else uspli <- clust.param$unif.splits[ll] # case for single number usually
+        tmp <- CampaRi::nSBR(pi.file, ny=clust.param$ny[ll], unif.splits=uspli, n.cluster = clust.param$n.cluster[ll],
+                             pk_span=clust.param$pk_span[ll], comb_met=clust.param$comb_met[ll], 
+                             silent=T, force_correct_ncl = F, return_ordered_predicted = T)
+        
+        sets$train <- tmp$predicted_div
+        centers <- tmp$centers
+        sets$test <- .predict.basin(traj[which(folds==i),], traj[which(folds!=i),], centers, sets$train)
+        if(.lt(unique(sets$test)) < 2) browser()
       } else stop("Method not valid for clustering")
       
       # test clustering output
       if(any(is.na(sets))) stop("Clustering assignement of training and test set failed")
       ns <- max(sets$train) # -1 ?
       cat("\n  ns", ns)
+      if(.lt(unique(sets$train)) < 2) stop('In the train set there is only one cluster.')
+      if(.lt(unique(sets$test)) < 2) stop('In the test set there is only one cluster.')
       # if(check) train.msm <- .create.trans(sets$train, ns, n.eigen=gmrq, lag=lag, tm.opt="mle")[c(1,2,3,4)]
       # else {
       rr <- try(train.msm <- .create.trans(sets$train, ns, n.eigen=gmrq, lag=lag, tm.opt="mle")[c(3,4)])
       if(class(rr)=="try-error") browser()
       # }
-      test.msm <- .create.trans(sets$test, ns, n.eigen=gmrq, lag=lag, tm.opt="mle")
+      test.msm <- try(.create.trans(sets$test, ns, n.eigen=gmrq, lag=lag, tm.opt="mle"))
+      if(class(test.msm)=="try-error") browser()
       s <- test.msm$stat
       for(nn in seq_along(gmrq)) {
         if(gmrq[nn] > ns) {
@@ -165,29 +184,31 @@ gmrq.kfold <- function(traj, gmrq=c(2:6), lag=1, kfolds=5, clust.method=c("kmean
     dt_fin <- data.frame()
     for(i in 1:.lt(gmrq)) {
       if(any(tot[[i]]==-1, na.rm = T)) next
-      nst <- tot[[i]][,1]
-      train <- tot[[i]][(kfolds+1):(2*kfolds)]
-      test <- tot[[i]][(2*kfolds+1):(3*kfolds)]
-      dark <- 0.8
+      nst <- tot[[i]][,1:kfolds]
+      train <- tot[[i]][,(kfolds+1):(2*kfolds)]
+      test <- tot[[i]][,(2*kfolds+1):(3*kfolds)]
       xl <- range(nst)
       yl <- range(cbind(train, test))
-      dt <- cbind(rowMeans(train), apply(train, 1, sd), rowMeans(test), apply(test, 1, sd))
+      dt <- cbind(rowMeans(nst), rowMeans(train), apply(train, 1, sd), rowMeans(test), apply(test, 1, sd))
       # if(order.nst)
-      dt <- dt[order(nst),]
-      nst <- sort(nst)
-      dt <- cbind(nst, as.data.frame(dt),  rep(gmrq[i], length(nst)))
-      colnames(dt) <- c('n_states', 'train_m', 'train_sd', 'test_m', 'test_sd', 'gmrq')
-      dt_fin <- rbind(dt_fin, dt)
+      dt <- cbind(as.data.frame(dt),  rep(gmrq[i], nrow(nst)))
+      dt2 <- data.frame()
+      for(i in sort(unique(dt[,1]))){
+        dt2 <- rbind(dt2, apply(dt[dt[,1] == i,], 2, mean))
+      }
+      colnames(dt2) <- c('n_states', 'train_m', 'train_sd', 'test_m', 'test_sd', 'gmrq')
+      dt_fin <- rbind(dt_fin, dt2)
     }
     dt_fin$gmrq <- as.factor(dt_fin$gmrq)
-    pd <- "dodge2" # move them to the left and right # so the error bars dont overlap
+    pd <- "identity" # move them to the left and right # so the error bars dont overlap
     gg <- ggplot(dt_fin, aes(x=n_states)) + theme_classic() + 
-      geom_errorbar(aes(ymin=train_m - train_sd, ymax=train_m + train_sd), width=.1, position=pd, col = 'blue') +
+      geom_errorbar(aes(ymin=train_m - train_sd, ymax=train_m + train_sd), width=.1, position=pd, col = 'blue', alpha = 0.3) +
       geom_line(aes(y = train_m, col = gmrq), position=pd) +
-      geom_point(aes(y = train_m), position=pd, size=2, col = 'blue') +
-      geom_errorbar(aes(ymin=test_m - test_sd, ymax=test_m + test_sd), width=.1, position=pd, col = 'red') +
+      geom_point(aes(y = train_m), position=pd, size=1, col = 'blue') +
+      geom_errorbar(aes(ymin=test_m - test_sd, ymax=test_m + test_sd), width=.1, position=pd, col = 'red', alpha = 0.3) +
       geom_line(aes(y = test_m, col = gmrq), position=pd) +
-      geom_point(aes(y = test_m), position=pd, size=2, col = 'red') + xlab('State') + ylab('GMRQ')
+      geom_point(aes(y = test_m), position=pd, size=1, col = 'red') + 
+      xlab('State') + ylab('GMRQ') + scale_color_manual(label = gmrq, values = RColorBrewer::brewer.pal(length(gmrq) + 1, 'Greens')[2:length(gmrq)])
   }
   if(plot) print(gg) 
   if(return_plot) invisible(list('plot' = gg, 'tot' = tot))
@@ -199,11 +220,12 @@ gmrq.kfold <- function(traj, gmrq=c(2:6), lag=1, kfolds=5, clust.method=c("kmean
   
   stopifnot(!is.null(preproc))
   
-  do.call(run_campari, c('trj'=traj, 'print_status'=FALSE,
-                          'multi_threading'=TRUE,
-                          'run_in_background'=FALSE,
-                          'return_log'=TRUE,
-                          'silent' = TRUE, preproc))
+  do.call(run_campari, c('trj'=list(traj), 
+                         'print_status'=FALSE,
+                         'multi_threading'=TRUE,
+                         'run_in_background'=FALSE,
+                         'return_log'=TRUE,
+                         'silent' = TRUE, preproc))
 }
 
 

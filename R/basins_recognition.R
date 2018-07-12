@@ -291,7 +291,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
     scl <- (max(progind$Time)-1)/(max(x)-min(x))
     return(1+(x-min(x))*scl)
   }
-  refine <- function(vec) {
+  refine <- function(silent = T, vec) {
     ## Attach to the peak in the cut function
     for (jj in 1:length(vec)) {
       vec <- round(vec)
@@ -327,7 +327,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
     }
     vec <- vec[which(vec != 1)]
     vec <- vec[which(vec != cstored)]
-    if(length(vec)<3) warning("Vector completely erased in refine function")
+    if(length(vec)<3 && !silent) warning("Vector completely erased in refine function")
     return(vec)
   }
   true.peaks <- function(idxx, values, up=TRUE) {
@@ -852,12 +852,12 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
     breaks <- NULL
     
     vkin <- brk.kin
-    if(.lt(vkin)!=0) vkin <- refine(vkin)
+    if(.lt(vkin)!=0) vkin <- refine(silent, vkin)
     vdyn <- brk.dyn
     vdyn <- vdyn[which(vdyn != 1)]
     vdyn <- vdyn[which(vdyn != cstored)]
     if(.lt(vdyn)!=0) {
-      vdyn <- refine(vdyn)
+      vdyn <- refine(silent, vdyn)
     }
     if(!silent) cat("Number of dynamic and kinetic breaks are respectively",.lt(vdyn), .lt(vkin), "\n")
     ##################################################################################
@@ -922,7 +922,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
         breaks <- sort(unique(c(breaks,vkin)))
       }
     }
-  } else if(.lt(brk.kin)!=0) breaks <- refine(brk.kin) ## If only.kin==TRUE
+  } else if(.lt(brk.kin)!=0) breaks <- refine(silent, brk.kin) ## If only.kin==TRUE
   else breaks <- NULL
   
   
@@ -954,7 +954,7 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
       if (i==.lt(vec)+1) fb <- cstored
       else fb <- vec[i]
       ## if(!silent) cat(i,ib,fb,fb-ib,"\n")
-      seq.st <- c(seq.st,rep(i,fb-ib))
+      seq.st <- c(seq.st, rep(i,fb-ib))
     }
     if(out.file) {
       output.match <- data.frame(PI=progind$PI, Time=progind$Time, State=seq.st)

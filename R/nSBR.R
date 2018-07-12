@@ -37,7 +37,6 @@
 #' @param ann If random_picks is inserted you need to score the the random barriers against an annotation!!
 #' @param ...
 #'      \itemize{
-#'          \item "\code{time.series}" File name. If specified, it substitutes the time series of the PROGIDX_<..> file with the one provided by the file.
 #'          \item "\code{max.random.points.plot}" Integer indicating how many points to show in the randomization procedure
 #'      }
 #'      
@@ -82,6 +81,7 @@ nSBR <- function(data, ny, local.cut = FALSE, comb_met = c('MIC'),              
                  unif.splits = NULL, pk_span = NULL,                                                          # algorithm details
                  plot = FALSE, silent = FALSE, return_plot = FALSE, hist_exploration = FALSE,                 # plots and prints
                  random_picks = NULL, ann = NULL, shuffles = FALSE, scoring_method = "adjusted_rand_index",   # randomization of the barriers and comparison
+                 return_ordered_predicted = FALSE,
                  ...) { 
   
   # Standard input checks 
@@ -104,6 +104,7 @@ nSBR <- function(data, ny, local.cut = FALSE, comb_met = c('MIC'),              
   if(!is.logical(silent)) stop("silent must be a logical value")
   if(!is.logical(shuffles)) stop("shuffles must be a logical value")
   if(!is.logical(force_correct_ncl)) stop("force_correct_ncl must be a logical value")
+  if(!is.logical(return_ordered_predicted)) stop("return_ordered_predicted must be a logical value")
   if(!is.null(unif.splits)) unif.splits <- unique(round(unif.splits))
   if(!is.null(unif.splits)) stopifnot(all(sapply(unif.splits, function(x) x%%1) == 0))
   if(hist_exploration && !plot){
@@ -114,7 +115,7 @@ nSBR <- function(data, ny, local.cut = FALSE, comb_met = c('MIC'),              
   
   # Extra arguments checks
   input.args <- list(...)
-  avail.extra.arg <- c("time.series", 'dbg_nSBR', "max.random.points.plot")
+  avail.extra.arg <- c('dbg_nSBR', "max.random.points.plot")
   
   if(!is.null(names(input.args)) && any(!(names(input.args) %in% avail.extra.arg))){
     warning('There is a probable mispelling in one of the inserted variables. Please check the available extra input arguments.')
@@ -149,11 +150,6 @@ nSBR <- function(data, ny, local.cut = FALSE, comb_met = c('MIC'),              
       foo <- data.frame(fread(data, showProgress=FALSE)[, c(1, 3, 10, 12)])
       progind <- data.frame(PI=foo[[1]], Time=foo[[2]], Cut=(foo[[3]]+foo[[4]])/2)
       rm(foo)
-    }
-    if("time.series" %in% names(input.args)){
-      time.series <- input.args$time.series
-      progind$Time <- as.vector(unlist(fread(time.series, showProgress=FALSE)[,1]))
-      if(!silent) cat("Time series given by", time.series, "\n")
     }
   }
   if(nrow(progind) < 80) stop('It is impossible to recognize basins with less than 80 snapshots in the sapphire table.')
@@ -325,7 +321,6 @@ nSBR <- function(data, ny, local.cut = FALSE, comb_met = c('MIC'),              
     # Adding the specific curves
     for(met.i in 1:.lt(comb_met)) tpl <- tpl + geom_line(mapping = aes_string(y = comb_met[met.i]), col = col_vec[met.i], size = 1.5)
     
-    if(dbg_nSBR) browser()
     # Final add of barriers and similaria
     tpl <- tpl + geom_point(data = df.pp, mapping = aes_string(y = 'pky', x = 'pkx')) +
       geom_vline(xintercept = rank.pk[1:nba], col = 'black', size = 1, linetype="dotted") +
@@ -342,12 +337,13 @@ nSBR <- function(data, ny, local.cut = FALSE, comb_met = c('MIC'),              
       # ----
       
       # number of uniform divisions to show
-      n_pnt <- 4
+      n_pnt <- 4        # points for uniform splits
+      max_avail_cl <- 4 # for the histograms
       
       # colors vectors
       clr_v <- rev(RColorBrewer::brewer.pal(2 + n_pnt, 'Reds')[c(-1, -2)])
       # clr_v <- RColorBrewer::brewer.pal(4, 'Spectral')
-      clr_v2 <- RColorBrewer::brewer.pal(3, 'Set1'); al <- 0.5; sz = 0.2; al2 <- 0.25
+      clr_v2 <- RColorBrewer::brewer.pal(max_avail_cl, 'Set1'); al <- 0.5; sz = 0.2; al2 <- 0.25
       clr_found <- RColorBrewer::brewer.pal(9, 'Blues')[8]
       clr_cnt <- 1
       
@@ -376,10 +372,17 @@ nSBR <- function(data, ny, local.cut = FALSE, comb_met = c('MIC'),              
       if(n_unif[1] < 5) stop('for the first uniform division use an higher number than 4. It is necessary for appreciating the histograms.')
       
       # rectangles for tpl3 areas
-      tpl2 <- tpl2 + 
-        annotate("rect", xmin = e_MIC_brks_l[[1]][1] , xmax = e_MIC_brks_l[[1]][2], ymin = 0, ymax = 1, alpha = al2, col = 'black', fill = clr_v2[1], size = 0.2) +
-        annotate("rect", xmin = e_MIC_brks_l[[1]][2] , xmax = e_MIC_brks_l[[1]][3], ymin = 0, ymax = 1, alpha = al2, col = 'black', fill = clr_v2[2], size = 0.2) +
-        annotate("rect", xmin = e_MIC_brks_l[[1]][3] , xmax = e_MIC_brks_l[[1]][4], ymin = 0, ymax = 1, alpha = al2, col = 'black', fill = clr_v2[3], size = 0.2)
+      hist_ba_plot <- c(1, e_MIC_brks_l[[1]], lpi) # complete barriers
+      max_n_found_sep <- length(hist_ba_plot) - 1 # max number of states
+      if(max_n_found_sep < max_avail_cl) {
+        if(!silent) warning("you need at least 3 clusters to show the histograms.") # you ask more than available
+        max_avail_cl <- max_n_found_sep - 1
+      }
+      for(rect.i in 1:max_avail_cl){
+        tpl2 <- tpl2 + 
+          annotate("rect", xmin = hist_ba_plot[rect.i] , xmax = hist_ba_plot[rect.i + 1], ymin = 0, ymax = 1, 
+                   alpha = al2, col = 'black', fill = clr_v2[rect.i], size = 0.1) 
+      }
       
       # plot if you must
       if(plot) print(tpl2)
@@ -391,36 +394,33 @@ nSBR <- function(data, ny, local.cut = FALSE, comb_met = c('MIC'),              
       tpl3 <- ggplot(data = df.main, mapping = aes_string(x = 'PI')) + theme_classic() + ylab('IMIC') + xlab('Progress Index') +
         geom_point(mapping = aes_string(x = 'PI_points_x', y = 'PI_points_y'), size = 0.8, col = 'grey') +
         geom_line(mapping = aes_string(y = comb_met[1]), col = 'black', size = 1.2) + 
-        coord_cartesian(xlim = c(e_MIC_brks_l[[1]][1] ,e_MIC_brks_l[[1]][4])) # select to show certain area
+        coord_cartesian(xlim = c(hist_ba_plot[1] , hist_ba_plot[max_avail_cl+1])) # select to show certain area
       
       # take the histogram of counts and pairwise normalize it
       the_hist <- uni_cnts_l[[1]]
-      the_hist[,2:3] <- .normalize(x = the_hist[,2:3], xmin = 0)*e_MIC_brks_l[[1]][1]/2
-      the_hist[,3:4] <- .normalize(x = the_hist[,3:4], xmin = 0)*e_MIC_brks_l[[1]][1]/2
+      # the_hist[,2:3] <- .normalize(x = the_hist[,2:3], xmin = 0)*e_MIC_brks_l[[1]][1]/2
+      # the_hist[,3:4] <- .normalize(x = the_hist[,3:4], xmin = 0)*e_MIC_brks_l[[1]][1]/2
       
       # add the horizontal plots
-      tpl3 <- tpl3 + # geom_vline(xintercept = rank.pk[1:nba], col = clr_found, size = 1.1) +
-        annotate("rect", xmin = rep(e_MIC_brks_l[[1]][2], ny) , xmax = rep(e_MIC_brks_l[[1]][2], ny) - the_hist[,2], 
-                 ymin = seq(0, ny-1)/ny, ymax = seq(1, ny)/ny, alpha = al, col = "black", fill = clr_v2[1], size = sz) +
-        annotate("rect", xmin = rep(e_MIC_brks_l[[1]][2], ny) , xmax = rep(e_MIC_brks_l[[1]][2], ny) + the_hist[,3], 
-                 ymin = seq(0, ny-1)/ny, ymax = seq(1, ny)/ny, alpha = al, col = "black", fill = clr_v2[2], size = sz) +
-        annotate("rect", xmin = rep(e_MIC_brks_l[[1]][3], ny) , xmax = rep(e_MIC_brks_l[[1]][3], ny) - the_hist[,3], 
-                 ymin = seq(0, ny-1)/ny, ymax = seq(1, ny)/ny, alpha = al, col = "black", fill = clr_v2[2], size = sz) +
-        annotate("rect", xmin = rep(e_MIC_brks_l[[1]][3], ny) , xmax = rep(e_MIC_brks_l[[1]][3], ny) + the_hist[,4], 
-                 ymin = seq(0, ny-1)/ny, ymax = seq(1, ny)/ny, alpha = al, col = "black", fill = clr_v2[3], size = sz)
+      for(hist.i in 1:max_avail_cl){
+        tpl3 <- tpl3 + # geom_vline(xintercept = rank.pk[1:nba], col = clr_found, size = 1.1) +
+          annotate("rect", xmin = rep(hist_ba_plot[hist.i], ny) , xmax = rep(hist_ba_plot[hist.i], ny) + the_hist[,hist.i], 
+                   ymin = seq(0, ny-1)/ny, ymax = seq(1, ny)/ny, alpha = al, col = "black", fill = clr_v2[hist.i], size = sz) +      
+          annotate("rect", xmin = rep(hist_ba_plot[hist.i+1], ny) , xmax = rep(hist_ba_plot[hist.i+1], ny) - the_hist[,hist.i], 
+                   ymin = seq(0, ny-1)/ny, ymax = seq(1, ny)/ny, alpha = al, col = "black", fill = clr_v2[hist.i], size = sz) 
+      }
       
       # add the vertical line and points
-      tpl3 <- tpl3 + 
-        geom_vline(aes(xintercept = e_MIC_brks_l[[1]][1]), col = clr_v[1], size = 0.8, linetype = 'dashed') +
-        geom_vline(aes(xintercept = e_MIC_brks_l[[1]][2]), col = clr_v[1], size = 0.8, linetype = 'dashed') +
-        geom_vline(aes(xintercept = e_MIC_brks_l[[1]][3]), col = clr_v[1], size = 0.8, linetype = 'dashed') +
-        geom_vline(aes(xintercept = e_MIC_brks_l[[1]][4]), col = clr_v[1], size = 0.8, linetype = 'dashed')
-      df_points <- data.frame(x = e_MIC_brks_l[[1]][1:4], y = e_MIC_l[[1]][1:4])
+      for(vline.i in 2:(length(hist_ba_plot)-1))
+        tpl3 <- tpl3 + geom_vline(aes(xintercept = hist_ba_plot[vline.i]), col = clr_v[1], size = 0.8, linetype = 'dashed')
+      
+      df_points <- data.frame(x = e_MIC_brks_l[[1]][1:(max_avail_cl-1)], y = e_MIC_l[[1]][1:(max_avail_cl-1)])
       tpl3 <- tpl3 + geom_point(data = df_points, mapping = aes(x = x, y = y), col = clr_v[1], size = 3)
       
       # plot it if you desire
       if(plot) print(tpl3)
     }
+    if(dbg_nSBR) browser()
     # if('MI' %in% comb_met) tpl <- tpl + geom_line(mapping = aes(y = MI), col = 'darkred') 
     # if('MIC' %in% comb_met) tpl <- tpl + geom_line(mapping = aes(y = MIC), col = 'darkred') 
     # if('MAS' %in% comb_met) tpl <- tpl + geom_line(mapping = aes(y = MAS), col = 'darkred') 
@@ -472,7 +472,6 @@ nSBR <- function(data, ny, local.cut = FALSE, comb_met = c('MIC'),              
   # ---------------------
   if(shuffles){
     if(!silent) cat('Annotation random shuffleing procedure started...\n')
-    
     if(!is.data.frame(data)) data <- data.frame(fread(data, showProgress=FALSE))
     ann2 <- sample(ann)
     shffl.obj1 <- nSBR(data = data, ny = ny, local.cut = local.cut, n.cluster = nclu, comb_met = comb_met, 
@@ -480,10 +479,12 @@ nSBR <- function(data, ny, local.cut = FALSE, comb_met = c('MIC'),              
                        random_picks = random_picks, ann = ann2, shuffles = F, ...)
     if(!silent) cat('Found the following score with ann shuffle:', max(shffl.obj1$rnd.picks$ref.score$score.out, shffl.obj1$rnd.picks$max.rnd.scor$score.out), '\n')
     if(!silent) cat('Progress Index random shuffleing procedure started...\n')
-    data[,3] <- sample(data[,3]) # shuffleing the PI
-    shffl.obj2 <- nSBR(data = data, ny = ny, local.cut = local.cut, n.cluster = nclu, comb_met = comb_met, 
+    data_tmp <- data
+    data_tmp[,3] <- sample(data[,3]) # shuffleing the PI
+    shffl.obj2 <- nSBR(data = data_tmp, ny = ny, local.cut = local.cut, n.cluster = nclu, comb_met = comb_met, 
                        unif.splits = n_unif, pk_span = pk_span, plot = F, silent = T, return_plot = T, 
                        random_picks = random_picks, ann = ann, shuffles = F, ...)
+    rm(data_tmp)
     if(!silent) cat('Found the following score with PI shuffle:', max(shffl.obj2$rnd.picks$ref.score$score.out, shffl.obj2$rnd.picks$max.rnd.scor$score.out), '\n')
   } 
   # microbenchmarking MIC MI
@@ -509,6 +510,16 @@ nSBR <- function(data, ny, local.cut = FALSE, comb_met = c('MIC'),              
   if(!is.null(random_picks)) returning_list[['rnd.picks']] <- rnd.obj
   if(shuffles) returning_list[['ann_shuffle']] <- shffl.obj1
   if(shuffles) returning_list[['pi_shuffle']] <- shffl.obj2
+  if(return_ordered_predicted){
+    if(!is.data.frame(data)) data <- data.frame(fread(data, showProgress=FALSE))
+    temp_reord <- order(unlist(data[,3]))
+    if(! all(c(rank.pk[1:nba], lpi)> 1)) browser()
+    predicted_div <- .vec_from_barriers(c(rank.pk[1:nba], lpi), label.vec = 1:nclu)
+    start <- c(0, sort(rank.pk[1:nba])) + 1
+    end <- c(sort(rank.pk[1:nba]), lpi)
+    returning_list[['predicted_div']] <- predicted_div[temp_reord]
+    returning_list[['centers']] <- round((end - start)/2 + start)
+  }
   invisible(returning_list)
 }
 

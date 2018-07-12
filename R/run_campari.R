@@ -68,11 +68,11 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   if(!is.logical(silent))
     stop('silent must be a logical.')
   if(run_in_background){
-    warning('run_in_background option manually forced print_status to FALSE.\n')
+    if(!silent) warning('run_in_background option manually forced print_status to FALSE.\n')
     print_status <- FALSE
   }
   if(return_log && (run_in_background)){
-    warning('If return_log is active it is not possible to run_in_background. run_in_background is set to FALSE.\n')
+    if(!silent) warning('If return_log is active it is not possible to run_in_background. run_in_background is set to FALSE.\n')
     run_in_background <- FALSE
   }
   
@@ -190,7 +190,7 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   if(!is.null(trj) && !all(all(sapply(trj[1,], is.numeric))))
     stop("The test on the first row found non numeric values")
   if(!is.null(trj) && nrow(trj) < ncol(trj))
-    warning('The inserted trajectory has more variables (columns) than snapshots (rows). Please consider checking again the input data.\n')
+    if(!silent) warning('The inserted trajectory has more variables (columns) than snapshots (rows). Please consider checking again the input data.\n')
   
   # -----------------------
   # Base name checks and needed file setting
@@ -204,7 +204,7 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
   key_f <- paste0(base_name, '.key')
   
   # checking existance of files
-  # if(file.exists(seq_in)) warning(seq_in, " is present in the working directory. It will be overwritten.")
+  # if(file.exists(seq_in)) if(!silent) warning(seq_in, " is present in the working directory. It will be overwritten.")
   if(file.exists(log_f)) if(!silent) cat(log_f, " is present in the working directory. It will be overwritten.\n")
   if(file.exists(key_f)) if(!silent) cat(key_f, " is present in the working directory. It will be overwritten.\n")
   
@@ -217,7 +217,7 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
       stop('Only one between trj and data_file must be provided.')
     if(!silent) cat('The trajectory inserted will be written for the analysis in: ', base_name, '.tsv\n')
     data_file <- paste0(base_name, '.tsv')
-    if(file.exists(data_file)) warning(data_file, " is present in the working directory. It will be overwritten. \n")
+    if(file.exists(data_file)) if(!silent) warning(data_file, " is present in the working directory. It will be overwritten. \n")
     data.table::fwrite(data.frame(trj), data_file, sep = '\t', row.names = FALSE, col.names = FALSE) 
     if(is.null(nsnaps)) nsnaps <- nrow(trj)
     if(is.null(nvars)) nvars <- ncol(trj) 
@@ -231,13 +231,13 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
       } else if(as.numeric(args_list[['FMCSC_PDBANALYZE']]) == 0){
         if(!silent) cat('PDBANALYZE option set FALSE. The analysis variables will not be checked. Simulation mode active')
         simulation_mode <- TRUE
-        warning('SIMULATION RUN: using PDBANALYZE == 0 no check on the FILES will be done.\n')
+        if(!silent) warning('SIMULATION RUN: using PDBANALYZE == 0 no check on the FILES will be done.\n')
       }
     }
     if(!simulation_mode && any(c('FMCSC_XTCFILE', 'FMCSC_DCDFILE', 'FMCSC_PDBFILE', 'FMCSC_NETCDFFILE', 'FMCSC_NCDM_ASFILE', 'FMCSC_NCDM_NCFILE') %in% args_names)){
       if(any(c('FMCSC_XTCFILE', 'FMCSC_DCDFILE', 'FMCSC_PDBFILE', 'FMCSC_NETCDFFILE') %in% args_names)){
         analysis_mode <- TRUE
-        warning('We found analysis keywords while no trj nor data_file was supplied. All the checks for the analysis inputs will be disabled. No NCMINER mode active.\n')
+        if(!silent) warning('We found analysis keywords while no trj nor data_file was supplied. All the checks for the analysis inputs will be disabled. No NCMINER mode active.\n')
         if(!silent) cat('ANALYSIS MODE (for manual insertion of FMCSC_*FILE keywords)\n')
         if(any(c('FMCSC_NCDM_ASFILE', 'FMCSC_NCDM_NCFILE') %in% args_names)) stop('Once inserted the FMCSC_PDB_FORMAT no NCMINER mode keywords are usable.')
         if(sum(c('FMCSC_XTCFILE', 'FMCSC_DCDFILE', 'FMCSC_PDBFILE', 'FMCSC_NETCDFFILE') %in% args_names) < 1)
@@ -247,21 +247,21 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
         if('FMCSC_PDBFILE' %in% args_names){
           data_file <- args_list[['FMCSC_PDBFILE']]
           if(is.null(args_list[['FMCSC_PDB_FORMAT']]) || !args_list[['FMCSC_PDB_FORMAT']] %in% c(1, 2)){
-            warning('Even if FMCSC_PDB_FORMAT was used for FMCSC_PDBFILE no standard (1 or 2) was selected. It will be defaulted to 1.\n')
+            if(!silent) warning('Even if FMCSC_PDB_FORMAT was used for FMCSC_PDBFILE no standard (1 or 2) was selected. It will be defaulted to 1.\n')
             args_list <- c(args_list, FMCSC_PDB_FORMAT=1)
           }
         }
         if('FMCSC_XTCFILE' %in% args_names){
           data_file <- args_list[['FMCSC_XTCFILE']]
           if(is.null(args_list[['FMCSC_PDB_FORMAT']]) || !args_list[['FMCSC_PDB_FORMAT']] != 3){
-            warning('Even if FMCSC_PDB_FORMAT was used for FMCSC_XTCFILE no standard (3) was selected. It will be defaulted to 3.\n')
+            if(!silent) warning('Even if FMCSC_PDB_FORMAT was used for FMCSC_XTCFILE no standard (3) was selected. It will be defaulted to 3.\n')
             args_list <- c(args_list, FMCSC_PDB_FORMAT=3)
           }
         }
         if('FMCSC_DCDFILE' %in% args_names){
           data_file <- args_list[['FMCSC_DCDFILE']]
           if(is.null(args_list[['FMCSC_PDB_FORMAT']]) || !args_list[['FMCSC_PDB_FORMAT']] != 4){
-            warning('Even if FMCSC_PDB_FORMAT was used for FMCSC_DCDFILE no standard (4) was selected. It will be defaulted to 4.\n')
+            if(!silent) warning('Even if FMCSC_PDB_FORMAT was used for FMCSC_DCDFILE no standard (4) was selected. It will be defaulted to 4.\n')
             args_list <- c(args_list, FMCSC_PDB_FORMAT=4)
           }
         }
@@ -269,13 +269,13 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
           data_file <- args_list[['FMCSC_NETCDFFILE']]
           netcdf_mode_amber <- TRUE
           if(is.null(args_list[['FMCSC_PDB_FORMAT']]) || !args_list[['FMCSC_PDB_FORMAT']] != 5){
-            warning('Even if FMCSC_PDB_FORMAT was used for FMCSC_NETCDFFILE no standard (5) was selected. It will be defaulted to 5.\n')
+            if(!silent) warning('Even if FMCSC_PDB_FORMAT was used for FMCSC_NETCDFFILE no standard (5) was selected. It will be defaulted to 5.\n')
             args_list <- c(args_list, FMCSC_PDB_FORMAT=5)
           }
         }
       }else if(!simulation_mode && any(c('FMCSC_NCDM_ASFILE', 'FMCSC_NCDM_NCFILE') %in% args_names)){
         analysis_mode <- TRUE
-        warning('We found analysis keywords for the analysis while no trj R-object was supplied. These NCMINER mode active.\n')
+        if(!silent) warning('We found analysis keywords for the analysis while no trj R-object was supplied. These NCMINER mode active.\n')
         if(!silent) cat('ANALYSIS MODE (for manual insertion of FMCSC_NCDM_* keyword)\n')
         if('FMCSC_NCDM_ASFILE' %in% args_names && 'FMCSC_NCDM_NCFILE' %in% args_names)
           stop('Use only one between FMCSC_NCDM_ASFILE and FMCSC_NCDM_NCFILE (or use data_file input).')
@@ -336,7 +336,7 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
         if(!silent) cat('File mode: PDB (consider changing pdb convention with FMCSC_PDB_R_CONV)\n')
         args_list <- c(args_list, FMCSC_PDBFILE=data_file)
         if(!'FMCSC_PDB_FORMAT' %in% args_names){
-          warning('Selected option 1 for FMCSC_PDB_FORMAT because it was not provided.\n')
+          if(!silent) warning('Selected option 1 for FMCSC_PDB_FORMAT because it was not provided.\n')
           args_list <- c(args_list, FMCSC_PDB_FORMAT=1)  
         }
       # xtc
@@ -362,7 +362,7 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
       }
     }
   }else if(simulation_mode){
-    warning('All the check for the simulation mode are shallow and the real error messages are delivered directly by the campari library.\n')
+    if(!silent) warning('All the check for the simulation mode are shallow and the real error messages are delivered directly by the campari library.\n')
   }else{
     stop('mode not valid')
   }
@@ -450,7 +450,7 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
     if("FMCSC_NRTHREADS" %in% args_names){
       if(!silent) cat('The number of threads defined for the openMP run has been set manually to:', args_list[["FMCSC_NRTHREADS"]], '\n')
       if(as.numeric(args_list[["FMCSC_NRTHREADS"]]) > n_cores || as.numeric(args_list[["FMCSC_NRTHREADS"]]) < 2){
-        warning('Selected more/less/notcorrectly cores than the available number of units. It will be set to n_cores - 1')
+        if(!silent) warning('Selected more/less/notcorrectly cores than the available number of units. It will be set to n_cores - 1')
         args_list <- c(args_list, FMCSC_NRTHREADS=n_cores-1)
       }
     }else{
@@ -471,7 +471,7 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
     }
   }else{
     paramiters <- paste0(camp_home,"params/abs3.2_opls.prm")  # file defining system energies. Irrelevant fuer blosse Analyse.
-    warning('PARAMETERS variable not found. It MUST be supplied, therefore we automatically assign it to: ', paramiters, '.\n')
+    if(!silent) warning('PARAMETERS variable not found. It MUST be supplied, therefore we automatically assign it to: ', paramiters, '.\n')
     if(!silent) cat('PARAMITERS variable AUTOMATICALLY assigned to', paramiters, '\nATTENTION! This file should be correctly assigned to avoid spurious behaviours. \n')
   }
   if(!silent) cat('Using the following specific PARAMETERS:', paramiters, '\n')
@@ -497,7 +497,7 @@ run_campari <- function(trj=NULL, base_name='base_name', data_file=NULL, nsnaps=
     }
   }else if((ascii_mode || netcdf_mode)){
     if("FMCSC_SEQFILE" %in% args_names)
-      warning('Even if in ncminer mode a sequence file was provided. It will not be used because superfluous for this modes.\n')
+      if(!silent) warning('Even if in ncminer mode a sequence file was provided. It will not be used because superfluous for this modes.\n')
   }else{
     stop('Sequence file must be supplied when not using the ncminer mode (analysis using *NC* variables - see documentation).')
   }
