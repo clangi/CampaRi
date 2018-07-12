@@ -6,26 +6,44 @@ test_that('scoring sapphire plots', {
   silent <- F
   plt_stff <- !silent
   if(!silent) {require(testthat); require(CampaRi)} 
-  library(clusterCrit); library(ClusterR)
+  file.pi <- system.file("extdata", "REPIX_000000000021.dat", package = "CampaRi")
   
   # Create some spheric data around three distinct centers
-  x <- rbind(matrix(rnorm(1000, mean = 0, sd = 0.5), ncol = 2),
-             matrix(rnorm(1000, mean = 2, sd = 0.5), ncol = 2),
-             matrix(rnorm(1000, mean = 4, sd = 0.5), ncol = 2))
+  x <- rbind(matrix(rnorm(10000, mean = 0, sd = 0.5), ncol = 2),
+             matrix(rnorm(10000, mean = 2, sd = 0.5), ncol = 2),
+             matrix(rnorm(10000, mean = 4, sd = 0.5), ncol = 2))
   plot(x[,1], x[,2])
-  vals <- vector()
-  for (k in 2:6) {
-    # Perform the kmeans algorithm
-    if(F) {
-      cl <- kmeans(x, k)
-      part <- cl$cluster
-    }else{
-      cl <- ClusterR::KMeans_rcpp(x, k, initializer = "kmeans++", max_iters = 200, verbose = F)
-      part <- cl$clusters
-    }
-    vals <- c(vals, as.numeric(intCriteria(x, as.vector(part, mode = 'integer'), "PBM")))
-  }
-  plot(vals) # standard PBM is finding 3 clusters
-  debugonce(gmrq.kfold)
+  # debugonce(gmrq.kfold)
+  params <- data.frame('nx'=c(10,15,20,50, 80))
+  preproc <- list(basename = 't',  FMCSC_CPROGINDMODE=1, #mst
+                                   FMCSC_CCOLLECT=1, 
+                                   FMCSC_CMODE=4,
+                                   FMCSC_CDISTANCE=7, #rmsd without alignment 7 - dihedral distances need a complete analysis (pdb_format dcd pdb etc...) 
+                                   FMCSC_CPROGINDSTART=1, #starting snapshot 
+                                   FMCSC_CMAXRAD=10880, #clustering
+                                   FMCSC_CRADIUS=10880,
+                                   FMCSC_CCUTOFF=10880,
+                                   FMCSC_CPROGINDWIDTH=1000)
   expect_error(out <- CampaRi::gmrq.kfold(traj = x, gmrq = c(2:3), lag = 1, kfolds = 5, clust.method = "kmeans", clust.param = data.frame('k'=2:4), plot = T), NA)
+  expect_error(out <- CampaRi::gmrq.kfold(traj = x, gmrq = c(2:3), lag = 1, kfolds = 5, clust.method = "sbr", clust.param = params, plot = T))
+  expect_error(out <- CampaRi::gmrq.kfold(traj = x, gmrq = c(2:3), lag = 1, kfolds = 5, clust.method = "sbr", clust.param = params, preproc = preproc, plot = T), NA)
+  
+  
+  if(F){
+    library(clusterCrit); library(ClusterR)
+    vals <- vector()
+    for (k in 2:6) {
+      # Perform the kmeans algorithm
+      if(F) {
+        cl <- kmeans(x, k)
+        part <- cl$cluster
+      }else{
+        cl <- ClusterR::KMeans_rcpp(x, k, initializer = "kmeans++", max_iters = 200, verbose = F)
+        part <- cl$clusters
+      }
+      vals <- c(vals, as.numeric(intCriteria(x, as.vector(part, mode = 'integer'), "PBM")))
+    }
+    plot(vals) # standard PBM is finding 3 clusters
+    profvis::profvis(out <- CampaRi::gmrq.kfold(traj = x, gmrq = c(2:3), lag = 1, kfolds = 5, clust.method = "kmeans", clust.param = data.frame('k'=2:4), plot = F))
+  }
 })

@@ -5,10 +5,11 @@
 #' @param traj trajectory matrix.
 #' @param gmrq number of eigenvalues.
 #' @param lag number of lags in the Markov state model (MSM)
-#' @param kfold cross-validation number of folds
+#' @param kfolds cross-validation number of folds
 #' @param clust.method clustering method. Available is kmeans sbr and nsbr
-#' @param clust.parameters he cluster parameters to optimize - it is a matrix with parameters on the columns and 
+#' @param clust.param the cluster parameters to optimize - it is a matrix with parameters on the columns and 
 #' different set of them in the rows (it loops on the rows)
+#' @param preproc vars for the campari run
 #' @param chunks if \code{TRUE} it splits consecutive chunks of data. It is needed for time-series data.
 #' @param dir.out directory for files
 #' @param plot if \code{TRUE} plots.
@@ -26,19 +27,32 @@
 #' @import ggplot2
 #' 
 #' @export gmrq.kfold
-gmrq.kfold <- function(traj, gmrq=c(2:6), lag=1, kfolds=5, clust.method=c("kmeans", "sbr", "tbc", "dbscan"), 
-                       clust.param=NULL, chunks=FALSE, dir.out=FALSE, plot = FALSE, return_plot = FALSE, silent=FALSE) {
+gmrq.kfold <- function(traj, gmrq=c(2:6), lag=1, kfolds=5, clust.method=c("kmeans", "sbr", "nsbr", "tbc", "dbscan"), 
+                       clust.param=NULL, preproc = NULL, chunks=FALSE, dir.out=FALSE, plot = FALSE, return_plot = FALSE, silent=FALSE, ...) {
   ###################################################################################
   ## Function to calculate the GMRQ score. Input are the multidim trajectory,     ###
   ## vector of GMRQ values, an ATOMICS lag,                                       ###
   ##################################################################################
   #
+  
   stopifnot(is.logical(chunks), is.logical(plot), is.logical(return_plot), is.logical(dir.out), is.logical(silent))
   if(is.null(clust.param)) stop("Provide the clusters parameters")
   if(is.character(dir.out)) if(!grepl(clust.method, dir.out)) stop("Out file names and directory doesn't coincide")
   tot <- rep(list(data.frame(matrix(NaN, ncol=1+3*kfolds, nrow=nrow(clust.param)))), .lt(gmrq))
   names(tot) <- paste0("gmrq = ", gmrq)
   for(ii in seq_along(tot)) colnames(tot[[ii]]) <- c(rep("nstates", kfolds), rep("train_score", kfolds), rep("test_score", kfolds))
+  
+  # Extra arguments checks
+  input.args <- list(...)
+  avail.extra.arg <- c('dbg_gmrq.kfold')
+  
+  if(!is.null(names(input.args)) && any(!(names(input.args) %in% avail.extra.arg))){
+    warning('There is a probable mispelling in one of the inserted variables. Please check the available extra input arguments.')
+    if(!silent) cat('!!!!!!!!! We found the following variables without a father (not between our extra input arguments) !!!!!!!!!!\n')
+    if(!silent) cat(names(input.args)[!(names(input.args) %in% avail.extra.arg)], '\n')
+  }
+  
+  if("dbg_gmrq.kfold" %in% names(input.args)) dbg_gmrq.kfold <- input.args$dbg_gmrq.kfold else dbg_gmrq.kfold <- FALSE
   
   # if(clust.method=="tbc") {
   #   birchmulti <- 14
@@ -63,17 +77,15 @@ gmrq.kfold <- function(traj, gmrq=c(2:6), lag=1, kfolds=5, clust.method=c("kmean
       } else if(clust.method=="sbr")  {
         #########################################################################
         if(ll==1) {
-          cat("SBR clustering on", as.character(clust.param$preproc)[ll], "\n")
-          pi_profile(traj[which(folds!=i),], preproc=as.character(clust.param$preproc)[ll], nfold=i)
+          .pi_profile(traj[which(folds!=i),], preproc = preproc)
         }
-        ## browser()
-        pi.file <- paste0("./BPTIdata/gmrq/sbr/PROGIDX_000000000001_", as.character(clust.param$preproc)[ll],"_fold", i, ".dat")
-        sets$train <- CampaRi::basins_recognition(pi.file, nx=clust.param$nx[ll], ny=clust.param$nx[ll],
-                                                  match=FALSE, dyn.check=2, avg.opt="SG", out.file=FALSE, silent=TRUE)$seq.st
-        logfile <- paste0("./BPTIdata/gmrq/sbr/training_", as.character(clust.param$preproc)[ll], "_fold", i, ".log")
-        centers <- .extract.centers(logfile, 1)
+        pi.file <- grep(list.files(), pattern = "PIX_", value = T)[1] # taking only the first one!!
+        stopifnot(length(pi.file) > 0)
+        tmp <- CampaRi::basins_recognition(pi.file, nx=clust.param$nx[ll], ny=clust.param$nx[ll],
+                                                  match=FALSE, dyn.check=2, avg.opt="SG", out.file=F, silent=T)
+        sets$train <- tmp$seq.st
+        centers <- tmp$tab.st$centers
         sets$test <- .predict.basin(traj[which(folds==i),], traj[which(folds!=i),], centers, sets$train)
-        
       } else if(clust.method=="tbc")  {
         #########################################################################
         stop('tbc not available')
@@ -100,6 +112,9 @@ gmrq.kfold <- function(traj, gmrq=c(2:6), lag=1, kfolds=5, clust.method=c("kmean
         # sets$train <- db$cluster + 1
         # sets$test <- as.numeric(predict(db, traj[which(folds!=i),], newdata=traj[which(folds==i),])) + 1
         # if(.lt(unique(sets$test)) == 1) warning("most likely test set of noise..")
+      } else if(clust.method=="nsbr")  {
+        #########################################################################
+
       } else stop("Method not valid for clustering")
       
       # test clustering output
@@ -144,14 +159,15 @@ gmrq.kfold <- function(traj, gmrq=c(2:6), lag=1, kfolds=5, clust.method=c("kmean
       if(!silent) cat("Written", fout, "\n")
     }
   }
+  if(dbg_gmrq.kfold) browser()
   ## Output
   if(plot | return_plot) {
     dt_fin <- data.frame()
     for(i in 1:.lt(gmrq)) {
       if(any(tot[[i]]==-1, na.rm = T)) next
       nst <- tot[[i]][,1]
-      train <- tot[[i]][(kfold+1):(2*kfold)]
-      test <- tot[[i]][(2*kfold+1):(3*kfold)]
+      train <- tot[[i]][(kfolds+1):(2*kfolds)]
+      test <- tot[[i]][(2*kfolds+1):(3*kfolds)]
       dark <- 0.8
       xl <- range(nst)
       yl <- range(cbind(train, test))
@@ -164,7 +180,7 @@ gmrq.kfold <- function(traj, gmrq=c(2:6), lag=1, kfolds=5, clust.method=c("kmean
       dt_fin <- rbind(dt_fin, dt)
     }
     dt_fin$gmrq <- as.factor(dt_fin$gmrq)
-    pd <- position_dodge(0.5) # move them .05 to the left and right # so the error bars dont overlap
+    pd <- "dodge2" # move them to the left and right # so the error bars dont overlap
     gg <- ggplot(dt_fin, aes(x=n_states)) + theme_classic() + 
       geom_errorbar(aes(ymin=train_m - train_sd, ymax=train_m + train_sd), width=.1, position=pd, col = 'blue') +
       geom_line(aes(y = train_m, col = gmrq), position=pd) +
@@ -179,6 +195,17 @@ gmrq.kfold <- function(traj, gmrq=c(2:6), lag=1, kfolds=5, clust.method=c("kmean
 }
 
 # -------------------------------------------------------------------------------------------- internal functions
+.pi_profile <- function(traj, preproc = NULL){
+  
+  stopifnot(!is.null(preproc))
+  
+  do.call(run_campari, c('trj'=traj, 'print_status'=FALSE,
+                          'multi_threading'=TRUE,
+                          'run_in_background'=FALSE,
+                          'return_log'=TRUE,
+                          'silent' = TRUE, preproc))
+}
+
 
 .create.trans <- function(seq.st, n.st, n.eigen, lag=1, tm.opt="symm") {
   ## Count Matrices each one for a different lag time

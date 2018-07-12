@@ -986,7 +986,6 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
   #######################################################################
   #### final calculations for scores - dgarol
   #######################################################################
-    if(dbg_basins_recognition) browser()
     if(cl.stat && !is.null(breaks)){
       
       # functions
@@ -1384,6 +1383,10 @@ basins_recognition <- function(data, nx, ny=nx, ny.aut=FALSE, local.cut=FALSE, m
       abline(h=mean(MI_ratio)*max(yr), lwd=1.1, col= 'grey')
     }
   }
-    invisible(list(tab.st=tab.st, nbins=c(nx,ny), seq.st=seq.st[order(progind$Time)], statistics = statistics, call=call, filename = filename))
+  if(dbg_basins_recognition) browser()
+  
+  # defining the centers and their corrispective snapshot
+  centers <- round((tab.st$end - tab.st$start)/2 + tab.st$start)
+  invisible(list(tab.st=cbind(tab.st, centers), nbins=c(nx,ny), seq.st=seq.st[order(progind$Time)], statistics = statistics, call=call, filename = filename))
 }
 
