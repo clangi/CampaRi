@@ -18,7 +18,7 @@ test_that('scoring sapphire plots', {
   
   # debugonce(gmrq.kfold)
   params <- data.frame('nx'=c(7,20,50, 70, 100))
-  preproc <- list(basename = 't',  FMCSC_CPROGINDMODE=1, #mst
+  preproc <- list(FMCSC_CPROGINDMODE=1, #mst
                                    FMCSC_CCOLLECT=1, 
                                    FMCSC_CMODE=4,
                                    FMCSC_CDISTANCE=7, #rmsd without alignment 7 - dihedral distances need a complete analysis (pdb_format dcd pdb etc...) 
@@ -54,8 +54,7 @@ test_that('scoring sapphire plots', {
   #                                         chunks = T, preproc = preproc, plot = T, dbg_gmrq.kfold = T), NA)
   
   if(file.exists('FRAMES_NBL.nc')) file.remove('FRAMES_NBL.nc')
-  if(file.exists('PROGIDX_000000000021.dat')) file.remove('PROGIDX_000000000021.dat')
-  file_to_d <- c(list.files(pattern = 'STRUCT_CLUSTERING*'), list.files(pattern = 'ascii_based_analysis.*'), list.files(pattern = 'PROG'))
+  file_to_d <- c('FRAMES_NBL.nc', 'THREADS.log', list.files(pattern = 'STRUCT_CLUSTERING*'), list.files(pattern = 'base_name.*'), list.files(pattern = 'PROGIDX_000000000001_fold*'))
   for(i in file_to_d) {if(file.exists(i)) file.remove(i)}
   
   
