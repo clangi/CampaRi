@@ -3,7 +3,7 @@ context('score_sapphire')
 test_that('scoring sapphire plots', {
   
   # standard initialization
-  silent <- F
+  silent <- T
   plt_stff <- !silent
   if(!silent) {require(testthat); require(CampaRi); require(ggplot2)} 
   file.pi <- system.file("extdata", "REPIX_000000000021.dat", package = "CampaRi")
@@ -52,6 +52,11 @@ test_that('scoring sapphire plots', {
   # do.call(nSBR, c(data = 'PROGIDX_000000000001_fold5.dat', plot = T, lapply(params, function(x) x[[4]])))
   # expect_error(out <- CampaRi::gmrq.kfold(traj = x, gmrq = 2, lag = 1, kfolds = 5, clust.method = "nsbr", clust.param = params, dbg_gmrq.kfold = F, 
   #                                         chunks = T, preproc = preproc, plot = T, dbg_gmrq.kfold = T), NA)
+  
+  if(file.exists('FRAMES_NBL.nc')) file.remove('FRAMES_NBL.nc')
+  if(file.exists('PROGIDX_000000000021.dat')) file.remove('PROGIDX_000000000021.dat')
+  file_to_d <- c(list.files(pattern = 'STRUCT_CLUSTERING*'), list.files(pattern = 'ascii_based_analysis.*'), list.files(pattern = 'PROG'))
+  for(i in file_to_d) {if(file.exists(i)) file.remove(i)}
   
   
   if(F){
