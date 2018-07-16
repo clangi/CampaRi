@@ -7,6 +7,7 @@
 #' @param lag number of lags in the Markov state model (MSM)
 #' @param kfolds cross-validation number of folds
 #' @param clust.method clustering method. Available is kmeans sbr and nsbr
+#' @param tm.opt definition for matrix creation (C and S)
 #' @param clust.param the cluster parameters to optimize - it is a matrix with parameters on the columns and 
 #' different set of them in the rows (it loops on the rows)
 #' @param preproc vars for the campari run
@@ -24,18 +25,25 @@
 #' @importFrom ClusterR MiniBatchKmeans
 #' @importFrom ClusterR predict_KMeans
 #' @importFrom MASS ginv
+#' @importFrom fields rdist
 #' @import ggplot2
 #' 
 #' @export gmrq.kfold
-gmrq.kfold <- function(traj, gmrq=c(2:6), lag=1, kfolds=5, clust.method=c("kmeans", "sbr", "nsbr", "tbc", "dbscan"), 
+gmrq.kfold <- function(traj, gmrq=c(2:6), lag=1, kfolds=5, clust.method=c("kmeans", "sbr", "nsbr", "tbc", "dbscan"), tm.opt = NULL,
                        clust.param=NULL, preproc = NULL, chunks=FALSE, dir.out=FALSE, plot = FALSE, return_plot = FALSE, silent=FALSE, ...) {
   ###################################################################################
   ## Function to calculate the GMRQ score. Input are the multidim trajectory,     ###
   ## vector of GMRQ values, an ATOMICS lag,                                       ###
-  ##################################################################################
-  #
+  ###################################################################################
   
+  avail_tm.opt <- c("symm", "mle")
+  avail_clust.method <- c("kmeans", "sbr", "nsbr", "tbc", "dbscan")
   stopifnot(is.logical(chunks), is.logical(plot), is.logical(return_plot), is.logical(dir.out), is.logical(silent))
+  stopifnot(.isSingleInteger(kfolds), .isSingleInteger(lag), all(sapply(gmrq, .isSingleInteger)))
+  stopifnot(any(gmrq > 0), kfolds > 2)
+  if(is.null(tm.opt)) tm.opt <- 'mle'
+  if(!is.null(tm.opt) && !tm.opt %in% avail_tm.opt) stop('tm.opt must be between c("symm", "mle")')
+  if(!is.null(clust.method) && !clust.method %in% avail_clust.method) stop('clust.method must be between  c("kmeans", "sbr", "nsbr")')
   if(is.null(clust.param)) stop("Provide the clusters parameters")
   if(is.character(dir.out)) if(!grepl(clust.method, dir.out)) stop("Out file names and directory doesn't coincide")
   tot <- rep(list(data.frame(matrix(NaN, ncol=1+3*kfolds, nrow=nrow(clust.param)))), .lt(gmrq))
@@ -61,32 +69,45 @@ gmrq.kfold <- function(traj, gmrq=c(2:6), lag=1, kfolds=5, clust.method=c("kmean
   
   # grid search on the parameters
   for(ll in seq(nrow(clust.param))) {
+    if(!silent) cat("\n-----------------------------------------------\n")
+    if(!silent) cat("Analysis started with the following parameters and using", clust.method[1], "method: \n")
+    if(!silent) {
+      if(ncol(clust.param) == 1) cat(colnames(clust.param), ': ', clust.param[ll,], '\n')
+      else print(clust.param[ll,])
+    }
+    # chunking
     if(chunks) folds <- cut(seq(nrow(traj)), breaks=kfolds, labels=FALSE)
     else folds <- cut(sample(nrow(traj)), breaks=kfolds, labels=FALSE)
-    ## scores <- rep(list(data.frame(matrix(-1, nrow=kfolds, ncol=2))), .lt(gmrq))
-    ## names(scores) <- gmrq
+    
+    # kfolding cross-validation of methods
     for(i in seq(kfolds)) {
+      if(!silent) cat("\nAnalysing fold", i, "out of", kfolds,'folds.\n')
+      # sets init
       sets <- list(train=NaN, test=NaN)
-      if(clust.method=="kmeans") {
+      if(clust.method[1]=="kmeans") {
         #########################################################################
-        if(ll==1) cat("Kmeans clustering")
         if(!identical(names(clust.param), c("k"))) stop("Provide the right parameters for the chosen method")
+        if(!silent) cat("Kmeans clustering using" , clust.param$k[ll], 'clusters.')
         km <- ClusterR::MiniBatchKmeans(traj[which(folds!=i),], clust.param$k[ll], num_init=2, initializer="kmeans++")
         sets$train <- ClusterR::predict_KMeans(traj[which(folds!=i),], km$centroids)
         sets$test <- ClusterR::predict_KMeans(traj[which(folds==i),], km$centroids)
-      } else if(clust.method=="sbr")  {
+      } else if(clust.method[1]=="sbr")  {
         #########################################################################
         if(ll==1) {
-          .pi_profile(traj[which(folds!=i),], preproc = preproc)
+          if(!silent) cat('Creating SAPPHIRE table from', kfolds - 1, '/', kfolds, 'parts of data-set using', i, 'fold...')
+          .pi_profile(traj[which(folds!=i),], preproc = preproc, silent = silent)
+          file.rename(from = 'PROGIDX_000000000001.dat', to = paste0('PROGIDX_000000000001_fold',i,'.dat'))
+          if(!silent) cat('done. Saved to file ', paste0('PROGIDX_000000000001_fold',i,'.dat'))
         }
-        pi.file <- grep(list.files(), pattern = "PROGIDX_", value = T)[1] # taking only the first one!!
-        stopifnot(!is.na(pi.file))
+        # pi.file <- grep(list.files(), pattern = "PROGIDX_", value = T)[1] # taking only the first one!!
+        pi.file <- paste0('PROGIDX_000000000001_fold',i,'.dat') # taking only the first one!!
+        stopifnot(!is.na(pi.file), file.exists(pi.file))
         tmp <- CampaRi::basins_recognition(pi.file, nx=clust.param$nx[ll], ny=clust.param$nx[ll],
                                                   match=FALSE, dyn.check=2, avg.opt="SG", out.file=F, silent=T)
         sets$train <- tmp$seq.st
         centers <- tmp$tab.st$centers
-        sets$test <- .predict.basin(traj[which(folds==i),], traj[which(folds!=i),], centers, sets$train)
-      } else if(clust.method=="tbc")  {
+        sets$test <- .predict.basin(traj[which(folds==i),], traj[which(folds!=i),], centers, sets$train, silent)
+      } else if(clust.method[1]=="tbc")  {
         #########################################################################
         stop('tbc not available')
         # if(!identical(names(clust.param), c("preproc"))) stop("Provide the right parameters for the chosen method")
@@ -102,7 +123,7 @@ gmrq.kfold <- function(traj, gmrq=c(2:6), lag=1, kfolds=5, clust.method=c("kmean
         # logfile <- paste0("./BPTIdata/gmrq/tbc/training_set/training_", as.character(clust.param[[1]])[ll], "_fold", i, ".log")
         # centers <- extract.centers(logfile, ll) ## Return a list with cluster centres
         # sets$test <- predict.tbc(traj[which(folds==i),], traj[which(folds!=i),], centers)
-      } else if(clust.method=="dbscan")  {
+      } else if(clust.method[1]=="dbscan")  {
         #########################################################################
         stop('dbscan not available')
         
@@ -113,38 +134,39 @@ gmrq.kfold <- function(traj, gmrq=c(2:6), lag=1, kfolds=5, clust.method=c("kmean
         # sets$train <- db$cluster + 1
         # sets$test <- as.numeric(predict(db, traj[which(folds!=i),], newdata=traj[which(folds==i),])) + 1
         # if(.lt(unique(sets$test)) == 1) warning("most likely test set of noise..")
-      } else if(clust.method=="nsbr")  {
+      } else if(clust.method[1]=="nsbr")  {
         #########################################################################
-        if(dbg_gmrq.kfold) browser()
         if(ll==1) {
-          .pi_profile(traj[which(folds!=i),], preproc = preproc)
+          if(!silent) cat('Creating SAPPHIRE table from', kfolds - 1, '/', kfolds, 'parts of data-set using', i, 'fold...')
+          .pi_profile(traj[which(folds!=i),], preproc = preproc, silent = silent)
+          file.rename(from = 'PROGIDX_000000000001.dat', to = paste0('PROGIDX_000000000001_fold',i,'.dat'))
+          if(!silent) cat('done. Saved to file ', paste0('PROGIDX_000000000001_fold',i,'.dat'), '\n')
         }
-        pi.file <- grep(list.files(), pattern = "PROGIDX_", value = T)[1] # taking only the first one!!
-        stopifnot(!is.na(pi.file))
+        # pi.file <- grep(list.files(), pattern = "PROGIDX_", value = T)[1] # taking only the first one!!
+        pi.file <- paste0('PROGIDX_000000000001_fold',i,'.dat') # taking only the first one!!
+        stopifnot(!is.na(pi.file), file.exists(pi.file))
         if(is.list(clust.param$unif.splits[ll])) uspli <- clust.param$unif.splits[[ll]] # if I use the param as I(rep(list(c(1,2))), 5)
-        else uspli <- clust.param$unif.splits[ll] # case for single number usually
+        else uspli <- clust.param$unif.splits[ll]                                       # case for single number usually
         tmp <- CampaRi::nSBR(pi.file, ny=clust.param$ny[ll], unif.splits=uspli, n.cluster = clust.param$n.cluster[ll],
                              pk_span=clust.param$pk_span[ll], comb_met=clust.param$comb_met[ll], 
                              silent=T, force_correct_ncl = F, return_ordered_predicted = T)
         
         sets$train <- tmp$predicted_div
         centers <- tmp$centers
-        sets$test <- .predict.basin(traj[which(folds==i),], traj[which(folds!=i),], centers, sets$train)
-        if(.lt(unique(sets$test)) < 2) browser()
+        sets$test <- .predict.basin(traj[which(folds==i),], traj[which(folds!=i),], centers, sets$train, silent)
+        # if(.lt(unique(sets$test)) < 2) browser()
       } else stop("Method not valid for clustering")
       
       # test clustering output
       if(any(is.na(sets))) stop("Clustering assignement of training and test set failed")
       ns <- max(sets$train) # -1 ?
-      cat("\n  ns", ns)
-      if(.lt(unique(sets$train)) < 2) stop('In the train set there is only one cluster.')
-      if(.lt(unique(sets$test)) < 2) stop('In the test set there is only one cluster.')
+      if(!silent) cat("Found number of states:", ns, '\n')
       # if(check) train.msm <- .create.trans(sets$train, ns, n.eigen=gmrq, lag=lag, tm.opt="mle")[c(1,2,3,4)]
       # else {
-      rr <- try(train.msm <- .create.trans(sets$train, ns, n.eigen=gmrq, lag=lag, tm.opt="mle")[c(3,4)])
+      rr <- try(train.msm <- .create.trans(sets$train, ns, n.eigen=gmrq, lag=lag, tm.opt=tm.opt, silent = silent)[c(3,4)])
       if(class(rr)=="try-error") browser()
       # }
-      test.msm <- try(.create.trans(sets$test, ns, n.eigen=gmrq, lag=lag, tm.opt="mle"))
+      test.msm <- try(.create.trans(sets$test, ns, n.eigen=gmrq, lag=lag, tm.opt=tm.opt, silent = silent))
       if(class(test.msm)=="try-error") browser()
       s <- test.msm$stat
       for(nn in seq_along(gmrq)) {
@@ -163,11 +185,10 @@ gmrq.kfold <- function(traj, gmrq=c(2:6), lag=1, kfolds=5, clust.method=c("kmean
           # }
           tot[[nn]][ll, seq(i, by=kfolds, length.out=3)] <- c(ns, train.score, test.score)
         }
+        # if(!silent) cat('Final scores found for gmrq', nn, 'in train and test sets are:', train.score, test.score, '\n')
+        if(!silent) cat('GMRQ:', gmrq[nn], 'Scores (train, test):', train.score, test.score, '\n')
       }
-      if(!silent) cat(" in fold", i, ";")
     }
-    if(!silent) cat("\n")
-    if(!silent) cat("Done for ", unlist(as.character(clust.param[ll,])), "parameters.\n ")
   }
   ## browser()
   ## In case write on file the results
@@ -178,37 +199,10 @@ gmrq.kfold <- function(traj, gmrq=c(2:6), lag=1, kfolds=5, clust.method=c("kmean
       if(!silent) cat("Written", fout, "\n")
     }
   }
-  if(dbg_gmrq.kfold) browser()
-  ## Output
+  # if(dbg_gmrq.kfold) browser()
+  ## Output 
   if(plot | return_plot) {
-    dt_fin <- data.frame()
-    for(i in 1:.lt(gmrq)) {
-      if(any(tot[[i]]==-1, na.rm = T)) next
-      nst <- tot[[i]][,1:kfolds]
-      train <- tot[[i]][,(kfolds+1):(2*kfolds)]
-      test <- tot[[i]][,(2*kfolds+1):(3*kfolds)]
-      xl <- range(nst)
-      yl <- range(cbind(train, test))
-      dt <- cbind(rowMeans(nst), rowMeans(train), apply(train, 1, sd), rowMeans(test), apply(test, 1, sd))
-      # if(order.nst)
-      dt <- cbind(as.data.frame(dt),  rep(gmrq[i], nrow(nst)))
-      dt2 <- data.frame()
-      for(i in sort(unique(dt[,1]))){
-        dt2 <- rbind(dt2, apply(dt[dt[,1] == i,], 2, mean))
-      }
-      colnames(dt2) <- c('n_states', 'train_m', 'train_sd', 'test_m', 'test_sd', 'gmrq')
-      dt_fin <- rbind(dt_fin, dt2)
-    }
-    dt_fin$gmrq <- as.factor(dt_fin$gmrq)
-    pd <- "identity" # move them to the left and right # so the error bars dont overlap
-    gg <- ggplot(dt_fin, aes(x=n_states)) + theme_classic() + 
-      geom_errorbar(aes(ymin=train_m - train_sd, ymax=train_m + train_sd), width=.1, position=pd, col = 'blue', alpha = 0.3) +
-      geom_line(aes(y = train_m, col = gmrq), position=pd) +
-      geom_point(aes(y = train_m), position=pd, size=1, col = 'blue') +
-      geom_errorbar(aes(ymin=test_m - test_sd, ymax=test_m + test_sd), width=.1, position=pd, col = 'red', alpha = 0.3) +
-      geom_line(aes(y = test_m, col = gmrq), position=pd) +
-      geom_point(aes(y = test_m), position=pd, size=1, col = 'red') + 
-      xlab('State') + ylab('GMRQ') + scale_color_manual(label = gmrq, values = RColorBrewer::brewer.pal(length(gmrq) + 1, 'Greens')[2:length(gmrq)])
+    gg <- .plot_gmrq.kfold(tot, gmrq, kfolds, skip_the_neg = TRUE, silent = silent)
   }
   if(plot) print(gg) 
   if(return_plot) invisible(list('plot' = gg, 'tot' = tot))
@@ -216,20 +210,62 @@ gmrq.kfold <- function(traj, gmrq=c(2:6), lag=1, kfolds=5, clust.method=c("kmean
 }
 
 # -------------------------------------------------------------------------------------------- internal functions
-.pi_profile <- function(traj, preproc = NULL){
+.plot_gmrq.kfold <- function(tot, gmrq, kfolds, skip_the_neg = TRUE, silent = FALSE){
+  dt_fin <- data.frame()
+  for(i in 1:.lt(gmrq)) {
+    if(any(tot[[i]]==-1, na.rm = T)) {
+      if(!silent) warning('Skipping the gmrq with negative values (i.e. there were less clusters than gmrq).')
+      if(skip_the_neg) next
+    }
+    nst <- tot[[i]][,1:kfolds]
+    which_sel <- nst[,1] != -1
+    nst <- nst[which_sel, ]
+    train <- tot[[i]][which_sel,(kfolds+1):(2*kfolds)]
+    test <- tot[[i]][which_sel,(2*kfolds+1):(3*kfolds)]
+    xl <- range(nst)
+    yl <- range(cbind(train, test))
+    dt <- cbind(rowMeans(nst), rowMeans(train), apply(train, 1, sd), rowMeans(test), apply(test, 1, sd))
+    # if(order.nst)
+    dt <- cbind(as.data.frame(dt),  rep(gmrq[i], nrow(nst)))
+    dt2 <- data.frame()
+    for(i in sort(unique(dt[,1]))){
+      dt2 <- rbind(dt2, apply(dt[dt[,1] == i,], 2, mean))
+    }
+    colnames(dt2) <- c('n_states', 'train_m', 'train_sd', 'test_m', 'test_sd', 'gmrq')
+    dt_fin <- rbind(dt_fin, dt2)
+  }
+  dt_fin$gmrq <- as.factor(dt_fin$gmrq)
+  pd <- "identity" # move them to the left and right # so the error bars dont overlap
+  gg <- ggplot(dt_fin, aes(x=n_states)) + theme_classic() + 
+    geom_errorbar(aes(ymin=train_m - train_sd, ymax=train_m + train_sd), width=.1, position=pd, col = 'blue', alpha = 0.3) +
+    geom_line(aes(y = train_m, col = gmrq), position=pd) +
+    geom_point(aes(y = train_m), position=pd, size=1, col = 'blue') +
+    geom_errorbar(aes(ymin=test_m - test_sd, ymax=test_m + test_sd), width=.1, position=pd, col = 'red', alpha = 0.3) +
+    geom_line(aes(y = test_m, col = gmrq), position=pd) +
+    geom_point(aes(y = test_m), position=pd, size=1, col = 'red') + 
+    xlab('State') + ylab('GMRQ') + scale_color_manual(label = gmrq, values = RColorBrewer::brewer.pal(length(gmrq) + 1, 'Greens')[2:(length(gmrq)+1)])
+  return(gg)
+}
+
+.pi_profile <- function(traj, preproc = NULL, silent = FALSE){
   
   stopifnot(!is.null(preproc))
   
+  if(!is.null(preproc$FMCSC_CPROGINDSTART)) {
+    if(!silent) warning('preproc$FMCSC_CPROGINDSTART coerced to 1 for file management.')
+  }
+  preproc[['FMCSC_CPROGINDSTART']] <- 1
   do.call(run_campari, c('trj'=list(traj), 
                          'print_status'=FALSE,
                          'multi_threading'=TRUE,
                          'run_in_background'=FALSE,
                          'return_log'=TRUE,
-                         'silent' = TRUE, preproc))
+                         'silent' = TRUE,
+                         preproc))
 }
 
 
-.create.trans <- function(seq.st, n.st, n.eigen, lag=1, tm.opt="symm") {
+.create.trans <- function(seq.st, n.st, n.eigen, lag=1, tm.opt="symm", silent = FALSE) {
   ## Count Matrices each one for a different lag time
   cnt <- matrix(0, nrow=n.st, ncol=n.st)
   ## browser()
@@ -239,10 +275,20 @@ gmrq.kfold <- function(traj, gmrq=c(2:6), lag=1, kfolds=5, clust.method=c("kmean
     cnt[row,col] <- cnt[row,col]+1
   }
   cnt.v <- rowSums(cnt)
+  cnt.h <- colSums(cnt)
+  if(any(cnt.h == 0) || any(cnt.v == 0)){
+    if(!silent) warning('In the test or train set there is one cluster which is never visited. For this reason symm mode is coerced')
+    tm.opt <- "symm"
+  }
+  
   if(!all(is.finite(cnt))) stop("ERROR in Window Count Matrices")
   ## Naive Transition Matrix (Simple)
   if(tm.opt=="symm") {
-    tm <- t(apply(.symm(cnt), 1, function(x) x/sum(x) ))
+    tm <- t(apply(.symm(cnt), 1, function(x) {
+      xx <- sum(x)
+      if(xx == 0) xx <- 1
+      return(x/sum(xx))
+      }))
     ## ADDITION
     if(any(is.na(t))) tm[which(is.na(tm), arr.ind=TRUE)] <- 
         if(!all(is.finite(tm))) stop("ERROR in simple TM")
@@ -286,8 +332,8 @@ gmrq.kfold <- function(traj, gmrq=c(2:6), lag=1, kfolds=5, clust.method=c("kmean
     if(any(is.na(tm)) | any(tm<0)) stop("ERROR in MLE TM")
     ## if(!all(is.finite(tm))) stop("ERROR in MLE TM")
   }
-  right <- eigen(tm) ## Right Eigenvectors
-  left <- eigen(t(tm)) ## Left eigenvectors
+  right <- eigen(tm)     ## Right Eigenvectors
+  left <- eigen(t(tm))   ## Left eigenvectors
   if (!(max(Re(left$values))<1.01 & max(Re(left$values))>0.99)) stop("ERROR in MLE Eigenvalues")
   eig.val <- Re(sort(left$values, decreasing=TRUE))
   stat <- Re(left$vectors[,which.max(Re(left$values))])/Re(sum(left$vectors[,which.max(Re(left$values))]))
@@ -298,11 +344,6 @@ gmrq.kfold <- function(traj, gmrq=c(2:6), lag=1, kfolds=5, clust.method=c("kmean
   if(identical(dim(R.tmp), dim(R))) R <- t(R.tmp)
   else R <- t(R.tmp)
   return(list(tm=tm, stat=stat, right.vec=R, eig=eig.val[c(1:max(n.eigen))], bella=R.tmp))
-}
-
-.plot.gmrq <- function(gg = NULL, nst, train, test, gmrq = 1, order.nst=FALSE) {
-
-  return(gg)
 }
 
 .extract.centers <- function(log, nst) {
@@ -317,9 +358,16 @@ gmrq.kfold <- function(traj, gmrq=c(2:6), lag=1, kfolds=5, clust.method=c("kmean
   return(cents)
 }
 
-.predict.basin <- function(test, train, cents, train.seq) {
-  distmat <- fields::rdist(test, train[cents,])
-  cl <- apply(distmat, 1, which.min)
-  test.seq <- train.seq[cents[cl]]
+.predict.basin <- function(test, train, cents, train.seq, silent, force_more1_state = FALSE) {
+  distmat <- fields::rdist(test, train[cents,]) # distance between test and centers
+  cl <- apply(distmat, 1, which.min)            # which is the minimum between the two senters
+  test.seq <- train.seq[cents[cl]]              # return the cluster value for that cluster
+  if(force_more1_state){
+    uts <- unique(test.seq)
+    if(length(uts) < 2) {
+      if(!silent) warning('Insufficient variety in the test set. Every snap was in a single basin. reduce the number of kfold or avoid chunking.')
+      test.seq[1] <- train.seq[cents[cents != cents[uts]]][1]
+    }
+  }
   return(test.seq)
 }
