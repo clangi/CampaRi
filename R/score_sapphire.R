@@ -27,6 +27,7 @@
 #'       }   
 #'       
 #' @param silent A logical value indicating whether the function has to remain silent or not. Default value is \code{FALSE}.
+#' @param return_plot returns plots
 #' @param ... \code{max_number_of_elements} for plotting can be supplied. It defaults to 20k.
 #' 
 #' @return A list containing

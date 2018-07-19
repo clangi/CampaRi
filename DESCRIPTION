@@ -18,7 +18,7 @@ Imports:
   prospectr, splus2R, stats, expm, Hmisc, utils, 
   plotly, PairViz, Rtsne, TSA, ClusterR,
   RColorBrewer, TransferEntropy, infotheo, e1071, MESS, MASS,
-  minerva
+  minerva, fields
 Suggests: knitr, rmarkdown, testthat, roxygen2
 VignetteBuilder: knitr
 LinkingTo: Rcpp, RcppArmadillo

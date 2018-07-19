@@ -8,7 +8,8 @@ nSBR(data, ny, local.cut = FALSE, comb_met = c("MIC"), n.cluster = NULL,
   force_correct_ncl = FALSE, unif.splits = NULL, pk_span = NULL,
   plot = FALSE, silent = FALSE, return_plot = FALSE,
   hist_exploration = FALSE, random_picks = NULL, ann = NULL,
-  shuffles = FALSE, scoring_method = "adjusted_rand_index", ...)
+  shuffles = FALSE, scoring_method = "adjusted_rand_index",
+  return_ordered_predicted = FALSE, ...)
 }
 \arguments{
 \item{data}{Name of the PROGIDX_<...>.dat file or Data frame with three columns containing, in order, the (sorted) progress index, the relative time 
@@ -58,8 +59,9 @@ it has been ordere by the progress index.}
 
 \item{scoring_method}{See \code{\link{score_sapphire}} for details. This feature is used only by randomization procedures}
 
+\item{return_ordered_predicted}{returns a vector of time-ordered prediction vectors.}
+
 \item{...}{\itemize{
-    \item "\code{time.series}" File name. If specified, it substitutes the time series of the PROGIDX_<..> file with the one provided by the file.
     \item "\code{max.random.points.plot}" Integer indicating how many points to show in the randomization procedure
 }}
 }

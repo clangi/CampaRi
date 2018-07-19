@@ -40,6 +40,8 @@ inserted. The default is \code{'popup'}. The available values are:
 
 \item{silent}{A logical value indicating whether the function has to remain silent or not. Default value is \code{FALSE}.}
 
+\item{return_plot}{returns plots}
+
 \item{return_predicted}{If true return the predicted vector.}
 
 \item{...}{\code{max_number_of_elements} for plotting can be supplied. It defaults to 20k.}

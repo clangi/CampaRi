@@ -16,6 +16,7 @@
 #' @param plot if \code{TRUE} plots.
 #' @param return_plot if \code{TRUE} return the plot.
 #' @param silent if \code{TRUE} print less strings.
+#' @param ... mainly debugging options
 #' @return A list containing tot
 #' @details For details regarding the SAPPHIRE plot, please refer to the relative publications \url{http://www.nature.com/articles/srep06264}. 
 #' Main documentation of the original campari software \url{http://campari.sourceforge.net/documentation.html}.
@@ -346,17 +347,17 @@ gmrq.kfold <- function(traj, gmrq=c(2:6), lag=1, kfolds=5, clust.method=c("kmean
   return(list(tm=tm, stat=stat, right.vec=R, eig=eig.val[c(1:max(n.eigen))], bella=R.tmp))
 }
 
-.extract.centers <- function(log, nst) {
-  ## print.cluster.summary(log[1])
-  ## Removing the output
-  cents <- print.cluster.details(log, nst)[-c(1,2)]
-  cents <- trimws(rev(rev(cents)[-c(1:7)]))
-  cents <- sapply(strsplit(trimws(cents), "  ", fixed=TRUE), function(x) {
-    x <- x[which(x != "")]
-    as.integer(x)[3]
-  })
-  return(cents)
-}
+# .extract.centers <- function(log, nst) {
+#   ## print.cluster.summary(log[1])
+#   ## Removing the output
+#   cents <- print.cluster.details(log, nst)[-c(1,2)]
+#   cents <- trimws(rev(rev(cents)[-c(1:7)]))
+#   cents <- sapply(strsplit(trimws(cents), "  ", fixed=TRUE), function(x) {
+#     x <- x[which(x != "")]
+#     as.integer(x)[3]
+#   })
+#   return(cents)
+# }
 
 .predict.basin <- function(test, train, cents, train.seq, silent, force_more1_state = FALSE) {
   distmat <- fields::rdist(test, train[cents,]) # distance between test and centers

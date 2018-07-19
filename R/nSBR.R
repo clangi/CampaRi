@@ -35,6 +35,7 @@
 #' @param shuffles A logical value indicating whether the data must be shuffled before analysis (both data and ann). Default value is \code{FALSE}.
 #' @param random_picks Insert the number of times the barriers should be randomly recalculated for having a random baseline.
 #' @param ann If random_picks is inserted you need to score the the random barriers against an annotation!!
+#' @param return_ordered_predicted returns a vector of time-ordered prediction vectors.
 #' @param ...
 #'      \itemize{
 #'          \item "\code{max.random.points.plot}" Integer indicating how many points to show in the randomization procedure

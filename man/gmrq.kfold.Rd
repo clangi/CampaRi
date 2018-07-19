@@ -5,9 +5,9 @@
 \title{GMRQ score from McGibbon RT et al. (2015)}
 \usage{
 gmrq.kfold(traj, gmrq = c(2:6), lag = 1, kfolds = 5,
-  clust.method = c("kmeans", "sbr", "tbc", "dbscan"), clust.param = NULL,
-  chunks = FALSE, dir.out = FALSE, plot = FALSE, return_plot = FALSE,
-  silent = FALSE)
+  clust.method = c("kmeans", "sbr", "nsbr", "tbc", "dbscan"), tm.opt = NULL,
+  clust.param = NULL, preproc = NULL, chunks = FALSE, dir.out = FALSE,
+  plot = FALSE, return_plot = FALSE, silent = FALSE, ...)
 }
 \arguments{
 \item{traj}{trajectory matrix.}
@@ -16,7 +16,16 @@ gmrq.kfold(traj, gmrq = c(2:6), lag = 1, kfolds = 5,
 
 \item{lag}{number of lags in the Markov state model (MSM)}
 
+\item{kfolds}{cross-validation number of folds}
+
 \item{clust.method}{clustering method. Available is kmeans sbr and nsbr}
+
+\item{tm.opt}{definition for matrix creation (C and S)}
+
+\item{clust.param}{the cluster parameters to optimize - it is a matrix with parameters on the columns and 
+different set of them in the rows (it loops on the rows)}
+
+\item{preproc}{vars for the campari run}
 
 \item{chunks}{if \code{TRUE} it splits consecutive chunks of data. It is needed for time-series data.}
 
@@ -28,10 +37,7 @@ gmrq.kfold(traj, gmrq = c(2:6), lag = 1, kfolds = 5,
 
 \item{silent}{if \code{TRUE} print less strings.}
 
-\item{kfold}{cross-validation number of folds}
-
-\item{clust.parameters}{he cluster parameters to optimize - it is a matrix with parameters on the columns and 
-different set of them in the rows (it loops on the rows)}
+\item{...}{mainly debugging options}
 }
 \value{
 A list containing tot
